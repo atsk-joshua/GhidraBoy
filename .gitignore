@@ -21,6 +21,10 @@ dist/
 Thumbs.db
 .DS_Store
 
+# Local Ghidra build helpers (machine-specific paths)
+build-ghidra-12.1.2.bat
+build-ghidra-12.1.2.ps1
+
 # Logs and temp
 *.bak
 *.log
