@@ -1,12 +1,31 @@
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+
+# Build outputs (jars, test reports, and extension zips in build/distributions/)
+build/
+
+# Sleigh compiler output (generated from .slaspec at build time)
+*.sla
+
+# Legacy
+dist/
+
+# IDE
+.idea/
+.vscode/
+
+# Editor / OS
+*~
+*.swp
+Thumbs.db
+.DS_Store
+
+# Logs and temp
 *.bak
 *.log
 *.tmp
-*.swp
-*~
-.idea/
-.gradle/
-.kotlin/
-build/
-dist/
 
-*.sla
+# JVM crash logs (common when running Ghidra headless tests)
+hs_err_pid*
+replay_pid*

@@ -137,6 +137,12 @@ tasks.named<Test>("test") {
 
     systemProperty("ghidra.dir", ghidraDir)
     systemProperty("SystemUtilities.isTesting", true)
+
+    // Ghidra headless init loads the full framework; default 512m fork heap is too small on Windows.
+    maxHeapSize = "4g"
+
+    // Required for Ghidra 12 + JDK 21.0.10+ in forked Gradle test workers (see Ghidra javaTestProject.gradle).
+    jvmArgs("-Djdk.serialFilterFactory=ghidra.framework.remote.GhidraSerialFilterFactory")
 }
 
 defaultTasks("clean", "assemble")
