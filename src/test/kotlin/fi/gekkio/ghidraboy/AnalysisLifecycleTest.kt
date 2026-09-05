@@ -157,4 +157,76 @@ class AnalysisLifecycleTest : IntegrationTest() {
                 decompiler.dispose()
             }
         }
+
+    @Test
+    fun `cancellation after mutation rolls back apply discovery and removal`() =
+        program { p ->
+            val r = BankAnalysis.preview(p, address(0x150), null, AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY)
+
+            fun cancelWhen(condition: () -> Boolean) =
+                object : ghidra.util.task.TaskMonitorAdapter() {
+                    override fun checkCancelled() {
+                        if (condition()) throw ghidra.util.exception.CancelledException()
+                    }
+                }
+            assertThrows(ghidra.util.exception.CancelledException::class.java) {
+                BankAnalysis.apply(p, r, cancelWhen { p.bookmarkManager.bookmarkCount > 0 })
+            }
+            assertEquals(0, p.bookmarkManager.bookmarkCount)
+            assertFalse(p.referenceManager.getReferencesFrom(address(0x158)).any { it.operandIndex == -1 })
+            BankAnalysis.apply(p, r, TaskMonitor.DUMMY)
+            val marks = p.bookmarkManager.bookmarkCount
+            val target = ProgramMapping.fileToStatic(p, 0x8000).single()
+            assertThrows(ghidra.util.exception.CancelledException::class.java) {
+                FunctionDiscovery.discover(
+                    p,
+                    listOf(address(0x150), target),
+                    r,
+                    cancelWhen { p.functionManager.functionCount > 0 },
+                )
+            }
+            assertEquals(0, p.functionManager.functionCount)
+            FunctionDiscovery.discover(p, listOf(), r, TaskMonitor.DUMMY)
+            assertThrows(ghidra.util.exception.CancelledException::class.java) {
+                AnalysisOwnership.removeAll(p, cancelWhen { p.bookmarkManager.bookmarkCount < marks })
+            }
+            assertEquals(marks, p.bookmarkManager.bookmarkCount)
+            assertTrue(p.functionManager.getFunctionAt(target) != null)
+            assertTrue(p.referenceManager.getReferencesFrom(address(0x158)).any { it.operandIndex == -1 })
+            AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
+            assertEquals(0, p.bookmarkManager.bookmarkCount)
+            assertEquals(0, p.functionManager.functionCount)
+        }
+
+    @Test
+    fun `cancelled far application rolls back a previously changed site`() =
+        program { p ->
+            p.withTransaction {
+                p.memory.setBytes(
+                    address(0x28),
+                    java.util.HexFormat
+                        .of()
+                        .parseHex(FarCallConvention.SUPPORTED_BODY),
+                )
+                for (site in listOf(0x200L, 0x210L)) {
+                    p.memory.setBytes(address(site), byteArrayOf(0xef.toByte(), 2, 0, 0x40, 0xc9.toByte()))
+                    Disassembler.getDisassembler(p, TaskMonitor.DUMMY, null).disassemble(address(site), AddressSet(address(site)))
+                }
+            }
+            val convention = FarCallConvention("0028", FarCallConvention.SUPPORTED_BODY, listOf("0200", "0210"), 0xc100)
+            val monitor =
+                object : ghidra.util.task.TaskMonitorAdapter() {
+                    override fun checkCancelled() {
+                        if (p.listing.getInstructionAt(address(0x200)).isFallThroughOverridden) {
+                            throw ghidra.util.exception.CancelledException()
+                        }
+                    }
+                }
+            assertThrows(ghidra.util.exception.CancelledException::class.java) { convention.apply(p, monitor) }
+            for (site in listOf(0x200L, 0x210L)) {
+                assertFalse(p.listing.getInstructionAt(address(site)).isFallThroughOverridden)
+                assertFalse(p.referenceManager.getReferencesFrom(address(site)).any { it.operandIndex == -1 })
+            }
+            assertEquals(0, p.bookmarkManager.bookmarkCount)
+        }
 }

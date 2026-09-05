@@ -54,3 +54,9 @@ and INC/DEC carry preservation. A stack word across FFFF/0000 exposed a Ghidra
 word-load boundary issue: PUSH wrote both wrapped bytes, while POP read only the
 low byte. POP now uses two explicitly 16-bit byte addresses; the regression,
 normal control flow and decompiler goldens validate this pure p-code correction.
+
+Additional family coverage checks all four accumulator rotates for every byte and
+carry input (2048 cases), including their distinct zero-flag clearing behavior,
+and all 63 LD register/memory encodings with two flag states (126 cases). The LD
+matrix checks old-HL addressing when H/L are also operands, self copies, every
+unaffected register, flags, SP and PC. These execute compiled p-code directly.

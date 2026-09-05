@@ -46,7 +46,7 @@ run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','preserved',
 # Synthetic code with the standard 48-byte detection signature; no commercial ROM.
 rom=bytearray(0x10000)
 rom[0x104:0x134]=bytes.fromhex('ce ed 66 66 cc 0d 00 0b 03 73 00 83 00 0c 00 0d 00 08 11 1f 88 89 00 0e dc cc 6e e6 dd dd d9 99 bb bb 67 63 6e 0e ec cc dd dc 99 9f bb b9 33 3e')
-rom[0x143]=0x80; rom[0x147]=0x1b; rom[0x148]=1; rom[0x149]=3
+rom[0x143]=0x80; rom[0x147]=0x13; rom[0x148]=1; rom[0x149]=3
 rom[0x14e:0x150]=bytes.fromhex('12 34')
 rom[0x150:0x153]=bytes.fromhex('3e 42 c9')
 (work/'synthetic.gb').write_bytes(rom)

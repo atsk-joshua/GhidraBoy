@@ -43,6 +43,16 @@ public class GhidraBoyInstalledLifecycle extends GhidraScript {
       var d = Disassembler.getDisassembler(p, monitor, null);
       d.disassemble(toAddr(0x180), new AddressSet(toAddr(0x180), toAddr(0x18b)));
       d.disassemble(target, new AddressSet(target));
+      p.getMemory()
+          .setBytes(toAddr(0x28), HexFormat.of().parseHex(FarCallConvention.SUPPORTED_BODY));
+      for (int site : new int[] {0x200, 0x210}) {
+        p.getMemory().setBytes(toAddr(site), new byte[] {(byte) 0xef, 2, 0, 0x40, (byte) 0xc9});
+        d.disassemble(toAddr(site), new AddressSet(toAddr(site)));
+      }
+      new FarCallConvention(
+              "0028", FarCallConvention.SUPPORTED_BODY, List.of("0200", "0210"), 0xc100)
+          .apply(p, monitor);
+      p.getListing().getInstructionAt(toAddr(0x210)).setFallThrough(toAddr(0x215));
       var result =
           BankAnalysis.preview(
               p, toAddr(0x180), MapperState.reset(), AnalysisResult.Configuration.DEFAULT, monitor);
@@ -81,14 +91,34 @@ public class GhidraBoyInstalledLifecycle extends GhidraScript {
               + ProgramMapping.JSON.toJson(ProgramFingerprint.components(p, monitor)));
       ProgramFingerprint.requireCurrent(p, result, monitor);
       var target = ProgramMapping.fileToStatic(p, 0x8000).get(0);
+      check(
+          p.getListing().getInstructionAt(toAddr(0x200)).isFallThroughOverridden(),
+          "far override persisted");
+      check(
+          p.getListing().getInstructionAt(toAddr(0x200)).getFallThrough().equals(toAddr(0x204)),
+          "far return persisted");
       AnalysisOwnership.removeAll(p, monitor);
+      check(
+          p.getListing().getInstructionAt(toAddr(0x210)).getFallThrough().equals(toAddr(0x215)),
+          "later user override preserved after reopen and removal");
+      check(
+          !p.getListing().getInstructionAt(toAddr(0x200)).isFallThroughOverridden(),
+          "far override removed after reopen");
       check(
           p.getFunctionManager().getFunctionAt(target) == null,
           "owned function removed after reopen");
       for (var ref : p.getReferenceManager().getReferencesFrom(toAddr(0x188)))
         check(ref.getOperandIndex() != -1, "owned reference removed");
-      BankAnalysis.apply(p, result, monitor);
-      FunctionDiscovery.discover(p, List.of(), result, monitor);
+      var refreshed =
+          BankAnalysis.preview(
+              p, toAddr(0x180), MapperState.reset(), AnalysisResult.Configuration.DEFAULT, monitor);
+      BankAnalysis.apply(p, refreshed, monitor);
+      FunctionDiscovery.discover(p, List.of(), refreshed, monitor);
+      new FarCallConvention("0028", FarCallConvention.SUPPORTED_BODY, List.of("0200"), 0xc100)
+          .apply(p, monitor);
+      check(
+          p.getListing().getInstructionAt(toAddr(0x200)).getFallThrough().equals(toAddr(0x204)),
+          "far convention reapplied");
       println("INSTALLED_LIFECYCLE_REOPEN_REMOVE_REAPPLY_PASS");
     }
   }
