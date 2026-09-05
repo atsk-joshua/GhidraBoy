@@ -29,14 +29,8 @@ jobs:
           cache: 'gradle'
       - name: Install Ghidra
         run: .github/scripts/install_ghidra.sh
-      - run: ./gradlew clean build
-      - name: Installed ZIP and persisted old-language program
-        run: |
-          install_test=$(mktemp -d /tmp/ghidraboy-ci-XXXXXX)
-          cp -a "$GHIDRA_INSTALL_DIR" "$install_test/ghidra"
-          python3 tools/installed_smoke.py --ghidra "$install_test/ghidra" --zip build/distributions/*_GhidraBoy.zip --jdk "$JAVA_HOME" --work "$install_test/work"
-          mkdir -p build/reports/installed
-          cp "$install_test/work/"*.log build/reports/installed/
+      - name: Reproducible build, installed lifecycle and actual database migration
+        run: bash .github/scripts/validate.sh
       - name: Preserve reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -47,7 +41,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: GhidraBoy_Ghidra_${{ matrix.ghidra_version }}
-          path: build/distributions/*_GhidraBoy.zip
+          path: build/distributions/
           if-no-files-found: 'error'
   release:
     if: github.ref_type == 'tag'

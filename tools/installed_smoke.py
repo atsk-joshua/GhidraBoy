@@ -54,4 +54,9 @@ run([ghidra/'support/analyzeHeadless',projects,'fixture','-import',work/'synthet
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledCheck.java','-noanalysis'],'persisted-loader')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledLifecycle.java','prepare','-noanalysis'],'lifecycle-prepare')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledLifecycle.java','verify','-noanalysis'],'lifecycle-reopen')
+# Compile and execute every public script from the installed ZIP, separately from GUI acceptance.
+(work/'abi-request.json').write_text('{"profile":"sdcc451-call1","returnType":"u16","parameters":[{"name":"value","type":"u8"}]}')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-postScript','GhidraBoyAbi.java',work/'abi-request.json','persistent_bank::4000','-noanalysis'],'installed-abi-preview')
+(work/'manual-salvage.gb').write_bytes(rom+b'preserved tail')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-preScript','GhidraBoyImport.java',work/'manual-salvage.gb','SALVAGE','AUTO','CGB','-noanalysis'],'installed-manual-salvage')
 print('INSTALLED_ZIP_PRESERVATION_PASS')
