@@ -19,3 +19,5 @@ scripts/test_ghidra.sh
 Dependencies and patches are pinned in `dependencies.lock.json`. Original Live Lab and Study Pack are preserved unchanged in `legacy/`; their historical records are distinct from new tests.
 
 The Linux x86-64 candidate bundle includes a cross-built library and needs no C compiler for the first target test. Its ABI is inspected, but Linux/Steam Deck execution remains unverified. See [Steam Deck steps](docs/STEAM_DECK.md).
+
+For the student-facing transfer, use `dist/GhiGBC-SteamDeck-Handoff-0.1.0.zip` and its START-HERE.md. It provides Setup, Validate and Collect-results scripts and keeps private game assets separate. Build it with `python3 scripts/package.py` followed by `python3 scripts/package_deck_handoff.py`.

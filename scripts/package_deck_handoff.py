@@ -8,7 +8,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'dist/GhiGBC-SteamDeck-Handoff-0.1.0.zip'
-DOCS = {'QUICKSTART.md', 'UI_ACTION_VALIDATION.md', 'STEAM_DECK.md', 'NATIVE_CONTRACT.md', 'ACTUAL_BATTLE.md'}
+DOCS = {'QUICKSTART.md', 'UI_ACTION_VALIDATION.md', 'STEAM_DECK.md', 'NATIVE_CONTRACT.md', 'ACTUAL_BATTLE.md', 'HANDOFF_REPORT.md'}
 files = {}
 with tarfile.open(ROOT/'dist/GhiGBC-0.1.0-linux-x86_64.tar.gz') as archive:
     for member in archive.getmembers():
@@ -23,7 +23,7 @@ with tarfile.open(ROOT/'dist/GhiGBC-0.1.0-linux-x86_64.tar.gz') as archive:
 guide = (ROOT/'docs/STEAM_DECK_HANDOFF.md').read_bytes()
 files['START-HERE.md'] = (guide, 0o644)
 files['README.md'] = (guide, 0o644)
-files['NOTES.txt'] = (b'''GhiGBC Steam Deck results — fill this in after testing
+files['NOTES.txt'] = (b'''GhiGBC Steam Deck results - fill this in after testing
 
 SteamOS version:
 Ghidra version:

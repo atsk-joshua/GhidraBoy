@@ -13,7 +13,7 @@ import sys
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-RESULT_NAMES = ('setup.log', 'install.json', 'install.stderr.log', 'doctor.json', 'doctor.stderr.log', 'native.log', 'ghidra.log',
+RESULT_NAMES = ('setup.log', 'failure.log', 'install.json', 'install.stderr.log', 'doctor.json', 'doctor.stderr.log', 'native.log', 'ghidra.log',
                 'ui.log', 'integrated-growth.json', 'ui-actions.log')
 
 
@@ -51,8 +51,8 @@ def environment(args):
         raise RuntimeError('This handoff setup targets Steam Deck desktop mode / Linux x86-64.')
     config_path = ROOT / '.local/deck-config.json'
     config = json.loads(config_path.read_text()) if config_path.exists() else {}
-    ghidra = choose_ghidra(args.ghidra or os.environ.get('GHIDRA_INSTALL_DIR') or config.get('ghidra'))
-    java_home = args.java_home or os.environ.get('JAVA_HOME') or config.get('java_home')
+    ghidra = choose_ghidra(args.ghidra or config.get('ghidra') or os.environ.get('GHIDRA_INSTALL_DIR'))
+    java_home = args.java_home or config.get('java_home') or os.environ.get('JAVA_HOME')
     if not java_home:
         java = shutil.which('java')
         if java:
@@ -158,4 +158,10 @@ if __name__ == '__main__':
         main()
     except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired) as error:
         print(f'GhiGBC: {error}', file=sys.stderr)
+        try:
+            failure = ROOT / '.local/deck-results/failure.log'
+            failure.parent.mkdir(parents=True, exist_ok=True)
+            failure.write_text(datetime.datetime.now(datetime.timezone.utc).isoformat()+'\n'+str(error)+'\n')
+        except OSError:
+            pass
         sys.exit(1)

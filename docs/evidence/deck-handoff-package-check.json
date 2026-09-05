@@ -1,0 +1,14 @@
+{
+  "zip": "/Users/joshuahansen/dev/GhiGBC/dist/GhiGBC-SteamDeck-Handoff-0.1.0.zip",
+  "bytes": 690367,
+  "file_count": 93,
+  "manifest_hashes": "pass",
+  "shell_entry_points": "pass",
+  "extracted_help_and_collector": "pass",
+  "wrong_platform_install_guard": "pass",
+  "failure_log_collection": "pass",
+  "private_assets_excluded": true,
+  "no_preloaded_target_results": true,
+  "linux_execution_verified": false,
+  "engineering_report_included": true
+}

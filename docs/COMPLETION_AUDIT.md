@@ -1,6 +1,6 @@
 # Completion audit — 2026-09-05
 
-The original target remains a working student session on Steam Deck desktop mode, Linux x86-64, Ghidra 12.1.2. The implementation and evidence below are on macOS 26.5.2 arm64. The Linux candidate is cross-built and ABI-inspected, not executed on the Deck. The full goal is not complete. SSH host/user and the target installation path have been requested; no target execution evidence has been supplied.
+The original target remains a working student session on Steam Deck desktop mode, Linux x86-64, Ghidra 12.1.2. The implementation and evidence below are on macOS 26.5.2 arm64. The Linux candidate is cross-built and ABI-inspected, not executed on the Deck. The full goal is not complete. The user confirmed SSH is not enabled and requested a package for his son to run locally. `dist/GhiGBC-SteamDeck-Handoff-0.1.0.zip` supplies Setup, Validate and Collect-results entry points; target results are pending.
 
 ## Handoff acceptance matrix
 

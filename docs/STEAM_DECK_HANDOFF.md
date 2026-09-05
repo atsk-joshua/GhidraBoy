@@ -4,6 +4,8 @@ This package adds a SameBoy Game Boy Color debugger to **Ghidra 12.1.2**. Start 
 
 The debugger, actual battle workflow and UI actions were tested on an Apple silicon Mac. This Linux x86-64 package was cross-built; **your Steam Deck run is the remaining platform validation**. Keep the results ZIP so we can confirm it worked or diagnose a failure.
 
+For the full engineering history, decisions and reasons, read **docs/HANDOFF_REPORT.md**.
+
 ## 1. Prepare
 
 Use Desktop Mode. Extract the entire ZIP into a writable folder under your home directory, such as `~/GhiGBC-SteamDeck`. Close Ghidra before setup. In Dolphin, open a terminal in the extracted folder.
