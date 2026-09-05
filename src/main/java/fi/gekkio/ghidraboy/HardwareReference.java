@@ -10,7 +10,30 @@ import java.util.Map;
 /** Sources: gbdev/hardware.inc 189324b77f99cf287f4153e0001830e8738a4068 (CC0). */
 public final class HardwareReference {
     private HardwareReference() { }
-    public static void apply(Program p,GameBoyKind kind) {
+    private record Mask(long value,String description) { }
+    private record Register(int address,String name,String description,boolean cgbOnly,Map<String,Mask> masks) { }
+    private record Definitions(String source,String revision,String license,java.util.List<Register> registers) { }
+    public static void apply(Program p,GameBoyKind kind) { apply(p,kind,false); }
+    public static void apply(Program p,GameBoyKind kind,boolean newImport) {
+        try(var stream=HardwareReference.class.getResourceAsStream("/hardware-registers.json")) {
+            if(stream==null) throw new IllegalStateException("Packaged hardware definitions missing");
+            var definitions=ProgramMapping.JSON.fromJson(new java.io.InputStreamReader(stream,java.nio.charset.StandardCharsets.UTF_8),Definitions.class);
+            var as=p.getAddressFactory().getDefaultAddressSpace();
+            for(var register:definitions.registers()) {
+                if(register.cgbOnly() && kind!=GameBoyKind.CGB) continue;
+                var address=as.getAddress(register.address());
+                if(p.getListing().getComment(CommentType.EOL,address)==null)
+                    p.getListing().setComment(address,CommentType.EOL,register.description()+" [hardware.inc "+definitions.revision()+"]");
+                if(register.masks().isEmpty()) continue;
+                var type=new EnumDataType(new CategoryPath("/GhidraBoy/Hardware"),register.name()+"Bits",1);
+                for(var mask:register.masks().entrySet()) type.add(mask.getKey(),mask.getValue().value(),mask.getValue().description());
+                var installed=p.getDataTypeManager().addDataType(type,DataTypeConflictHandler.KEEP_HANDLER);
+                var data=p.getListing().getDataAt(address);
+                if(newImport && data!=null && data.getLength()==1)
+                    ghidra.program.model.data.DataUtilities.createData(p,address,installed,-1,false,ghidra.program.model.data.DataUtilities.ClearDataMode.CLEAR_ALL_CONFLICT_DATA);
+            }
+        } catch(Exception error) { throw new IllegalStateException("Hardware reference installation failed",error); }
+
         var descriptions=Map.ofEntries(
             Map.entry(0xff00,"Joypad: bits 4/5 select active-low button groups; low four bits are active-low input."),
             Map.entry(0xff04,"DIV: divider read; writing any value resets the divider."),

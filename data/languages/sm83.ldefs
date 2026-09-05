@@ -22,6 +22,7 @@
             version="1.0"
             slafile="sm83.sla"
             processorspec="sm83.pspec"
+            manualindexfile="../manuals/SM83.idx"
             id="SM83:LE:16:default">
     <description>Sharp SM83</description>
     <compiler name="default" spec="sm83.cspec" id="default"/>
