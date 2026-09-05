@@ -21,8 +21,24 @@ class ExternalVectorTest : EmuTest() {
     @Test
     fun `pinned MIT SingleStepTests samples compare registers and memory`() {
         val manifest = JsonParser.parseString(vectorText("manifest.json")).asJsonObject
+        assertEquals("f9c30210245dd691661db39f5ace022c465ecc2f", manifest.get("revision").asString)
+        var vectorCount = 0
+        var fileCount = 0
         for (file in manifest.getAsJsonObject("files").keySet()) {
-            val vectors = JsonParser.parseString(vectorText(file)).asJsonArray
+            require(file.matches(Regex("[0-9a-f]{2}( [0-9a-f]{2})?\\.json")))
+            val raw = vectorText(file)
+            assertEquals(
+                manifest
+                    .getAsJsonObject("files")
+                    .getAsJsonObject(file)
+                    .get("sampleSha256")
+                    .asString,
+                fi.gekkio.ghidraboy.Sha256
+                    .of(raw.toByteArray())
+                    .toString(),
+            )
+            fileCount++
+            val vectors = JsonParser.parseString(raw).asJsonArray
             for (vector in vectors) {
                 // Fresh decode cache and memory per vector; shared Program/application.
                 emulator.dispose()
@@ -50,7 +66,20 @@ class ExternalVectorTest : EmuTest() {
                     val address = pair.asJsonArray[0].asInt
                     assertEquals(pair.asJsonArray[1].asInt, emulator.read(address.toUShort()).toInt(), "${v.get("name")} memory=$address")
                 }
+                vectorCount++
             }
         }
+        println(
+            "GHIDRABOY_VECTOR_EVIDENCE=" +
+                fi.gekkio.ghidraboy.ProgramMapping.JSON
+                    .toJson(
+                        mapOf(
+                            "revision" to manifest.get("revision").asString,
+                            "files" to fileCount,
+                            "vectors" to vectorCount,
+                            "sampleHashesVerified" to true,
+                        ),
+                    ).replace("\n", ""),
+        )
     }
 }

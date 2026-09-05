@@ -38,7 +38,7 @@ val ghidraRelease = ghidraProps.getProperty("application.release.name")!!
 
 require(ghidraVersion == "12.1.3") { "This build targets Ghidra 12.1.3; found $ghidraVersion" }
 require(JavaVersion.current() == JavaVersion.VERSION_21) { "Run Gradle with JDK 21 (JAVA_HOME)" }
-version = "20260905-dev1"
+version = "20260905-dev2"
 val buildEpoch = providers.environmentVariable("SOURCE_DATE_EPOCH").orElse("1788566400")
 val buildDate = Instant.ofEpochSecond(buildEpoch.get().toLong()).atZone(ZoneOffset.UTC).toLocalDate()
 
@@ -78,6 +78,9 @@ dependencies {
 val generateExtensionProps by tasks.registering {
     val output = layout.buildDirectory.file("generated/extension.properties")
     outputs.file(output)
+    inputs.property("buildEpoch", buildEpoch)
+    inputs.property("ghidraVersion", ghidraVersion)
+    inputs.property("extensionVersion", project.version.toString())
     doLast {
         file(output).outputStream().use {
             val props = Properties()
@@ -88,6 +91,8 @@ val generateExtensionProps by tasks.registering {
                     ("author" to "Gekkio"),
                     ("createdOn" to buildDate.toString()),
                     ("version" to ghidraVersion),
+                    ("extensionVersion" to project.version.toString()),
+                    ("buildEpoch" to buildEpoch.get()),
                 )
             it.write(
                 props
@@ -143,7 +148,10 @@ val zip by tasks.registering(Zip::class) {
     dependsOn(compileSleigh)
     from("data/languages/sm83.sla") { into("data/languages/") }
     from("data/manuals") { into("data/manuals/") }
-    from("docs") { into("docs/") }
+    from("docs") {
+        into("docs/")
+        exclude("evidence/**")
+    }
     from("ghidra_scripts") { into("ghidra_scripts/") }
     from("README.markdown", "LICENSE", "Module.manifest")
 }
@@ -155,6 +163,12 @@ tasks.named("assemble") {
 tasks.named<Test>("test") {
     dependsOn("compileSleigh")
     useJUnitPlatform()
+    inputs
+        .files(
+            fileTree("data/languages") {
+                include("*.cspec", "*.pspec", "*.ldefs", "*.sinc", "*.slaspec")
+            },
+        ).withPropertyName("languageSpecifications")
 
     System.getProperty("ghidraboy.vector.dir")?.let { systemProperty("ghidraboy.vector.dir", it) }
     systemProperty("ghidra.dir", ghidraDir)
