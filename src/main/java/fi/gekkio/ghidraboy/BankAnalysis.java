@@ -12,22 +12,38 @@ import java.util.*;
 /** Opt-in bounded analysis of existing instructions. Never decodes through marked data. */
 public final class BankAnalysis {
     private BankAnalysis() { }
-    public record Finding(String source,String access,List<String> targets,String reason) { }
+    public record Finding(String source,String access,List<String> targets,String reason,AnalysisResult.Confidence confidence) {
+        public Finding { targets=List.copyOf(targets); }
+    }
     private record OwnedReference(String from,String to,String type) { }
     private record Work(Address address,MapperState state,Map<Long,Integer> registers) { }
-    private static final int LIMIT=4096;
+
     public static List<Finding> analyze(Program p,Address start,MapperState assumption,TaskMonitor monitor,boolean apply) throws Exception {
+        var result=preview(p,start,assumption,AnalysisResult.Configuration.DEFAULT,monitor);
+        if(apply) apply(p,result,monitor);
+        return result.findings();
+    }
+    public static AnalysisResult preview(Program p,Address start,MapperState assumption,AnalysisResult.Configuration configuration,TaskMonitor monitor) throws Exception {
+        String fingerprint=ProgramFingerprint.capture(p,monitor);
         var cartridge=ProgramMapping.cartridge(p);
         if(cartridge==null) throw new IllegalArgumentException("Cartridge descriptor required");
         var queue=new ArrayDeque<Work>(); queue.add(new Work(start,assumption,Map.of()));
         var seen=new HashSet<Work>();
         var targets=new TreeMap<String,Set<String>>(); var reasons=new TreeMap<String,String>();
         int count=0;
-        while(!queue.isEmpty() && count++<LIMIT) {
+        var completion=AnalysisResult.Completion.COMPLETE;
+        monitor.setMessage("Exploring bank states");
+        try {
+        while(!queue.isEmpty()) {
             monitor.checkCancelled(); var w=queue.removeFirst();
-            if(!seen.add(w)) continue;
+            if(seen.contains(w)) continue;
+            if(count==configuration.stateLimit()) { queue.addFirst(w); completion=AnalysisResult.Completion.STATE_LIMIT; break; }
+            seen.add(w); count++;
             var ins=p.getListing().getInstructionAt(w.address);
             if(ins==null) { reasons.put(w.address+"|flow","No defined instruction; data/undefined bytes left intact"); continue; }
+            if(!fetchEstablished(p,cartridge,w.state,ins)) {
+                reasons.put(w.address+"|flow","Instruction fetch crosses an unestablished physical execution view"); continue;
+            }
             var state=w.state; var regs=new HashMap<>(w.registers); var unique=new HashMap<Long,Integer>();
             boolean changedMapper=false;
             // Internal p-code branches are not path interpreted by this finite evaluator.
@@ -35,7 +51,7 @@ public final class BankAnalysis {
                 (op.getOpcode()==PcodeOp.BRANCH && op.getInput(0).isConstant()));
             for(var op:ins.getPcode()) {
                 if(op.getOpcode()!=PcodeOp.BRANCH && op.getOpcode()!=PcodeOp.CBRANCH && op.getOpcode()!=PcodeOp.CALL && op.getOpcode()!=PcodeOp.RETURN)
-                    for(var input:op.getInputs()) if(input.isAddress()) record(p,cartridge,state,(int)(input.getOffset()&65535),false,w.address,targets,reasons);
+                    for(var input:op.getInputs()) if(input.isAddress()) readAccess(p,cartridge,state,(int)(input.getOffset()&65535),input.getSize(),w.address,targets,reasons);
                 if(op.getOpcode()==PcodeOp.STORE) {
                     Long ptr=value(op.getInput(1),regs,unique), val=value(op.getInput(2),regs,unique);
                     if(internal || ptr==null) {
@@ -43,30 +59,26 @@ public final class BankAnalysis {
                         reasons.put(w.address+"|write","Unknown store may affect mapper state");
                     } else {
                         int cpu=(int)(ptr & 65535);
-                        record(p,cartridge,state,cpu,true,w.address,targets,reasons);
-                        if(cpu<0x8000 || cpu==0xff4f || cpu==0xff70) {
-                            state=state==null || val==null?null:state.write(cartridge,cpu,(int)(val & 255));
-                            changedMapper=true;
-                        }
+                        int width=op.getInput(2).getSize();
+                        state=writeAccess(p,cartridge,state,cpu,width,val,w.address,targets,reasons);
+                        changedMapper |= touchesMapper(cartridge,cpu,width);
                     }
                 } else if(op.getOpcode()==PcodeOp.LOAD) {
                     Long ptr=value(op.getInput(1),regs,unique);
-                    if(ptr!=null) record(p,cartridge,state,(int)(ptr&65535),false,w.address,targets,reasons);
+                    if(ptr!=null) readAccess(p,cartridge,state,(int)(ptr&65535),op.getOutput().getSize(),w.address,targets,reasons);
                 }
                 var output=op.getOutput();
                 if(output!=null) {
                     Long result=internal?null:evaluate(op,regs,unique);
                     if(output.isAddress()) {
                         int cpu=(int)(output.getOffset() & 65535);
-                        record(p,cartridge,state,cpu,true,w.address,targets,reasons);
-                        if(cpu<0x8000 || cpu==0xff4f || cpu==0xff70) {
-                            state=state==null || result==null?null:state.write(cartridge,cpu,(int)(result & 255));
-                            changedMapper=true;
-                        }
+                        state=writeAccess(p,cartridge,state,cpu,output.getSize(),result,w.address,targets,reasons);
+                        changedMapper |= touchesMapper(cartridge,cpu,output.getSize());
                     }
                     put(output,result,regs,unique);
                 }
             }
+            var successors=new ArrayList<Work>();
             var flow=ins.getFlowType();
             for(var dest:ins.getFlows()) {
                 var resolved=resolveWithContext(p,cartridge,state,(int)dest.getOffset(),changedMapper?null:w.address);
@@ -75,28 +87,45 @@ public final class BankAnalysis {
                 for(var a:resolved) {
                     targets.computeIfAbsent(key,k->new TreeSet<>()).add(a.toString());
                     // No interprocedural return summary: do not propagate assumed state into callees.
-                    if(!flow.isCall()) queue.add(new Work(a,state,Map.copyOf(regs)));
+                    if(!flow.isCall()) successors.add(new Work(a,state,Map.copyOf(regs)));
                 }
             }
             Address next=ins.getFallThrough();
             if(next!=null) {
                 if(flow.isCall()) { state=null; regs.clear(); changedMapper=true; }
-                if(changedMapper) {
-                    var nextViews=resolve(p,cartridge,state,(int)next.getOffset());
-                    if(nextViews.isEmpty()) reasons.put(w.address+"|flow","Mapper write changes execution view; fallthrough unresolved");
-                    for(var a:nextViews) queue.add(new Work(a,state,Map.copyOf(regs)));
-                } else queue.add(new Work(next,state,Map.copyOf(regs)));
+                int nextCpu=(int)((ins.getAddress().getOffset()+ins.getLength())&65535);
+                if(ins.isFallThroughOverridden()) nextCpu=(int)next.getOffset();
+                var nextViews=resolveWithContext(p,cartridge,state,nextCpu,changedMapper?null:w.address);
+                if(nextViews.isEmpty()) reasons.put(w.address+"|flow","Fallthrough execution view unresolved after call, mapper write or window transition");
+                for(var a:nextViews) successors.add(new Work(a,state,Map.copyOf(regs)));
             }
+            if(configuration.reverseBranches()) Collections.reverse(successors);
+            queue.addAll(successors);
             if(flow.isComputed()) reasons.put(w.address+"|flow","Indirect flow requires a validated per-program convention");
         }
-        if(!queue.isEmpty()) reasons.put(start+"|limit","4096-state worklist bound reached");
+        } catch(ghidra.util.exception.CancelledException cancelled) {
+            completion=AnalysisResult.Completion.CANCELLED;
+        }
+        if(completion==AnalysisResult.Completion.STATE_LIMIT) reasons.put(start+"|limit",configuration.stateLimit()+"-state worklist bound reached");
+        if(completion==AnalysisResult.Completion.CANCELLED) reasons.put(start+"|cancelled","Exploration cancelled");
+        if(completion!=AnalysisResult.Completion.CANCELLED && !fingerprint.equals(ProgramFingerprint.capture(p,monitor)))
+            completion=AnalysisResult.Completion.INPUT_CHANGED;
         Set<String> keys=new TreeSet<>(targets.keySet()); keys.addAll(reasons.keySet());
         List<Finding> findings=new ArrayList<>();
         for(String key:keys) {
             String[] parts=key.split("\\|",2); var values=List.copyOf(targets.getOrDefault(key,Set.of()));
-            findings.add(new Finding(parts[0],parts[1],values,reasons.getOrDefault(key,values.size()>1?"Ambiguous finite candidate set":"Explicit state or same-window execution context with constant p-code propagation")));
+            var confidence=values.isEmpty()?AnalysisResult.Confidence.UNKNOWN:
+                completion!=AnalysisResult.Completion.COMPLETE || reasons.containsKey(key)?AnalysisResult.Confidence.CANDIDATE:
+                values.size()>1?AnalysisResult.Confidence.AMBIGUOUS:AnalysisResult.Confidence.PROVEN;
+            findings.add(new Finding(parts[0],parts[1],values,reasons.getOrDefault(key,values.size()>1?"Ambiguous finite candidate set":"Explicit state or same-window execution context with constant p-code propagation"),confidence));
         }
-        if(apply) {
+        return new AnalysisResult(2,List.of(start.toString()),assumption,configuration,completion,count,queue.size(),fingerprint,findings,
+            completion==AnalysisResult.Completion.COMPLETE?List.of():List.of("Exploration stopped: "+completion+"; candidates are not proof"));
+    }
+    public static void apply(Program p,AnalysisResult result,TaskMonitor monitor) throws Exception {
+        ProgramFingerprint.requireCurrent(p,result,monitor);
+        if(result.completion()==AnalysisResult.Completion.CANCELLED) throw new ghidra.util.exception.CancelledException();
+        var findings=result.findings();
             int tx=p.startTransaction("GhidraBoy bank analysis"); boolean success=false;
             try {
                 var options=p.getOptions(ProgramMapping.OPTIONS);
@@ -113,7 +142,7 @@ public final class BankAnalysis {
                     monitor.checkCancelled(); var source=p.getAddressFactory().getAddress(f.source);
                     if(source==null) continue;
                     // References are supplemental; never replace existing operand/user references.
-                    if(f.targets.size()==1 && f.reason.equals("Explicit state or same-window execution context with constant p-code propagation")) {
+                    if(result.complete() && f.confidence()==AnalysisResult.Confidence.PROVEN && f.targets.size()==1) {
                         var dest=p.getAddressFactory().getAddress(f.targets.get(0));
                         boolean exists=false;
                         for(var ref:p.getReferenceManager().getReferencesFrom(source)) if(ref.getToAddress().equals(dest)) exists=true;
@@ -128,11 +157,50 @@ public final class BankAnalysis {
                     p.getBookmarkManager().setBookmark(source,"Analysis","GhidraBoy",f.access+": "+f.reason+" "+f.targets);
                 }
                 options.setString("analysis.ownedReferences",ProgramMapping.JSON.toJson(introduced));
-                options.setString("analysis.latest",ProgramMapping.JSON.toJson(findings));
+                options.setString("analysis.latest",ProgramMapping.JSON.toJson(result));
                 success=true;
             } finally { p.endTransaction(tx,success); }
+    }
+    private static boolean fetchEstablished(Program p,Cartridge c,MapperState state,ghidra.program.model.listing.Instruction ins) throws Exception {
+        // Ordinary same-window instructions are already supplied by the listing. A
+        // boundary-spanning decode must have physical backing for every fetched byte.
+        long start=ins.getAddress().getOffset(), end=start+ins.getLength()-1;
+        if(start/0x4000==end/0x4000 && end<=65535) return true;
+        byte[] bytes=ins.getBytes();
+        for(int i=0;i<bytes.length;i++) {
+            int cpu=(int)((start+i)&65535);
+            var views=resolveWithContext(p,c,state,cpu,ins.getAddress());
+            if(views.isEmpty()) return false;
+            var actual=ProgramMapping.staticToPhysical(p,ins.getAddress().addWrap(i));
+            if(actual.size()!=1) return false;
+            for(var view:views) {
+                if(!ProgramMapping.staticToPhysical(p,view).equals(actual) || p.getMemory().getByte(view)!=bytes[i]) return false;
+            }
         }
-        return List.copyOf(findings);
+        return true;
+    }
+    private static boolean mapperControl(Cartridge c,int address) {
+        return (address<0x8000 && c.mapper()!=Cartridge.Mapper.ROM_ONLY) || (c.color() && (address==0xff4f || address==0xff70));
+    }
+    private static boolean touchesMapper(Cartridge c,int address,int width) {
+        for(int i=0;i<width;i++) if(mapperControl(c,(address+i)&65535)) return true;
+        return false;
+    }
+    private static MapperState writeAccess(Program p,Cartridge c,MapperState state,int address,int width,Long value,Address from,
+            Map<String,Set<String>> targets,Map<String,String> reasons) throws Exception {
+        // P-code operations are ordered. Within a remaining little-endian wide store,
+        // bytes use increasing 16-bit addresses. SM83 stack stores explicitly encode
+        // their distinct high-byte-first architectural order in SLEIGH.
+        for(int i=0;i<width;i++) {
+            int cpu=(address+i)&65535;
+            record(p,c,state,cpu,true,from,targets,reasons);
+            if(mapperControl(c,cpu)) state=state==null || value==null?null:state.write(c,cpu,(int)(value>>>(i*8))&255);
+        }
+        return state;
+    }
+    private static void readAccess(Program p,Cartridge c,MapperState state,int address,int width,Address from,
+            Map<String,Set<String>> targets,Map<String,String> reasons) throws Exception {
+        for(int i=0;i<width;i++) record(p,c,state,(address+i)&65535,false,from,targets,reasons);
     }
     private static List<Address> resolveWithContext(Program p,Cartridge c,MapperState s,int cpu,Address context) throws Exception {
         var result=resolve(p,c,s,cpu);

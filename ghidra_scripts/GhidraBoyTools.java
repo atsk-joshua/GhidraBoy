@@ -13,8 +13,8 @@ public class GhidraBoyTools extends GhidraScript {
         String value=args.length>1?args[1]:null;
         switch(action) {
             case "discover-functions" -> {
-                String json=currentProgram.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest","[]");
-                var findings=Arrays.asList(ProgramMapping.JSON.fromJson(json,BankAnalysis.Finding[].class));
+                String json=currentProgram.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest","null");
+                var findings=ProgramMapping.JSON.fromJson(json,AnalysisResult.class);
                 FunctionDiscovery.discover(currentProgram,List.of(),findings,monitor).forEach(this::println);
             }
             case "far-call-convention" -> {

@@ -11,9 +11,18 @@ import java.util.*;
 public final class FunctionDiscovery {
     private FunctionDiscovery() { }
     public static List<String> discover(Program p,List<Address> declaredCode,List<BankAnalysis.Finding> findings,TaskMonitor monitor) throws Exception {
+        // Legacy lists carry neither completeness nor dependency evidence. Only explicit seeds are accepted.
+        return discoverSeeds(p,declaredCode,List.of(),monitor);
+    }
+    public static List<String> discover(Program p,List<Address> declaredCode,AnalysisResult result,TaskMonitor monitor) throws Exception {
+        ProgramFingerprint.requireCurrent(p,result,monitor);
+        if(!result.complete()) return List.of("Incomplete analysis: function discovery suppressed");
+        return discoverSeeds(p,declaredCode,result.findings(),monitor);
+    }
+    private static List<String> discoverSeeds(Program p,List<Address> declaredCode,List<BankAnalysis.Finding> findings,TaskMonitor monitor) throws Exception {
         Set<Address> seeds=new TreeSet<>(declaredCode);
         var entries=p.getSymbolTable().getExternalEntryPointIterator(); while(entries.hasNext()) seeds.add(entries.next());
-        for(var f:findings) if(f.access().equals("call") && f.targets().size()==1 && f.reason().equals("Explicit state or same-window execution context with constant p-code propagation")) {
+        for(var f:findings) if(f.access().equals("call") && f.targets().size()==1 && f.confidence()==AnalysisResult.Confidence.PROVEN) {
             var a=p.getAddressFactory().getAddress(f.targets().get(0)); if(a!=null) seeds.add(a);
         }
         List<String> result=new ArrayList<>();

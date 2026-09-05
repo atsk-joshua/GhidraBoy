@@ -496,7 +496,11 @@
 }
 
 :LD Mem16, SP is op0_8=0x08 & SP; Mem16 {
-  Mem16 = SP;
+  local stored:2 = SP;
+  local lowAddress:2 = &:2 Mem16;
+  local highAddress:2 = lowAddress + 1;
+  *:1 lowAddress = stored:1;
+  *:1 highAddress = stored[8,8];
 }
 
 :LD SP, HL is op0_8=0xf9 & SP & HL {

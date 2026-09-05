@@ -126,8 +126,11 @@ define pcodeop halt;
 define pcodeop stop;
 
 macro push16(val16) {
-  SP = SP - 2;
-  *:2 SP = val16;
+  local pushed:2 = val16;
+  SP = SP - 1;
+  *:1 SP = pushed[8,8];
+  SP = SP - 1;
+  *:1 SP = pushed:1;
 }
 
 macro pop16(ret16) {
