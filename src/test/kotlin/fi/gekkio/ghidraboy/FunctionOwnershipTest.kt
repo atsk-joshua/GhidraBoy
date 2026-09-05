@@ -16,7 +16,11 @@ import ghidra.program.model.symbol.SourceType
 import ghidra.util.exception.CancelledException
 import ghidra.util.task.TaskMonitor
 import ghidra.util.task.TaskMonitorAdapter
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -54,7 +58,28 @@ class FunctionOwnershipTest : IntegrationTest() {
 
     @ParameterizedTest
     @ValueSource(
-        strings = ["local", "inline", "noreturn", "varargs", "cleanup", "namespace", "body", "comment", "repeatable", "tag", "fixup", "return", "storage", "signature", "parameter", "local-label", "thunk", "pinned", "entry", "convention"],
+        strings = [
+            "local",
+            "inline",
+            "noreturn",
+            "varargs",
+            "cleanup",
+            "namespace",
+            "body",
+            "comment",
+            "repeatable",
+            "tag",
+            "fixup",
+            "return",
+            "storage",
+            "signature",
+            "parameter",
+            "local-label",
+            "thunk",
+            "pinned",
+            "entry",
+            "convention",
+        ],
     )
     fun `edited discovered functions survive every removal route`(edit: String) =
         listOf("discover", "remove", "removeAll").forEach { route ->
