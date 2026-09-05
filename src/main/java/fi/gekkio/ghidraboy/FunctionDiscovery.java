@@ -16,6 +16,12 @@ public final class FunctionDiscovery {
     }
     public static List<String> discover(Program p,List<Address> declaredCode,AnalysisResult result,TaskMonitor monitor) throws Exception {
         ProgramFingerprint.requireCurrent(p,result,monitor);
+        String saved=p.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest",null);
+        if(saved!=null) {
+            var active=ProgramMapping.JSON.fromJson(saved,AnalysisResult.class);
+            if(!Objects.equals(active.assumption(),result.assumption()) || !active.configuration().equals(result.configuration()) || !active.starts().equals(result.starts()))
+                throw new IllegalStateException("Analysis assumptions changed; apply the current preview before function discovery");
+        }
         if(!result.complete()) return List.of("Incomplete analysis: function discovery suppressed");
         return discoverSeeds(p,declaredCode,result.findings(),monitor);
     }
@@ -28,16 +34,26 @@ public final class FunctionDiscovery {
         List<String> result=new ArrayList<>();
         int tx=p.startTransaction("Discover functions from validated seeds"); boolean success=false;
         try {
+            AnalysisOwnership.remove(p,"functions",monitor);
+            var owned=new AnalysisOwnership.Group();
             for(var a:seeds) {
                 monitor.checkCancelled();
                 if(p.getFunctionManager().getFunctionContaining(a)!=null) continue;
                 if(p.getListing().getInstructionAt(a)==null || p.getListing().getDefinedDataContaining(a)!=null) {
                     result.add(a+": no defined instruction; data/undefined bytes preserved"); continue;
                 }
+                boolean userLabel=false;
+                for(var symbol:p.getSymbolTable().getSymbols(a)) if(symbol.getSource()!=SourceType.DEFAULT) userLabel=true;
+                if(userLabel) { result.add(a+": user symbol preserved; use explicit function editing to promote it"); continue; }
                 var cmd=new CreateFunctionCmd(null,a,null,SourceType.ANALYSIS,false,false);
                 if(!cmd.applyTo(p,monitor)) result.add(a+": "+cmd.getStatusMsg());
-                else result.add(a+": function created from validated seed");
+                else {
+                    var function=p.getFunctionManager().getFunctionAt(a);
+                    owned.function(function);
+                    result.add(a+": function created from validated seed");
+                }
             }
+            AnalysisOwnership.save(p,"functions",owned);
             success=true;
         } finally { p.endTransaction(tx,success); }
         return List.copyOf(result);

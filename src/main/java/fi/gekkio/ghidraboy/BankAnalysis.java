@@ -8,6 +8,7 @@ import ghidra.program.model.symbol.RefType;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.util.task.TaskMonitor;
 import java.util.*;
+import static fi.gekkio.ghidraboy.PcodeConstants.*;
 
 /** Opt-in bounded analysis of existing instructions. Never decodes through marked data. */
 public final class BankAnalysis {
@@ -15,8 +16,7 @@ public final class BankAnalysis {
     public record Finding(String source,String access,List<String> targets,String reason,AnalysisResult.Confidence confidence) {
         public Finding { targets=List.copyOf(targets); }
     }
-    private record OwnedReference(String from,String to,String type) { }
-    private record Work(Address address,MapperState state,Map<Long,Integer> registers) { }
+    private record Work(Address address,MapperKnowledge state,Map<Long,Integer> registers) { }
 
     public static List<Finding> analyze(Program p,Address start,MapperState assumption,TaskMonitor monitor,boolean apply) throws Exception {
         var result=preview(p,start,assumption,AnalysisResult.Configuration.DEFAULT,monitor);
@@ -27,7 +27,7 @@ public final class BankAnalysis {
         String fingerprint=ProgramFingerprint.capture(p,monitor);
         var cartridge=ProgramMapping.cartridge(p);
         if(cartridge==null) throw new IllegalArgumentException("Cartridge descriptor required");
-        var queue=new ArrayDeque<Work>(); queue.add(new Work(start,assumption,Map.of()));
+        var queue=new ArrayDeque<Work>(); queue.add(new Work(start,MapperKnowledge.from(assumption),Map.of()));
         var seen=new HashSet<Work>();
         var targets=new TreeMap<String,Set<String>>(); var reasons=new TreeMap<String,String>();
         int count=0;
@@ -55,7 +55,7 @@ public final class BankAnalysis {
                 if(op.getOpcode()==PcodeOp.STORE) {
                     Long ptr=value(op.getInput(1),regs,unique), val=value(op.getInput(2),regs,unique);
                     if(internal || ptr==null) {
-                        state=null; changedMapper=true;
+                        state=MapperKnowledge.unknown(); changedMapper=true;
                         reasons.put(w.address+"|write","Unknown store may affect mapper state");
                     } else {
                         int cpu=(int)(ptr & 65535);
@@ -92,7 +92,7 @@ public final class BankAnalysis {
             }
             Address next=ins.getFallThrough();
             if(next!=null) {
-                if(flow.isCall()) { state=null; regs.clear(); changedMapper=true; }
+                if(flow.isCall()) { state=MapperKnowledge.unknown(); regs.clear(); changedMapper=true; }
                 int nextCpu=(int)((ins.getAddress().getOffset()+ins.getLength())&65535);
                 if(ins.isFallThroughOverridden()) nextCpu=(int)next.getOffset();
                 var nextViews=resolveWithContext(p,cartridge,state,nextCpu,changedMapper?null:w.address);
@@ -123,45 +123,9 @@ public final class BankAnalysis {
             completion==AnalysisResult.Completion.COMPLETE?List.of():List.of("Exploration stopped: "+completion+"; candidates are not proof"));
     }
     public static void apply(Program p,AnalysisResult result,TaskMonitor monitor) throws Exception {
-        ProgramFingerprint.requireCurrent(p,result,monitor);
-        if(result.completion()==AnalysisResult.Completion.CANCELLED) throw new ghidra.util.exception.CancelledException();
-        var findings=result.findings();
-            int tx=p.startTransaction("GhidraBoy bank analysis"); boolean success=false;
-            try {
-                var options=p.getOptions(ProgramMapping.OPTIONS);
-                var old=ProgramMapping.JSON.fromJson(options.getString("analysis.ownedReferences","[]"),OwnedReference[].class);
-                for(var owned:old) {
-                    var from=p.getAddressFactory().getAddress(owned.from);
-                    if(from==null) continue;
-                    for(var ref:p.getReferenceManager().getReferencesFrom(from))
-                        if(ref.getOperandIndex()==-1 && ref.getSource()==SourceType.ANALYSIS && ref.getToAddress().toString().equals(owned.to)
-                            && ref.getReferenceType().toString().equals(owned.type)) p.getReferenceManager().delete(ref);
-                }
-                var introduced=new ArrayList<OwnedReference>();
-                for(var f:findings) {
-                    monitor.checkCancelled(); var source=p.getAddressFactory().getAddress(f.source);
-                    if(source==null) continue;
-                    // References are supplemental; never replace existing operand/user references.
-                    if(result.complete() && f.confidence()==AnalysisResult.Confidence.PROVEN && f.targets.size()==1) {
-                        var dest=p.getAddressFactory().getAddress(f.targets.get(0));
-                        boolean exists=false;
-                        for(var ref:p.getReferenceManager().getReferencesFrom(source)) if(ref.getToAddress().equals(dest)) exists=true;
-                        // A mnemonic-level non-memory reference would be removed by Ghidra's API; preserve it.
-                        for(var ref:p.getReferenceManager().getReferencesFrom(source)) if(ref.getOperandIndex()==-1 && !ref.isMemoryReference()) exists=true;
-                        if(!exists) {
-                            var added=p.getReferenceManager().addMemoryReference(source,dest,
-                            f.access.equals("write")?RefType.WRITE:f.access.equals("read")?RefType.READ:RefType.DATA,SourceType.ANALYSIS,-1);
-                            introduced.add(new OwnedReference(source.toString(),dest.toString(),added.getReferenceType().toString()));
-                        }
-                    }
-                    p.getBookmarkManager().setBookmark(source,"Analysis","GhidraBoy",f.access+": "+f.reason+" "+f.targets);
-                }
-                options.setString("analysis.ownedReferences",ProgramMapping.JSON.toJson(introduced));
-                options.setString("analysis.latest",ProgramMapping.JSON.toJson(result));
-                success=true;
-            } finally { p.endTransaction(tx,success); }
+        AnalysisApplication.apply(p,result,monitor);
     }
-    private static boolean fetchEstablished(Program p,Cartridge c,MapperState state,ghidra.program.model.listing.Instruction ins) throws Exception {
+    private static boolean fetchEstablished(Program p,Cartridge c,MapperKnowledge state,ghidra.program.model.listing.Instruction ins) throws Exception {
         // Ordinary same-window instructions are already supplied by the listing. A
         // boundary-spanning decode must have physical backing for every fetched byte.
         long start=ins.getAddress().getOffset(), end=start+ins.getLength()-1;
@@ -186,7 +150,7 @@ public final class BankAnalysis {
         for(int i=0;i<width;i++) if(mapperControl(c,(address+i)&65535)) return true;
         return false;
     }
-    private static MapperState writeAccess(Program p,Cartridge c,MapperState state,int address,int width,Long value,Address from,
+    private static MapperKnowledge writeAccess(Program p,Cartridge c,MapperKnowledge state,int address,int width,Long value,Address from,
             Map<String,Set<String>> targets,Map<String,String> reasons) throws Exception {
         // P-code operations are ordered. Within a remaining little-endian wide store,
         // bytes use increasing 16-bit addresses. SM83 stack stores explicitly encode
@@ -194,62 +158,35 @@ public final class BankAnalysis {
         for(int i=0;i<width;i++) {
             int cpu=(address+i)&65535;
             record(p,c,state,cpu,true,from,targets,reasons);
-            if(mapperControl(c,cpu)) state=state==null || value==null?null:state.write(c,cpu,(int)(value>>>(i*8))&255);
+            if(mapperControl(c,cpu)) state=state.write(c,cpu,value==null?null:(int)(value>>>(i*8))&255);
         }
         return state;
     }
-    private static void readAccess(Program p,Cartridge c,MapperState state,int address,int width,Address from,
+    private static void readAccess(Program p,Cartridge c,MapperKnowledge state,int address,int width,Address from,
             Map<String,Set<String>> targets,Map<String,String> reasons) throws Exception {
         for(int i=0;i<width;i++) record(p,c,state,(address+i)&65535,false,from,targets,reasons);
     }
-    private static List<Address> resolveWithContext(Program p,Cartridge c,MapperState s,int cpu,Address context) throws Exception {
+    private static List<Address> resolveWithContext(Program p,Cartridge c,MapperKnowledge s,int cpu,Address context) throws Exception {
         var result=resolve(p,c,s,cpu);
-        if(!result.isEmpty() || context==null || s!=null || c.mapper()==Cartridge.Mapper.RAW || cpu>=0x8000 || context.getOffset()>=0x8000
+        if(!result.isEmpty() || context==null || c.mapper()==Cartridge.Mapper.RAW || cpu>=0x8000 || context.getOffset()>=0x8000
             || cpu/0x4000!=context.getOffset()/0x4000) return result;
         var identities=ProgramMapping.staticToPhysical(p,context);
-        if(identities.size()!=1 || !identities.get(0).region().equals("ROM")) return result;
+        if(identities.size()!=1 || !identities.get(0).region().equals("ROM") || !s.allowsExecution(c,cpu,identities.get(0).bank())) return result;
         var physical=new MapperState.Physical("ROM",identities.get(0).bank(),cpu%0x4000);
         return ProgramMapping.physicalToStatic(p,physical).stream().filter(a->a.getOffset()==cpu).toList();
     }
-    private static List<Address> resolve(Program p,Cartridge c,MapperState s,int cpu) throws Exception {
-        var physical=MapperState.translate(c,s,cpu,false).physical();
+    private static List<Address> resolve(Program p,Cartridge c,MapperKnowledge s,int cpu) throws Exception {
+        var physical=s.translate(c,cpu,false).physical();
         if(physical==null) return List.of();
         return ProgramMapping.physicalToStatic(p,physical).stream().filter(a->a.getOffset()==cpu).toList();
     }
-    private static void record(Program p,Cartridge c,MapperState s,int cpu,boolean write,Address from,
+    private static void record(Program p,Cartridge c,MapperKnowledge s,int cpu,boolean write,Address from,
                                Map<String,Set<String>> targets,Map<String,String> reasons) throws Exception {
         String key=from+"|"+(write?"write":"read");
-        var result=MapperState.translate(c,s,cpu,write);
+        var result=s.translate(c,cpu,write);
         if(result.physical()==null) { reasons.put(key,result.status()+": "+result.reason()); return; }
         var addresses=ProgramMapping.physicalToStatic(p,result.physical()).stream().filter(a->a.getOffset()==cpu).toList();
         if(addresses.isEmpty()) reasons.put(key,"Physical destination has no static mapping");
         for(var a:addresses) targets.computeIfAbsent(key,k->new TreeSet<>()).add(a.toString());
-    }
-    private static Long value(Varnode v,Map<Long,Integer> regs,Map<Long,Integer> unique) {
-        if(v.isConstant()) return v.getOffset();
-        var map=v.isRegister()?regs:v.isUnique()?unique:null;
-        if(map==null || v.getSize()>8) return null;
-        long n=0;
-        for(int i=0;i<v.getSize();i++) { Integer b=map.get(v.getOffset()+i); if(b==null) return null; n|=(long)b<<(i*8); }
-        return n;
-    }
-    private static void put(Varnode v,Long value,Map<Long,Integer> regs,Map<Long,Integer> unique) {
-        var map=v.isRegister()?regs:v.isUnique()?unique:null;
-        if(map==null) return;
-        for(int i=0;i<v.getSize();i++) if(value==null) map.remove(v.getOffset()+i); else map.put(v.getOffset()+i,(int)(value>>>(i*8))&255);
-    }
-    private static Long evaluate(PcodeOp op,Map<Long,Integer> regs,Map<Long,Integer> unique) {
-        if(op.getNumInputs()==0) return null;
-        Long a=value(op.getInput(0),regs,unique), b=op.getNumInputs()>1?value(op.getInput(1),regs,unique):null;
-        if(a==null) return null;
-        if(op.getOpcode()==PcodeOp.COPY || op.getOpcode()==PcodeOp.INT_ZEXT) return a;
-        if(b==null) return null;
-        return switch(op.getOpcode()) {
-            case PcodeOp.INT_ADD -> a+b; case PcodeOp.INT_SUB -> a-b;
-            case PcodeOp.INT_AND -> a&b; case PcodeOp.INT_OR -> a|b; case PcodeOp.INT_XOR -> a^b;
-            case PcodeOp.INT_LEFT -> a<<b; case PcodeOp.INT_RIGHT -> a>>>b;
-            case PcodeOp.SUBPIECE -> a>>>(b*8);
-            default -> null;
-        };
     }
 }
