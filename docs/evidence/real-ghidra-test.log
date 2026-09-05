@@ -1,0 +1,38 @@
+INFO  Using log config file: jar:file:/Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (1469 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (SSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (ApplicationTrustManagerFactory)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/.local/projects/TraceTest-1788570143917 (DefaultProject)  
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/GhidraServer/data/yajsw-stable-13.12/lib/extended/slf4j/slf4j-simple-1.7.30.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/Base/lib/slf4j-nop-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.slf4j.impl.SimpleLoggerFactory]
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+PASS CPU bytes from bank 1 at initial stop
+PASS inactive physical ROM bank 2 bytes
+PASS native Step updates real Ghidra PC
+PASS inactive-bank breakpoint hits bank 2
+PASS historic CPU bytes survive bank switch
+PASS register AF = 12b0
+PASS register BC = 3456
+PASS register DE = 789a
+PASS register HL = bcde
+PASS register PC = 4567
+PASS register SP = cffe
+PASS register A = 12
+PASS register F = b0
+PASS register B = 34
+PASS register C = 56
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+TRACE_FILE /New Traces/GBC/teaching
+REAL_TRACE_TEST_PASSED
+ERROR Cannot read packet: java.net.SocketException: Socket closed (TraceRmiHandler)  

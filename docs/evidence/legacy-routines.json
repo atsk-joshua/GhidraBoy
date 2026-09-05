@@ -1,0 +1,30 @@
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+{
+  "passed": true,
+  "initiative_inputs": 256,
+  "damage_inputs": 150,
+  "modifier_inputs": 8,
+  "order_cases": [
+    {
+      "attacker_initiative_band": 10,
+      "defender_initiative_band": 10,
+      "attacker_hp": 5,
+      "defender_hp": 5
+    },
+    {
+      "attacker_initiative_band": 10,
+      "defender_initiative_band": 1,
+      "attacker_hp": 8,
+      "defender_hp": 5
+    },
+    {
+      "attacker_initiative_band": 1,
+      "defender_initiative_band": 10,
+      "attacker_hp": 5,
+      "defender_hp": 8
+    }
+  ],
+  "scope": "Isolated original ROM routines with synthetic inputs; not complete map battles."
+}

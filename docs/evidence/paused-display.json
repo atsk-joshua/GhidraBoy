@@ -1,0 +1,93 @@
+{
+  "scope": "macOS real SDL window with paused SameBoy; desktop actions recorded separately",
+  "paused_ticks": 26171648,
+  "all_ticks_unchanged": true,
+  "final_keys_released": true,
+  "error": null,
+  "observations": [
+    {
+      "kind": "ready",
+      "seconds": 0.0001788330264389515,
+      "key_mask": 0,
+      "ticks": 26171648,
+      "pc": 16425
+    },
+    {
+      "kind": "input_transition",
+      "seconds": 20.71105229202658,
+      "key_mask": 16,
+      "ticks": 26171648,
+      "previous": 0
+    },
+    {
+      "kind": "input_transition",
+      "seconds": 20.74256612500176,
+      "key_mask": 0,
+      "ticks": 26171648,
+      "previous": 16
+    },
+    {
+      "kind": "snapshot",
+      "seconds": 30.866417957935482,
+      "key_mask": 0,
+      "ticks": 26171648
+    },
+    {
+      "kind": "held_guest_a_seeded",
+      "seconds": 30.872755207587034,
+      "key_mask": 16,
+      "ticks": 26171648
+    },
+    {
+      "kind": "input_transition",
+      "seconds": 30.872800666838884,
+      "key_mask": 16,
+      "ticks": 26171648,
+      "previous": 0
+    },
+    {
+      "kind": "snapshot",
+      "seconds": 51.22787249973044,
+      "key_mask": 16,
+      "ticks": 26171648
+    },
+    {
+      "kind": "input_transition",
+      "seconds": 71.0242283330299,
+      "key_mask": 0,
+      "ticks": 26171648,
+      "previous": 16
+    },
+    {
+      "kind": "snapshot",
+      "seconds": 82.98989270767197,
+      "key_mask": 0,
+      "ticks": 26171648
+    },
+    {
+      "kind": "held_guest_a_seeded",
+      "seconds": 127.61003520758823,
+      "key_mask": 16,
+      "ticks": 26171648
+    },
+    {
+      "kind": "input_transition",
+      "seconds": 127.61007837485522,
+      "key_mask": 16,
+      "ticks": 26171648,
+      "previous": 0
+    },
+    {
+      "kind": "window_close_requested",
+      "seconds": 138.3408259577118,
+      "key_mask": 0,
+      "ticks": 26171648
+    },
+    {
+      "kind": "display_returned",
+      "seconds": 138.3871654579416,
+      "key_mask": 0,
+      "ticks": 26171648
+    }
+  ]
+}

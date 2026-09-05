@@ -1,0 +1,22 @@
+INFO  Using log config file: jar:file:/Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (1423 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/build/projects/HPUI-1788594058931 (DefaultProject)  
+INFO  Using Loader: GZF Input Format (ProgramLoader)  
+INFO  Using Language/Compiler: null (ProgramLoader)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/joshuahansen/dev/GhiGBC/.local/ui-action-app/GhiGBCValidation.app/Contents/app, /Users/joshuahansen/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
+INFO  /student-copy: file created (joshuahansen) (LocalFileSystem)  
+WARN  Plugin DebuggerModulesPlugin did not register a service handler for: interface ghidra.app.services.DebuggerAutoMappingService (DebuggerModulesPlugin)  
+INFO  /New Traces/GBC/student12: file created (joshuahansen) (LocalFileSystem)  
+PASS initial exact-profile mappings ready
+PASS real pre-attack checkpoint restored with complete mappings
+PHASE hp_button: Open Window > GBC Study > Units. Select APC slot 50 (HP10), then click Watch selected HP.
+PASS actual HP button creates physical WRAM3 offset0324 write watch for APC slot50
+HP_BUTTON_ACTION_PASSED
+PHASE hp_action_verified: HP button verified; saving and closing the test session.

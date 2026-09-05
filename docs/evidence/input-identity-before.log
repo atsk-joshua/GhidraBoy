@@ -1,0 +1,28 @@
+test_checkpoint_identifies_loaded_boot_not_current_file (test_input_identity.InputIdentityTests.test_checkpoint_identifies_loaded_boot_not_current_file) ... FAIL
+test_native_load_uses_the_hashed_input_copies (test_input_identity.InputIdentityTests.test_native_load_uses_the_hashed_input_copies) ... FAIL
+
+======================================================================
+FAIL: test_checkpoint_identifies_loaded_boot_not_current_file (test_input_identity.InputIdentityTests.test_checkpoint_identifies_loaded_boot_not_current_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/joshuahansen/dev/GhiGBC/tests/test_input_identity.py", line 51, in test_checkpoint_identifies_loaded_boot_not_current_file
+    self.assertEqual(metadata['boot_hash'], hashlib.sha256(self.boot_bytes).hexdigest())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'cfc335996cfae29fdf14fd2db7ea853366d350a5d387aa3c322616e81dacd56b' != 'f767b8e7e510a255f81328c89dba6e0c996b370e1bc86aebb8584a7da47a5bba'
+- cfc335996cfae29fdf14fd2db7ea853366d350a5d387aa3c322616e81dacd56b
++ f767b8e7e510a255f81328c89dba6e0c996b370e1bc86aebb8584a7da47a5bba
+
+
+======================================================================
+FAIL: test_native_load_uses_the_hashed_input_copies (test_input_identity.InputIdentityTests.test_native_load_uses_the_hashed_input_copies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/joshuahansen/dev/GhiGBC/tests/test_input_identity.py", line 42, in test_native_load_uses_the_hashed_input_copies
+    self.assertEqual(capture.memory[0x402a], self.rom_bytes[0x402a])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 238 != 17
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.011s
+
+FAILED (failures=2)

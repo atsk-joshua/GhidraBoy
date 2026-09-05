@@ -1,0 +1,8 @@
+test_denied_and_invalid_edits_create_no_recovery_artifact (test_experiment_edits.ExperimentEditTests.test_denied_and_invalid_edits_create_no_recovery_artifact) ... ok
+test_register_audit_records_architectural_result_and_recovers (test_experiment_edits.ExperimentEditTests.test_register_audit_records_architectural_result_and_recovers) ... ok
+test_wram_edit_keeps_physical_identity_and_does_not_fire_guest_watch (test_experiment_edits.ExperimentEditTests.test_wram_edit_keeps_physical_identity_and_does_not_fire_guest_watch) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.265s
+
+OK

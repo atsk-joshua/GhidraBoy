@@ -1,0 +1,23 @@
+tests/ghidra/UiActionTest.java:64: warning: [removal] AutoImporter in ghidra.app.util.importer has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",UiActionTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                     ^
+tests/ghidra/UiActionTest.java:64: warning: [removal] importByUsingBestGuess(File,Project,String,Object,MessageLog,TaskMonitor) in AutoImporter has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",UiActionTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                                 ^
+tests/ghidra/UiActionTest.java:65: warning: [removal] getPrimaryDomainObject() in LoadResults has been deprecated and marked for removal
+        imported.save(TaskMonitor.DUMMY);var program=imported.getPrimaryDomainObject();
+                                                             ^
+  where T is a type-variable:
+    T extends DomainObject declared in class LoadResults
+tests/ghidra/HpWatchUiTest.java:40: warning: [removal] AutoImporter in ghidra.app.util.importer has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(gzf.toFile(),project,"/",HpWatchUiTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                     ^
+tests/ghidra/HpWatchUiTest.java:40: warning: [removal] importByUsingBestGuess(File,Project,String,Object,MessageLog,TaskMonitor) in AutoImporter has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(gzf.toFile(),project,"/",HpWatchUiTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                                 ^
+tests/ghidra/HpWatchUiTest.java:41: warning: [removal] getPrimaryDomainObject() in LoadResults has been deprecated and marked for removal
+        imported.save(TaskMonitor.DUMMY);var program=imported.getPrimaryDomainObject();
+                                                             ^
+  where T is a type-variable:
+    T extends DomainObject declared in class LoadResults
+6 warnings

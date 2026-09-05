@@ -1,0 +1,21 @@
+{
+  "scenario": "Synthetic inputs, actual ROM calculations and unit writes; no map battle or full commit routine.",
+  "rom_sha256": "e779a6b56575a2afafb7e1e99411b23d7400a8fddbda8bd52c660b7903c3b451",
+  "results": [
+    {
+      "case": "equal",
+      "attacker_hp": 5,
+      "defender_hp": 5
+    },
+    {
+      "case": "attacker_first",
+      "attacker_hp": 8,
+      "defender_hp": 5
+    },
+    {
+      "case": "defender_first",
+      "attacker_hp": 5,
+      "defender_hp": 8
+    }
+  ]
+}

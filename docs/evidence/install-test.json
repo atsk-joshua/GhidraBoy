@@ -1,0 +1,7 @@
+{
+  "installed": [
+    "/Users/joshuahansen/dev/GhiGBC/.local/install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhidraBoy",
+    "/Users/joshuahansen/dev/GhiGBC/.local/install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhiGBC"
+  ],
+  "rollback_manifest": "/Users/joshuahansen/dev/GhiGBC/.local/install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-rollback/20260904T182257113081/manifest.json"
+}

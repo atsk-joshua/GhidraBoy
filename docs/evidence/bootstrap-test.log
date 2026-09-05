@@ -1,0 +1,5 @@
+WARNING: The directory '/Users/joshuahansen/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Looking in links: /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/pypkg/dist
+Requirement already satisfied: ghidratrace==12.1 in ./.venv12/lib/python3.14/site-packages (12.1)
+Requirement already satisfied: protobuf==6.31.0 in ./.venv12/lib/python3.14/site-packages (6.31.0)
+Pinned sources and Trace RMI environment ready. Build RGBDS if needed, then run scripts/build_native.sh and scripts/build_extension.sh.

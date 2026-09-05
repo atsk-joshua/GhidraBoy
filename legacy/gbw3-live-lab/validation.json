@@ -1,0 +1,56 @@
+{
+  "rom_sha256": "e779a6b56575a2afafb7e1e99411b23d7400a8fddbda8bd52c660b7903c3b451",
+  "python": "3.12",
+  "pyboy": "2.7.0",
+  "integration_tests": {
+    "passed": 11,
+    "failed": 0,
+    "log": "integration-test-results.txt"
+  },
+  "routine_tests": {
+    "passed": true,
+    "initiative_inputs": 256,
+    "damage_inputs": 150,
+    "modifier_inputs": 8,
+    "order_cases": [
+      {
+        "attacker_initiative_band": 10,
+        "defender_initiative_band": 10,
+        "attacker_hp": 5,
+        "defender_hp": 5
+      },
+      {
+        "attacker_initiative_band": 10,
+        "defender_initiative_band": 1,
+        "attacker_hp": 8,
+        "defender_hp": 5
+      },
+      {
+        "attacker_initiative_band": 1,
+        "defender_initiative_band": 10,
+        "attacker_hp": 5,
+        "defender_hp": 8
+      }
+    ],
+    "scope": "Isolated original ROM routines with synthetic inputs; not complete map battles."
+  },
+  "real_game_checks": [
+    "Booted supplied student ROM",
+    "Reached main menu and new-game/name-entry screens with scripted input",
+    "Saved and restored a checkpoint with tracing enabled",
+    "Captured rendered screenshots",
+    "Ran packaged boot-and-inspect command example"
+  ],
+  "window_check": "SDL2 dummy-video-driver smoke test passed; interactive desktop keyboard/focus not manually validated",
+  "ghidra_export": {
+    "ghidra": "11.3.1",
+    "passed": true,
+    "export_matches_rom_sha256": true
+  },
+  "scope_limits": [
+    "Frame-step and frame-end stopping; exact instruction observations in hook events",
+    "Unit write tracing covers identified byte and word helpers only",
+    "Demo uses synthetic inputs with actual ROM routines, not full map battles",
+    "ROM bank outside execution hooks is reported from game shadow FF80, not a hardware MBC query"
+  ]
+}

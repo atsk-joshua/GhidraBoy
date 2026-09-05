@@ -1,0 +1,60 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 21.0.12.1)
+OpenJDK 64-Bit Server VM Homebrew (build 21.0.12.1, mixed mode)
+INFO  Using log config file: jar:file:/Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (791 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (SSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (ApplicationTrustManagerFactory)  
+INFO  Starting cache cleanup: /var/folders/2g/6n8r5w2n7z54m4y1m8vj9cjh0000gn/T/joshuahansen-ghidra/fscache2 (FileCacheMaintenanceDaemon)  
+INFO  Finished cache cleanup, estimated storage used: 0 (FileCacheMaintenanceDaemon)  
+INFO  Headless startup complete (1694 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 57 extension points (18 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/legacy/gbw3-live-lab
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/.local/projects/GBW3Study (HeadlessAnalyzer)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/.local/projects/GBW3Study (DefaultProject)  
+INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
+INFO       project: /Users/joshuahansen/dev/GhiGBC/.local/projects/GBW3Study (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///Users/joshuahansen/dev/GhiGBC/.local/student-copy.gzf (HeadlessAnalyzer)  
+INFO  Using Loader: GZF Input Format (AutoImporter)  
+INFO  Using Language/Compiler: null (AutoImporter)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/joshuahansen/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (AutoImporter)  
+WARN  1 NOP constructors found (SleighCompile)  
+WARN  Use -n switch to list each individually (SleighCompile)  
+INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
+INFO  SCRIPT: /Users/joshuahansen/dev/GhiGBC/legacy/gbw3-live-lab/ExportGBW3ROM.java (HeadlessAnalyzer)  
+INFO  ExportGBW3ROM.java> Exported /Users/joshuahansen/dev/GhiGBC/.local/experiments/student.gbc; SHA256 e779a6b56575a2afafb7e1e99411b23d7400a8fddbda8bd52c660b7903c3b451 (GhidraScript)  
+INFO  REPORT: Save succeeded for: /student-copy (GBW3Study:/student-copy) (HeadlessAnalyzer)  
+INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

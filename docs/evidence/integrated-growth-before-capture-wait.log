@@ -1,0 +1,91 @@
+{
+  "installed": [
+    "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260905T010643388487",
+    "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhidraBoy",
+    "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhiGBC"
+  ],
+  "runtime": "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260905T010643388487",
+  "rollback_manifest": "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-rollback/20260905T010643388487/manifest.json"
+}
+tests/ghidra/RealTraceTest.java:78: warning: [removal] AutoImporter in ghidra.app.util.importer has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",RealTraceTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                     ^
+tests/ghidra/RealTraceTest.java:78: warning: [removal] importByUsingBestGuess(File,Project,String,Object,MessageLog,TaskMonitor) in AutoImporter has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",RealTraceTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                                 ^
+tests/ghidra/RealTraceTest.java:80: warning: [removal] getPrimaryDomainObject() in LoadResults has been deprecated and marked for removal
+        Program staticProgram=imported.getPrimaryDomainObject();
+                                      ^
+  where T is a type-variable:
+    T extends DomainObject declared in class LoadResults
+3 warnings
+INFO  Using log config file: jar:file:/Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (1413 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/build/projects/TraceTest-1788595609277 (DefaultProject)  
+WARN  1 NOP constructors found (SleighCompile)  
+WARN  Use -n switch to list each individually (SleighCompile)  
+INFO  Using Loader: Game Boy (ProgramLoader)  
+INFO  Using Language/Compiler: SM83:LE:16:default:default (ProgramLoader)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/joshuahansen/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
+INFO  /teaching.gbc: file created (joshuahansen) (LocalFileSystem)  
+PASS single-colon overlay mapping address resolves in static program
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+INFO  /New Traces/GBC/teaching: file created (joshuahansen) (LocalFileSystem)  
+PASS completed mapping marker identifies this snapshot
+PASS mapping marker cannot mark an uncaptured future snapshot ready
+PASS snapshot 1 CPU window maps explicitly to static bank 1
+PASS renamed static block reverses to canonical bank 2
+PASS CPU bytes from bank 1 at initial stop
+PASS inactive physical ROM bank 2 bytes
+PASS native Step updates real Ghidra PC
+PASS inactive-bank breakpoint hits bank 2
+PASS bank 2 CPU mapping follows renamed static overlay
+PASS old mapping survives later bank switch
+PASS historic CPU bytes survive bank switch
+PASS real RMI WRAM watchpoint publishes committed final byte
+PASS real RMI event retains arbitrary instruction writer
+PASS study panel uses authoritative renamed Ghidra writer label
+PASS study details expose captured physical target, origin, attempt and precision
+PASS generic ROM receives no game-specific field label
+PASS breakpoint edits do not move a captured writer event into a new snapshot
+PASS deleting a breakpoint preserves its historical specification
+PASS register AF = 12b0
+PASS register BC = 3456
+PASS register DE = 789a
+PASS register HL = bcde
+PASS register PC = 4567
+PASS register SP = cffe
+PASS register A = 12
+PASS register F = b0
+PASS register B = 34
+PASS register C = 56
+PASS remote experiment register edit changes real Ghidra register value
+PASS register edit has debugger-origin before/after provenance
+PASS trace edit links to a full recovery checkpoint
+ERROR Cannot read packet: java.net.SocketException: Connection reset (TraceRmiHandler)  
+ERROR Could not read target registers for selected thread (DebuggerRegistersProvider) java.net.SocketException: Connection reset
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318)
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346)
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:1099)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.recvAll(TraceRmiHandler.java:435)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.recvDelimited(TraceRmiHandler.java:445)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.receive(TraceRmiHandler.java:408)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.receiveLoop(TraceRmiHandler.java:481)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+ 
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+java.lang.AssertionError: remote register edit is recoverable
+	at RealTraceTest.require(RealTraceTest.java:40)
+	at RealTraceTest.runTest(RealTraceTest.java:164)
+	at RealTraceTest.main(RealTraceTest.java:72)

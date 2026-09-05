@@ -1,0 +1,30 @@
+INFO  Using log config file: jar:file:/Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/preferences (Preferences)  
+INFO  Class search complete (866 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Opening project: /Users/joshuahansen/dev/GhiGBC/build/projects/Battle-1788579290888 (DefaultProject)  
+PASS annotated-program ROM fingerprint
+PASS watch event 1 persisted
+PASS writer mapping persisted for event 1
+PASS actual APC HP 10 -> 3 for event 1
+PASS watch qualifies slot 50 HP in WRAM bank 3
+PASS writer physical ROM bank 18 + 0xB5
+PASS writer opcode 0x70 = LD (HL),B
+PASS captured physical HP byte agrees
+PASS all 100 unit records survive binary-attribute persistence
+PASS watch event 2 persisted
+PASS writer mapping persisted for event 2
+PASS actual APC HP 10 -> 3 for event 2
+PASS watch qualifies slot 50 HP in WRAM bank 3
+PASS writer physical ROM bank 18 + 0xB5
+PASS writer opcode 0x70 = LD (HL),B
+PASS captured physical HP byte agrees
+PASS all 100 unit records survive binary-attribute persistence
+PASS checkpoint restore starts a new epoch
+PASS history preserves original hit, restored HP, and repeated hit
+ACTUAL_GHIDRA_MAP_BATTLE_PASSED

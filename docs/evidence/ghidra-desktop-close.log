@@ -1,0 +1,113 @@
+{
+  "installed": [
+    "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260904T230200918877",
+    "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhidraBoy",
+    "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhiGBC"
+  ],
+  "runtime": "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260904T230200918877",
+  "rollback_manifest": "/Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-rollback/20260904T230200918877/manifest.json"
+}
+tests/ghidra/RealTraceTest.java:49: warning: [removal] AutoImporter in ghidra.app.util.importer has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",RealTraceTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                     ^
+tests/ghidra/RealTraceTest.java:49: warning: [removal] importByUsingBestGuess(File,Project,String,Object,MessageLog,TaskMonitor) in AutoImporter has been deprecated and marked for removal
+        var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",RealTraceTest.class,new MessageLog(),TaskMonitor.DUMMY);
+                                 ^
+tests/ghidra/RealTraceTest.java:51: warning: [removal] getPrimaryDomainObject() in LoadResults has been deprecated and marked for removal
+        Program staticProgram=imported.getPrimaryDomainObject();
+                                      ^
+  where T is a type-variable:
+    T extends DomainObject declared in class LoadResults
+3 warnings
+INFO  Using log config file: jar:file:/Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (878 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/build/projects/TraceTest-1788588126417 (DefaultProject)  
+WARN  1 NOP constructors found (SleighCompile)  
+WARN  Use -n switch to list each individually (SleighCompile)  
+INFO  Using Loader: Game Boy (ProgramLoader)  
+INFO  Using Language/Compiler: SM83:LE:16:default:default (ProgramLoader)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/joshuahansen/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
+INFO  /teaching.gbc: file created (joshuahansen) (LocalFileSystem)  
+PASS single-colon overlay mapping address resolves in static program
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+INFO  /New Traces/GBC/teaching: file created (joshuahansen) (LocalFileSystem)  
+PASS snapshot 1 CPU window maps explicitly to static bank 1
+PASS renamed static block reverses to canonical bank 2
+PASS CPU bytes from bank 1 at initial stop
+PASS inactive physical ROM bank 2 bytes
+PASS native Step updates real Ghidra PC
+PASS inactive-bank breakpoint hits bank 2
+PASS bank 2 CPU mapping follows renamed static overlay
+PASS old mapping survives later bank switch
+PASS historic CPU bytes survive bank switch
+PASS real RMI WRAM watchpoint publishes committed final byte
+PASS real RMI event retains arbitrary instruction writer
+PASS study panel uses authoritative renamed Ghidra writer label
+PASS breakpoint edits do not move a captured writer event into a new snapshot
+PASS deleting a breakpoint preserves its historical specification
+PASS register AF = 12b0
+PASS register BC = 3456
+PASS register DE = 789a
+PASS register HL = bcde
+PASS register PC = 4567
+PASS register SP = cffe
+PASS register A = 12
+PASS register F = b0
+PASS register B = 34
+PASS register C = 56
+REMOTE_STEP_P95_MS 32.512791
+PASS remote checkpoint restore creates new epoch
+PASS remote checkpoint restores registers
+PASS checkpoint restore re-arms the execution breakpoint at restored PC
+PASS breakpoint edits during execution do not falsely report a stop
+REMOTE_PAUSE_MS 156.536209
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+TRACE_FILE /New Traces/GBC/teaching
+PASS reopened persisted trace retains historic CPU bytes
+PASS reopened persisted trace retains historic mapping
+PASS student annotations preserved
+INFO  local Pty session. PID = 3733 (LocalProcessPtySession)  
+PASS Ghidra SameBoy menu launcher starts real agent automatically
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+INFO  /New Traces/GBC/teaching.1: file created (joshuahansen) (LocalFileSystem)  
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+PASS automatic launcher publishes and saves a complete initial capture
+DISPLAY_CLOSE_READY: close the paused SDL window using desktop controls
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+ERROR Console input closed unexpectedly: java.io.IOException: com.sun.jna.LastErrorException: [9] Bad file descriptor (ThreadedTerminal)  
+PASS desktop window close disconnects the Ghidra-launched agent
+PASS desktop close records truthful terminated state
+PASS desktop-close termination survives trace reopen
+ERROR Exception caused by back end (TraceRmiHandler$$Lambda/0x000000780186ae80) java.io.IOException: Unable to lock due to active transaction
+	at ghidra.framework.data.DomainObjectAdapterDB.save(DomainObjectAdapterDB.java:531)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.handleSaveTrace(TraceRmiHandler.java:1150)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.lambda$new$2(TraceRmiHandler.java:622)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler$Dispatcher.handle(TraceRmiHandler.java:544)
+	at ghidra.app.plugin.core.debug.service.tracermi.TraceRmiHandler.receiveLoop(TraceRmiHandler.java:487)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+ 
+INFO  Waiting for pre-save to complete... (FallbackTaskMonitor)  
+INFO  Saving file... (FallbackTaskMonitor)  
+INFO  Completing file save... (FallbackTaskMonitor)  
+PASS owned sidecar exits after structured termination
+PASS trace retains truthful terminated state
+REAL_TRACE_TEST_PASSED
+INFO  /udf_a64ab9d0d32559245227377916: file created (joshuahansen) (LocalFileSystem)  

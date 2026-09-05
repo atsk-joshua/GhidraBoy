@@ -1,0 +1,22 @@
+make: `build-linux/obj/Core/apu.c.o' is up to date.
+make: `build-linux/obj/Core/camera.c.o' is up to date.
+make: `build-linux/obj/Core/cheat_search.c.o' is up to date.
+make: `build-linux/obj/Core/cheats.c.o' is up to date.
+make: `build-linux/obj/Core/debugger.c.o' is up to date.
+make: `build-linux/obj/Core/display.c.o' is up to date.
+make: `build-linux/obj/Core/gb.c.o' is up to date.
+make: `build-linux/obj/Core/joypad.c.o' is up to date.
+make: `build-linux/obj/Core/mbc.c.o' is up to date.
+make: `build-linux/obj/Core/memory.c.o' is up to date.
+make: `build-linux/obj/Core/printer.c.o' is up to date.
+make: `build-linux/obj/Core/random.c.o' is up to date.
+make: `build-linux/obj/Core/rewind.c.o' is up to date.
+make: `build-linux/obj/Core/rumble.c.o' is up to date.
+make: `build-linux/obj/Core/save_state.c.o' is up to date.
+make: `build-linux/obj/Core/sgb.c.o' is up to date.
+make: `build-linux/obj/Core/sm83_cpu.c.o' is up to date.
+make: `build-linux/obj/Core/sm83_disassembler.c.o' is up to date.
+make: `build-linux/obj/Core/symbol_hash.c.o' is up to date.
+make: `build-linux/obj/Core/timing.c.o' is up to date.
+make: `build-linux/obj/Core/workboy.c.o' is up to date.
+build/libghigbc.so: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, with debug_info, not stripped

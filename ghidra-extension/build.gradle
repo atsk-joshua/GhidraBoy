@@ -1,0 +1,3 @@
+def installDir = System.getenv('GHIDRA_INSTALL_DIR')
+if (!installDir) throw new GradleException('Set GHIDRA_INSTALL_DIR to the selected Ghidra distribution')
+apply from: new File(installDir, 'support/buildExtension.gradle')

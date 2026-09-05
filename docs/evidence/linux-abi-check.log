@@ -1,0 +1,42 @@
+{
+  "format": "ELF64 little-endian shared object",
+  "architecture": "x86-64",
+  "target": "x86_64-linux-gnu.2.28",
+  "compiler": "Zig 0.14.1",
+  "sha256": "2608d15d10d473a4b2b6f8a7440684d4841f49b306be81c12818acc5a5e601c6",
+  "required_libraries": [
+    "libm.so.6",
+    "libpthread.so.0",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+  ],
+  "symbol_versions": [
+    "GLIBC_2.14",
+    "GLIBC_2.2.5",
+    "GLIBC_2.3",
+    "GLIBC_2.7"
+  ],
+  "abi_exports_verified": [
+    "gc_breakpoint",
+    "gc_copy_frame",
+    "gc_create",
+    "gc_create_buffers",
+    "gc_destroy",
+    "gc_edit_memory",
+    "gc_edit_register",
+    "gc_edit_wram",
+    "gc_key",
+    "gc_key_mask",
+    "gc_prepare_run",
+    "gc_prepare_step",
+    "gc_remove_breakpoint",
+    "gc_request_pause",
+    "gc_run",
+    "gc_snapshot",
+    "gc_state_load",
+    "gc_state_save",
+    "gc_ticks"
+  ],
+  "linux_execution_verified": false,
+  "steam_deck_desktop_verified": false
+}

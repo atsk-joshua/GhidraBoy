@@ -1,0 +1,7 @@
+native/ghigbc.c:32:42: error: no member named 'rtc_mapped' in 'struct GB_gameboy_s'
+   32 |     if (a<0xc000) return (gc_address){g->rtc_mapped?GC_UNKNOWN:GC_CART,bank(m,GB_DIRECT_ACCESS_CART_RAM),a&0x1fff};
+      |                                       ~  ^
+native/ghigbc.c:146:180: error: no member named 'rtc_mapped' in 'struct GB_gameboy_s'
+  146 |     s->ime=g->ime;s->halted=g->halted;s->stopped=g->stopped;s->double_speed=g->cgb_double_speed;s->boot=!g->boot_rom_finished;s->cart_enabled=g->mbc_ram_enable;s->rtc_selected=g->rtc_mapped;s->rom_size=g->rom_size;s->cart_size=g->mbc_ram_size;
+      |                                                                                                                                                                                 ~  ^
+2 errors generated.

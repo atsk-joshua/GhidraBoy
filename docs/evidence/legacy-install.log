@@ -1,0 +1,19 @@
+Collecting pyboy==2.7.0
+  Downloading pyboy-2.7.0-cp314-cp314-macosx_10_15_universal2.whl.metadata (7.7 kB)
+Collecting numpy (from pyboy==2.7.0)
+  Downloading numpy-2.5.2-cp314-cp314-macosx_14_0_arm64.whl.metadata (6.6 kB)
+Collecting pysdl2 (from pyboy==2.7.0)
+  Downloading PySDL2-0.9.17-py3-none-any.whl.metadata (3.8 kB)
+Collecting pysdl2-dll (from pyboy==2.7.0)
+  Downloading pysdl2_dll-2.32.10-py2.py3-none-macosx_11_0_universal2.whl.metadata (4.6 kB)
+Downloading pyboy-2.7.0-cp314-cp314-macosx_10_15_universal2.whl (11.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.0/11.0 MB 8.1 MB/s  0:00:01
+Downloading numpy-2.5.2-cp314-cp314-macosx_14_0_arm64.whl (5.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.4/5.4 MB 8.6 MB/s  0:00:00
+Downloading PySDL2-0.9.17-py3-none-any.whl (583 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 583.1/583.1 kB 6.7 MB/s  0:00:00
+Downloading pysdl2_dll-2.32.10-py2.py3-none-macosx_11_0_universal2.whl (6.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.6/6.6 MB 6.7 MB/s  0:00:00
+Installing collected packages: pysdl2, pysdl2-dll, numpy, pyboy
+
+Successfully installed numpy-2.5.2 pyboy-2.7.0 pysdl2-0.9.17 pysdl2-dll-2.32.10

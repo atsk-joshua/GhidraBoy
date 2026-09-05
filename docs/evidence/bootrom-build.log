@@ -1,0 +1,17 @@
+rgbgfx  -Z -u -c embedded -o build/obj/BootROMs/SameBoyLogo.2bpp BootROMs/SameBoyLogo.png
+cc -std=c99 -Wall -Werror BootROMs/pb12.c -o build/pb12
+"/Users/joshuahansen/dev/GhiGBC/.deps/SameBoy/build/pb12" < build/obj/BootROMs/SameBoyLogo.2bpp > build/obj/BootROMs/SameBoyLogo.pb12
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/cgb_boot.bin.tmp BootROMs/cgb_boot.asm
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/agb_boot.bin.tmp BootROMs/agb_boot.asm
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/dmg_boot.bin.tmp BootROMs/dmg_boot.asm
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/cgb0_boot.bin.tmp BootROMs/cgb0_boot.asm
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/sgb_boot.bin.tmp BootROMs/sgb_boot.asm
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/mgb_boot.bin.tmp BootROMs/mgb_boot.asm
+rgbasm  --include build/obj/BootROMs/ --include BootROMs/ -o build/bin/BootROMs/sgb2_boot.bin.tmp BootROMs/sgb2_boot.asm
+rgblink -x -o build/bin/BootROMs/dmg_boot.bin build/bin/BootROMs/dmg_boot.bin.tmp
+rgblink -x -o build/bin/BootROMs/sgb_boot.bin build/bin/BootROMs/sgb_boot.bin.tmp
+rgblink -x -o build/bin/BootROMs/agb_boot.bin build/bin/BootROMs/agb_boot.bin.tmp
+rgblink -x -o build/bin/BootROMs/mgb_boot.bin build/bin/BootROMs/mgb_boot.bin.tmp
+rgblink -x -o build/bin/BootROMs/cgb_boot.bin build/bin/BootROMs/cgb_boot.bin.tmp
+rgblink -x -o build/bin/BootROMs/cgb0_boot.bin build/bin/BootROMs/cgb0_boot.bin.tmp
+rgblink -x -o build/bin/BootROMs/sgb2_boot.bin build/bin/BootROMs/sgb2_boot.bin.tmp

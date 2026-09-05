@@ -1,0 +1,290 @@
+diff --git a/Core/gb.h b/Core/gb.h
+index da163c7..2cf2423 100644
+--- a/Core/gb.h
++++ b/Core/gb.h
+@@ -733,6 +733,9 @@ struct GB_gameboy_internal_s {
+         GB_printer_done_callback_t printer_done_callback;
+         GB_workboy_set_time_callback_t workboy_set_time_callback;
+         GB_workboy_get_time_callback_t workboy_get_time_callback;
++        /* GhiGBC v1: unsaved instrumentation, CPU accesses only; 1=CPU, 2=interrupt. */
++        void (*ghigbc_bus_callback)(GB_gameboy_t *, uint16_t, uint8_t, bool, uint8_t);
++        uint8_t ghigbc_origin;
+         GB_execution_callback_t execution_callback;
+         GB_lcd_line_callback_t lcd_line_callback;
+         GB_lcd_status_callback_t lcd_status_callback;
+diff --git a/Core/sm83_cpu.c b/Core/sm83_cpu.c
+index 77bc992..cb6a567 100644
+--- a/Core/sm83_cpu.c
++++ b/Core/sm83_cpu.c
+@@ -4,6 +4,21 @@
+ #include "gb.h"
+ 
+ 
++/* Instrument direct CPU bus operations, excluding hardware work in advance_cycles.
++ * Writes are attempts before GB_write_memory performs bus blocking/commit.
++ * Reads report the returned bus value, including blocked/redirected reads. */
++static uint8_t ghigbc_cpu_read(GB_gameboy_t *gb, uint16_t addr)
++{
++    uint8_t value = GB_read_memory(gb, addr);
++    if (gb->ghigbc_bus_callback) gb->ghigbc_bus_callback(gb, addr, value, false, gb->ghigbc_origin);
++    return value;
++}
++static void ghigbc_cpu_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
++{
++    if (gb->ghigbc_bus_callback) gb->ghigbc_bus_callback(gb, addr, value, true, gb->ghigbc_origin);
++    GB_write_memory(gb, addr, value);
++}
++
+ typedef void opcode_t(GB_gameboy_t *gb, uint8_t opcode);
+ 
+ typedef enum {
+@@ -88,7 +103,7 @@ static uint8_t cycle_read(GB_gameboy_t *gb, uint16_t addr)
+         GB_advance_cycles(gb, gb->pending_cycles);
+     }
+     gb->address_bus = addr;
+-    uint8_t ret = GB_read_memory(gb, addr);
++    uint8_t ret = ghigbc_cpu_read(gb, addr);
+     gb->pending_cycles = 4;
+     return ret;
+ }
+@@ -105,7 +120,7 @@ static uint8_t cycle_write_if(GB_gameboy_t *gb, uint8_t value)
+     GB_advance_cycles(gb, gb->pending_cycles);
+     gb->address_bus = 0xFF00 + GB_IO_IF;
+     uint8_t old = (gb->io_registers[GB_IO_IF]) & 0x1F;
+-    GB_write_memory(gb, 0xFF00 + GB_IO_IF, value);
++    ghigbc_cpu_write(gb, 0xFF00 + GB_IO_IF, value);
+     gb->pending_cycles = 4;
+     return old;
+ }
+@@ -130,19 +145,19 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+     switch (conflict) {
+         case GB_CONFLICT_READ_OLD:
+             GB_advance_cycles(gb, gb->pending_cycles);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 4;
+             break;
+             
+         case GB_CONFLICT_READ_NEW:
+             GB_advance_cycles(gb, gb->pending_cycles - 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 5;
+             break;
+             
+         case GB_CONFLICT_WRITE_CPU:
+             GB_advance_cycles(gb, gb->pending_cycles + 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 3;
+             break;
+         
+@@ -155,13 +170,13 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+              the timing not making much sense for that.
+              This is a hack to simulate this effect */
+             if (gb->display_state == 7 && (gb->io_registers[GB_IO_STAT] & 0x28) == 0x08) {
+-                GB_write_memory(gb, addr, ~0x20);
++                ghigbc_cpu_write(gb, addr, ~0x20);
+             }
+             else {
+-                GB_write_memory(gb, addr, 0xFF);
++                ghigbc_cpu_write(gb, addr, 0xFF);
+             }
+             GB_advance_cycles(gb, 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 3;
+             break;
+         
+@@ -170,9 +185,9 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+             /* The LYC bit behaves differently */
+             uint8_t old_value = gb->io_registers[GB_IO_STAT];
+             GB_advance_cycles(gb, gb->pending_cycles);
+-            GB_write_memory(gb, addr, (old_value & 0x40) | (value & ~0x40));
++            ghigbc_cpu_write(gb, addr, (old_value & 0x40) | (value & ~0x40));
+             GB_advance_cycles(gb, 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 3;
+             break;
+         }
+@@ -180,9 +195,9 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+         case GB_CONFLICT_STAT_CGB_DOUBLE: {
+             uint8_t old_value = gb->io_registers[GB_IO_STAT];
+             GB_advance_cycles(gb, gb->pending_cycles);
+-            GB_write_memory(gb, addr, (value & ~8) | (old_value & 8));
++            ghigbc_cpu_write(gb, addr, (value & ~8) | (old_value & 8));
+             GB_advance_cycles(gb, 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 3;
+             break;
+         }
+@@ -194,10 +209,10 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+             
+         case GB_CONFLICT_PALETTE_DMG: {
+             GB_advance_cycles(gb, gb->pending_cycles - 2);
+-            uint8_t old_value = GB_read_memory(gb, addr);
+-            GB_write_memory(gb, addr, value | old_value);
++            uint8_t old_value = ghigbc_cpu_read(gb, addr);
++            ghigbc_cpu_write(gb, addr, value | old_value);
+             GB_advance_cycles(gb, 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 5;
+             break;
+         }
+@@ -205,12 +220,12 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+         case GB_CONFLICT_PALETTE_CGB: {
+             if (gb->model >= GB_MODEL_CGB_D) {
+                 GB_advance_cycles(gb, gb->pending_cycles - 2);
+-                GB_write_memory(gb, addr, value);
++                ghigbc_cpu_write(gb, addr, value);
+                 gb->pending_cycles = 6;
+             }
+             else {
+                 GB_advance_cycles(gb, gb->pending_cycles - 1);
+-                GB_write_memory(gb, addr, value);
++                ghigbc_cpu_write(gb, addr, value);
+                 gb->pending_cycles = 5;
+             }
+             break;
+@@ -224,7 +239,7 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+                object-fetching state machine, and both behave differently when it comes to access conflicts. Hacks ahead.
+              */
+             
+-            uint8_t old_value = GB_read_memory(gb, addr);
++            uint8_t old_value = ghigbc_cpu_read(gb, addr);
+             GB_advance_cycles(gb, gb->pending_cycles - 2);
+             GB_display_sync(gb);
+             if (gb->model != GB_MODEL_MGB && gb->position_in_line == 0 && !(value & GB_LCDC_OBJ_EN)) {
+@@ -234,9 +249,9 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+                 old_value &= ~GB_LCDC_OBJ_EN;
+             }
+             
+-            GB_write_memory(gb, addr, old_value | (value & GB_LCDC_BG_EN));
++            ghigbc_cpu_write(gb, addr, old_value | (value & GB_LCDC_BG_EN));
+             GB_advance_cycles(gb, 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             
+             if ((old_value & GB_LCDC_WIN_ENABLE) && !(value & GB_LCDC_WIN_ENABLE) && gb->window_is_being_fetched) {
+                 gb->disable_window_pixel_insertion_glitch = true;
+@@ -248,20 +263,20 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+         case GB_CONFLICT_SGB_LCDC: {
+             /* Simplified version of the above */
+             
+-            uint8_t old_value = GB_read_memory(gb, addr);
++            uint8_t old_value = ghigbc_cpu_read(gb, addr);
+             GB_advance_cycles(gb, gb->pending_cycles - 2);
+             /* Hack to force aborting object fetch */
+-            GB_write_memory(gb, addr, value);
+-            GB_write_memory(gb, addr, old_value);
++            ghigbc_cpu_write(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, old_value);
+             GB_advance_cycles(gb, 1);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 5;
+             break;
+         }
+             
+         case GB_CONFLICT_WX_DMG:
+             GB_advance_cycles(gb, gb->pending_cycles);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->wx_just_changed = true;
+             GB_advance_cycles(gb, 1);
+             gb->wx_just_changed = false;
+@@ -272,7 +287,7 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+             uint8_t old = gb->io_registers[GB_IO_LCDC];
+             if ((~value & old) & GB_LCDC_TILE_SEL) {
+                 GB_advance_cycles(gb, gb->pending_cycles);
+-                GB_write_memory(gb, addr, value);
++                ghigbc_cpu_write(gb, addr, value);
+                 gb->tile_sel_glitch = true;
+                 GB_advance_cycles(gb, 1);
+                 gb->tile_sel_glitch = false;
+@@ -280,7 +295,7 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+             }
+             else {
+                 GB_advance_cycles(gb, gb->pending_cycles);
+-                GB_write_memory(gb, addr, value);
++                ghigbc_cpu_write(gb, addr, value);
+                 gb->pending_cycles = 4;
+             }
+             break;
+@@ -289,19 +304,19 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+             uint8_t old = gb->io_registers[GB_IO_LCDC];
+             // TODO: Verify for CGB ≤ C for BG_EN and OBJ_EN.
+             GB_advance_cycles(gb, gb->pending_cycles - 2);
+-            GB_write_memory(gb, addr, (value & ~(GB_LCDC_BG_EN | GB_LCDC_ENABLE)) | (old & (GB_LCDC_BG_EN | GB_LCDC_ENABLE)));
++            ghigbc_cpu_write(gb, addr, (value & ~(GB_LCDC_BG_EN | GB_LCDC_ENABLE)) | (old & (GB_LCDC_BG_EN | GB_LCDC_ENABLE)));
+             // TODO: This condition is different from single speed mode. Why? What about odd modes?
+             gb->tile_sel_glitch = ((value ^ old) & GB_LCDC_TILE_SEL);
+             GB_advance_cycles(gb, 2);
+             gb->tile_sel_glitch = false;
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 4;
+             break;
+         }
+             
+         case GB_CONFLICT_SCX_DMG_AND_CGB_DOUBLE:
+             GB_advance_cycles(gb, gb->pending_cycles - 2);
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 6;
+             break;
+         
+@@ -310,7 +325,7 @@ static void cycle_write(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
+             gb->apu_output.square_sweep_disable_stepping = gb->model <= GB_MODEL_CGB_C && (value & 7) == 0;
+             GB_advance_cycles(gb, 1);
+             gb->apu_output.square_sweep_disable_stepping = false;
+-            GB_write_memory(gb, addr, value);
++            ghigbc_cpu_write(gb, addr, value);
+             gb->pending_cycles = 4;
+             break;
+         }
+@@ -356,7 +371,7 @@ static void nop(GB_gameboy_t *gb, uint8_t opcode)
+ 
+ static void enter_stop_mode(GB_gameboy_t *gb)
+ {
+-    GB_write_memory(gb, 0xFF00 + GB_IO_DIV, 0);
++    ghigbc_cpu_write(gb, 0xFF00 + GB_IO_DIV, 0);
+     if (!gb->ime) { // TODO: I don't trust this if,
+         gb->div_cycles = -4; // Emulate the CPU-side DIV-reset signal being held
+     }
+@@ -385,7 +400,7 @@ static void leave_stop_mode(GB_gameboy_t *gb)
+ static void stop(GB_gameboy_t *gb, uint8_t opcode)
+ {
+     flush_pending_cycles(gb);
+-    GB_read_memory(gb, gb->pc); // Timing is completely unverified, and only affects STOP triggering the OAM bug
++    ghigbc_cpu_read(gb, gb->pc); // Timing is completely unverified, and only affects STOP triggering the OAM bug
+     if ((gb->io_registers[GB_IO_JOYP] & 0x30) != 0x30) {
+         gb->joyp_accessed = true;
+     }
+@@ -1605,6 +1620,7 @@ static opcode_t *opcodes[256] = {
+ };
+ void GB_cpu_run(GB_gameboy_t *gb)
+ {
++    gb->ghigbc_origin = 0;
+     if (unlikely(gb->stopped)) {
+         GB_timing_sync(gb);
+         GB_advance_cycles(gb, 4);
+@@ -1652,6 +1668,7 @@ void GB_cpu_run(GB_gameboy_t *gb)
+     
+     /* Call interrupt */
+     else if (unlikely(effective_ime && interrupt_queue)) {
++        gb->ghigbc_origin = 2;
+         gb->halted = false;
+         if (gb->hdma_on_hblank && (gb->io_registers[GB_IO_STAT] & 3) == 0 && gb->allow_hdma_on_wake) {
+             gb->hdma_on = true;
+@@ -1701,6 +1718,7 @@ void GB_cpu_run(GB_gameboy_t *gb)
+     }
+     /* Run mode */
+     else if (!gb->halted) {
++        gb->ghigbc_origin = 1;
+         uint8_t opcode = cycle_read(gb, gb->pc++);
+         if (unlikely(gb->hdma_on)) {
+             GB_hdma_run(gb);

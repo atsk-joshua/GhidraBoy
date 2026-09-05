@@ -1,0 +1,34 @@
+{
+  "seconds": 12.4056825,
+  "host": "MacBookPro.localdomain",
+  "samples": [
+    {
+      "ghidra_rss_kib": 934592,
+      "snapshot": 34,
+      "agent_rss_kib": 43456,
+      "trace_file_bytes": 3391488,
+      "dropped_events": 0,
+      "stops": 0
+    },
+    {
+      "ghidra_rss_kib": 963072,
+      "snapshot": 159,
+      "agent_rss_kib": 43456,
+      "trace_file_bytes": 3948544,
+      "dropped_events": 0,
+      "stops": 125
+    },
+    {
+      "ghidra_rss_kib": 1112912,
+      "snapshot": 284,
+      "agent_rss_kib": 43472,
+      "trace_file_bytes": 4587520,
+      "dropped_events": 0,
+      "stops": 250
+    }
+  ],
+  "os": "Mac OS X 26.5.2",
+  "scope": "250 sequential real Trace RMI step/stop captures after warmup, including documented wait boundaries; saved trace intentionally retains history. Not a long-duration leak proof or saturated request-queue test.",
+  "architecture": "aarch64",
+  "ghidra": "12.1.2"
+}

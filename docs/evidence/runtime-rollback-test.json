@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "complete_runtime": true,
+  "rollback_utility_inside_runtime": true,
+  "rollback_restores_only_managed_paths": true
+}

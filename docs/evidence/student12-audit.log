@@ -1,0 +1,132 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user12
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user12
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user12
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user12
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 21.0.12.1)
+OpenJDK 64-Bit Server VM Homebrew (build 21.0.12.1, mixed mode)
+INFO  Using log config file: jar:file:/Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/user12/Library/ghidra/ghidra_12.1.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/user12/Library/ghidra/ghidra_12.1.2_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (804 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Headless startup complete (1671 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 59 extension points (20 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /Users/joshuahansen/dev/GhiGBC/scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Opening existing project: /Users/joshuahansen/dev/GhiGBC/build/projects/GBW3Study12 (HeadlessAnalyzer)  
+INFO  Opening project: /Users/joshuahansen/dev/GhiGBC/build/projects/GBW3Study12 (HeadlessProject)  
+INFO  REPORT: Processing read-only project file: /student-copy (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: audit_program.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /Users/joshuahansen/dev/GhiGBC/scripts/audit_program.java (HeadlessAnalyzer)  
+INFO  audit_program.java> language=SM83:LE:16:default
+blocks=79
+functions=1792
+symbols=2544
+ (GhidraScript)  
+INFO  audit_program.java> rom0 0000 size=16384 (GhidraScript)  
+INFO  audit_program.java> xram a000 size=8192 (GhidraScript)  
+INFO  audit_program.java> wram0 c000 size=4096 (GhidraScript)  
+INFO  audit_program.java> oam fe00 size=160 (GhidraScript)  
+INFO  audit_program.java> io ff00 size=128 (GhidraScript)  
+INFO  audit_program.java> hram ff80 size=127 (GhidraScript)  
+INFO  audit_program.java> ie ffff size=1 (GhidraScript)  
+INFO  audit_program.java> rom1 rom1::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom10 rom10::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom11 rom11::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom12 rom12::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom13 rom13::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom14 rom14::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom15 rom15::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom16 rom16::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom17 rom17::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom18 rom18::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom19 rom19::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom2 rom2::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom20 rom20::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom21 rom21::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom22 rom22::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom23 rom23::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom24 rom24::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom25 rom25::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom26 rom26::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom27 rom27::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom28 rom28::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom29 rom29::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom3 rom3::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom30 rom30::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom31 rom31::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom32 rom32::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom33 rom33::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom34 rom34::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom35 rom35::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom36 rom36::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom37 rom37::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom38 rom38::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom39 rom39::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom4 rom4::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom40 rom40::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom41 rom41::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom42 rom42::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom43 rom43::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom44 rom44::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom45 rom45::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom46 rom46::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom47 rom47::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom48 rom48::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom49 rom49::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom5 rom5::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom50 rom50::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom51 rom51::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom52 rom52::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom53 rom53::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom54 rom54::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom55 rom55::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom56 rom56::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom57 rom57::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom58 rom58::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom59 rom59::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom6 rom6::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom60 rom60::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom61 rom61::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom62 rom62::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom63 rom63::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom7 rom7::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom8 rom8::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> rom9 rom9::4000 size=16384 (GhidraScript)  
+INFO  audit_program.java> vram0 vram0::8000 size=8192 (GhidraScript)  
+INFO  audit_program.java> vram1 vram1::8000 size=8192 (GhidraScript)  
+INFO  audit_program.java> wram1 wram1::d000 size=4096 (GhidraScript)  
+INFO  audit_program.java> wram2 wram2::d000 size=4096 (GhidraScript)  
+INFO  audit_program.java> wram3 wram3::d000 size=4096 (GhidraScript)  
+INFO  audit_program.java> wram4 wram4::d000 size=4096 (GhidraScript)  
+INFO  audit_program.java> wram5 wram5::d000 size=4096 (GhidraScript)  
+INFO  audit_program.java> wram6 wram6::d000 size=4096 (GhidraScript)  
+INFO  audit_program.java> wram7 wram7::d000 size=4096 (GhidraScript)  

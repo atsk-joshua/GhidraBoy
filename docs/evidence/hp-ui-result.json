@@ -1,0 +1,23 @@
+{
+  "host": "macOS 26.5.2 arm64",
+  "ghidra": "12.1.2",
+  "profile": "GBW3",
+  "checkpoint": "class2-fire-ready",
+  "slot": 50,
+  "unit": "APC",
+  "hp_before": 10,
+  "action": "Watch selected HP",
+  "ui_action_verified": true,
+  "watch": {
+    "region": "wram",
+    "bank": 3,
+    "offset": 804,
+    "kinds": "WRITE"
+  },
+  "whole_session_pass": true,
+  "process_exit": 0,
+  "limitation": null,
+  "final_marker": "HP_UI_PASSED",
+  "project": "HPUI-1788594372966",
+  "prior_attempt": "Earlier Mac native decompiler stalls and premature front-end exit are retained in the prior diagnostic logs; not reproduced in the final user-authorized retry."
+}

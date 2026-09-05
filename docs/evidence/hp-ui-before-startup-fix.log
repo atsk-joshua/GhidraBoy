@@ -1,0 +1,54 @@
+INFO  Using log config file: jar:file:/Users/joshuahansen/ghidra_12.1.2_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/clean-launch12/Library/ghidra/ghidra_12.1.2_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (937 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Creating project: /Users/joshuahansen/dev/GhiGBC/build/projects/HPUI-1788593332473 (DefaultProject)  
+INFO  Using Loader: GZF Input Format (ProgramLoader)  
+INFO  Using Language/Compiler: null (ProgramLoader)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/joshuahansen/dev/GhiGBC/.local/ui-action-app/GhiGBCValidation.app/Contents/app, /Users/joshuahansen/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
+INFO  /student-copy: file created (joshuahansen) (LocalFileSystem)  
+WARN  Plugin DebuggerModulesPlugin did not register a service handler for: interface ghidra.app.services.DebuggerAutoMappingService (DebuggerModulesPlugin)  
+java.lang.NullPointerException: Cannot invoke "java.lang.Long.longValue()" because the return value of "ghidra.trace.model.time.TraceTimeManager.getMaxSnap()" is null
+	at UiActionTest.snap(UiActionTest.java:28)
+	at HpWatchUiTest.lambda$run$3(HpWatchUiTest.java:59)
+	at UiActionTest.await(UiActionTest.java:38)
+	at HpWatchUiTest.run(HpWatchUiTest.java:59)
+	at HpWatchUiTest.main(HpWatchUiTest.java:31)
+INFO  /New Traces/GBC/student12: file created (joshuahansen) (LocalFileSystem)  
+ERROR Timed-out waiting to run a Swing task--potential deadlock!
+Threads State:
+java.lang.Throwable (Swing)  
+ERROR Unexpected Exception: Timed-out waiting to run a Swing task--potential deadlock! (LoadJob) java.lang.RuntimeException: Timed-out waiting to run a Swing task--potential deadlock!
+	at ghidra.util.Swing.runNow(Swing.java:177)
+	at docking.widgets.table.threaded.TableUpdateJob.applyData(TableUpdateJob.java:682)
+	at docking.widgets.table.threaded.TableUpdateJob.processState(TableUpdateJob.java:346)
+	at docking.widgets.table.threaded.TableUpdateJob.run(TableUpdateJob.java:129)
+	at docking.widgets.table.threaded.ThreadedTableModelUpdateMgr$ThreadRunnable.run(ThreadedTableModelUpdateMgr.java:415)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: ghidra.util.exception.UnableToSwingException: Timed-out waiting for Swing thread lock in 20 SECONDS
+	at ghidra.util.Swing.waitFor(Swing.java:256)
+	at ghidra.util.Swing.runNow(Swing.java:235)
+	at ghidra.util.Swing.runNow(Swing.java:163)
+	... 5 more
+ 
+ERROR Timed-out waiting to run a Swing task--potential deadlock!
+Threads State:
+java.lang.Throwable (Swing)  
+ERROR Unexpected Exception: Timed-out waiting to run a Swing task--potential deadlock! (LoadJob) java.lang.RuntimeException: Timed-out waiting to run a Swing task--potential deadlock!
+	at ghidra.util.Swing.runNow(Swing.java:177)
+	at docking.widgets.table.threaded.TableUpdateJob.applyData(TableUpdateJob.java:682)
+	at docking.widgets.table.threaded.TableUpdateJob.processState(TableUpdateJob.java:346)
+	at docking.widgets.table.threaded.TableUpdateJob.run(TableUpdateJob.java:129)
+	at docking.widgets.table.threaded.ThreadedTableModelUpdateMgr$ThreadRunnable.run(ThreadedTableModelUpdateMgr.java:415)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: ghidra.util.exception.UnableToSwingException: Timed-out waiting for Swing thread lock in 20 SECONDS
+	at ghidra.util.Swing.waitFor(Swing.java:256)
+	at ghidra.util.Swing.runNow(Swing.java:235)
+	at ghidra.util.Swing.runNow(Swing.java:163)
+	... 5 more
+ 

@@ -1,0 +1,20 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/Users/joshuahansen/dev/GhiGBC/.local/user
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 21.0.12.1)
+OpenJDK 64-Bit Server VM Homebrew (build 21.0.12.1, mixed mode)
+INFO  Using log config file: jar:file:/Users/joshuahansen/dev/GhiGBC/.deps/ghidra_11.3.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (1129 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (SSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (ApplicationTrustManagerFactory)  
+INFO  User joshuahansen started Ghidra. (GhidraRun)  
+INFO  User settings directory: /Users/joshuahansen/dev/GhiGBC/.local/user/Library/ghidra/ghidra_11.3.1_PUBLIC (GhidraRun)  
+INFO  User temp directory: /var/folders/2g/6n8r5w2n7z54m4y1m8vj9cjh0000gn/T/joshuahansen-ghidra (GhidraRun)  
+INFO  User cache directory: /var/tmp/joshuahansen-ghidra (GhidraRun)  
+INFO  Ghidra startup complete (7028 ms) (GhidraRun)  

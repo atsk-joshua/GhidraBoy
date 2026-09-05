@@ -1,0 +1,181 @@
+{
+  "scope": "Real GBW3 CLASS 2 tutorial map battle, normal SDL inputs, actual Ghidra 12.1.2 Trace RMI; development Mac, not Steam Deck",
+  "rom_sha256": "e779a6b56575a2afafb7e1e99411b23d7400a8fddbda8bd52c660b7903c3b451",
+  "session": "61b517e4-a86f-4d41-a69d-d3946ceafaaf",
+  "project": "/Users/joshuahansen/dev/GhiGBC/build/projects/Battle-1788577000775",
+  "trace": "/New Traces/GBC/student12",
+  "events": [
+    {
+      "event": 1,
+      "snapshot": 5,
+      "epoch": 0,
+      "target": {
+        "unit_slot": 50,
+        "cpu_address": 54052,
+        "region": "wram",
+        "bank": 3,
+        "field": "hp",
+        "offset": 804
+      },
+      "before": 10,
+      "final_after": 3,
+      "attempt": 3,
+      "origin": "cpu",
+      "precision": "attempt + final physical byte at instruction boundary",
+      "writer": {
+        "bank": 18,
+        "cpu_address": 16565,
+        "opcode": 112,
+        "instruction": "LD (HL),B",
+        "offset": 181,
+        "region": "rom",
+        "static_address": "rom18::40b5",
+        "function": "FUN_rom18__40a1"
+      },
+      "caller": "unknown; not inferred",
+      "combat": {
+        "attacker_slot": 1,
+        "defender_slot": 50,
+        "attacker_original_hp": 10,
+        "defender_original_hp": 10,
+        "attacker_result_hp": 5,
+        "defender_result_hp": 3,
+        "attacker_initiative": 10,
+        "defender_initiative": 10,
+        "attacker_working_hp": 5,
+        "defender_working_hp": 3,
+        "attacker_attack": 36,
+        "defender_attack": 16,
+        "attacker_defense": 14,
+        "defender_defense": 22,
+        "attacker_terrain": 10,
+        "defender_terrain": 10,
+        "attacker_rank_bonus": 0,
+        "defender_rank_bonus": 0,
+        "attacker_flank": 0,
+        "defender_flank": 0,
+        "attacker_support": 0,
+        "defender_support": 0,
+        "distance": 1
+      },
+      "units": [
+        {
+          "slot": 0,
+          "template_index": 9,
+          "map_x": 6,
+          "map_y": 5,
+          "hp": 10
+        },
+        {
+          "slot": 1,
+          "template_index": 11,
+          "map_x": 8,
+          "map_y": 2,
+          "hp": 5
+        },
+        {
+          "slot": 50,
+          "template_index": 13,
+          "map_x": 8,
+          "map_y": 1,
+          "hp": 3
+        },
+        {
+          "slot": 51,
+          "template_index": 7,
+          "map_x": 9,
+          "map_y": 10,
+          "hp": 10
+        }
+      ],
+      "unit_data_storage": "reconstructed directly from persisted physical WRAM; legacy string attribute was truncated"
+    },
+    {
+      "event": 2,
+      "snapshot": 7,
+      "epoch": 1,
+      "target": {
+        "unit_slot": 50,
+        "cpu_address": 54052,
+        "region": "wram",
+        "bank": 3,
+        "field": "hp",
+        "offset": 804
+      },
+      "before": 10,
+      "final_after": 3,
+      "attempt": 3,
+      "origin": "cpu",
+      "precision": "attempt + final physical byte at instruction boundary",
+      "writer": {
+        "bank": 18,
+        "cpu_address": 16565,
+        "opcode": 112,
+        "instruction": "LD (HL),B",
+        "offset": 181,
+        "region": "rom",
+        "static_address": "rom18::40b5",
+        "function": "FUN_rom18__40a1"
+      },
+      "caller": "unknown; not inferred",
+      "combat": {
+        "attacker_slot": 1,
+        "defender_slot": 50,
+        "attacker_original_hp": 10,
+        "defender_original_hp": 10,
+        "attacker_result_hp": 5,
+        "defender_result_hp": 3,
+        "attacker_initiative": 10,
+        "defender_initiative": 10,
+        "attacker_working_hp": 5,
+        "defender_working_hp": 3,
+        "attacker_attack": 36,
+        "defender_attack": 16,
+        "attacker_defense": 14,
+        "defender_defense": 22,
+        "attacker_terrain": 10,
+        "defender_terrain": 10,
+        "attacker_rank_bonus": 0,
+        "defender_rank_bonus": 0,
+        "attacker_flank": 0,
+        "defender_flank": 0,
+        "attacker_support": 0,
+        "defender_support": 0,
+        "distance": 1
+      },
+      "units": [
+        {
+          "slot": 0,
+          "template_index": 9,
+          "map_x": 6,
+          "map_y": 5,
+          "hp": 10
+        },
+        {
+          "slot": 1,
+          "template_index": 11,
+          "map_x": 8,
+          "map_y": 2,
+          "hp": 5
+        },
+        {
+          "slot": 50,
+          "template_index": 13,
+          "map_x": 8,
+          "map_y": 1,
+          "hp": 3
+        },
+        {
+          "slot": 51,
+          "template_index": 7,
+          "map_x": 9,
+          "map_y": 10,
+          "hp": 10
+        }
+      ],
+      "unit_data_storage": "reconstructed directly from persisted physical WRAM; legacy string attribute was truncated"
+    }
+  ],
+  "history_assertion": "first hit HP3; pre-repeat restored HP10; second hit HP3",
+  "passed": true
+}

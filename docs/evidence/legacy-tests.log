@@ -1,0 +1,50 @@
+test_three_original_routine_experiments (__main__.DemoTests.test_three_original_routine_experiments) ... UserWarning: Using SDL2 binaries from pysdl2-dll 2.32.10
+ok
+test_bank_reads_include_last_byte_and_preserve_active_bank (__main__.LiveLabTests.test_bank_reads_include_last_byte_and_preserve_active_bank) ... ok
+test_commands_and_export (__main__.LiveLabTests.test_commands_and_export) ... ok
+test_hook_cleanup_restores_execution_bytes (__main__.LiveLabTests.test_hook_cleanup_restores_execution_bytes) ... ok
+test_real_byte_and_word_writer_hooks (__main__.LiveLabTests.test_real_byte_and_word_writer_hooks) ... ok
+test_scan_and_frame_watch (__main__.LiveLabTests.test_scan_and_frame_watch) ... ok
+test_snapshot_diff_unit_field_and_inactive_slot (__main__.LiveLabTests.test_snapshot_diff_unit_field_and_inactive_slot) ... ok
+test_state_round_trip_preserves_hooks_and_rejects_wrong_rom (__main__.LiveLabTests.test_state_round_trip_preserves_hooks_and_rejects_wrong_rom) ... ok
+test_until_captures_entry_and_pauses_at_frame_end (__main__.LiveLabTests.test_until_captures_entry_and_pauses_at_frame_end) ... ok
+test_verified_far_call_origin (__main__.LiveLabTests.test_verified_far_call_origin) ... ok
+test_wrong_rom_fails_before_emulation (__main__.LiveLabTests.test_wrong_rom_fails_before_emulation) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 18.418s
+
+OK
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled
+pyboy.api.screen               WARNING  Cannot generate screen image. Missing dependency "Pillow".
+pyboy.plugins.screen_recorder  WARNING  pyboy.plugins.screen_recorder: Missing dependency "Pillow". Recording disabled
+pyboy.plugins.screenshot_recorder WARNING  pyboy.plugins.screenshot_recorder: Missing dependency "Pillow". Screenshots disabled

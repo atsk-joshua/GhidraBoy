@@ -1,0 +1,9 @@
+{
+  "installed": [
+    "/Users/joshuahansen/dev/GhiGBC/.local/runtime-install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260904T205847331212",
+    "/Users/joshuahansen/dev/GhiGBC/.local/runtime-install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhidraBoy",
+    "/Users/joshuahansen/dev/GhiGBC/.local/runtime-install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhiGBC"
+  ],
+  "runtime": "/Users/joshuahansen/dev/GhiGBC/.local/runtime-install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260904T205847331212",
+  "rollback_manifest": "/Users/joshuahansen/dev/GhiGBC/.local/runtime-install-test/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-rollback/20260904T205847331212/manifest.json"
+}

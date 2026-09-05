@@ -1,0 +1,38 @@
+{
+  "host": "MacBookPro.localdomain",
+  "os": "Darwin",
+  "architecture": "arm64",
+  "python": "3.14.7",
+  "ghidra": "12.1.2",
+  "native": true,
+  "display": true,
+  "loopback": true,
+  "ghidra_revision": "c0f584bf229fffba61b36431f3ce30c0c3e4e682",
+  "trace_wheels": [
+    "ghidratrace-12.1-py3-none-any.whl"
+  ],
+  "sdl2_available": true,
+  "sdl2_version": "2.32.72",
+  "rom": {
+    "sha256": "ee2d9eaa2523526d6f8f254873d0d4c1f7ee999d793985ad6b13e3585a7561b3",
+    "size": 65536,
+    "mapper": 25,
+    "gbw3_profile": false
+  },
+  "tools": {
+    "cc": "/usr/bin/cc",
+    "make": "/usr/bin/make",
+    "rgbasm": null,
+    "java": "/usr/bin/java",
+    "gradle": "/opt/homebrew/bin/gradle"
+  },
+  "ghidratrace_client": "12.1",
+  "protobuf": "6.31.0",
+  "sm83_definitions": [
+    "/Users/joshuahansen/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhidraBoy/data/languages/sm83.ldefs"
+  ],
+  "java_version": "openjdk version \"21.0.12.1\" 2026-08-18",
+  "java_usable": true,
+  "ready_for_generic_tests": true,
+  "ready_for_desktop_validation": true
+}

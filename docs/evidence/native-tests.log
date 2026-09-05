@@ -1,0 +1,36 @@
+test_boot_coverage_and_read_watch (test_address_edges.AddressEdges.test_boot_coverage_and_read_watch) ... ok
+test_mbc1_rom0_and_mbc3_rtc_unknown (test_address_edges.AddressEdges.test_mbc1_rom0_and_mbc3_rtc_unknown) ... ok
+test_mbc5_nine_bit_bank (test_address_edges.AddressEdges.test_mbc5_nine_bit_bank) ... ok
+test_writer_address_rom0_remap_and_echo_execution (test_address_edges.AddressEdges.test_writer_address_rom0_remap_and_echo_execution) ... ok
+test_denied_and_invalid_edits_create_no_recovery_artifact (test_experiment_edits.ExperimentEditTests.test_denied_and_invalid_edits_create_no_recovery_artifact) ... ok
+test_register_audit_records_architectural_result_and_recovers (test_experiment_edits.ExperimentEditTests.test_register_audit_records_architectural_result_and_recovers) ... ok
+test_wram_edit_keeps_physical_identity_and_does_not_fire_guest_watch (test_experiment_edits.ExperimentEditTests.test_wram_edit_keeps_physical_identity_and_does_not_fire_guest_watch) ... ok
+test_checkpoint_identifies_loaded_boot_not_current_file (test_input_identity.InputIdentityTests.test_checkpoint_identifies_loaded_boot_not_current_file) ... ok
+test_native_load_uses_the_hashed_input_copies (test_input_identity.InputIdentityTests.test_native_load_uses_the_hashed_input_copies) ... ok
+test_banks_breakpoints_history (test_native.NativeTests.test_banks_breakpoints_history) ... ok
+test_blocked_vram_attempt (test_native.NativeTests.test_blocked_vram_attempt) ... ok
+test_change_predicate (test_native.NativeTests.test_change_predicate) ... ok
+test_checkpoint_edit_epoch_breakpoints (test_native.NativeTests.test_checkpoint_edit_epoch_breakpoints) ... ok
+test_conditional_call_and_rst_over (test_native.NativeTests.test_conditional_call_and_rst_over) ... ok
+test_duplicate_breakpoints_resume_once (test_native.NativeTests.test_duplicate_breakpoints_resume_once) ... ok
+test_inactive_bank (test_native.NativeTests.test_inactive_bank) ... ok
+test_inspector_noninvasive (test_native.NativeTests.test_inspector_noninvasive) ... ok
+test_interrupt_has_no_cpu_writer (test_native.NativeTests.test_interrupt_has_no_cpu_writer) ... ok
+test_ordered_two_byte_store (test_native.NativeTests.test_ordered_two_byte_store) ... ok
+test_ordinary_step_over_out (test_native.NativeTests.test_ordinary_step_over_out) ... ok
+test_pause_and_latency (test_native.NativeTests.test_pause_and_latency) ... ok
+test_registers_cb_halt_stop_echo (test_native.NativeTests.test_registers_cb_halt_stop_echo) ... ok
+test_stop_boundary (test_native.NativeTests.test_stop_boundary) ... ok
+test_watches_direct_same_changed_and_other_bank (test_native.NativeTests.test_watches_direct_same_changed_and_other_bank) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.511s
+
+OK
+Wrote 58 to f034 (RAM Mirror)
+Wrote 58 to f034 (RAM Mirror)
+Wrote 58 to f034 (RAM Mirror)
+Wrote 58 to f034 (RAM Mirror)
+Wrote 58 to f034 (RAM Mirror)
+Wrote 58 to f034 (RAM Mirror)
+{"native_step_p95_ms": 0.23316731676459312, "native_pause_ms": 0.0015422701835632324, "scope": "native adapter; excludes Trace RMI and desktop"}

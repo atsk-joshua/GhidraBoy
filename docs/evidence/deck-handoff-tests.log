@@ -1,0 +1,7 @@
+test_results_exclude_game_files_and_symlinks (tests.test_deck_handoff.DeckHandoffTests.test_results_exclude_game_files_and_symlinks) ... ok
+test_wrong_ghidra_version_is_rejected (tests.test_deck_handoff.DeckHandoffTests.test_wrong_ghidra_version_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.003s
+
+OK

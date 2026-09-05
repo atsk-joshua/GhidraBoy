@@ -1,0 +1,9 @@
+{
+  "installed": [
+    "/Users/joshuahansen/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260905T011833040074",
+    "/Users/joshuahansen/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhidraBoy",
+    "/Users/joshuahansen/Library/ghidra/ghidra_12.1.2_PUBLIC/Extensions/GhiGBC"
+  ],
+  "runtime": "/Users/joshuahansen/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-runtime/0.1.0-20260905T011833040074",
+  "rollback_manifest": "/Users/joshuahansen/Library/ghidra/ghidra_12.1.2_PUBLIC/GhiGBC-rollback/20260905T011833040074/manifest.json"
+}

@@ -1,0 +1,8 @@
+test_boot_coverage_and_read_watch (test_address_edges.AddressEdges.test_boot_coverage_and_read_watch) ... ok
+test_mbc1_rom0_and_mbc3_rtc_unknown (test_address_edges.AddressEdges.test_mbc1_rom0_and_mbc3_rtc_unknown) ... ok
+test_mbc5_nine_bit_bank (test_address_edges.AddressEdges.test_mbc5_nine_bit_bank) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.024s
+
+OK

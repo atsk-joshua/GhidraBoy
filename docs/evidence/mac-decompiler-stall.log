@@ -1,0 +1,32 @@
+Analysis of sampling decompile (pid 49764) every 1 millisecond
+Process:         decompile [49764]
+Path:            /Users/USER/*/decompile
+Load Address:    0x102020000
+Identifier:      decompile
+Version:         ???
+Code Type:       ARM64
+Parent Process:  GhiGBCValidation [44266]
+Target Type:     live task
+
+Date/Time:       2026-09-05 00:31:51.176 -0700
+Launch Time:     2026-09-05 00:30:16.446 -0700
+OS Version:      macOS 26.5.2 (25F84)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         96K
+Physical footprint (peak):  96K
+Idle exit:                  untracked
+----
+
+Call graph:
+    880 Thread_41493074: Main Thread   DispatchQueue_<multiple>
+      880 _dyld_start  (in dyld) + 0  [0x1025cc9c0]
+
+Total number in stack (recursive counted multiple, when >=5):
+
+Sort by top of stack, same collapsed (when >= 5):
+        _dyld_start  (in dyld)        880
+
+Binary images description not available
+

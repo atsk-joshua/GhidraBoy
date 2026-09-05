@@ -1,0 +1,17 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :copyDependencies NO-SOURCE
+> Task :compileJava
+> Task :processResources NO-SOURCE
+> Task :classes
+> Task :indexHelp NO-SOURCE
+> Task :buildModuleHelp SKIPPED
+> Task :jar
+> Task :zipSource
+
+> Task :buildExtension
+
+Created ghidra_12.1.2_PUBLIC_20260904_GhiGBC.zip in /Users/joshuahansen/dev/GhiGBC/ghidra-extension/dist
+
+BUILD SUCCESSFUL in 4s
+4 actionable tasks: 4 executed
