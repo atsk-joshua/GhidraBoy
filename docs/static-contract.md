@@ -1,11 +1,12 @@
-# Static contract v1
+# Static contract v2
 
 This is GhidraBoy's local Java/JSON contract. It is not agreed with, consumed by,
 or integrated into GhiGBC. No debugger, execution engine, telemetry or live bank
 selection is provided.
 
 `ProgramMapping.inspect(Program)` returns a deterministic, sorted snapshot.
-`mapping-schema.json` describes the exported envelope. Language/compiler IDs,
+`mapping-schema.json` describes the exported envelope. The schema is validated against actual exported snapshots using jsonschema 4.25.1.
+Language/compiler IDs,
 original FileBytes SHA256/length, raw header, calculated checksums, selected
 hardware, mapper, warnings, source ranges, permissions and aliases are included.
 Program options persist the parsed cartridge and override provenance; Ghidra
@@ -20,7 +21,7 @@ only. FileBytes sources establish ROM identity after rename, split or join.
 Alias targets use the Program address factory, including real overlay spaces.
 The API never uses a language-only factory for program overlays. RAM without
 loader anchors remains unresolved in legacy programs. An explicit anchor can
-be added with `ProgramMapping.anchor` inside a transaction after a human
+be added with `ProgramMapping.identifyRam` with checked interval bounds after a human
 identifies its region and bank; topology is never silently recreated.
 
 `physicalToStatic`, `fileToStatic` return lists (empty = unmapped, multiple =
@@ -45,3 +46,25 @@ regenerate snapshots after renaming or editing topology. Stable physical ROM
 identity is reconstructed from actual sources, not exported display strings.
 Multilevel/custom byte mapping and manually detached ROM blocks require review;
 not every arbitrary third-party topology is reconstructible.
+
+
+Schema v2 includes typed cartridge/header/geometry/support states, structured
+request provenance (requested/selected mode, mapper override/selection, hardware
+and its source), physical/source ranges with permissions and alias relationships,
+and explicit known-unmapped original file intervals. Unknown, RAW-only and device
+states are not converted to mapped certainty. Deterministic sorting is separate
+from display names, which are not stable identities.
+
+MapperTopology derives execution aliases from the mapper's reachable windows.
+Every supported reachable ROM/window pair has a shared-byte view. Unsupported
+wiring stays explicit; the loader does not duplicate storage to invent views.
+Existing annotated legacy Programs are enhanced with metadata, never automatically
+rebuilt to match new-import topology. Exact static endpoints use the Program's
+actual overlay space, including end markers beyond its initialized extent.
+
+Original export reads immutable FileBytes; current export starts with those bytes
+and overlays established patches. Known-unmapped tails remain intact. Lost,
+conflicting or detached sources produce explicit rejection rather than being
+mistaken for a known-unmapped interval. Mapping schema versioning is independent
+of SLEIGH language versioning; language 1.0 remains appropriate for p-code-only
+changes with unchanged decode/register/context definitions.

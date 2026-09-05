@@ -9,6 +9,8 @@ cartridge, mapping and script tooling; it is not a live debugger.
 - [CPU validation](docs/cpu-validation.md)
 - [Compiler support](docs/compiler-support.md)
 - [Conservative analysis](docs/analysis.md)
+- [Development release notes](docs/release-notes.md)
+- [Interactive acceptance checklist](docs/gui-validation.md)
 - [Acceptance evidence and remaining work](docs/modernization-evidence.md)
 - [Primary sources and attribution](docs/references.md)
 
@@ -23,7 +25,7 @@ must not be treated as completion of the full modernization acceptance matrix.
 
 **Very experimental! No compatibility guarantees!**
 
-Supported Ghidra versions:
+Historical upstream releases (not production targets of this modernization branch):
 
 - 11.4.2
 - 11.4.1

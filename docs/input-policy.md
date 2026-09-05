@@ -1,35 +1,44 @@
 # Cartridge and boot policy
 
-Automatic detection retains the standard-logo SHA256 and known boot hashes.
-It does not claim arbitrary binaries. `GhidraBoyImport.java` gives GUI/headless
-manual CARTRIDGE, DMG_BOOT and CGB_BOOT modes, optional mapper override and
-explicit hardware selection. The loader also exposes these options.
+Automatic recognition remains strong: standard logo digest or known boot hashes.
+It does not claim arbitrary binaries. The loader and `GhidraBoyImport.java` provide
+explicit manual selection. CARTRIDGE uses strict validation; SALVAGE is a deliberate
+byte-preserving policy for incomplete/trailing/nonstandard inputs.
 
-Header validation happens before database allocation. Current cartridge policy
-requires 2..512 complete 16 KiB banks (32 KiB..8 MiB). Short headers, partial
-banks, trailing bytes and unchecked size codes are rejected with diagnostics;
-no bytes are silently discarded. Complete-bank declared/actual mismatches load
-with warnings and actual geometry. Bad checksums and nonstandard logos remain
-usable via deliberate manual import. Checksums are reported independently and
-never repaired on load. Header global checksum data is big-endian per-instance
-without changing its 0x14e offset, two-byte size, or shared integer type.
+Strict cartridge input requires 2..512 complete 16 KiB banks (32 KiB..8 MiB).
+Partial banks, short headers, trailing bytes and unsupported size codes are
+rejected. Complete declared/actual bank mismatches load with warnings and actual
+geometry. Manual import can retain bad checksums and nonstandard logos; no import
+path silently repairs checksums, truncates or pads bytes.
 
-Codes 0x52/53/54 and RAM 0x01 are accepted as historical compatibility geometry,
-not evidence of actual hardware. Non-power-of-two ROM addressing is unresolved.
-Supported ordinary topology: ROM-only including RAM types, MBC1, MBC2, MBC3,
-MBC5. Unknown/excess geometry is explicitly RAW, with physical ROM import only.
-MBC1M is not detected; ordinary MBC1 is an explicit documented assumption.
-MBC30 is not modeled. MBC2 allocates 512 mirrored entries, independent of the
-header RAM-size field; static memory bytes do not enforce hardware low-nibble
-write masks or high-nibble read values. MBC3 RTC selection/latch intent is
-represented, without clock evolution. MBC5 bank zero, ninth ROM bit and rumble
-RAM masking are handled. VBK/SVBK have explicit state; SVBK zero selects one.
+Salvage retains immutable original FileBytes in full, up to 16 MiB. The descriptor
+separates actual, declared, addressable and trailing ranges. Only established
+complete physical banks, up to the 8 MiB addressable limit, are mapped. Incomplete
+headers and unknown/truncated geometry remain explicitly RAW; a mapper request
+does not create certainty from an unsupported size code. Unmapped original bytes
+survive both original and current export. Checksum repair requires an established
+header and extent, and always writes a new destination.
 
-CGB boot images are exactly 0x900 bytes including the unmapped 0x100..0x1ff hole;
-DMG images exactly 0x100. FileBytes preserve the hole for export. Boot code is
-readable/executable, with no fabricated cartridge-header data.
+Supported ordinary topology: ROM-only (including RAM types), MBC1, MBC2, MBC3,
+MBC5. Capabilities and contradictory RAM/type geometry are checked. MBC2 has 512
+mirrored nibble entries independent of the RAM header; static bytes do not enforce
+hardware nibble masks. MBC5 has nine ROM bits, bank zero and rumble RAM limits.
+Ordinary-MBC3 RTC selection/latch intent is represented without clock evolution.
+VBK/SVBK are explicit; SVBK zero selects one. Mapper-reachable low/upper ROM views
+share backing bytes, including upper bank zero for small MBC1/MBC2/MBC3 images.
 
-Load is transactional and cancellable, required hardware-block failures abort,
-and existing programs cannot be overwritten by calling the mapping loader.
-Legacy inspection is read-only; explicit enhancement only adds metadata and
-reports unresolved RAM instead of recreating overlays.
+MBC1M, MBC30 and exotic wiring are unsupported; ordinary MBC1 is an explicit
+assumption, not automatic MBC1M detection. Excess/unknown capability is RAW.
+Historical codes 0x52/53/54 and RAM 0x01 retain compatibility geometry but do not
+establish non-power-of-two wiring. See static-contract.md for support statuses.
+
+CGB boot is exactly 0x900 bytes with the unmapped 0x100..0x1ff hole; DMG boot is
+0x100. Original bytes include the hole. Boot code is readable/executable, with no
+fabricated cartridge header. Header global checksum uses a per-instance big-endian
+two-byte type at 0x14e; the asymmetric checksum survives save/reopen.
+
+Loads are transactional and cancellable; required hardware allocation failures
+abort. Existing Programs cannot be overwritten by the mapping loader. Legacy
+inspection is read-only; enhancement preserves known historical hardware and
+reports unknown choices. Explicit RAM identification checks conflicts. Annotated
+topology is never silently rebuilt.

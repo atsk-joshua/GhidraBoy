@@ -1,105 +1,107 @@
-# Modernization evidence — development preview
+# Modernization evidence — hardening preview
 
-This is substantial working software, but **not completion of every requested
-modernization requirement**. Remaining items are explicitly listed below.
+The six independent reproductions are fixed and regression-tested. Full
+modernization acceptance remains **incomplete because installed GUI workflows have
+not been verified**. The requirement ledger below distinguishes implementation and
+executed tests from that external environment gate. Generated reports are the
+authority for the final commit, dirty state, exact counts and ZIP hashes.
 
-## Baseline and provenance
+## Baseline, provenance and environment
 
-- Clean initial checkout: upstream 42032f9d97e9e502dc10a14743bdb3d1b9388588;
-  origin atsk-joshua/GhidraBoy. Branch `modernization`; no other project touched.
-- Cherry-picked with `-x`, preserving ptthess authorship, in requested order:
-  ac77201 → local 937253d; a3ade39 → 94ececd; 91169cd → e8ad870.
-- No overlapping DohmBoy/pbiswal patch or dual Ghidra 11/12 source-set refactor.
-  Java toolchain consistency was implemented directly; Kotlin tests and wrapper retained.
-- Verified existing ADC H decoding and WRAM0; those claims were not current bugs.
-- Initial port-only tests passed. Five new arithmetic regression tests failed
-  against original p-code before fixes (ADC, SBC, overlap, DAA callback, POP AF).
-- Additional execution regression demonstrated POP word-load wrap failure at FFFF; fixed with explicit wrapped byte reads.
-- Language/register/compiler default identifiers remain unchanged. Language 1.0
-  retained under Ghidra's p-code-only versioning rule. Installed old-language
-  persistence checked independently, not inferred from a version number.
+Work continues from reviewed `a9e1ca7d3c265cdd905ff3b8363cfd3e48b5d85d` on
+`modernization`. Existing `-x` cherry-picks are preserved: ac77201 → 937253d,
+a3ade39 → 94ececd, 91169cd → e8ad870. No wholesale import, production 11/12 source
+split, history rewrite or GhiGBC change was performed. Baseline
+[Actions run 33944856183](https://github.com/atsk-joshua/GhidraBoy/actions/runs/33944856183)
+passed on a9e1ca7, including clean build and installed preservation. The branch had
+already been pushed; this continuation is local and does not push or publish.
+The tag-triggered draft-release job is preserved.
 
-## Exact environment
+Pinned dependencies and official archive digests are in
+[tools/dependencies.json](../tools/dependencies.json). Primary target: Ghidra
+12.1.3 PUBLIC, JDK21, Gradle9.0.0, Kotlin2.2.10. Local native tests use Homebrew
+Ghidra12.1.3/mac_arm_64 and OpenJDK21.0.12.1. Installed tests use a separately
+extracted official12.1.3 distribution. Actual migration uses official11.3.1 with
+the matching 20250830 extension in a disposable installation. Current/historical
+compiler fixtures use GBDK4.5.0/4.0.6, SDCC4.5.1/4.1.6. See compiler-support.md.
+Only macOS arm64 is a local native platform claim. Baseline Linux CI is separate;
+updated CI definitions are not evidence of a new remote run. Windows is untested.
 
-- Primary: Ghidra 12.1.3 PUBLIC. Official asset
-  `ghidra_12.1.3_PUBLIC_20260817.zip`, SHA256
-  `93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54`.
-  Local archive matched the official GitHub release API digest.
-- Local Java/decompiler tests: Homebrew Ghidra 12.1.3 with macOS native components.
-  Installed loader/persistence: separately extracted official distribution under
-  `/tmp/ghidraboy-installed`, isolated profiles/projects, no checkout language paths.
-- OpenJDK Homebrew 21.0.12.1; Gradle wrapper 9.0.0; Kotlin 2.2.10; JUnit 5.13.4;
-  ktlint plugin 13.1.0 / ktlint 1.7.1. Official Gradle distribution SHA256 pinned.
-- GBDK 4.5.0 official macOS arm64 archive; SDCC 4.5.1 #15267. Exact archive
-  digest/command and emitted fixtures documented in compiler-support.md.
-- SingleStepTests f9c30210245dd691661db39f5ace022c465ecc2f (MIT): 168 committed
-  samples, plus locally executed complete 21 selected files / 21,000 vectors.
-- gbdev/hardware.inc 189324b77f99cf287f4153e0001830e8738a4068, version 5.3.0, CC0.
-- 12.1.2, Ghidra 11 database upgrades, Windows and Linux are not local support claims.
+## Requirement ledger
 
-## Acceptance ledger
+PASS below means implemented and exercised by the named maintained tests; the
+final generated gate ledger can still report command failures. Test paths are
+under [src/test/kotlin/fi/gekkio/ghidraboy](../src/test/kotlin/fi/gekkio/ghidraboy).
+The exact six before-fix failures are retained in
+[audit-before.log.txt](evidence/audit-before.log.txt). AuditRegressionTest exercises
+actual production code and compiled p-code, with real Ghidra Programs.
 
-| Requirement | Implemented and executed evidence | Remaining / not established |
-| --- | --- | --- |
-| Build/package | Clean `./gradlew clean build`; 366 tests, zero failures/skips; compiled SLEIGH, Java 21/Kotlin 21, deterministic archive settings; doctor validates contents | Baseline Linux CI run [33944856183](https://github.com/atsk-joshua/GhidraBoy/actions/runs/33944856183) passed on a9e1ca7; new changes require fresh local/CI evidence |
-| Installed extension | `tools/installed_smoke.py`: separate distribution/profile, original-language create then maintained-language reopen; installed script discovery; automatic loader detection of generated ROM | GUI startup observed; menu/accelerator interaction did not advance through CUA, so full interactive workflows remain unverified |
-| CPU corrections | Actual p-code exhaustive ADC/SBC (131072 each), DAA (2048), POP AF, overlapping A operands; all CB value/carry cases (131072); signed SP (131072), HL wrap, exhaustive ADD/SUB/logic/CP/ADD HL,HL and stack FFFF wrap; 21,000 external vectors | Not every instruction family has independent exhaustive semantic tests; bus/cycle behavior outside scope |
-| Decode/assembler | All valid base instructions and 256 CB opcodes: operands, lengths and assembler round trips; invalid bytes deliberate; existing relative/control-flow tests preserved | Dedicated overlay-relative target/boundary suite remains incomplete; STOP retains historical one-byte static model |
-| Header/boot | Pure bounded Cartridge parser, checksum separation, asymmetric 1234 value/endian survives save/reopen; readable boot, CGB hole, no fabricated header; manual and strong automatic paths | Legacy cartridge option serialization is represented by persisted metadata strings; GUI option persistence itself not exercised |
-| Loader failures | Partial/truncated/oversized/unknown-size rejection; transaction cancellation leaves no memory/FileBytes; required failures propagate | Injected conflicting hardware block abort/rollback also passes |
-| Mapper geometry | ROM-only, MBC1, MBC2, MBC3, MBC5 pure translation; zero-before-mask, nine ROM bits, 8 MiB/512 actual blocks, RTC/device selection, rumble and MBC2 nibble helpers | MBC1M not modeled/detected; MBC30 and exotic geometry RAW; non-power-of-two wiring unresolved; MBC2 static bytes do not enforce nibble masks |
-| Maps/aliases | Versioned JSON/API; source-based ROM identity after rename/split, physical↔static and file↔static, CPU explicit state, ROM alternate views and shared echo bytes; WRAM3/4 distinct | Joined source mapping tested; legacy RAM without anchors requires explicit identification |
-| Symbols | Grammar, UTF-8/CRLF, comments, wide banks, BOOT/ANY, local attachment, dedup, metadata; installed idempotence; current/retained export; reload/removal preserves edited user labels | Boundary/end markers conservatively retained with diagnostics; no companion auto-discovery or rich preview table |
-| Analysis | Bounded known constants incl. direct-memory p-code outputs; explicit states and candidate sets; known bank2 target, ambiguous branch merge, user-reference preservation; seed-only functions | Same-window instruction context implemented; no interprocedural summaries; all conclusions don't have decompiler fixtures; removal/ownership coverage incomplete for functions/bookmarks |
-| Far calls | Exact opt-in MBC3 trampoline byte validation and explicit sites; inline-return override; actual p-code fixture checks target and adjusted return/SP | No arbitrary conventions; override removal workflow remains manual; no automatic GBW3/RST assumptions |
-| ROM export | Original/current identity, exact patch placement after split/rename; source conflict checks and detached-view rejection; explicit checksum repair to new file | Detached conflicting ROM copy rejection and explicit repair tested; arbitrary detached/custom mappings not exportable |
-| Compiler specs | Four explicit versioned ordinary scalar variants; SDCC-generated mixed-width/32-bit/pointer/caller fixtures and actual Ghidra storage assertions | Current first-width selection is explicit; variadic/aggregate/banked calls require custom storage; historical compiler binary not executed |
-| Hardware reference | Volatile I/O retained; sourced descriptions, interrupt mask enum and CC0 hardware.inc bundled | Full bit-enum application and native manual-index integration incomplete |
-| Existing programs | Old language/layout fixture retains labels, function body, custom storage, type, comment, bookmark, override, ROM patch and renamed overlay in separate process; repeated metadata enhancement and selective disassembly | Actual 11.3.1→12.1.3 database migration unexecuted (no local 11.3.1 environment/artifact); never claimed equivalent |
+| Requirement | Status | Implementation and maintained evidence | Limitation / next action |
+| --- | --- | --- | --- |
+| R1 incomplete worklist confidence | PASS | BankAnalysis, AnalysisResult; AuditRegressionTest, AnalysisHardeningTest | Global confidence suppression on incomplete runs; candidate reporting retained |
+| R2 all access bytes/order/wrap | PASS | PcodeConstants, BankAnalysis, SLEIGH byte stores; AuditRegressionTest, AnalysisBoundaryTest | No second instruction interpreter |
+| R3 reachable execution windows | PASS | MapperTopology, CartridgeLayout, ProgramMapping; AuditRegressionTest, MapperTopologyTest | Unsupported wiring remains explicit RAW |
+| R4 window fallthrough/fetch/PC wrap | PASS | BankAnalysis; AuditRegressionTest, AnalysisBoundaryTest | Stop when bytes or execution identity cannot be established |
+| R5 shared source membership | PASS | SymbolService; AuditRegressionTest, SymbolOwnershipTest, installed lifecycle | User edits/functions protected; source workflow GUI unverified |
+| R6 BOOT direct/alias isolation | PASS | SymbolService; AuditRegressionTest, SymbolTest | Unresolved entries retained |
+| Evaluation/aggregation/application separation | PASS | PcodeConstants, MapperKnowledge, AnalysisCandidates, AnalysisApplication, AnalysisOwnership | Java formatting committed separately from fixes |
+| Versioned results/stale invalidation | PASS | AnalysisResult, ProgramFingerprint; AnalysisLifecycleTest, installed lifecycle | Canonical iteration survives rename/reopen; changed dependencies require new preview |
+| Owned preview/apply/remove/reapply | PASS | AnalysisOwnership; AnalysisLifecycleTest, installed lifecycle | Only unchanged additions are removed; dialogs remain unverified |
+| Partial mapper knowledge | PASS | MapperKnowledge; AnalysisHardeningTest, AnalysisBoundaryTest | No generic interprocedural summaries |
+| Seed-based functions | PASS | FunctionDiscovery; AnalysisLifecycleTest, AnalysisHardeningTest | No symbol/vector sweep |
+| Far-call target and return/SP/identity | PASS | FarCallConvention; AnalysisLifecycleTest, BankAnalysisTest | Exact MBC3 body and fixed-ROM callers only; switchable callers rejected |
+| Stable language/compiler/register/pointer contract | PASS | Language files, CompilerSpecTest, migration fixtures | P-code-only version1.0 retained; STOP historical behavior retained |
+| Strict/manual/salvage input and immutable bytes | PASS | Cartridge, CartridgeLayout; CartridgeTest, SalvageTest | Unknown geometry does not establish mapper certainty; salvage cap16MiB |
+| Capability/RAM/rumble validation | PASS | Cartridge, MapperState; CartridgeTest, MapperTopologyTest | MBC1M/MBC30/exotic wiring unsupported |
+| Boot/checksum/transaction behavior | PASS | CartridgeLayout; CartridgeTest, installed checksum test | No fabricated boot header or silent checksum repair |
+| Deterministic mapping schema/source identities | PASS | ProgramMapping, mapping-schema.json; CartridgeTest, SalvageTest, validate_schema.py | Actual exported JSON validated; arbitrary detached mappings rejected |
+| Current/original/repair export | PASS | ProgramMapping; CartridgeTest, SalvageTest, SymbolBoundaryTest | Known tails retained; ambiguity/conflict/detachment rejected |
+| Legacy hardware and explicit RAM anchors | PASS | LegacyEnhancement, ProgramMapping.identifyRam; CartridgeTest, actual migration | Unknown historical selection remains UNKNOWN; no topology rebuild |
+| RGBDS grammar/private metadata/escapes | PASS | SymbolFile, SymbolService; SymbolTest, SymbolBoundaryTest | WLA-DX/map unsupported |
+| Companion/preview/boundaries/source lifecycle/export | PASS (headless/API) | GhidraBoyTools, SymbolService; SymbolBoundaryTest, SymbolOwnershipTest, installed lifecycle | Interactive chooser/filter/reload/remove acceptance pending |
+| Hardware descriptions/mask enums/manual | PASS | HardwareReference, generated definitions, manual index; CartridgeTest | Preserves existing comments/types; GUI manual action pending |
+| Per-function scalar/pointer/cleanup ABI | PASS | CompilerAbi, prototype models; CompilerAbiTest, CompilerSpecTest | Explicit profile selection; no whole-Program switching required |
+| Historical/variadic/aggregate/banked/preservation evidence | PASS (bounded profiles) | Pinned compiler sources/assembly; CompilerAbiTest | Explicit aggregate storage; banked callee only, no universal helpers/attributes |
+| Semantic decompiler behavior | PASS | CompilerAbiTest, decompiler/DecompilerTest, BankAnalysisTest | References remain descriptive; no dynamic banking claim |
+| Genuine11.3.1 database migration | PASS | migration_smoke.py; Create1131Fixture/Verify1131Upgrade | Copied legal fixture; original tree hash unchanged; old/new ADC p-code checked |
+| Separate old-language-on12.1.3 preservation | PASS | installed_smoke.py; GhidraBoyPreservation | Does not substitute for historical database gate |
+| Clean installed ZIP/public script discovery | PASS (headless) | installed_smoke.py; InstalledCheck/InstalledLifecycle | All public scripts compiled/executed; dialogs not inferred |
+| Installed GUI workflows | BLOCKED | gui-validation.md; GUI receipt in generated evidence | CUA shares Java identifier with another agent's12.1.2 window; rerun in an isolated GUI session |
+| CPU exhaustive/external/boundary tests | PASS | emu suites, AnalysisBoundaryTest; cpu-validation.md | Static semantics only, no cycle/HALT/STOP/IME timing claim |
+| Actual vector/sample hashes/counts | PASS | ExternalVectorTest, fetch_vectors.py | 21 selected files ×1000=21000; ordinary samples168; not full upstream corpus |
+| Clean reproducibility/metadata/package doctor | Executed by final runner | run_validation.py; build metadata tracked inputs; doctor.py | Compare same platform/JDK/Ghidra/epoch; generated receipts hold both hashes |
+| Machine evidence/CI report retention | Implemented | release_evidence.py, run_validation.py, CI validate.sh | Remote continuation CI not run; logs/reports retained as artifacts |
+| Documentation/rollback/static independence | Updated | user-workflows, input-policy, static-contract, compiler-support, release-notes | Full acceptance not claimed while GUI is blocked |
 
-## Executed commands
+## Reproduce the gates
 
-Use local environment prefixes `JAVA_HOME=/opt/homebrew/opt/openjdk@21` and
-`GHIDRA_INSTALL_DIR=/opt/homebrew/opt/ghidra/libexec` for Gradle commands.
+Use fresh disposable directories. Migration fixtures must never target a real user
+project. Fetch historical dependencies with `tools/fetch_dependency.py` (official
+URL plus SHA256 verification), extract11.3.1 and its matching extension there.
+Prepare another official12.1.3 installation for installed tests. Fetch vectors:
 
-- `./gradlew test --no-daemon`: port-only baseline passed.
-- `./gradlew test --tests '*ArithmeticInstructionTest'`: five tests failed before
-  fixes, all passed afterward. The overlap test was corrected to avoid reusing
-  an opcode address in an emulator decode cache.
-- `./gradlew ktlintFormat`, then `./gradlew clean build`: full lint/build/test/package
-  gate passed. `clean` removes the generated SLA so it is actually recompiled.
-- `python3 tools/fetch_vectors.py --count 1000 --output /tmp/ghidraboy-vectors-comprehensive`
-  then `./gradlew test --tests '*ExternalVectorTest' -Dghidraboy.vector.dir=/tmp/ghidraboy-vectors-comprehensive`:
-  all 21,000 selected-file vectors passed. Larger requested count reproduced
-  the same 21,000 actual vectors, not 210,000.
-- `python3 tools/installed_smoke.py --ghidra /tmp/ghidraboy-installed/ghidra_12.1.3_PUBLIC --zip build/distributions/ghidra_12.1.3_PUBLIC_20260905-dev1_GhidraBoy.zip --jdk /opt/homebrew/opt/openjdk@21 --work /tmp/ghidraboy-smoke4`:
-  preservation, loader discovery, persisted checksum and installed symbols passed.
-- `python3 tools/doctor.py --ghidra /opt/homebrew/opt/ghidra/libexec --jdk /opt/homebrew/opt/openjdk@21 --zip build/distributions/ghidra_12.1.3_PUBLIC_20260905-dev1_GhidraBoy.zip`: passed.
+```sh
+python3 tools/fetch_vectors.py --count 1000 --output /tmp/ghidraboy-vectors
+python3 tools/run_validation.py --native \
+  --ghidra /path/to/native/ghidra_12.1.3_PUBLIC \
+  --jdk /path/to/jdk21 \
+  --installed-ghidra /tmp/ghidraboy-installed/ghidra_12.1.3_PUBLIC \
+  --legacy-ghidra /tmp/ghidraboy-migration/ghidra_11.3.1_PUBLIC \
+  --vectors /tmp/ghidraboy-vectors \
+  --work /tmp/ghidraboy-validation-fresh
+```
 
-Reports are in `build/reports/tests/test`, `build/test-results/test`, and retained
-installed logs under `build/reports/installed`. Release checksum is in the
-external `build/distributions/SHA256SUMS` sidecar (not embedded in its own ZIP).
+Supply `--gui-evidence receipt.json` only with actual observations; the default
+records GUI as BLOCKED. Python jsonschema4.25.1 is required. The runner executes
+actual comprehensive vectors, clean build, a second clean package build, final
+tests, real exported-schema validation, package doctor, epoch input invalidation,
+installed lifecycle and actual historical migration. Command return codes and
+required markers are recorded. No requested vector count is treated as execution.
 
-The baseline branch was pushed before this continuation and passed remote CI.
-No push or publication is performed by this completion task; no proprietary ROM
-or GhiGBC integration/coordination is used. CI definitions now target
-12.1.3 and include installed/persistence gates; the existing release job remains.
-An automatic approval review rejected removing that job, so it was preserved.
-
-See user-workflows.md for installation/first use and rollback. This preview is
-useful independently, but the outstanding acceptance items above remain work.
-
-## Hardening continuation
-
-Baseline clean build and installed tests rerun with the pinned local tools.
-All six audit regressions fail independently against a9e1ca7 before fixes;
-see `docs/evidence/audit-before.log.txt` and `AuditRegressionTest.kt`.
-
-| Audit | Baseline reproduction | Fix status |
-| --- | --- | --- |
-| R1 incomplete worklist certainty | failed as expected | pending |
-| R2 wide mapper stores | failed as expected | pending |
-| R3 reachable bank-zero views | failed as expected | pending |
-| R4 window-boundary fallthrough | failed as expected | pending |
-| R5 multiple symbol source claims | failed as expected | pending |
-| R6 BOOT alias namespace | failed as expected | pending |
+Outputs: `build/reports/evidence/release-evidence.json`, `requirements.md`, command
+logs, copied comprehensive-vector XML, installed/migration receipts, ordinary
+JUnit XML in `build/test-results/test`, and `build/distributions/SHA256SUMS` beside
+the installable dev2 ZIP. Generated evidence records commit/dirty state, dependency
+pins, tested platform, actual suite/file/vector counts and skipped/blocked gates.
+The prior full native suite had395 tests with zero failures/errors/skips; final
+reports, not this historical count, establish the delivered checkout's result.
