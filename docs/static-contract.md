@@ -1,8 +1,9 @@
 # Static contract v2
 
-This is GhidraBoy's local Java/JSON contract. It is not agreed with, consumed by,
-or integrated into GhiGBC. No debugger, execution engine, telemetry or live bank
-selection is provided.
+This is GhidraBoy's Java/JSON contract, consumed by the GhiGBC adapter v1 in the
+local 12.1.3 integration candidate. GhidraBoy provides no debugger, execution engine,
+telemetry or live bank selection. GhiGBC owns runtime translation, ambiguity policy,
+trace lifespans and versioned static snapshot transport.
 
 `ProgramMapping.inspect(Program)` returns a deterministic, sorted snapshot.
 `mapping-schema.json` describes the exported envelope. The schema is validated against actual exported snapshots using jsonschema 4.25.1.
