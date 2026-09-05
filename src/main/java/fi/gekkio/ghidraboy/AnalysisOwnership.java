@@ -11,7 +11,10 @@ import java.util.*;
 
 /** Transactional ownership receipts; removal only undoes unchanged tool additions. */
 public final class AnalysisOwnership {
+  // Keep the option key so saved v1 projects are found. The envelope and each function
+  // receipt carry independent versions: saving another group must not upgrade old proof.
   private static final String KEY = "analysis.ownership.v1";
+  private static final int VERSION = 2;
 
   private AnalysisOwnership() {}
 
@@ -30,7 +33,7 @@ public final class AnalysisOwnership {
 
   public record Mark(long id, Point address, String type, String category, String comment) {}
 
-  public record Func(long id, Point entry, String source, String stamp) {}
+  public record Func(long id, Point entry, String source, String stamp, int version) {}
 
   public record Flow(
       Point address,
@@ -72,12 +75,12 @@ public final class AnalysisOwnership {
               f.getSymbol().getID(),
               Point.of(f.getEntryPoint()),
               f.getSymbol().getSource().toString(),
-              functionStamp(f)));
+              functionStamp(f), VERSION));
     }
   }
 
   private static final class Registry {
-    int version = 1;
+    int version = VERSION;
     Map<String, Group> groups = new TreeMap<>();
   }
 
@@ -86,8 +89,11 @@ public final class AnalysisOwnership {
         ProgramMapping.JSON.fromJson(
             p.getOptions(ProgramMapping.OPTIONS).getString(KEY, "{\"version\":1,\"groups\":{}}"),
             Registry.class);
-    if (result.version != 1)
+    if (result.version != 1 && result.version != VERSION)
       throw new IllegalStateException("Unsupported analysis ownership version");
+    // Upgrade only the envelope. Missing function versions remain zero (legacy), and
+    // their incomplete stamps are never recomputed against the current Program.
+    result.version = VERSION;
     return result;
   }
 
@@ -161,11 +167,20 @@ public final class AnalysisOwnership {
       monitor.checkCancelled();
       var entry = receipt.entry.resolve(p);
       var f = entry == null ? null : p.getFunctionManager().getFunctionAt(entry);
+      if (receipt.version != VERSION) {
+        diagnostics.add("Preserved legacy function " + receipt.id
+            + ": receipt lacks edit evidence; destructive ownership relinquished");
+        continue;
+      }
+      String current = f == null ? null : functionStamp(f);
       if (f != null
           && f.getSymbol().getID() == receipt.id
           && f.getSymbol().getSource().toString().equals(receipt.source)
-          && functionStamp(f).equals(receipt.stamp)) p.getFunctionManager().removeFunction(entry);
-      else diagnostics.add("Preserved edited or removed function " + receipt.id);
+          && receipt.stamp != null
+          && current != null
+          && current.equals(receipt.stamp)) p.getFunctionManager().removeFunction(entry);
+      else diagnostics.add("Preserved edited, uncertain or removed function " + receipt.id
+          + ": destructive ownership relinquished");
     }
     for (var receipt : group.flows) {
       monitor.checkCancelled();
@@ -183,32 +198,72 @@ public final class AnalysisOwnership {
     }
   }
 
+  /**
+   * Destructive ownership is deliberately limited to bare functions. Variables, non-default
+   * types (including pointers/typedefs to mutable types), tags and namespace children cannot
+   * be certified here. Retain them even when present at receipt creation. In particular, a
+   * data type's path/size/timestamp is not proof that its definition is unchanged in place.
+   * Null means uncertain, never an equality token. This policy survives save/reopen without
+   * event listeners and does not rely on the function symbol's source to detect user edits.
+   */
   private static String functionStamp(Function f) {
-    var text =
-        new StringBuilder(f.getName(true))
-            .append('|')
-            .append(f.getBody())
-            .append('|')
-            .append(f.getCallingConventionName())
-            .append('|')
-            .append(f.getSignatureSource())
-            .append('|')
-            .append(f.hasCustomVariableStorage())
-            .append('|')
-            .append(f.getComment())
-            .append('|')
-            .append(f.getRepeatableComment())
-            .append('|')
-            .append(f.getReturnType().getPathName())
-            .append('|')
-            .append(f.getReturn().getVariableStorage());
-    for (var parameter : f.getParameters())
-      text.append('|')
-          .append(parameter.getName())
-          .append(':')
-          .append(parameter.getDataType().getPathName())
-          .append(':')
-          .append(parameter.getVariableStorage());
-    return Sha256.of(text.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+    if (f.getLocalVariables().length != 0
+        || f.getParameterCount() != 0
+        || !f.getTags().isEmpty()
+        || f.isThunk()
+        || f.isExternal()
+        || f.getProgram().getSymbolTable().getSymbols(f).hasNext()) return null;
+    var thunks = f.getFunctionThunkAddresses();
+    if (thunks != null && thunks.length != 0) return null;
+    var type = f.getReturnType();
+    // Only the immutable, built-in default undefined return is eligible. Everything
+    // else is retained, even if it happens to render the same path as that built-in.
+    if (type.getClass() != ghidra.program.model.data.DefaultDataType.class
+        || type.getDefaultSettings().getNames().length != 0) return null;
+
+    var fields = new ArrayList<Object>();
+    fields.add(f.getName(true));
+    fields.add(f.getSymbol().isPinned());
+    fields.add(f.getProgram().getSymbolTable().isExternalEntryPoint(f.getEntryPoint()));
+    for (var ns = f.getParentNamespace(); ns != null; ns = ns.getParentNamespace()) {
+      fields.add(ns.getID());
+      fields.add(ns.getName());
+      if (!ns.isGlobal() && ns.getSymbol() != null) fields.add(ns.getSymbol().getSource().toString());
+    }
+    for (var range : f.getBody().getAddressRanges()) {
+      fields.add(Point.of(range.getMinAddress()));
+      fields.add(Point.of(range.getMaxAddress()));
+    }
+    fields.add(f.getCallingConventionName());
+    fields.add(f.getSignatureSource().toString());
+    fields.add(f.hasCustomVariableStorage());
+    fields.add(f.getComment());
+    fields.add(f.getRepeatableComment());
+    fields.add(f.isInline());
+    fields.add(f.hasNoReturn());
+    fields.add(f.hasVarArgs());
+    fields.add(f.getCallFixup());
+    fields.add(f.getStackPurgeSize());
+    var frame = f.getStackFrame();
+    fields.add(frame.getLocalSize());
+    fields.add(frame.getReturnAddressOffset());
+    fields.add(frame.getParameterOffset());
+    fields.add(frame.getParameterSize());
+    fields.add(frame.growsNegative());
+    var ret = f.getReturn();
+    fields.add(ret.getSource().toString());
+    fields.add(ret.getName());
+    fields.add(ret.getComment());
+    fields.add(ret.getFirstUseOffset());
+    fields.add(ret.getFormalDataType().getClass().getName());
+    fields.add(ret.isForcedIndirect());
+    var storage = ret.getVariableStorage();
+    fields.add(storage.getSerializationString());
+    fields.add(storage.isForcedIndirect());
+    fields.add(storage.isAutoStorage());
+    fields.add(storage.getAutoParameterType());
+    // JSON preserves field boundaries, nulls and escaping; display delimiters do not.
+    return Sha256.of(ProgramMapping.JSON.toJson(fields)
+        .getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
   }
 }

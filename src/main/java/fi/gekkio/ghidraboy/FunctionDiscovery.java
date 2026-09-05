@@ -59,7 +59,7 @@ public final class FunctionDiscovery {
     int tx = p.startTransaction("Discover functions from validated seeds");
     boolean success = false;
     try {
-      AnalysisOwnership.remove(p, "functions", monitor);
+      result.addAll(AnalysisOwnership.remove(p, "functions", monitor));
       var owned = new AnalysisOwnership.Group();
       for (var a : seeds) {
         monitor.checkCancelled();

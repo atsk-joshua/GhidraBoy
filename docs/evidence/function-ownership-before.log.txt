@@ -1,0 +1,100 @@
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :compileKotlin NO-SOURCE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar UP-TO-DATE
+> Task :compileSleigh UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+
+> Task :compileTestKotlin
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:72:34 'fun addParameter(p0: Variable!, p1: SourceType!): Parameter!' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:97:53 'fun removeParameter(p0: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:98:27 'fun addParameter(p0: Variable!, p1: SourceType!): Parameter!' is deprecated. Deprecated in Java.
+
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+FunctionOwnershipTest > in place referenced type mutation never certifies unchanged ownership() FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:131
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [1] local FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [2] inline FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [3] noreturn FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [4] varargs FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [5] cleanup FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [6] namespace FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [7] body FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [8] comment FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [9] repeatable FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [10] tag FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [11] fixup FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [12] return FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [13] storage FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [14] signature FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [15] parameter FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [16] local-label FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:78
+
+FunctionOwnershipTest > edited discovered functions survive every removal route(String) > [17] thunk FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:79
+
+FunctionOwnershipTest > cancelled removal restores function and receipts including relinquished edits() FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:170
+
+FunctionOwnershipTest > legacy receipts retain even apparently unchanged functions and never rebaseline() FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:143
+
+FunctionOwnershipTest > variable detail edits survive explicit removal(String) > [1] local FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:115
+
+FunctionOwnershipTest > variable detail edits survive explicit removal(String) > [2] parameter FAILED
+    org.opentest4j.AssertionFailedError at FunctionOwnershipTest.kt:115
+
+24 tests completed, 22 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///Users/joshuahansen/dev/GhidraBoy/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+
+BUILD FAILED in 3s
+7 actionable tasks: 2 executed, 5 up-to-date
