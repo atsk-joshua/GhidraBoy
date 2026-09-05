@@ -1,0 +1,21 @@
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :compileKotlin NO-SOURCE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar UP-TO-DATE
+> Task :compileSleigh UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+
+> Task :compileTestKotlin
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:107:42 'fun addParameter(p0: Variable!, p1: SourceType!): Parameter!' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:148:61 'fun removeParameter(p0: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:149:35 'fun addParameter(p0: Variable!, p1: SourceType!): Parameter!' is deprecated. Deprecated in Java.
+
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test
+
+BUILD SUCCESSFUL in 3s
+7 actionable tasks: 2 executed, 5 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.0.0/userguide/configuration_cache_enabling.html

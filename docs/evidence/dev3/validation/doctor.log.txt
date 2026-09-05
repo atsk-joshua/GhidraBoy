@@ -1,0 +1,6 @@
+Package entries: 43
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 21.0.12.1)
+OpenJDK 64-Bit Server VM Homebrew (build 21.0.12.1, mixed mode, sharing)
+SHA256 4c0fd62c1046ca52ad75a99953c4d8851d13efa568351f346fd0630cbfbc597b /Users/joshuahansen/dev/GhidraBoy/build/distributions/ghidra_12.1.3_PUBLIC_20260905-dev3_GhidraBoy.zip
+DOCTOR_PASS (installed discovery requires installed_smoke.py)

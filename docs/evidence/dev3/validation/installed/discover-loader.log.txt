@@ -1,0 +1,59 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 21.0.12.1)
+OpenJDK 64-Bit Server VM Homebrew (build 21.0.12.1, mixed mode)
+INFO  Using log config file: jar:file:/private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /private/tmp/ghidraboy-dev3-validation/installed/profile/Library/ghidra/ghidra_12.1.3_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /private/tmp/ghidraboy-dev3-validation/installed/profile/Library/ghidra/ghidra_12.1.3_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (762 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Headless startup complete (1478 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 59 extension points (20 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Extensions/GhidraBoy/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Opening existing project: /private/tmp/ghidraboy-dev3-validation/installed/projects/fixture (HeadlessAnalyzer)  
+INFO  Opening project: /private/tmp/ghidraboy-dev3-validation/installed/projects/fixture (HeadlessProject)  
+INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
+INFO       project: /private/tmp/ghidraboy-dev3-validation/installed/projects/fixture (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///private/tmp/ghidraboy-dev3-validation/installed/synthetic.gb (HeadlessAnalyzer)  
+INFO  Using Loader: Game Boy (ProgramLoader)  
+INFO  Using Language/Compiler: SM83:LE:16:default:default (ProgramLoader)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/joshuahansen/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
+INFO  Additional info:
+Header checksum mismatch (bytes preserved)
+Global checksum mismatch (bytes preserved)
+ (ProgramLoader)  
+INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
+INFO  /synthetic.gb: file created (joshuahansen) (LocalFileSystem)  
+INFO  REPORT: Save succeeded for: /synthetic.gb (fixture:/synthetic.gb) (HeadlessAnalyzer)  
+INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

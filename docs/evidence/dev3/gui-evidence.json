@@ -1,0 +1,18 @@
+{
+  "gate": "gui",
+  "status": "BLOCKED",
+  "artifact": {
+    "path": "/tmp/ghidraboy-dev3-gui/ghidra_12.1.3_PUBLIC_20260905-dev3_GhidraBoy.zip",
+    "sha256": "4c0fd62c1046ca52ad75a99953c4d8851d13efa568351f346fd0630cbfbc597b"
+  },
+  "ghidraVersion": "12.1.3",
+  "installedFilesVerified": 36,
+  "allInstalledMembersMatch": true,
+  "targetPid": 74359,
+  "conflictingPid": 75955,
+  "conflictingVersion": "12.1.2",
+  "reason": "After the user confirmed the other agent was stopped, no existing Ghidra GUI process was found. Launched verified disposable 12.1.3 PID 74359. CUA getApp(net.java.openjdk.java) returned only a Ghidra window shell after 211.7 seconds; subsequent process inventory found 12.1.2 PID 75955 alongside the target. Available CUA API has no PID selector. No clicks/workflows were attempted against the ambiguous handle; neither process was terminated. Requested manual closure of 12.1.2 before further interaction.",
+  "observedWorkflows": [],
+  "guiAcceptancePassed": false,
+  "nextAction": "Close the conflicting 12.1.2 instance and verify only the disposable 12.1.3 target remains, or supply process-specific/isolated GUI control; then execute docs/gui-validation.md against this exact ZIP."
+}

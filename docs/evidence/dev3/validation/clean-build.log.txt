@@ -1,0 +1,111 @@
+> Task :clean
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :compileKotlin NO-SOURCE
+
+> Task :compileJava
+Note: /Users/joshuahansen/dev/GhidraBoy/src/main/java/fi/gekkio/ghidraboy/AnalysisOwnership.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :processResources
+> Task :classes
+> Task :jar
+> Task :sourcesJar
+
+> Task :compileSleigh
+NOP detected at sm83_instructions.sinc:456
+1 NOP constructors found
+
+> Task :generateExtensionProps
+> Task :zip
+> Task :assemble
+> Task :loadKtlintReporters
+> Task :runKtlintCheckOverMainSourceSet NO-SOURCE
+> Task :ktlintMainSourceSetCheck SKIPPED
+> Task :processTestResources
+> Task :runKtlintCheckOverKotlinScripts
+> Task :ktlintKotlinScriptCheck
+
+> Task :compileTestKotlin
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:107:42 'fun addParameter(p0: Variable!, p1: SourceType!): Parameter!' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:148:61 'fun removeParameter(p0: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/FunctionOwnershipTest.kt:149:35 'fun addParameter(p0: Variable!, p1: SourceType!): Parameter!' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/ControlFlowInstructionTest.kt:203:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmuTest.kt:18:8 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmuTest.kt:26:38 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmuTest.kt:36:20 'constructor(p0: Program!): EmulatorHelper' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:16:8 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:21:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:28:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:36:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:41:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:50:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:52:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:54:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:56:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:58:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:60:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:62:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:64:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:66:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:68:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:70:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:72:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:74:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:76:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:78:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:80:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:82:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:84:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:86:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:88:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:90:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:92:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:94:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:96:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:98:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:100:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:102:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:104:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:106:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:108:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:110:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:112:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:114:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:116:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:118:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:120:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:122:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:124:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:126:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:128:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:130:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/EmulatorExt.kt:132:5 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/ExternalVectorTest.kt:4:8 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/ExternalVectorTest.kt:45:28 'constructor(p0: Program!): EmulatorHelper' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/FailOnMemoryFault.kt:16:8 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/FailOnMemoryFault.kt:17:8 'enum class EmulateExecutionState : Enum<EmulateExecutionState!>' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/FailOnMemoryFault.kt:18:8 'interface MemoryFaultHandler : Any' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/FailOnMemoryFault.kt:23:27 'class EmulatorHelper : Any, MemoryFaultHandler, EmulatorConfiguration' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/FailOnMemoryFault.kt:24:5 'interface MemoryFaultHandler : Any' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/FailOnMemoryFault.kt:31:47 'enum class EmulateExecutionState : Enum<EmulateExecutionState!>' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/IgnorePCode.kt:16:8 'class BreakCallBack : Any' is deprecated. Deprecated in Java.
+w: file:///Users/joshuahansen/dev/GhidraBoy/src/test/kotlin/fi/gekkio/ghidraboy/emu/IgnorePCode.kt:19:21 'class BreakCallBack : Any' is deprecated. Deprecated in Java.
+
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses
+> Task :runKtlintCheckOverTestSourceSet
+> Task :test
+> Task :ktlintTestSourceSetCheck
+> Task :check
+> Task :build
+
+[Incubating] Problems report is available at: file:///Users/joshuahansen/dev/GhidraBoy/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.0.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 19s
+16 actionable tasks: 16 executed

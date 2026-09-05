@@ -1,0 +1,183 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 21.0.12.1)
+OpenJDK 64-Bit Server VM Homebrew (build 21.0.12.1, mixed mode)
+INFO  Using log config file: jar:file:/private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /private/tmp/ghidraboy-dev3-validation/installed/profile/Library/ghidra/ghidra_12.1.3_PUBLIC/application.log (LoggingInitialization)  
+INFO  Loading user preferences: /private/tmp/ghidraboy-dev3-validation/installed/profile/Library/ghidra/ghidra_12.1.3_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (768 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Headless startup complete (1553 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 59 extension points (20 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Extensions/GhidraBoy/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Opening existing project: /private/tmp/ghidraboy-dev3-validation/installed/projects/fixture (HeadlessAnalyzer)  
+INFO  Opening project: /private/tmp/ghidraboy-dev3-validation/installed/projects/fixture (HeadlessProject)  
+INFO  REPORT: Processing project file: /preserved (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: GhidraBoyTools.java 'inspect'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /private/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC/Ghidra/Extensions/GhidraBoy/ghidra_scripts/GhidraBoyTools.java (HeadlessAnalyzer)  
+INFO  GhidraBoyTools.java> {
+  "schemaVersion": 2,
+  "language": "SM83:LE:16:default",
+  "compiler": "default",
+  "cartridge": {
+    "rawHeader": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030103000000000000",
+    "title": "",
+    "manufacturer": "",
+    "cgb": 0,
+    "sgb": 0,
+    "type": 3,
+    "romSizeCode": 1,
+    "ramSizeCode": 3,
+    "declaredRomBanks": 4,
+    "ramBytes": 32768,
+    "inputLength": 65536,
+    "inputSha256": "a52f93b574e33d4de2636ed823fe264dd4fab19597977a36f566e64506642049",
+    "headerChecksum": 0,
+    "computedHeaderChecksum": 224,
+    "globalChecksum": 0,
+    "computedGlobalChecksum": 288,
+    "mapper": "MBC1",
+    "hardware": "UNKNOWN",
+    "warnings": [
+      "Ordinary MBC1 assumed; MBC1M is not auto-detected or modeled",
+      "Header checksum mismatch (bytes preserved)",
+      "Global checksum mismatch (bytes preserved)",
+      "Hardware choice: UNKNOWN"
+    ],
+    "geometry": {
+      "actualLength": 65536,
+      "declaredLength": 65536,
+      "addressableLength": 65536,
+      "trailingOffset": 65536,
+      "trailingLength": 0,
+      "policy": "STRICT"
+    },
+    "headerStatus": "COMPLETE"
+  },
+  "inputMode": "CARTRIDGE",
+  "originalLength": 65536,
+  "originalSha256": "a52f93b574e33d4de2636ed823fe264dd4fab19597977a36f566e64506642049",
+  "support": {
+    "rawLoading": "SUPPORTED",
+    "physicalBanks": "SUPPORTED",
+    "translation": "ASSUMPTION_REQUIRED",
+    "inference": "ASSUMPTION_REQUIRED",
+    "limitations": [
+      "Ordinary MBC1 assumed; MBC1M is not auto-detected or modeled",
+      "Header checksum mismatch (bytes preserved)",
+      "Global checksum mismatch (bytes preserved)",
+      "Hardware choice: UNKNOWN"
+    ]
+  },
+  "ranges": [
+    {
+      "region": "ROM",
+      "bank": 0,
+      "offset": 0,
+      "length": 16384,
+      "space": "ram",
+      "start": 0,
+      "fileOffset": 0,
+      "read": true,
+      "write": false,
+      "execute": false,
+      "provenance": "file-source"
+    },
+    {
+      "region": "ROM",
+      "bank": 1,
+      "offset": 0,
+      "length": 16384,
+      "space": "rom1",
+      "start": 16384,
+      "fileOffset": 16384,
+      "read": true,
+      "write": false,
+      "execute": false,
+      "provenance": "file-source"
+    },
+    {
+      "region": "ROM",
+      "bank": 2,
+      "offset": 0,
+      "length": 16384,
+      "space": "rom2",
+      "start": 16384,
+      "fileOffset": 32768,
+      "read": true,
+      "write": false,
+      "execute": false,
+      "provenance": "file-source"
+    },
+    {
+      "region": "ROM",
+      "bank": 3,
+      "offset": 0,
+      "length": 16384,
+      "space": "rom3",
+      "start": 16384,
+      "fileOffset": 49152,
+      "read": true,
+      "write": false,
+      "execute": false,
+      "provenance": "file-source"
+    }
+  ],
+  "diagnostics": [
+    "Legacy block needs explicit mapping: c000",
+    "Legacy block needs explicit mapping: fe00",
+    "Legacy block needs explicit mapping: ff00",
+    "Legacy block needs explicit mapping: ff80",
+    "Legacy block needs explicit mapping: ffff",
+    "Legacy block needs explicit mapping: vram0::8000",
+    "Legacy block needs explicit mapping: vram1::8000",
+    "Legacy block needs explicit mapping: wram1::d000",
+    "Legacy block needs explicit mapping: wram2::d000",
+    "Legacy block needs explicit mapping: wram3::d000",
+    "Legacy block needs explicit mapping: wram4::d000",
+    "Legacy block needs explicit mapping: wram5::d000",
+    "Legacy block needs explicit mapping: wram6::d000",
+    "Legacy block needs explicit mapping: wram7::d000"
+  ],
+  "request": {
+    "requestedMode": "LEGACY_UNKNOWN",
+    "selectedMode": "CARTRIDGE",
+    "mapperOverride": "AUTO",
+    "selectedMapper": "MBC1",
+    "hardware": "UNKNOWN",
+    "hardwareSource": "not recovered; header not authoritative"
+  },
+  "originalUnmapped": []
+} (GhidraScript)  
+INFO  REPORT: Save succeeded for processed file: /preserved (HeadlessAnalyzer)  

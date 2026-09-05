@@ -1,0 +1,3 @@
+Picked up JAVA_TOOL_OPTIONS: -Duser.home=/private/tmp/ghidraboy-dev3-validation/installed/profile
+1 NOP constructors found
+Use -n switch to list each individually

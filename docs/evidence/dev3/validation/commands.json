@@ -1,0 +1,275 @@
+[
+  {
+    "gate": "dependency-digest",
+    "dependency": "primaryGhidra",
+    "file": "/Users/joshuahansen/Downloads/ghidra_12.1.3_PUBLIC_20260817.zip",
+    "sha256": "93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54",
+    "expectedSha256": "93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54",
+    "status": "PASS"
+  },
+  {
+    "gate": "dependency-digest",
+    "dependency": "migrationGhidra",
+    "file": "/tmp/ghidraboy-11.3.1.zip",
+    "sha256": "bcda0a9de8993444766cc255964c65c042b291ddaf6c50d654e316e442b441fa",
+    "expectedSha256": "bcda0a9de8993444766cc255964c65c042b291ddaf6c50d654e316e442b441fa",
+    "status": "PASS"
+  },
+  {
+    "gate": "dependency-digest",
+    "dependency": "migrationExtension",
+    "file": "/tmp/ghidraboy-legacy-extension.zip",
+    "sha256": "99d0d2755608448b5e611a8b3031762dedb1d0c8397a36504b2b9b6d5600b2db",
+    "expectedSha256": "99d0d2755608448b5e611a8b3031762dedb1d0c8397a36504b2b9b6d5600b2db",
+    "status": "PASS"
+  },
+  {
+    "gate": "dependency-digest",
+    "dependency": "currentCompiler",
+    "file": "/tmp/ghidraboy-gbdk.tar.gz",
+    "sha256": "289ee60e46c5a2785a21e35533f84a5131ed4a063b21b0dbdedc9a10af15bf78",
+    "expectedSha256": "289ee60e46c5a2785a21e35533f84a5131ed4a063b21b0dbdedc9a10af15bf78",
+    "status": "PASS"
+  },
+  {
+    "gate": "dependency-digest",
+    "dependency": "historicalCompiler",
+    "file": "/tmp/ghidraboy-gbdk406.zip",
+    "sha256": "0b8e5be5371b3c07735938e5c200e92664c803ea8aa7eda608f04b06cf8eb84e",
+    "expectedSha256": "0b8e5be5371b3c07735938e5c200e92664c803ea8aa7eda608f04b06cf8eb84e",
+    "status": "PASS"
+  },
+  {
+    "gate": "native-binary-inventory",
+    "status": "RECORDED",
+    "file": "/opt/homebrew/opt/ghidra/libexec/Ghidra/Features/Decompiler/os/mac_arm_64/decompile",
+    "sha256": "4166ba747ce2b15883042c8ec825f76cf84e1070cccf85aa7b21e29066677f2b"
+  },
+  {
+    "name": "toolchain",
+    "gate": "toolchain",
+    "command": [
+      "/opt/homebrew/opt/openjdk@21/bin/java",
+      "-version"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/toolchain.log",
+    "durationSeconds": 0.03,
+    "requiredMarker": null
+  },
+  {
+    "name": "wrapper",
+    "gate": "toolchain",
+    "command": [
+      "./gradlew",
+      "--version",
+      "--console=plain"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/wrapper.log",
+    "durationSeconds": 0.313,
+    "requiredMarker": null
+  },
+  {
+    "name": "external-vectors",
+    "gate": "external-vectors",
+    "command": [
+      "./gradlew",
+      "test",
+      "--tests",
+      "*ExternalVectorTest",
+      "-Dghidraboy.vector.dir=/tmp/ghidraboy-vectors-full-selected",
+      "--console=plain"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/external-vectors.log",
+    "durationSeconds": 3.703,
+    "requiredMarker": null
+  },
+  {
+    "name": "clean-build",
+    "gate": "full-build",
+    "command": [
+      "./gradlew",
+      "clean",
+      "build",
+      "--console=plain"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/clean-build.log",
+    "durationSeconds": 79.745,
+    "requiredMarker": null
+  },
+  {
+    "name": "rebuild-package",
+    "gate": "package-rebuild",
+    "command": [
+      "./gradlew",
+      "clean",
+      "assemble",
+      "--console=plain"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/rebuild-package.log",
+    "durationSeconds": 1.43,
+    "requiredMarker": null
+  },
+  {
+    "gate": "reproducibility",
+    "status": "PASS",
+    "firstSha256": "4c0fd62c1046ca52ad75a99953c4d8851d13efa568351f346fd0630cbfbc597b",
+    "secondSha256": "4c0fd62c1046ca52ad75a99953c4d8851d13efa568351f346fd0630cbfbc597b",
+    "conditions": "same checkout, platform, JDK, Ghidra and SOURCE_DATE_EPOCH"
+  },
+  {
+    "name": "final-tests",
+    "gate": "full-build",
+    "command": [
+      "./gradlew",
+      "test",
+      "ktlintCheck",
+      "--console=plain"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/final-tests.log",
+    "durationSeconds": 78.683,
+    "requiredMarker": null
+  },
+  {
+    "name": "schema",
+    "gate": "schema",
+    "command": [
+      "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "tools/validate_schema.py",
+      "build/test-fixtures/*.json"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/schema.log",
+    "durationSeconds": 0.183,
+    "requiredMarker": null
+  },
+  {
+    "name": "doctor",
+    "gate": "doctor",
+    "command": [
+      "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "tools/doctor.py",
+      "--ghidra",
+      "/opt/homebrew/opt/ghidra/libexec",
+      "--jdk",
+      "/opt/homebrew/opt/openjdk@21",
+      "--zip",
+      "/Users/joshuahansen/dev/GhidraBoy/build/distributions/ghidra_12.1.3_PUBLIC_20260905-dev3_GhidraBoy.zip"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/doctor.log",
+    "durationSeconds": 0.072,
+    "requiredMarker": "DOCTOR_PASS"
+  },
+  {
+    "name": "epoch-change",
+    "gate": "metadata-incremental",
+    "command": [
+      "./gradlew",
+      "generateExtensionProps",
+      "--console=plain"
+    ],
+    "environmentOverrides": {
+      "SOURCE_DATE_EPOCH": "1788566401"
+    },
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/epoch-change.log",
+    "durationSeconds": 0.44,
+    "requiredMarker": null
+  },
+  {
+    "name": "epoch-restore",
+    "gate": "metadata-incremental",
+    "command": [
+      "./gradlew",
+      "generateExtensionProps",
+      "--console=plain"
+    ],
+    "environmentOverrides": {
+      "SOURCE_DATE_EPOCH": "1788566400"
+    },
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/epoch-restore.log",
+    "durationSeconds": 0.434,
+    "requiredMarker": null
+  },
+  {
+    "gate": "metadata-incremental",
+    "status": "PASS",
+    "changedThenRestored": true
+  },
+  {
+    "name": "installed",
+    "gate": "installed",
+    "command": [
+      "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "tools/installed_smoke.py",
+      "--ghidra",
+      "/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC",
+      "--zip",
+      "/Users/joshuahansen/dev/GhidraBoy/build/distributions/ghidra_12.1.3_PUBLIC_20260905-dev3_GhidraBoy.zip",
+      "--jdk",
+      "/opt/homebrew/opt/openjdk@21",
+      "--work",
+      "/private/tmp/ghidraboy-dev3-validation/installed"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/installed.log",
+    "durationSeconds": 37.167,
+    "requiredMarker": "INSTALLED_ZIP_PRESERVATION_PASS"
+  },
+  {
+    "name": "migration",
+    "gate": "migration",
+    "command": [
+      "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "tools/migration_smoke.py",
+      "--legacy-ghidra",
+      "/tmp/ghidraboy-migration-env/ghidra_11.3.1_PUBLIC",
+      "--ghidra",
+      "/tmp/ghidraboy-dev3-env/ghidra_12.1.3_PUBLIC",
+      "--zip",
+      "/Users/joshuahansen/dev/GhidraBoy/build/distributions/ghidra_12.1.3_PUBLIC_20260905-dev3_GhidraBoy.zip",
+      "--jdk",
+      "/opt/homebrew/opt/openjdk@21",
+      "--work",
+      "/private/tmp/ghidraboy-dev3-validation/migration"
+    ],
+    "environmentOverrides": {},
+    "exitCode": 0,
+    "status": "PASS",
+    "log": "/private/tmp/ghidraboy-dev3-validation/migration.log",
+    "durationSeconds": 13.586,
+    "requiredMarker": "\"originalProjectUnchanged\": true"
+  },
+  {
+    "gate": "gui",
+    "status": "BLOCKED",
+    "reason": "Interactive dialogs have not been verified by this runner; see manual GUI checklist"
+  }
+]
