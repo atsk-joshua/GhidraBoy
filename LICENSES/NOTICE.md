@@ -1,10 +1,11 @@
-# Third-party provenance
+# Distributed dependency notices
 
-- SameBoy core and open-source CGB boot ROM: LIJI32 and contributors, Expat/MIT. Pinned v1.0.3 commit in dependencies.lock.json. The shim links only core code, not Cocoa/SDL frontend source. Boot ROMs assembled locally from SameBoy/BootROMs using RGBDS; no Nintendo boot ROM downloaded.
-- GhidraBoy: Joonas Javanainen and contributors, Apache 2.0. Release commit and compatibility patch recorded. Preserves original SM83 language ID and names. Its rebuilt extension includes its LICENSE.
-- RGBDS: RGBDS contributors, MIT. Build tool for our self-authored teaching fixture and SameBoy boot assets.
-- Ghidra/ghidratrace: National Security Agency, Apache 2.0; use the user's Ghidra 12.1.2 distribution and its matched wheels. Ghidra itself is not redistributed in the source package.
-- SDL2: SDL contributors, zlib license; system/user installation dynamically loaded, not redistributed in the source package.
-- `legacy/` contains the user's supplied Live Lab and Study Pack, preserved verbatim. Prior validation files are historical except where rerun evidence explicitly says otherwise.
-- `tests/fixtures/banks.asm` is newly authored under MIT and can be redistributed. Commercial ROMs, GZF files, battery saves and checkpoints are excluded from packages.
-- Linux cross-build uses Zig 0.14.1 (MIT; license included), targeting x86_64-linux-gnu.2.28. The Linux library's ELF header, exported ABI symbols and shared-library requirements are inspected; Linux execution is not claimed until the target tests pass.
+GhidraBoy is the sole SM83 provider: Joonas Javanainen/Gekkio and contributors, Apache 2.0. Its separate archive includes its LICENSE and the extracted GhiGBC knowledge-exporter MIT notice. The maintained candidate is identified by suite.json, not the historical private compatibility patch.
+
+SameBoy v1.0.3, LIJI32 and contributors, supplies the selected Core C code and assembled open-source BootROMs/cgb_boot.bin. The adapter links Core, not the Cocoa/SDL frontend. The top-level SameBoy license with directory exceptions is preserved in SameBoy.txt; selected Core and BootROMs use the applicable Expat terms. No Nintendo boot ROM is distributed.
+
+GhiGBC and self-authored teaching assembly use the project MIT license. RGBDS and Zig are build tools; their notices are retained. Ghidra and its matched ghidratrace/protobuf wheels are external prerequisites and are installed offline from the selected Ghidra distribution; suite.json pins their digests. Ghidra itself and a Python/JDK runtime are not included.
+
+The Linux candidate additionally carries Debian's dynamically linked SDL2 2.32.4+dfsg-1 library as a process-local fallback, with the complete exact package copyright in SDL2-copyright.txt. SDL2 uses the zlib license with the package's documented component exceptions. Graphics drivers, glibc and other system libraries are not bundled. The host must satisfy its listed dynamic dependencies. This fallback is tested separately with system SDL2 absent; no SteamOS compatibility is inferred from Debian execution.
+
+GhiBW3 owns the optional extracted Live Lab/Study Pack and their original MIT attribution. Generic runtime archives contain neither private game assets nor study code. No ROM/GZF/save/checkpoint from the private acceptance run is included.

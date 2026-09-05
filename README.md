@@ -1,23 +1,13 @@
 # GhiGBC
 
-A SameBoy-backed Game Boy Color debugger for Ghidra 12.1.2. Native C owns emulation and CPU watchpoint filtering; one Python sidecar publishes Trace RMI captures; a Java extension maps physical banks and provides study actions. GhidraBoy's `SM83:LE:16:default` language and student annotations are preserved.
+A generic SameBoy-backed Game Boy debugger for Ghidra: real Trace RMI, physical bank mappings, breakpoints and CPU access watches, immutable captured history, checkpoints, explicit recoverable edits, and an SDL game window.
 
-**Working and validated on macOS arm64; Steam Deck deployment remains unverified.** Real Ghidra 12.1.2 tests pass for native stepping, register aliases, bank-qualified breakpoints, renamed static mappings and saved/reopened history. Native tests cover direct WRAM writers, blocked VRAM attempts, same-value writes, HALT/STOP/interrupt boundaries, ordinary step-over/out and checkpoint recovery. The automatic Ghidra launcher, versioned runtime installation/rollback and real CLASS 2 battle are verified on the development Mac. APC HP 10→3 resolves to `rom18::40b5` (`LD (HL),B`), and checkpoint replay reproduces it. Saved/reopened history retains the evidence.
+GhidraBoy is the sole SM83/static-analysis provider. GhiGBC owns live hardware observations, trace publication, execution ordering and installation. Optional GhiBW3 supplies exact-revision game decoding and study UI; generic debugging does not require it.
 
-See [implementation status](docs/IMPLEMENTATION_STATUS.md), [first-session guide](docs/QUICKSTART.md), and [native correctness contract](docs/NATIVE_CONTRACT.md). `docs/evidence/` contains actual build/test logs. Commercial inputs, checkpoints and project copies stay in ignored directories.
+The local candidate targets Ghidra12.1.3 with Java21, Python3.14.7 on macOS arm64 and Python3.13.15 on Linux x86-64. Use the prebuilt platform archive and [installation/rollback guide](docs/INSTALL.md), then the [generic teaching walkthrough](docs/TEACHING.md). See [support and limits](docs/SUPPORT.md), [mapping boundary](docs/contracts/mapping.md) and [profile API](docs/contracts/profiles.md).
 
-```sh
-export GHIDRA_INSTALL_DIR=/absolute/path/to/ghidra_12.1.2_PUBLIC
-export JAVA_HOME=/absolute/path/to/jdk-21
-python3 scripts/bootstrap.py
-scripts/build_native.sh
-scripts/build_extension.sh
-scripts/test_native.sh
-scripts/test_ghidra.sh
-```
+Contributor dependency order is maintained GhidraBoy → GhiGBC → optional GhiBW3. Set GHIDRA_INSTALL_DIR/JAVA_HOME, then run scripts/build_native.sh and scripts/build_extension.sh. Run scripts/test_native.sh for standalone native/Python gates; scripts/test_ghidra.sh uses an isolated installed profile and a real Trace RMI process. scripts/package_candidate.py creates reproducible prebuilt archives; use --help for explicit inputs. scripts/test_installer.py exercises actual recovery/rollback behavior against matched manifests.
 
-Dependencies and patches are pinned in `dependencies.lock.json`. Original Live Lab and Study Pack are preserved unchanged in `legacy/`; their historical records are distinct from new tests.
+The source/validation ledger is in the existing GhiBW3 repository at docs/integration/LEDGER.md. Old 12.1.2 student archives remain intact as rollback. Interactive GUI/Deck acceptance and publication are separate; local package results do not imply a completed Steam Deck installation.
 
-The Linux x86-64 candidate bundle includes a cross-built library and needs no C compiler for the first target test. Its ABI is inspected, but Linux/Steam Deck execution remains unverified. See [Steam Deck steps](docs/STEAM_DECK.md).
-
-For the student-facing transfer, use `dist/GhiGBC-SteamDeck-Handoff-0.1.0.zip` and its START-HERE.md. It provides Setup, Validate and Collect-results scripts and keeps private game assets separate. Build it with `python3 scripts/package.py` followed by `python3 scripts/package_deck_handoff.py`.
+Credit: SameBoy by LIJI32 and contributors; GhidraBoy by Joonas Javanainen/Gekkio and contributors; Ghidra by the NSA; RGBDS contributors. Exact file notices are in LICENSES and the component archives. Private commercial ROMs, Programs and checkpoints are excluded from packages.

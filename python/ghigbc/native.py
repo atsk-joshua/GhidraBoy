@@ -14,7 +14,6 @@ ROOT = Path(__file__).resolve().parents[2]
 CORE = '208ba4afabffab9edde416f2dbb8ae459e34adb8'
 CONFIG = 'ghigbc-abi1-cpu-bus-v1:CGB-E:accurate-rtc:copied-stop'
 PATCH = hashlib.sha256((ROOT/'native/patches/0001-cpu-bus-provenance.patch').read_bytes()).hexdigest()
-PROFILE = 'e779a6b56575a2afafb7e1e99411b23d7400a8fddbda8bd52c660b7903c3b451'
 REGIONS = ('cpu','rom','wram','vram','cart','boot','oam','hram','io','unknown')
 REASONS = ('slice','step','pause','breakpoint','watchpoint','halt-wait','stop-wait','interrupt','error')
 MEMORY_SIZE = 245760
@@ -69,8 +68,6 @@ class Machine:
             fn=getattr(self.lib,'gc_'+n);fn.argtypes=args;fn.restype=result
         self.handle=self.lib.gc_create_buffers(self.rom_bytes,len(self.rom_bytes),self.boot_bytes,len(self.boot_bytes))
         if not self.handle: raise RuntimeError('Native ROM/boot load failed or mapper unsupported')
-    @property
-    def profile(self):return self.rom_hash==PROFILE
     def close(self):
         with self.lock:
             if self.handle:self.lib.gc_destroy(self.handle);self.handle=None

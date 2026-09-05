@@ -1,3 +1,15 @@
 def installDir = System.getenv('GHIDRA_INSTALL_DIR')
 if (!installDir) throw new GradleException('Set GHIDRA_INSTALL_DIR to the selected Ghidra distribution')
 apply from: new File(installDir, 'support/buildExtension.gradle')
+
+// Provider APIs are discovered from the separate extension at runtime, never bundled here.
+def providerJar = System.getenv('GHIDRABOY_JAR') ?: new File(projectDir, '../../GhidraBoy/build/libs/GhidraBoy-20260905-suite1.jar').absolutePath
+if (!file(providerJar).isFile()) throw new GradleException('Build maintained GhidraBoy first or set GHIDRABOY_JAR')
+dependencies { compileOnly files(providerJar) }
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+// Release identity is stable across rebuild dates.
+tasks.named('buildExtension') { archiveFileName = 'ghidra_12.1.3_PUBLIC_20260905_GhiGBC.zip' }

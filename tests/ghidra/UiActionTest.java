@@ -51,7 +51,7 @@ public class UiActionTest {
             value(o,snap(),"Offset") instanceof Number offset&&offset.intValue()==0x29);
     }
     public static void main(String[] args){
-        root=Path.of(args[0]).toAbsolutePath();
+        root=Path.of(args[0]).toAbsolutePath().normalize();
         try{
             PrintStream output=new PrintStream(root.resolve("docs/evidence/ui-actions.log").toFile());System.setOut(output);System.setErr(output);
             run(args);System.exit(0);
@@ -74,6 +74,7 @@ public class UiActionTest {
         ghidra.program.util.GhidraProgramUtilities.markProgramNotToAskToAnalyze(program);
         program.save("UI acceptance fixture",TaskMonitor.DUMMY);
         final GhidraTool[] holder=new GhidraTool[1];
+        final Throwable[] startupError=new Throwable[1];
         final ghidra.framework.main.FrontEndTool[] frontEnd=new ghidra.framework.main.FrontEndTool[1];
         Swing.runNow(()->{try{
             frontEnd[0]=new TestFrontEnd(projectManager);
@@ -87,7 +88,8 @@ public class UiActionTest {
                 if(tool.getManagedPlugins().stream().noneMatch(p->p.getClass().getName().equals(plugin)))tool.addPlugin(plugin);
             }
             tool.getService(ProgramManager.class).openProgram(program);tool.setVisible(true);
-        }catch(Exception e){throw new RuntimeException(e);}});
+        }catch(Exception e){startupError[0]=e;}});
+        if(startupError[0]!=null)throw new AssertionError("UI plugin initialization failed",startupError[0]);
         var tool=holder[0];var acceptor=tool.getService(TraceRmiService.class).acceptOne(new InetSocketAddress("127.0.0.1",0));acceptor.setTimeout(15000);
         var python=System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv12/bin/python").toString());
         var pb=new ProcessBuilder(python,"-m","ghigbc.agent","--connect","127.0.0.1:"+((InetSocketAddress)acceptor.getAddress()).getPort(),"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready");
@@ -106,7 +108,7 @@ public class UiActionTest {
             long eventSnap=((Number)value(object("Machine.Events[1]"),snap(),"Snapshot")).longValue();
             connection.getMethods().get("delete_breakpoint").invokeAsync(Map.of("breakpoint",object("Machine.Breakpoints[3]"))).get(15,TimeUnit.SECONDS);
             connection.getMethods().get("bank_breakpoint").invokeAsync(Map.of("process",object("Machine"),"region","rom","bank",2L,"offset",0x567L,"kinds",1L)).get(15,TimeUnit.SECONDS);
-            phase("later_state","Press Continue to reach the later bank-2 register fixture, then select the write in GBC Study > Writes and click Go to writer.");
+            phase("later_state","Press Continue to reach the later bank-2 register fixture, then select the write in GBC History and click Go to writer.");
             await(()->attr("ROMX") instanceof Number n&&n.intValue()==2&&pcIs(0x4567)&&"breakpoint".equals(attr("StopReason"))&&snap()>eventSnap,"later bank state reached");
             var manager=tool.getService(DebuggerTraceManagerService.class);var listing=tool.getService(CodeViewerService.class);
             await(()->{

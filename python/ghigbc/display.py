@@ -2,11 +2,22 @@
 import ctypes as C
 import ctypes.util
 import sys
+import os
+from pathlib import Path
 import time
 
+def load_sdl():
+    explicit=os.environ.get('GBC_SDL2_LIBRARY')
+    if explicit:return C.CDLL(explicit)
+    system=ctypes.util.find_library('SDL2') or ('/opt/homebrew/opt/sdl2/lib/libSDL2.dylib' if sys.platform=='darwin' else 'libSDL2-2.0.so.0')
+    try:return C.CDLL(system)
+    except OSError:
+        local=Path(__file__).resolve().parents[2]/'build/runtime-libs/libSDL2-2.0.so.0'
+        if sys.platform=='linux' and local.is_file():return C.CDLL(str(local))
+        raise
+
 def run(machine,quit_event,on_close=None):
-    lib=ctypes.util.find_library('SDL2') or ('/opt/homebrew/opt/sdl2/lib/libSDL2.dylib' if sys.platform=='darwin' else 'libSDL2-2.0.so.0')
-    s=C.CDLL(lib);p=C.c_void_p;i=C.c_int;u=C.c_uint32
+    s=load_sdl();p=C.c_void_p;i=C.c_int;u=C.c_uint32
     specs={'SDL_Init':([u],i),'SDL_CreateWindow':([C.c_char_p,i,i,i,i,u],p),'SDL_CreateRenderer':([p,i,u],p),'SDL_CreateTexture':([p,u,i,i,i],p),'SDL_PollEvent':([p],i),'SDL_UpdateTexture':([p,p,p,i],i),'SDL_RenderClear':([p],i),'SDL_RenderCopy':([p,p,p,p],i),'SDL_RenderPresent':([p],None),'SDL_DestroyTexture':([p],None),'SDL_DestroyRenderer':([p],None),'SDL_DestroyWindow':([p],None),'SDL_Quit':([],None),'SDL_GetError':([],C.c_char_p)}
     for name,(args,result) in specs.items():fn=getattr(s,name);fn.argtypes=args;fn.restype=result
     if s.SDL_Init(0x20):raise RuntimeError(s.SDL_GetError().decode())

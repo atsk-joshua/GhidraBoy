@@ -1,0 +1,23 @@
+name: Generic components
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Acquire selected Ghidra wheels without installing extensions
+        shell: bash
+        run: |
+          curl -fL https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.3_build/ghidra_12.1.3_PUBLIC_20260817.zip -o /tmp/ghidra.zip
+          echo '93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54  /tmp/ghidra.zip' | sha256sum -c -
+          unzip -q /tmp/ghidra.zip -d /tmp
+          echo GHIDRA_INSTALL_DIR=/tmp/ghidra_12.1.3_PUBLIC >> "$GITHUB_ENV"
+      - name: Pinned native build and standalone tests
+        run: |
+          python3 scripts/bootstrap.py
+          bash scripts/build_native.sh
+          bash scripts/test_native.sh

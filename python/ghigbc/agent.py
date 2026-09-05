@@ -1,7 +1,7 @@
 """One machine owner and trace writer. Remote dispatch never blocks pause behind run."""
 import argparse
 from contextlib import contextmanager
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, TimeoutError
 import json
 import inspect
 import os
@@ -13,6 +13,7 @@ import time
 from ghidratrace.client import Client, MethodRegistry, Address, AddressRange, RegVal, TraceObject
 from ghidratrace import sch
 from .native import Machine, REASONS, ROOT, CORE, CONFIG, PATCH
+from .dispatch import OrderedExecutor
 
 def object_schema(name):
     return type(name,(TraceObject,),{}) if 'extra' in inspect.signature(Client.create_trace).parameters else sch.Schema(name)
@@ -33,12 +34,20 @@ def physical_writer_address(event):
 
 class Agent:
     def __init__(self,machine):
-        self.profile=None
-        if machine.profile:
-            from .profile import Profile
-            self.profile=Profile(machine)
-        self.machine=machine;self.queue=Queue(maxsize=64);self.executor=ThreadPoolExecutor(max_workers=2)
-        self.registry=MethodRegistry(self.executor);self.trace=None;self.client=None;self.quit=threading.Event();self.last=None;self.exit_at=None;self.last_event_sequence=0;self.objects={};self.remotes()
+        from .mapping import EnvelopeTransfer
+        self.mapping_transfer=EnvelopeTransfer()
+        from .profile import ProfileSession, installed_providers
+        providers,errors=installed_providers(ROOT)
+        self.profile=ProfileSession(machine.rom_bytes,providers,errors)
+        self.machine=machine;self.queue=Queue(maxsize=64);self.executor=OrderedExecutor(self.command_overflow)
+        self.registry=MethodRegistry(self.executor);self.trace=None;self.client=None;self.quit=threading.Event();self.last=None;self.exit_at=None;self.static_binding=None;self.last_event_sequence=0;self.objects={};self.remotes()
+    def command_overflow(self):
+        print('Trace RMI command backlog exceeded; closing this session',flush=True)
+        self.quit.set();self.machine.pause()
+        if self.client:
+            try:self.client.s.shutdown(socket.SHUT_RDWR)
+            except OSError:pass
+
     def remotes(self):
         registry=self.registry
         @registry.method()
@@ -103,13 +112,42 @@ class Agent:
         @registry.method(display='Save trace')
         def save_trace(process:object_schema('Process')):
             self.submit(self.save_trace)
-        @registry.method(display='Bank-qualified breakpoint')
-        def bank_breakpoint(process:object_schema('Process'),region:str,bank:int,offset:int,kinds:int=1):
-            def work():self.machine.breakpoint(region,bank,offset,kinds);self.publish(self.machine.capture())
+        @registry.method(display='Validated physical watch from selected capture')
+        def profile_watch(process:object_schema('Process'),region:str,bank:int,offset:int,length:int,expected_session:str,expected_epoch:int,expected_capture:int):
+            from .profile import ActionContext
+            context=ActionContext(expected_session,expected_epoch,expected_capture)
+            def work():
+                if self.machine.running:raise RuntimeError('Pause before arming a selected-capture watch')
+                self.machine.breakpoint(region,bank,offset,4,length);self.publish(self.machine.capture())
+            self.submit(work,context,True)
+        @registry.method(display='Receive static mapping snapshot')
+        def static_mapping(process:object_schema('Process'),generation:str,index:int,count:int,part:str,expected_session:str,expected_epoch:int):
+            def work():
+                if self.machine.session!=expected_session or self.last.state['epoch']!=expected_epoch:
+                    raise RuntimeError('Stale static binding session/epoch')
+                binding=self.mapping_transfer.append(generation,index,count,part,expected_session,expected_epoch,self.machine.rom_hash)
+                if binding is not None:self.static_binding=binding
             self.submit(work)
-    def submit(self,fn):
-        if self.exit_at is not None:raise RuntimeError('Session is terminating')
-        future=Future();self.queue.put_nowait((fn,future));return future.result(timeout=30)
+        @registry.method(display='Bank-qualified breakpoint')
+        def bank_breakpoint(process:object_schema('Process'),region:str,bank:int,offset:int,kinds:int=1,expected_session:str='',expected_epoch:int=-1,expected_capture:int=-1):
+            from .profile import ActionContext
+            context=ActionContext(expected_session,expected_epoch,expected_capture) if expected_session else None
+            def work():self.machine.breakpoint(region,bank,offset,kinds);self.publish(self.machine.capture())
+            self.submit(work,context,context is not None)
+    def submit(self,fn,expected=None,selected=False):
+        from .profile import ActionContext
+        if self.exit_at is not None or self.quit.is_set():raise RuntimeError('Session is terminating/disconnected')
+        context=expected or (ActionContext.of(self.last) if self.last else None)
+        def checked():
+            if self.quit.is_set():raise RuntimeError('Session disconnected')
+            if context:context.validate(self.last,selected)
+            return fn()
+        future=Future();self.queue.put_nowait((checked,future))
+        try:return future.result(timeout=30)
+        except TimeoutError:
+            future.cancel()
+            raise
+
     def obj(self,path,**attrs):
         if path.startswith(('Machine.Events[','Machine.Edits[')):
             # Persistent event history belongs to Ghidra; don't retain unbounded Python proxies.
@@ -130,10 +168,25 @@ class Agent:
             snap=t.snapshot(f'{description} epoch {s["epoch"]} capture {s["capture_id"]}')
             for removed in removals:removed.remove()
             self.state(self.machine.running)
-            self.obj('Machine',ROMHash=c.rom_hash,Session=c.session,Core=CORE,Config=CONFIG,CorePatch=PATCH,Schema=1,TimingUnits='ticks at 8388608 Hz',Profile='GBW3' if self.machine.profile else 'generic',Ticks8MHz=s['ticks'],Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage='CPU-origin accesses; DMA/HDMA watches excluded',MemorySemantics='CPU safe inspection; raw physical RAM banks',Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
-            if self.profile:
-                study=self.profile.capture(c)
-                self.obj('Machine',UnitsData=json.dumps(study['units']).encode('utf-8'),CombatData=json.dumps(study['combat']).encode('utf-8'),BattleVerified=False)
+            self.obj('Machine',ROMHash=c.rom_hash,Session=c.session,Core=CORE,Config=CONFIG,CorePatch=PATCH,Schema=1,TimingUnits='ticks at 8388608 Hz',Profile=self.profile.id,ProfileAPI=1,ProfileVersion=self.profile.provider.version if self.profile.provider else "",Ticks8MHz=s['ticks'],Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage='CPU-origin accesses; DMA/HDMA watches excluded',MemorySemantics='CPU safe inspection; raw physical RAM banks',Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
+            if self.static_binding:
+                generation,envelope=self.static_binding
+                self.obj('Machine',BoundStaticGeneration=generation)
+            decoded=self.profile.decode(c)
+            # Individual immutable records keep every RMI message below the wire limit.
+            self.obj('Machine',ProfileError=decoded['error'],ProfileSchema=1,ProfileEncoding='field-batches-v1',ProfileRecordCount=len(decoded['fields']),MappingSaveBarrier=0)
+            from .profile import encode_field_batches
+            batches=encode_field_batches(decoded['fields'])
+            for index,batch in enumerate(batches):
+                self.obj(f'Machine.ProfileFields[{index}]',Data=batch,Snapshot=snap)
+            for index in range(len(batches),getattr(self,'field_count',0)):
+                stale=self.objects.pop(f'Machine.ProfileFields[{index}]',None)
+                if stale:stale.remove()
+            self.field_count=len(batches)
+            try:
+                self.obj('Machine',**self.profile.legacy_attributes(decoded))
+            except Exception as error:
+                self.obj('Machine',ProfileError=str(error))
             if c.parent_checkpoint:
                 parent=c.parent_checkpoint
                 self.obj('Machine',ParentCheckpoint=parent['path'],ParentCheckpointSHA256=parent['state_sha256'],CheckpointSourceSession=parent['source_session'],CheckpointSourceEpoch=parent['source_epoch'],CheckpointSourceTicks8MHz=parent['source_ticks'])
@@ -177,9 +230,10 @@ class Agent:
                 self.obj(f'Machine.Edits[{edit["id"]}]',**attrs)
             self.obj('Machine',CaptureSnapshot=snap)
             self.objects[''].set_value('_event_thread',self.objects[THREAD]);self.objects[''].set_value('_focus',self.objects[THREAD])
+        first_capture=self.last is None
         self.last=c
         self.last_event_sequence=max([self.last_event_sequence]+[e["sequence"] for e in c.events])
-        self.objects[THREAD].activate()
+        if first_capture:self.objects[THREAD].activate()
     def put_bytes(self,address,data):
         # 12.1 limits an entire protocol message to 65536 bytes; page chunks leave envelope room.
         for offset in range(0,len(data),4096):
@@ -207,7 +261,7 @@ class Agent:
         with self.transaction('Create GBC machine'):
             self.trace.snapshot('initializing')
             root=self.trace.create_root_object(Path(__file__).with_name('schema.xml').read_text(),'Session');self.objects['']=root
-            for p in ('Machine','Machine.Threads',THREAD,THREAD+'.Stack',FRAME,REGISTERS,'Machine.Memory','Machine.Breakpoints','Machine.Events','Machine.Edits'):self.obj(p)
+            for p in ('Machine','Machine.Threads',THREAD,THREAD+'.Stack',FRAME,REGISTERS,'Machine.Memory','Machine.Breakpoints','Machine.Events','Machine.Edits','Machine.ProfileFields'):self.obj(p)
             self.obj('Machine',_pid=0,_display='GBC / SameBoy');self.obj(THREAD,_tid=0,_display='SM83')
             self.trace.create_overlay_space('register',REGISTERS)
             self.obj('Machine.Memory[cpu]',_range=Address('ram',0).extend(65536),_readable=True,_writable=True,_executable=True)
@@ -221,7 +275,7 @@ class Agent:
         with self.transaction('Resume GBC'):self.state(True)
     def begin_step(self,mode):
         if self.machine.running:raise RuntimeError('Pause before stepping')
-        if self.machine.profile:raise RuntimeError('GBW3 far-call step-over/out is not verified; use Step Into')
+        if self.profile.provider and mode in getattr(self.profile.provider,'unsupported_steps',()):raise RuntimeError('Selected profile does not support this step mode; use Step Into')
         if self.machine.lib.gc_prepare_step(self.machine.handle,mode):raise RuntimeError('No observed ordinary call frame; Step Out unavailable after restore')
         self.machine.running=True;self.play_start=time.monotonic();self.play_ticks=self.machine.lib.gc_ticks(self.machine.handle)
         with self.transaction('Step over/out'):self.state(True)
@@ -237,11 +291,21 @@ class Agent:
     def save_trace(self):
         # The Java mapping service may briefly hold a transaction after capture publication.
         # Retry only that structured server error, with a finite deadline.
+        if getattr(self,'static_binding',None):
+            barrier=self.last.state['capture_id']
+            with self.transaction('Request completed static mappings before save'):
+                self.obj('Machine',MappingSaveBarrier=barrier)
+            end=time.monotonic()+10
+            while True:
+                values=self.trace.get_values('Machine.MappingSaveReady')
+                if any(v.value==barrier for v in values):break
+                if time.monotonic()>=end:raise RuntimeError('Static mapping save barrier timed out; raw trace remains open')
+                time.sleep(.025)
         deadline=time.monotonic()+3
         while True:
             try:return self.trace.save()
             except Exception as error:
-                if 'Unable to lock due to active transaction' not in str(error) or time.monotonic()>=deadline:raise
+                if not any(message in str(error) for message in ('Unable to lock due to active transaction', "Can't save during transaction")) or time.monotonic()>=deadline:raise
                 time.sleep(.025)
     def terminate(self):
         self.machine.pause();self.machine.run_slice();self.machine.running=False
@@ -287,8 +351,9 @@ class Agent:
                     fn,future=self.queue.get(timeout=0 if self.machine.running else .02)
                 except Empty:pass
                 else:
-                    try:future.set_result(fn())
-                    except BaseException as e:future.set_exception(e)
+                    if future.set_running_or_notify_cancel():
+                        try:future.set_result(fn())
+                        except BaseException as e:future.set_exception(e)
                 if self.machine.running:
                     reason=self.machine.run_slice()
                     # Keep play close to the emulated 8 MHz clock; at most 4 ms between pause checks.
@@ -306,6 +371,10 @@ class Agent:
                 try:self.client.s.shutdown(socket.SHUT_RDWR)
                 except OSError:pass
                 self.client.close()
+            while True:
+                try:_,pending=self.queue.get_nowait()
+                except Empty:break
+                pending.cancel()
             self.executor.shutdown(wait=False,cancel_futures=True)
 
 def main():

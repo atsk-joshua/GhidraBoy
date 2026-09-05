@@ -74,7 +74,8 @@ class NativeTests(unittest.TestCase):
             p=Path(t);m.checkpoint(p/'checkpoint');d=m.edit(register='BC',value=0xabcd,recovery=p/'recovery')
             self.assertEqual(d.state['bc'],0xabcd);e=m.restore(p/'checkpoint')
             self.assertEqual(e.state['bc'],0x3456);self.assertGreater(e.state['epoch'],c.state['epoch']);self.assertGreater(e.state['capture_id'],d.state['capture_id']);self.assertFalse(e.events);self.assertIn(bp,m.breakpoints)
-        self.assertFalse(m.profile)
+        from ghigbc.profile import ProfileSession
+        self.assertEqual(ProfileSession(m.rom_bytes).id,'generic')
     def test_pause_and_latency(self):
         m=self.m;m.breakpoint('rom',2,0x567);self.until();samples=[]
         for _ in range(50):

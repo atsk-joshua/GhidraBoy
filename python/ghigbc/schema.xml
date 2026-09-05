@@ -13,6 +13,7 @@
     <attribute name="Breakpoints" schema="Breakpoints" required="yes" fixed="yes"/>
     <attribute name="Events" schema="Events" required="yes" fixed="yes"/>
     <attribute name="Edits" schema="Edits" required="yes" fixed="yes"/>
+    <attribute name="ProfileFields" schema="ProfileFields" required="yes" fixed="yes"/>
     <attribute name="UnitsData" schema="BYTE_ARR" hidden="yes"/>
     <attribute name="CombatData" schema="BYTE_ARR" hidden="yes"/>
     <attribute name="_state" schema="EXECUTION_STATE" required="yes"/>
@@ -47,4 +48,6 @@
   <schema name="Event" elementResync="NEVER" attributeResync="NEVER"><attribute schema="ANY"/></schema>
   <schema name="Edits" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="Edit"/></schema>
   <schema name="Edit" elementResync="NEVER" attributeResync="NEVER"><attribute schema="ANY"/></schema>
+  <schema name="ProfileFields" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="ProfileField"/></schema>
+  <schema name="ProfileField" elementResync="NEVER" attributeResync="NEVER"><attribute name="Data" schema="BYTE_ARR"/><attribute schema="ANY"/></schema>
 </context>

@@ -6,20 +6,26 @@
     "build": "make lib CONF=release; make bootroms CONF=release"
   },
   "ghidraboy": {
-    "commit": "42032f9d97e9e502dc10a14743bdb3d1b9388588",
-    "patch_sha256": "b327784405d9cb1c7e6c1c3559c2e7410ecbaf6e0858a8b92d8de4dddfc5e19d"
+    "commit": "e0ef7e0dfa1a6813c16d442cce395ef75aa50b02",
+    "candidate": "20260905-suite1",
+    "mapping_schema": 2,
+    "source_identity": "suite.json sources.GhidraBoy contains local changes and exact file hashes"
   },
   "rgbds": {
     "version": "1.0.1",
     "commit": "92bfe5d930c07dd4672b148f811305aa294d6e6f"
   },
   "ghidra": {
-    "version": "12.1.2",
-    "source_revision": "c0f584bf229fffba61b36431f3ce30c0c3e4e682"
+    "version": "12.1.3",
+    "archive_sha256": "93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54"
   },
   "python": {
     "ghidratrace": "12.1",
-    "protobuf": "6.31.0"
+    "protobuf": "6.31.0",
+    "tested": {
+      "macos-arm64": "3.14",
+      "linux-x86_64": "3.13"
+    }
   },
   "downloads": {
     "ghidra.zip": {

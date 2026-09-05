@@ -44,7 +44,7 @@ def git(name,url,commit,patch=None):
 if __name__=='__main__':
     (ROOT/'.deps').mkdir(exist_ok=True)
     git('SameBoy','https://github.com/LIJI32/SameBoy.git','208ba4afabffab9edde416f2dbb8ae459e34adb8','native/patches/0001-cpu-bus-provenance.patch')
-    git('GhidraBoy','https://github.com/Gekkio/GhidraBoy.git','42032f9d97e9e502dc10a14743bdb3d1b9388588','ghidra-extension/patches/ghidraboy-12.1.2.patch')
+    # Maintained GhidraBoy is a separate checkout/artifact; never fetch a second private provider.
     git('rgbds','https://github.com/gbdev/rgbds.git','92bfe5d930c07dd4672b148f811305aa294d6e6f')
     system=platform.system();arch=platform.machine()
     if (system,arch) not in (('Darwin','arm64'),('Linux','x86_64')):raise RuntimeError('Supported lanes: macOS arm64 and Linux x86-64')
@@ -52,7 +52,7 @@ if __name__=='__main__':
     archive('gradle.zip',ROOT/'.deps')
     ghidra=Path(os.environ['GHIDRA_INSTALL_DIR'])
     props=dict(line.split('=',1) for line in (ghidra/'Ghidra/application.properties').read_text().splitlines() if '=' in line and not line.startswith('#'))
-    if props['application.version']!='12.1.2':raise RuntimeError('This release requires Ghidra 12.1.2')
+    if props['application.version']!='12.1.3':raise RuntimeError('This release requires Ghidra 12.1.3')
     run(sys.executable,'-m','venv','.venv12')
     run(str(ROOT/'.venv12/bin/python'),'-m','pip','install','--no-index','--find-links',str(ghidra/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist'),'ghidratrace==12.1','protobuf==6.31.0')
     print('Pinned sources and Trace RMI environment ready. Build RGBDS if needed, then run scripts/build_native.sh and scripts/build_extension.sh.')
