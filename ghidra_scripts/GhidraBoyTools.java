@@ -9,25 +9,53 @@ public class GhidraBoyTools extends GhidraScript {
     @Override public void run() throws Exception {
         if(currentProgram==null) throw new IllegalStateException("Open a Game Boy program first");
         String[] args=getScriptArgs();
-        String action=args.length>0?args[0]:askChoice("GhidraBoy", "Action", List.of("inspect","mapping-json","navigate-file","navigate-physical","navigate-cpu","import-sym","export-retained-sym","export-sym","export-original","export-current","export-repair","enhance-legacy","analyze","discover-functions","far-call-convention"),"inspect");
+        String action=args.length>0?args[0]:askChoice("GhidraBoy", "Action", List.of("inspect","mapping-json","navigate-file","navigate-physical","navigate-cpu","import-sym","export-retained-sym","export-sym","export-original","export-current","export-repair","enhance-legacy","analyze","discover-functions","far-call-convention","far-call-preview","far-call-remove","analysis-preview","analysis-apply","analysis-remove","symbol-sources","reload-sym","remove-sym","preview-sym","companion-sym","identify-ram"),"inspect");
         String value=args.length>1?args[1]:null;
         switch(action) {
             case "discover-functions" -> {
                 String json=currentProgram.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest","null");
-                var findings=ProgramMapping.JSON.fromJson(json,AnalysisResult.class);
+                var findings=AnalysisResult.read(json);
                 FunctionDiscovery.discover(currentProgram,List.of(),findings,monitor).forEach(this::println);
             }
-            case "far-call-convention" -> {
+            case "far-call-convention", "far-call-preview" -> {
                 Path file=value==null?askFile("Explicit verified far-call JSON", "Apply").toPath():Path.of(value);
                 var convention=ProgramMapping.JSON.fromJson(Files.readString(file),FarCallConvention.class);
-                convention.apply(currentProgram,monitor).forEach(this::println);
+                convention.preview(currentProgram,monitor).forEach(this::println);
+                if(action.equals("far-call-convention") && (isRunningHeadless() || askYesNo("Apply convention", "Apply the validated fixed-caller convention?")))
+                    convention.apply(currentProgram,monitor);
             }
-            case "enhance-legacy" -> println(ProgramMapping.JSON.toJson(LegacyEnhancement.enhance(currentProgram,value==null?"AUTO":value,monitor)));
-            case "analyze" -> {
+            case "far-call-remove" -> AnalysisOwnership.remove(currentProgram,"far-call",monitor).forEach(this::println);
+            case "analysis-remove" -> AnalysisOwnership.removeAll(currentProgram,monitor).forEach(this::println);
+            case "analysis-apply" -> {
+                Path file=value==null?askFile("Saved analysis preview JSON", "Apply").toPath():Path.of(value);
+                var result=AnalysisResult.read(Files.readString(file));
+                BankAnalysis.apply(currentProgram,result,monitor);
+                println("Applied " + result.completion() + "; only PROVEN conclusions can add references");
+            }
+            case "identify-ram" -> {
+                String at=value==null?askString("RAM interval", "Static start address"):value;
+                String region=args.length>2?args[2]:askChoice("Physical region","Region",List.of("WRAM","VRAM","SRAM","MBC2_RAM"),"WRAM");
+                String bank=args.length>3?args[3]:askString("Physical bank","Hex bank number");
+                String offset=args.length>4?args[4]:askString("Bank offset","Hex bank-relative offset");
+                String length=args.length>5?args[5]:askString("Interval length","Hex length");
+                ProgramMapping.identifyRam(currentProgram,currentProgram.getAddressFactory().getAddress(at),Long.parseLong(length,16),region,Integer.parseInt(bank,16),Long.parseLong(offset,16),monitor);
+            }
+            case "enhance-legacy" -> {
+                String hardware=args.length>2?args[2]:isRunningHeadless()?"UNKNOWN":askChoice("Historical hardware", "Preserve known choice, or explicitly identify hardware",List.of("UNKNOWN","GB","CGB"),"UNKNOWN");
+                println(ProgramMapping.JSON.toJson(LegacyEnhancement.enhance(currentProgram,value==null?"AUTO":value,hardware.equals("UNKNOWN")?null:GameBoyKind.valueOf(hardware),monitor)));
+            }
+            case "analyze", "analysis-preview" -> {
                 String json=value==null?askString("Explicit assumption", "MapperState JSON at current address (or null for unknown)"):value;
                 var assumption=ProgramMapping.JSON.fromJson(json,MapperState.class);
                 var start=args.length>2?currentProgram.getAddressFactory().getAddress(args[2]):currentAddress;
-                println(ProgramMapping.JSON.toJson(BankAnalysis.analyze(currentProgram,start,assumption,monitor,true)));
+                if(start==null) throw new IllegalArgumentException("Select or supply a static start address");
+                var config=args.length>4?ProgramMapping.JSON.fromJson(args[4],AnalysisResult.Configuration.class):AnalysisResult.Configuration.DEFAULT;
+                var result=BankAnalysis.preview(currentProgram,start,assumption,config,monitor);
+                String output=ProgramMapping.JSON.toJson(result); println(output);
+                if(action.equals("analyze")) BankAnalysis.apply(currentProgram,result,monitor);
+                else if(args.length>3) Files.writeString(Path.of(args[3]),output,StandardOpenOption.CREATE_NEW);
+                else if(!isRunningHeadless() && askYesNo("Save preview", "Save this preview for later application?"))
+                    Files.writeString(askFile("New preview JSON","Save").toPath(),output,StandardOpenOption.CREATE_NEW);
             }
             case "inspect" -> println(ProgramMapping.JSON.toJson(ProgramMapping.inspect(currentProgram)));
             case "mapping-json" -> {
@@ -54,13 +82,38 @@ public class GhidraBoyTools extends GhidraScript {
                 println(ProgramMapping.JSON.toJson(result));
                 if(result.physical()!=null) choose(ProgramMapping.cpuToStatic(currentProgram,state,Integer.parseInt(spec,16),false).addresses());
             }
-            case "import-sym" -> {
-                Path file=value==null?askFile("RGBDS .sym file", "Preview").toPath():Path.of(value);
-                var parsed=SymbolFile.parse(Files.readAllBytes(file));
-                parsed.diagnostics().forEach(this::println);
-                SymbolService.preview(currentProgram,parsed).forEach(p->println(p.toString()));
-                if(isRunningHeadless() || askYesNo("Import symbols", "Apply the displayed preview?"))
-                    SymbolService.importSymbols(currentProgram,parsed,file.toAbsolutePath().toString(),monitor);
+            case "symbol-sources" -> SymbolService.sources(currentProgram).forEach(source->println(source.name()+" ("+source.claims()+" label claims)"));
+            case "remove-sym" -> SymbolService.removeOwned(currentProgram,source(value),monitor);
+            case "import-sym", "reload-sym", "preview-sym", "companion-sym" -> {
+                Path file;
+                if(action.equals("companion-sym")) file=SymbolService.companion(currentProgram).orElseThrow(()->new IllegalStateException("No same-directory .sym companion found; use import-sym to choose explicitly"));
+                else if(action.equals("reload-sym")) file=Path.of(source(value));
+                else file=value==null?askFile("RGBDS .sym file", "Preview").toPath():Path.of(value);
+                file=file.toAbsolutePath().normalize();
+                if(Files.size(file)>0x1000000) throw new IllegalArgumentException("Symbol input exceeds 16 MiB limit");
+                var parsed=SymbolFile.parse(Files.readAllBytes(file)); parsed.diagnostics().forEach(this::println);
+                var preview=SymbolService.preview(currentProgram,parsed);
+                String filter=isRunningHeadless()?"all":askChoice("Preview filter","Show placements",List.of("all","resolved","unresolved","locals"),"all");
+                var choices=new TreeMap<String,String>();
+                if(args.length>2) choices.putAll(ProgramMapping.JSON.fromJson(Files.readString(Path.of(args[2])),new com.google.gson.reflect.TypeToken<Map<String,String>>(){}.getType()));
+                for(var placement:preview) {
+                    monitor.checkCancelled();
+                    boolean show=filter.equals("all") || filter.equals("resolved") && !placement.addresses().isEmpty() || filter.equals("unresolved") && placement.addresses().isEmpty() || filter.equals("locals") && placement.symbol().name().contains(".");
+                    if(show) println(placement+" parent="+SymbolFile.parent(placement.symbol(),parsed.symbols()).map(SymbolFile.Symbol::name).orElse(""));
+                    if(placement.addresses().isEmpty()) {
+                        var candidates=SymbolService.boundaryCandidates(currentProgram,placement.symbol());
+                        if(!candidates.isEmpty()) {
+                            println("Boundary choices for "+SymbolService.entryKey(placement.symbol())+": "+candidates);
+                            if(!isRunningHeadless() && !action.equals("preview-sym")) {
+                                var options=new ArrayList<String>(); options.add("Keep unresolved"); candidates.forEach(address->options.add(address.toString()));
+                                String selected=askChoice("Boundary/end marker",SymbolService.entryKey(placement.symbol()),options,options.get(0));
+                                if(!selected.equals(options.get(0))) choices.put(SymbolService.entryKey(placement.symbol()),selected);
+                            }
+                        }
+                    }
+                }
+                if(!action.equals("preview-sym") && (isRunningHeadless() || askYesNo("Import symbols", "Apply the displayed preview and explicit placements?")))
+                    SymbolService.importSymbols(currentProgram,parsed,file.toString(),choices,monitor);
             }
             case "export-sym" -> {
                 Path output=value==null?askFile("New .sym output", "Export").toPath():Path.of(value);
@@ -86,6 +139,13 @@ public class GhidraBoyTools extends GhidraScript {
             }
             default -> throw new IllegalArgumentException("Unknown action "+action);
         }
+    }
+    private String source(String value) throws Exception {
+        if(value!=null) return value;
+        var sources=SymbolService.sources(currentProgram).stream().map(SymbolService.Source::name).toList();
+        if(sources.isEmpty()) throw new IllegalStateException("No active symbol sources");
+        if(isRunningHeadless()) throw new IllegalArgumentException("Supply a source ID");
+        return askChoice("Symbol source","Source",sources,sources.get(0));
     }
     private void choose(List<ghidra.program.model.address.Address> addresses) throws Exception {
         if(addresses.isEmpty()) { println("Unmapped or no static execution view"); return; }

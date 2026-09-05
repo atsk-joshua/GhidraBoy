@@ -44,7 +44,7 @@ final class AnalysisApplication {
                 for(var f:findings) {
                     monitor.checkCancelled(); var source=p.getAddressFactory().getAddress(f.source());
                     if(source==null) continue;
-                    String category="GhidraBoy Bank Analysis " + f.access();
+                    String category="GhidraBoy Bank Analysis " + f.access()+" p"+f.operation()+"/in"+f.operand()+"/b"+f.byteIndex();
                     if(p.getBookmarkManager().getBookmark(source,"Analysis",category)==null)
                         owned.bookmark(p.getBookmarkManager().setBookmark(source,"Analysis",category,f.confidence()+": "+f.reason()+" "+f.targets()));
                 }

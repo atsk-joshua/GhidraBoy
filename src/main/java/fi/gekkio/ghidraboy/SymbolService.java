@@ -210,16 +210,26 @@ public final class SymbolService {
         var out=new ArrayList<SymbolFile.Symbol>(); var diagnostics=new ArrayList<String>();
         var seen=new HashSet<String>(); var c=ProgramMapping.cartridge(p);
         var snapshot=ProgramMapping.inspect(p);
+        var registry=registry(p);
         var symbols=p.getSymbolTable().getAllSymbols(true);
         while(symbols.hasNext()) {
             monitor.checkCancelled(); var symbol=symbols.next();
             if(symbol.getSource()==SourceType.DEFAULT || (!symbol.getSymbolType().equals(ghidra.program.model.symbol.SymbolType.LABEL)
                 && !symbol.getSymbolType().equals(ghidra.program.model.symbol.SymbolType.FUNCTION))) continue;
             var identities=ProgramMapping.staticToPhysical(p,symbol.getAddress(),snapshot);
-            if(identities.size()!=1) { diagnostics.add(symbol.getName()+": physical identity unresolved"); continue; }
-            var physical=identities.get(0); int bank=physical.bank();
-            if(c!=null && c.mapper()==Cartridge.Mapper.ROM_ONLY && physical.region().equals("ROM")) bank=0;
-            var location=new SymbolFile.Location(physical.region().equals("BOOT")?"BOOT":"BANK",bank,(int)symbol.getAddress().getOffset());
+            SymbolFile.Location location;
+            if(identities.size()!=1) {
+                var explicit=new LinkedHashSet<SymbolFile.Location>();
+                for(var choices:registry.placements.values()) for(var choice:choices.entrySet())
+                    if(symbol.getAddress().equals(choice.getValue().resolve(p)))
+                        explicit.add(SymbolFile.parse((choice.getKey()+"\n").getBytes(java.nio.charset.StandardCharsets.UTF_8)).symbols().get(0).location());
+                if(explicit.size()!=1) { diagnostics.add(symbol.getName()+": physical identity unresolved"); continue; }
+                location=explicit.iterator().next();
+            } else {
+                var physical=identities.get(0); int bank=physical.bank();
+                if(c!=null && c.mapper()==Cartridge.Mapper.ROM_ONLY && physical.region().equals("ROM")) bank=0;
+                location=new SymbolFile.Location(physical.region().equals("BOOT")?"BOOT":"BANK",bank,(int)symbol.getAddress().getOffset());
+            }
             var entry=new SymbolFile.Symbol(location,symbol.getName(),0);
             String line=SymbolFile.format(List.of(entry));
             var validated=SymbolFile.parse(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));

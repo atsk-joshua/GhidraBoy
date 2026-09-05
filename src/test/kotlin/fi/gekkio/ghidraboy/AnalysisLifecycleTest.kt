@@ -87,4 +87,27 @@ class AnalysisLifecycleTest : IntegrationTest() {
         assertThrows(IllegalArgumentException::class.java) { FarCallConvention("0028", FarCallConvention.SUPPORTED_BODY, listOf(target.toString()), 0xc100).preview(p, TaskMonitor.DUMMY) }
         assertThrows(IllegalArgumentException::class.java) { FarCallConvention("0028", FarCallConvention.SUPPORTED_BODY, listOf("0200")).preview(p, TaskMonitor.DUMMY) }
     }
+    @Test
+    fun `mapper control stores stay visible in decompiler and receive access annotations`() = program { p ->
+        val decompiler = ghidra.app.decompiler.DecompInterface()
+        try {
+            p.withTransaction {
+                p.memory.setBytes(address(0x300), byteArrayOf(0x3e, 2, 0xea.toByte(), 0, 0x20, 0xc9.toByte()))
+                p.symbolTable.createLabel(address(0x2000), "MBC_ROM_CONTROL", SourceType.USER_DEFINED)
+                Disassembler.getDisassembler(p, TaskMonitor.DUMMY, null).disassemble(address(0x300), AddressSet(address(0x300), address(0x305)))
+            }
+            val function = p.withTransaction { p.functionManager.createFunction("select_bank", address(0x300), AddressSet(address(0x300), address(0x305)), SourceType.USER_DEFINED) }
+            CompilerAbi.apply(p, function, CompilerAbi.Request("sdcc451-call1", "void", null, listOf(), null, null))
+            val result = BankAnalysis.preview(p, address(0x300), null, AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY)
+            BankAnalysis.apply(p, result, TaskMonitor.DUMMY)
+            assertTrue(result.findings().any { it.source() == "0302" && it.access() == "write" && it.reason().startsWith("device:") })
+            assertTrue(decompiler.openProgram(p))
+            val decompiled = decompiler.decompileFunction(function, 30, TaskMonitor.DUMMY)
+            assertTrue(decompiled.decompileCompleted(), decompiled.errorMessage)
+            val c = decompiled.decompiledFunction.c
+            assertTrue(c.contains("MBC_ROM_CONTROL = 2"), c)
+            assertTrue(!p.memory.getBlock(address(0x2000)).isWrite)
+        } finally { decompiler.dispose() }
+    }
+
 }

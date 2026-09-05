@@ -96,6 +96,9 @@ class AnalysisHardeningTest : IntegrationTest() {
     fun `stack stores affect mapper registers in architectural byte order`() = program(prepare = { b ->
         byteArrayOf(1, 0x0a, 2, 0x31, 1, 0x20, 0xc5.toByte(), 0xc3.toByte(), 0, 0x40).copyInto(b, 0x150)
     }) { p ->
+        val stores = p.listing.getInstructionAt(address(0x156)).pcode.filter { it.opcode == ghidra.program.model.pcode.PcodeOp.STORE }
+        assertEquals(2, stores.size)
+        assertTrue(stores.all { it.getInput(2).size == 1 })
         val r = BankAnalysis.preview(p, address(0x150), MapperState.reset(), AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY)
         assertTrue(r.findings().any { it.access() == "jump" && it.targets() == listOf("rom2::4000") }, r.toString())
     }

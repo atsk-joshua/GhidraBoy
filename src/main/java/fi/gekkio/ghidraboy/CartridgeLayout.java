@@ -39,7 +39,7 @@ public final class CartridgeLayout {
             var opts=p.getOptions(ProgramMapping.OPTIONS);
             opts.setInt("schemaVersion",ProgramMapping.SCHEMA_VERSION);
             opts.setString("inputMode",selected); opts.setString("requestedMode",mode);
-            opts.setString("hardware",kind.name()); opts.setString("mapperOverride",mapperOverride);
+            opts.setString("hardware",kind.name()); opts.setString("hardwareProvenance",boot?"boot image mode":"loader hardware option"); opts.setString("mapperOverride",mapperOverride);
             opts.setString("originalSha256",Sha256.of(input).toString()); opts.setLong("originalLength",input.length);
             if(cartridge!=null) { opts.setString("cartridge",ProgramMapping.JSON.toJson(cartridge)); cartridge.warnings().forEach(log::appendMsg); }
             if(types) DataTypes.addAll(p.getDataTypeManager());
