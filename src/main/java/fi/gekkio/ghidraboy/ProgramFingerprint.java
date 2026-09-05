@@ -34,7 +34,7 @@ public final class ProgramFingerprint {
         return HexFormat.of().formatHex(digest.digest());
     }
     public static void requireCurrent(Program p, AnalysisResult result, TaskMonitor monitor) throws Exception {
-        if (result == null || result.schemaVersion() != 2 || !capture(p, monitor).equals(result.fingerprint()))
+        if (result == null || result.schemaVersion() != 2 || !AnalysisResult.ENGINE_VERSION.equals(result.engineVersion()) || !capture(p, monitor).equals(result.fingerprint()))
             throw new IllegalStateException("Analysis is stale or unversioned; preview again after code, mapping or flow changes");
     }
 }

@@ -49,9 +49,9 @@ public record MapperKnowledge(Integer low, Integer high, Integer mode, Integer r
         boolean missing=false;
         if(!write && cpu<0x8000) {
             missing=switch(c.mapper()) {
-                case MBC1 -> cpu<0x4000 ? mode==null || (mode==1 && high==null) : low==null || high==null;
+                case MBC1 -> cpu<0x4000 ? c.actualRomBanks()>32 && (mode==null || (mode==1 && high==null)) : low==null || (c.actualRomBanks()>32 && high==null);
                 case MBC2,MBC3 -> cpu>=0x4000 && low==null;
-                case MBC5 -> cpu>=0x4000 && (low==null || high==null);
+                case MBC5 -> cpu>=0x4000 && (low==null || (c.actualRomBanks()>256 && high==null));
                 default -> false;
             };
         } else if(cpu>=0x8000 && cpu<0xa000 && c.color()) missing=vbk==null;

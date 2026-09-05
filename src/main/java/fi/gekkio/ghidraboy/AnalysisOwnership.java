@@ -17,7 +17,7 @@ public final class AnalysisOwnership {
         static Point of(Address a) { return new Point(a.getAddressSpace().getSpaceID(), a.getOffset()); }
         Address resolve(Program p) {
             var as = p.getAddressFactory().getAddressSpace(space);
-            return as == null ? null : as.getAddress(offset);
+            return as == null ? null : as.getAddressInThisSpaceOnly(offset);
         }
     }
     public record Ref(Point from, Point to, int operand, String type, long symbol) { }

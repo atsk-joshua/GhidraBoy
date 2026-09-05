@@ -44,22 +44,25 @@ final class AnalysisApplication {
                 for(var f:findings) {
                     monitor.checkCancelled(); var source=p.getAddressFactory().getAddress(f.source());
                     if(source==null) continue;
-                    // References are supplemental; never replace existing operand/user references.
-                    if(result.complete() && f.confidence()==AnalysisResult.Confidence.PROVEN && f.targets().size()==1) {
-                        var dest=p.getAddressFactory().getAddress(f.targets().get(0));
-                        boolean exists=false;
-                        for(var ref:p.getReferenceManager().getReferencesFrom(source)) if(ref.getToAddress().equals(dest)) exists=true;
-                        // A mnemonic-level non-memory reference would be removed by Ghidra's API; preserve it.
-                        for(var ref:p.getReferenceManager().getReferencesFrom(source)) if(ref.getOperandIndex()==-1 && !ref.isMemoryReference()) exists=true;
-                        if(!exists) {
-                            var added=p.getReferenceManager().addMemoryReference(source,dest,
-                            f.access().equals("write")?RefType.WRITE:f.access().equals("read")?RefType.READ:RefType.DATA,SourceType.ANALYSIS,-1);
-                            owned.reference(added);
-                        }
-                    }
                     String category="GhidraBoy Bank Analysis " + f.access();
                     if(p.getBookmarkManager().getBookmark(source,"Analysis",category)==null)
                         owned.bookmark(p.getBookmarkManager().setBookmark(source,"Analysis",category,f.confidence()+": "+f.reason()+" "+f.targets()));
+                }
+                record Proven(ghidra.program.model.address.Address from,ghidra.program.model.address.Address to) { }
+                var requests=new LinkedHashMap<Proven,Set<String>>();
+                if(result.complete()) for(var finding:findings) if(finding.confidence()==AnalysisResult.Confidence.PROVEN && finding.targets().size()==1) {
+                    var from=p.getAddressFactory().getAddress(finding.source()); var to=p.getAddressFactory().getAddress(finding.targets().get(0));
+                    if(from==null || to==null) throw new IllegalArgumentException("Result contains an invalid static address");
+                    requests.computeIfAbsent(new Proven(from,to),ignored->new HashSet<>()).add(finding.access());
+                }
+                for(var request:requests.entrySet()) {
+                    monitor.checkCancelled(); var key=request.getKey(); var access=request.getValue(); boolean preserve=false;
+                    for(var reference:p.getReferenceManager().getReferencesFrom(key.from()))
+                        if(reference.getToAddress().equals(key.to()) || (reference.getOperandIndex()==-1 && !reference.isMemoryReference())) preserve=true;
+                    if(preserve) continue;
+                    var type=access.contains("read") && access.contains("write")?RefType.READ_WRITE:
+                        access.contains("write")?RefType.WRITE:access.contains("read")?RefType.READ:RefType.DATA;
+                    owned.reference(p.getReferenceManager().addMemoryReference(key.from(),key.to(),type,SourceType.ANALYSIS,-1));
                 }
                 options.removeOption("analysis.ownedReferences");
                 AnalysisOwnership.save(p,"bank-analysis",owned);

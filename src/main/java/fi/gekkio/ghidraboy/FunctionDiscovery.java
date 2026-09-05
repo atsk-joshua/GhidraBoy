@@ -18,7 +18,7 @@ public final class FunctionDiscovery {
         ProgramFingerprint.requireCurrent(p,result,monitor);
         String saved=p.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest",null);
         if(saved!=null) {
-            var active=ProgramMapping.JSON.fromJson(saved,AnalysisResult.class);
+            var active=AnalysisResult.read(saved);
             if(!Objects.equals(active.assumption(),result.assumption()) || !active.configuration().equals(result.configuration()) || !active.starts().equals(result.starts()))
                 throw new IllegalStateException("Analysis assumptions changed; apply the current preview before function discovery");
         }
