@@ -41,7 +41,7 @@ modernization requirement**. Remaining items are explicitly listed below.
 
 | Requirement | Implemented and executed evidence | Remaining / not established |
 | --- | --- | --- |
-| Build/package | Clean `./gradlew clean build`; 366 tests, zero failures/skips; compiled SLEIGH, Java 21/Kotlin 21, deterministic archive settings; doctor validates contents | Remote CI has not run; cross-platform execution not claimed |
+| Build/package | Clean `./gradlew clean build`; 366 tests, zero failures/skips; compiled SLEIGH, Java 21/Kotlin 21, deterministic archive settings; doctor validates contents | Baseline Linux CI run [33944856183](https://github.com/atsk-joshua/GhidraBoy/actions/runs/33944856183) passed on a9e1ca7; new changes require fresh local/CI evidence |
 | Installed extension | `tools/installed_smoke.py`: separate distribution/profile, original-language create then maintained-language reopen; installed script discovery; automatic loader detection of generated ROM | GUI startup observed; menu/accelerator interaction did not advance through CUA, so full interactive workflows remain unverified |
 | CPU corrections | Actual p-code exhaustive ADC/SBC (131072 each), DAA (2048), POP AF, overlapping A operands; all CB value/carry cases (131072); signed SP (131072), HL wrap, exhaustive ADD/SUB/logic/CP/ADD HL,HL and stack FFFF wrap; 21,000 external vectors | Not every instruction family has independent exhaustive semantic tests; bus/cycle behavior outside scope |
 | Decode/assembler | All valid base instructions and 256 CB opcodes: operands, lengths and assembler round trips; invalid bytes deliberate; existing relative/control-flow tests preserved | Dedicated overlay-relative target/boundary suite remains incomplete; STOP retains historical one-byte static model |
@@ -80,10 +80,26 @@ Reports are in `build/reports/tests/test`, `build/test-results/test`, and retain
 installed logs under `build/reports/installed`. Release checksum is in the
 external `build/distributions/SHA256SUMS` sidecar (not embedded in its own ZIP).
 
-No branch pushed, release published, external message sent, proprietary ROM
-used, or GhiGBC integration/coordination performed. CI definitions now target
+The baseline branch was pushed before this continuation and passed remote CI.
+No push or publication is performed by this completion task; no proprietary ROM
+or GhiGBC integration/coordination is used. CI definitions now target
 12.1.3 and include installed/persistence gates; the existing release job remains.
 An automatic approval review rejected removing that job, so it was preserved.
 
 See user-workflows.md for installation/first use and rollback. This preview is
 useful independently, but the outstanding acceptance items above remain work.
+
+## Hardening continuation
+
+Baseline clean build and installed tests rerun with the pinned local tools.
+All six audit regressions fail independently against a9e1ca7 before fixes;
+see `docs/evidence/audit-before.log.txt` and `AuditRegressionTest.kt`.
+
+| Audit | Baseline reproduction | Fix status |
+| --- | --- | --- |
+| R1 incomplete worklist certainty | failed as expected | pending |
+| R2 wide mapper stores | failed as expected | pending |
+| R3 reachable bank-zero views | failed as expected | pending |
+| R4 window-boundary fallthrough | failed as expected | pending |
+| R5 multiple symbol source claims | failed as expected | pending |
+| R6 BOOT alias namespace | failed as expected | pending |
