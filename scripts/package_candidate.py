@@ -31,7 +31,7 @@ def archive(source,output):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--provider',required=True,type=Path);p.add_argument('--ghidra',required=True,type=Path);p.add_argument('--jdk',required=True,type=Path);p.add_argument('--platform',required=True,choices=['macos-arm64','linux-x86_64']);a=p.parse_args()
-    stage=ROOT/'build/candidate'/('GhiGBC-0.2.0-'+a.platform)
+    stage=ROOT/'build/candidate'/('GhiGBC-0.2.1-'+a.platform)
     if stage.exists():shutil.rmtree(stage)
     stage.mkdir(parents=True)
     def copy(src,relative):
@@ -47,7 +47,7 @@ def main():
     if a.platform=='linux-x86_64':
         for src,relative in [(ROOT/'build/sdl-linux/libSDL2-2.0.so.0','build/runtime-libs/libSDL2-2.0.so.0'),(ROOT/'build/sdl-linux/SDL2-copyright.txt','LICENSES/SDL2-copyright.txt')]:
             copy(src,relative);runtime_files.append(relative)
-    for relative in ('native/patches/0001-cpu-bus-provenance.patch','build/teaching.gbc','build/teaching-dmg.gb','build/teaching.sym','dependencies.lock.json','LICENSE','scripts/install.py','scripts/install_legacy_v2.py','scripts/doctor.py','scripts/test_display_runtime.py'):
+    for relative in ('native/patches/0001-cpu-bus-provenance.patch','build/teaching.gbc','build/teaching-dmg.gb','build/teaching.sym','dependencies.lock.json','LICENSE','scripts/install.py','scripts/runtime_python.py','scripts/install_legacy_v2.py','scripts/doctor.py','scripts/test_display_runtime.py'):
         copy(ROOT/relative,relative);runtime_files.append(relative)
     for relative in ('scripts/test_ui_actions.sh','scripts/test_display_runtime.py','scripts/test_installer.py','scripts/test_native.sh','scripts/test_ghidra.sh','scripts/prepare_runtime.py','scripts/deck_handoff.py','scripts/collect_results.py'):
         copy(ROOT/relative,relative)
@@ -88,9 +88,9 @@ def main():
             file=repo/name
             if file.is_file() and not name.startswith('docs/evidence/'):
                 source[repo.name]['files'][name]=sha(file)
-    manifest=dict(schema=1,kind='generic',version='0.2.0-candidate',ghidra='12.1.3',platform=a.platform,python_versions=['3.14.7'] if a.platform=='macos-arm64' else ['3.13.15'],native_abi=1,checkpoint_schema=2,profile_api=1,mapping_schema=2,python_wheels=wheels,runtime_files=sorted(runtime_files),extensions=[dict(name='GhidraBoy',path='extensions/'+a.provider.name),dict(name='GhiGBC',path='extensions/'+debugger.name)],sources=source,files=copies)
+    manifest=dict(schema=1,kind='generic',version='0.2.1-candidate',ghidra='12.1.3',platform=a.platform,python_requirement='>=3.9',python_selection='Existing system python3, or explicit GBC_PYTHON/--python; verified by capability and installed-runtime checks',native_abi=1,checkpoint_schema=2,profile_api=1,mapping_schema=2,python_wheels=wheels,runtime_files=sorted(runtime_files),extensions=[dict(name='GhidraBoy',path='extensions/'+a.provider.name),dict(name='GhiGBC',path='extensions/'+debugger.name)],sources=source,files=copies)
     (stage/'suite.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
-    out=ROOT/'dist'/('GhiGBC-0.2.0-'+a.platform+'.tar.gz');out.parent.mkdir(exist_ok=True);archive(stage,out)
+    out=ROOT/'dist'/('GhiGBC-0.2.1-'+a.platform+'.tar.gz');out.parent.mkdir(exist_ok=True);archive(stage,out)
     out.with_suffix(out.suffix+'.sha256').write_text(sha(out)+'  '+out.name+'\n')
     print(json.dumps({'stage':str(stage),'archive':str(out),'sha256':sha(out),'manifest_sha256':sha(stage/'suite.json')}))
 

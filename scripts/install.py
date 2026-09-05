@@ -13,6 +13,8 @@ import subprocess
 import sys
 import zipfile
 
+from runtime_python import check_runtime, prepare_environment
+
 ROOT=Path(__file__).resolve().parents[1]
 MANAGED={'GhidraBoy','GhiGBC','GhiBW3Static','GhiBW3Live'}
 
@@ -142,8 +144,7 @@ def main():
         if digest(args.ghidra/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist'/name)!=sha:raise ValueError('Selected Ghidra wheel hash mismatch: '+name)
     system=platform.system();arch=platform.machine().lower();target=('macos-arm64' if system=='Darwin' and arch=='arm64' else 'linux-x86_64' if system=='Linux' and arch in ('x86_64','amd64') else 'unsupported')
     if manifest['platform']!=target:raise ValueError('Wrong native package for '+system+'/'+arch)
-    version=subprocess.check_output([str(args.python),'-c','import platform; print(platform.python_version())'],text=True).strip()
-    if version not in manifest['python_versions']:raise ValueError('Use a tested Python: '+', '.join(manifest['python_versions']))
+    python_info=check_runtime(args.python)
     java=subprocess.run([str(args.java_home/'bin/java'),'-version'],text=True,capture_output=True,check=True)
     if 'version "21.' not in java.stderr+java.stdout:raise ValueError('This candidate requires tested JDK/JRE21')
     home=args.user_home.resolve();home.mkdir(parents=True,exist_ok=True)
@@ -175,9 +176,9 @@ def main():
             if dest.exists() and hashes(dest)!=entry['installed']:raise ValueError('User-modified managed files preserved: '+str(dest))
     stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%f')
     journal_dir=settings/'GhiGBC-rollback'/stamp;journal_dir.mkdir(parents=True)
-    journal=journal_dir/'manifest.json';runtime=settings/'GhiGBC-runtime'/('0.2.0-'+stamp)
+    journal=journal_dir/'manifest.json';runtime=settings/'GhiGBC-runtime'/(manifest['version'].removesuffix('-candidate')+'-'+stamp)
     staging=journal_dir/'staging';staging.mkdir()
-    data=dict(schema=3,state='preparing',ghidra_path=str(args.ghidra.resolve()),user_home=str(home),ghidra=manifest['ghidra'],platform=target,manifest_sha256=digest(args.manifest),study_sha256=digest(args.study) if args.study else None,runtime=str(runtime),entries=[])
+    data=dict(schema=3,state='preparing',python=python_info,ghidra_path=str(args.ghidra.resolve()),user_home=str(home),ghidra=manifest['ghidra'],platform=target,manifest_sha256=digest(args.manifest),study_sha256=digest(args.study) if args.study else None,runtime=str(runtime),entries=[])
     save(journal,data)
     try:
         runtime.mkdir(parents=True)
@@ -187,9 +188,7 @@ def main():
         for root,spec in [(package,manifest)]+([(study_root,study)] if study else []):
             for relative in spec['runtime_files']:
                 src=safe(root,relative);dest=safe(runtime,relative);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dest)
-        subprocess.run([str(args.python),'-m','venv',str(runtime/'.venv12')],check=True,stdout=subprocess.DEVNULL)
-        python=runtime/'.venv12/bin/python'
-        subprocess.run([str(python),'-m','pip','install','--no-index','--find-links',str(args.ghidra.resolve()/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist'),'ghidratrace==12.1','protobuf==6.31.0'],check=True,stdout=subprocess.DEVNULL)
+        python=prepare_environment(args.python,runtime/'.venv12',args.ghidra.resolve()/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist')
         env=dict(os.environ,PYTHONPATH=str(runtime/'python'),PYTHONDONTWRITEBYTECODE='1')
         subprocess.run([str(python),'-c','from ghigbc.native import Machine,ROOT; from ghigbc.profile import installed_providers; m=Machine(ROOT/"build/teaching.gbc"); assert m.capture().state["abi"]==1; m.close(); assert not installed_providers(ROOT)[1]; from ghigbc.display import load_sdl; load_sdl()'],env=env,check=True,stdout=subprocess.DEVNULL)
         runtime_entry['installed']=hashes(runtime);save(journal,data);failpoint('runtime')

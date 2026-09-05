@@ -1,12 +1,12 @@
 # Install, upgrade and rollback
 
-Extract the platform archive in your home folder. Keep Ghidra closed while changing its extensions. Use the tested Python (3.13.15 Linux x86-64; 3.14.7 macOS arm64), Ghidra **12.1.3**, and Java21. No compiler, Gradle, RGBDS, root access, SteamOS read-only change, or global JVM library-path change is required.
+Extract the platform archive in your home folder. Keep Ghidra closed while changing its extensions. Use the existing system Python3.9+ (including the Python already on Steam Deck), Ghidra **12.1.3**, and Java21. No compiler, Gradle, RGBDS, root access, SteamOS read-only change, or global JVM library-path change is required.
 
 ```sh
 bash Setup.sh --ghidra "/path with spaces/ghidra_12.1.3_PUBLIC" --java-home "/path/to/jdk-21"
 ```
 
-Set GBC_PYTHON to your tested Python executable if `python3` names a different version. The selected distribution supplies exact pinned Trace RMI/protobuf wheels offline. Linux uses normal host graphics integration; bundled SDL2 is a process-local fallback when system SDL2 cannot load. Its remaining dynamic libraries are host prerequisites, recorded in the acceptance report. An explicit process-local GBC_SDL2_LIBRARY can select an alternate tested SDL2 file.
+Setup uses `python3` by default; GBC_PYTHON or --python may select another existing interpreter. No exact patch/minor allowlist, upper-version cap, interpreter download, or global Python change is imposed. It checks required standard-library capabilities, creates an isolated venv with that interpreter, and verifies the actual bundled wheels and native runtime. The bundled pure-Python wheels are installed offline into that venv; neither pip nor ensurepip is required. Recorded test versions are evidence, not installation requirements. The selected distribution supplies exact pinned Trace RMI/protobuf wheels offline. Linux uses normal host graphics integration; bundled SDL2 is a process-local fallback when system SDL2 cannot load. Its remaining dynamic libraries are host prerequisites, recorded in the acceptance report. An explicit process-local GBC_SDL2_LIBRARY can select an alternate tested SDL2 file.
 
 For the optional study package, extract it separately and add `--study "/path/to/GhiBW3-study/study.json"`. The generic installer verifies the complete matched composition and all payload hashes before replacing an extension. Static-only users can install the GhidraBoy and GhiBW3Static ZIPs with Ghidra's normal extension installer and leave GhiGBC/GhiBW3Live absent.
 

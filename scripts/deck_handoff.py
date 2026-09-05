@@ -116,8 +116,8 @@ def main():
     python = ROOT / '.venv12/bin/python'
     try:
         if args.action == 'setup':
-            if not (3, 10) <= sys.version_info[:2] < (3, 15):
-                raise RuntimeError('Use a supported Python version: 3.10–3.14.')
+            from runtime_python import check_runtime
+            check_runtime(sys.executable)
             print('Close Ghidra before installing. Existing managed extensions are backed up for rollback.')
             run([sys.executable, ROOT/'scripts/prepare_runtime.py'], env, results/'setup.log')
             run([python, ROOT/'scripts/install.py'], env, results/'install.json')
