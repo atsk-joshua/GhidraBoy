@@ -59,10 +59,14 @@ public final class CartridgeLayout {
                         canonical[bank]=memory.createInitializedBlock("rom"+bank,as.getAddress(bank==0?0:0x4000),file,bank*0x4000L,0x4000,bank!=0);
                         permissions(canonical[bank],true,false,true);
                     }
-                    if(cartridge.mapper()==Cartridge.Mapper.MBC5)
-                        permissions(memory.createByteMappedBlock("rom0_high",as.getAddress(0x4000),canonical[0].getStart(),0x4000,true),true,false,true);
-                    if(cartridge.mapper()==Cartridge.Mapper.MBC1) for(int bank=32;bank<banks;bank+=32)
-                        permissions(memory.createByteMappedBlock("rom"+bank+"_low",as.getAddress(0),canonical[bank].getStart(),0x4000,true),true,false,true);
+                    for(var view:MapperTopology.romViews(cartridge)) {
+                        monitor.checkCancelled();
+                        var source=canonical[view.bank()];
+                        if(source.getStart().getOffset()==view.cpuWindow()) continue;
+                        String suffix=view.cpuWindow()==0?"_low":"_high";
+                        permissions(memory.createByteMappedBlock("rom"+view.bank()+suffix,
+                            as.getAddress(view.cpuWindow()),source.getStart(),0x4000,true),true,false,true);
+                    }
                 }
                 int ram=cartridge.ramBytes();
                 if(ram>0) {
