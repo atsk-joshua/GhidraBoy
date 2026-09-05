@@ -69,6 +69,8 @@ public record MapperState(int romLow, int romHigh, int mode, int ramSelect, bool
     }
     public static Resolution translate(Cartridge c, MapperState s, int cpu, boolean write) {
         if(cpu<0 || cpu>65535) throw new IllegalArgumentException("CPU address out of range");
+        if(!c.hardwareKnown() && ((cpu>=0x8000 && cpu<0xa000) || (cpu>=0xd000 && cpu<0xe000) || (cpu>=0xf000 && cpu<0xfe00)))
+            return Resolution.other("unknown","Historical GB/CGB hardware selection is unknown");
         if(cpu<0x8000) {
             if(write) return Resolution.other(c.mapper()==Cartridge.Mapper.ROM_ONLY ? "unmapped" : "device", "ROM is read-only; mapper control write");
             if(c.mapper()==Cartridge.Mapper.RAW) return Resolution.other("unknown","Unsupported mapper");

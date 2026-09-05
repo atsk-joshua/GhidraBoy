@@ -15,7 +15,7 @@ import java.util.*;
 
 /** Versioned static contract. All lookups use the Program's actual address factory and sources. */
 public final class ProgramMapping {
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
     public static final String OPTIONS = "GhidraBoy";
     private static final String ANCHORS = "GhidraBoy.Physical";
     public static final Gson JSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
@@ -27,12 +27,51 @@ public final class ProgramMapping {
                         String provenance) { }
     public record Snapshot(int schemaVersion, String language, String compiler, Cartridge cartridge,
                            String inputMode, long originalLength, String originalSha256, Cartridge.Support support,
-                           List<Range> ranges, List<String> diagnostics) { }
-    private record Anchor(String region,int bank,long length) { }
+                           List<Range> ranges, List<String> diagnostics, RequestProvenance request, List<UnmappedFileRange> originalUnmapped) { }
+    public record RequestProvenance(String requestedMode,String selectedMode,String mapperOverride,String selectedMapper,String hardware,String hardwareSource) { }
+    public record UnmappedFileRange(long offset,long length,String reason) { }
+    private record Anchor(String region,int bank,long length,long offset,String origin) { }
     public static void anchor(Program p, MemoryBlock b, String region, int bank) throws Exception {
         var map=p.getUsrPropertyManager().getStringPropertyMap(ANCHORS);
         if(map==null) map=p.getUsrPropertyManager().createStringPropertyMap(ANCHORS);
-        map.add(b.getStart(),JSON.toJson(new Anchor(region,bank,b.getSize())));
+        map.add(b.getStart(),JSON.toJson(new Anchor(region,bank,b.getSize(),0,"loader-anchor")));
+    }
+    public static void identifyRam(Program p,Address start,long length,String region,int bank,long offset,TaskMonitor monitor) throws Exception {
+        long bankSize=switch(region) { case "WRAM" -> 0x1000; case "VRAM","SRAM" -> 0x2000; case "MBC2_RAM" -> 512; default -> throw new IllegalArgumentException("Expected WRAM, VRAM, SRAM or MBC2_RAM"); };
+        int maxBank=switch(region) { case "WRAM" -> 7; case "VRAM" -> 1; case "SRAM" -> 15; default -> 0; };
+        if(length<=0 || offset<0 || offset+length>bankSize || bank<0 || bank>maxBank) throw new IllegalArgumentException("Invalid physical RAM interval");
+        var end=start.addNoWrap(length-1);
+        var block=p.getMemory().getBlock(start);
+        if(block==null || !block.contains(end) || block.isMapped() || block.getSourceInfos().stream().anyMatch(info->info.getFileBytes().isPresent()))
+            throw new IllegalArgumentException("Identify a contiguous canonical RAM interval, not ROM or an alias");
+        var map=p.getUsrPropertyManager().getStringPropertyMap(ANCHORS);
+        var desired=new Anchor(region,bank,length,offset,"explicit-anchor");
+        if(map!=null) {
+            var iterator=map.getPropertyIterator();
+            while(iterator.hasNext()) {
+                monitor.checkCancelled(); var a=iterator.next(); var existing=JSON.fromJson(map.getString(a),Anchor.class);
+                if(a.equals(start) && desired.region.equals(existing.region) && desired.bank==existing.bank && desired.length==existing.length && desired.offset==existing.offset) return;
+                boolean staticOverlap=a.getAddressSpace().equals(start.getAddressSpace()) && start.getOffset()<a.getOffset()+existing.length && a.getOffset()<start.getOffset()+length;
+                boolean physicalOverlap=region.equals(existing.region) && bank==existing.bank && offset<existing.offset+existing.length && existing.offset<offset+length;
+                if(staticOverlap || physicalOverlap) throw new IllegalArgumentException("Conflicting existing RAM identity at "+a);
+            }
+        }
+        int tx=p.startTransaction("Identify legacy RAM physical interval"); boolean success=false;
+        try {
+            if(map==null) map=p.getUsrPropertyManager().createStringPropertyMap(ANCHORS);
+            map.add(start,JSON.toJson(desired)); monitor.checkCancelled(); success=true;
+        } finally { p.endTransaction(tx,success); }
+    }
+    /** Exact static-space lookup: overlay getAddress(long) otherwise falls back outside mapped ranges. */
+    public static Address staticAddress(Program p,String text) {
+        int separator=text.lastIndexOf("::");
+        if(separator>=0) {
+            var space=p.getAddressFactory().getAddressSpace(text.substring(0,separator));
+            if(space==null) return null;
+            try { return space.getAddressInThisSpaceOnly(Long.parseUnsignedLong(text.substring(separator+2),16)); }
+            catch(IllegalArgumentException error) { return null; }
+        }
+        return p.getAddressFactory().getAddress(text);
     }
     public static Cartridge cartridge(Program p) {
         String value=p.getOptions(OPTIONS).getString("cartridge",null);
@@ -42,7 +81,7 @@ public final class ProgramMapping {
         var files=p.getMemory().getAllFileBytes();
         if(files.size()!=1) throw new IOException("Expected exactly one original input; found " + files.size());
         var file=files.get(0);
-        if(file.getFileOffset()!=0 || file.getSize()>0x800000) throw new IOException("Uncertain file provenance or oversized input");
+        if(file.getFileOffset()!=0 || file.getSize()>0x1000000) throw new IOException("Uncertain file provenance or oversized input");
         return file;
     }
     public static Snapshot inspect(Program p) throws IOException {
@@ -81,7 +120,7 @@ public final class ProgramMapping {
                             long lo=Math.max(a.getOffset(),source.getMinAddress().getOffset());
                             long hi=Math.min(a.getOffset()+anchor.length,source.getMaxAddress().getOffset()+1);
                             if(lo<hi) {
-                                ranges.add(range(block,anchor.region,anchor.bank,lo-a.getOffset(),hi-lo,a.getAddressSpace().getAddress(lo),null,null,"loader-anchor"));
+                                ranges.add(range(block,anchor.region,anchor.bank,anchor.offset+lo-a.getOffset(),hi-lo,a.getAddressSpace().getAddress(lo),null,null,anchor.origin==null?"legacy-anchor":anchor.origin));
                                 found=true;
                             }
                         }
@@ -96,8 +135,16 @@ public final class ProgramMapping {
             byte[] original=new byte[(int)file.getSize()]; file.getOriginalBytes(0,original);
             hash=Sha256.of(original).toString(); HASHES.put(file,hash);
         }
+        var cartridge=cartridge(p);
+        var unmapped=new ArrayList<UnmappedFileRange>();
+        if(cartridge!=null && cartridge.addressableLength()<file.getSize())
+            unmapped.add(new UnmappedFileRange(cartridge.addressableLength(),file.getSize()-cartridge.addressableLength(),"SALVAGE_UNMAPPED"));
+        else if(opts.getString("inputMode","").equals("CGB_BOOT")) unmapped.add(new UnmappedFileRange(0x100,0x100,"BOOT_HOLE"));
+        var request=new RequestProvenance(opts.getString("requestedMode","LEGACY_UNKNOWN"),opts.getString("inputMode","LEGACY_UNKNOWN"),
+            opts.getString("mapperOverride","AUTO"),cartridge==null?"NOT_APPLICABLE":cartridge.mapper().name(),opts.getString("hardware","UNKNOWN"),
+            opts.getString("hardwareProvenance","loader option or unrecovered historical selection"));
         return new Snapshot(SCHEMA_VERSION,p.getLanguageID().toString(),p.getCompilerSpec().getCompilerSpecID().toString(),cartridge(p),
-            opts.getString("inputMode","LEGACY_UNKNOWN"),file.getSize(),hash,cartridge(p)==null?null:cartridge(p).support(),List.copyOf(ranges),List.copyOf(diagnostics));
+            opts.getString("inputMode","LEGACY_UNKNOWN"),file.getSize(),hash,cartridge(p)==null?null:cartridge(p).support(),List.copyOf(ranges),List.copyOf(diagnostics),request,List.copyOf(unmapped));
     }
     private static Range range(MemoryBlock b,String region,int bank,long off,long len,Address a,Long file,String alias,String provenance) {
         return new Range(region,bank,off,len,a.getAddressSpace().getName(),a.getOffset(),file,alias,b.isRead(),b.isWrite(),b.isExecute(),provenance);
@@ -190,14 +237,16 @@ public final class ProgramMapping {
                     bytes[off+i]=mapped[i]; covered[off+i]=true;
                 }
             }
-            if(cartridge(p)!=null) for(int i=0;i<covered.length;i++) if(!covered[i]) throw new IOException("Missing cartridge source mapping at file offset "+i);
+            if(cartridge(p)!=null) for(int i=0;i<cartridge(p).addressableLength();i++) if(!covered[i]) throw new IOException("Missing cartridge source mapping at file offset "+i);
         }
         if(repair) {
             if(!current || cartridge(p)==null) throw new IOException("Checksum repair requires current cartridge export");
+            if(cartridge(p).headerStatus()==Cartridge.HeaderStatus.TRUNCATED || cartridge(p).headerStatus()==Cartridge.HeaderStatus.UNKNOWN_SIZE)
+                throw new IOException("Checksum repair requires established header and ROM extent");
             int h=0,g=0;
             for(int i=0x134;i<=0x14c;i++) h=(h-(bytes[i]&255)-1)&255;
             bytes[0x14d]=(byte)h;
-            for(int i=0;i<bytes.length;i++) if(i!=0x14e && i!=0x14f) g=(g+(bytes[i]&255))&65535;
+            for(int i=0;i<cartridge(p).addressableLength();i++) if(i!=0x14e && i!=0x14f) g=(g+(bytes[i]&255))&65535;
             bytes[0x14e]=(byte)(g>>8); bytes[0x14f]=(byte)g;
         }
         return bytes;

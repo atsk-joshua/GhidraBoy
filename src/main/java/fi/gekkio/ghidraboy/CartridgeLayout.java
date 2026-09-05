@@ -17,7 +17,7 @@ public final class CartridgeLayout {
     public static void load(Program p,ByteProvider provider,String mode,String mapperOverride,GameBoyKind hardware,
                             boolean hardwareBlocks,boolean types,TaskMonitor monitor,MessageLog log) throws Exception {
         if(p.getMemory().getBlocks().length!=0) throw new IOException("Import requires an empty program; use inspection for legacy programs");
-        if(provider.length()>0x800000) throw new IOException("Input exceeds 8 MiB safety limit");
+        if(provider.length()>(mode.equals("SALVAGE")?0x1000000:0x800000)) throw new IOException("Input exceeds 8 MiB safety limit");
         monitor.checkCancelled();
         String selected=mode;
         if(mode.equals("AUTO")) {
@@ -26,11 +26,11 @@ public final class CartridgeLayout {
             else if(RomUtils.detectRom(provider).isPresent()) selected="CARTRIDGE";
             else throw new IOException("Unrecognized input: select explicit CARTRIDGE, DMG_BOOT or CGB_BOOT mode");
         }
-        if(!java.util.Set.of("CARTRIDGE","DMG_BOOT","CGB_BOOT").contains(selected)) throw new IOException("Unknown input mode: "+selected);
-        boolean boot=!selected.equals("CARTRIDGE");
+        if(!java.util.Set.of("CARTRIDGE","SALVAGE","DMG_BOOT","CGB_BOOT").contains(selected)) throw new IOException("Unknown input mode: "+selected);
+        boolean boot=!selected.equals("CARTRIDGE") && !selected.equals("SALVAGE");
         if(boot && provider.length()!=(selected.equals("CGB_BOOT")?0x900:0x100)) throw new IOException("Boot image size must be DMG 0x100 or CGB 0x900 (including hole)");
         byte[] input=provider.readBytes(0,provider.length());
-        Cartridge cartridge=boot?null:Cartridge.parse(input,mapperOverride).withHardware(hardware);
+        Cartridge cartridge=boot?null:Cartridge.parse(input,mapperOverride,selected.equals("SALVAGE")?Cartridge.InputPolicy.SALVAGE:Cartridge.InputPolicy.STRICT).withHardware(hardware);
         GameBoyKind kind=boot?(selected.equals("CGB_BOOT")?GameBoyKind.CGB:GameBoyKind.GB):hardware;
         int tx=p.startTransaction("Import GhidraBoy cartridge"); boolean success=false;
         try {
@@ -57,7 +57,7 @@ public final class CartridgeLayout {
                     for(int bank=0;bank<banks;bank++) {
                         monitor.checkCancelled();
                         canonical[bank]=memory.createInitializedBlock("rom"+bank,as.getAddress(bank==0?0:0x4000),file,bank*0x4000L,0x4000,bank!=0);
-                        permissions(canonical[bank],true,false,true);
+                        permissions(canonical[bank],true,false,cartridge.mapper()!=Cartridge.Mapper.RAW);
                     }
                     for(var view:MapperTopology.romViews(cartridge)) {
                         monitor.checkCancelled();
@@ -81,6 +81,7 @@ public final class CartridgeLayout {
                             permissions(memory.createByteMappedBlock("xram_mirror"+off,as.getAddress(0xa000+off),b.getStart(),length,false),true,true,false);
                     }
                 }
+                if(banks>0 && cartridge.mapper()!=Cartridge.Mapper.RAW) {
                 for(int vector=0;vector<=0x38;vector+=8)
                     p.getSymbolTable().createLabel(as.getAddress(vector),String.format("rst%02x",vector),SourceType.IMPORTED);
                 String[] interrupts={"vblank","stat","timer","serial","joypad"};
@@ -88,7 +89,8 @@ public final class CartridgeLayout {
                     p.getSymbolTable().createLabel(as.getAddress(0x40+vector*8),"intr_"+interrupts[vector],SourceType.IMPORTED);
                 p.getSymbolTable().addExternalEntryPoint(as.getAddress(0x100));
                 p.getSymbolTable().createLabel(as.getAddress(0x100),"entry",SourceType.IMPORTED);
-                if(types) {
+                }
+                if(types && banks>0 && cartridge.headerStatus()!=Cartridge.HeaderStatus.TRUNCATED) {
                     DataUtilities.createData(p,as.getAddress(0x104),DataTypes.LOGO,-1,false,DataUtilities.ClearDataMode.CLEAR_ALL_UNDEFINED_CONFLICT_DATA);
                     var header=DataUtilities.createData(p,as.getAddress(0x134),DataTypes.HEADER,-1,false,DataUtilities.ClearDataMode.CLEAR_ALL_UNDEFINED_CONFLICT_DATA);
                     EndianSettingsDefinition.DEF.setBigEndian(header.getComponentContaining(0x1a),true);
@@ -120,7 +122,7 @@ public final class CartridgeLayout {
             permissions(m.createByteMappedBlock("echo",as.getAddress(0xe000),as.getAddress(0xc000),0x1e00,false),true,true,false);
         }
         GameBoyUtils.populateHardwareBlocks(p,kind);
-        HardwareReference.apply(p,kind);
+        HardwareReference.apply(p,kind,true);
     }
     private static void permissions(MemoryBlock b,boolean read,boolean write,boolean execute) {
         b.setRead(read); b.setWrite(write); b.setExecute(execute);

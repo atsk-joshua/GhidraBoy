@@ -1,38 +1,421 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:ghidraboy:mapping:1",
-  "title": "GhidraBoy static mapping snapshot version 1",
   "type": "object",
-  "required": ["schemaVersion", "language", "compiler", "inputMode", "originalLength", "originalSha256", "ranges", "diagnostics"],
+  "additionalProperties": false,
   "properties": {
-    "schemaVersion": {"const": 1},
-    "language": {"const": "SM83:LE:16:default"},
-    "compiler": {"type": "string"},
-    "inputMode": {"type": "string"},
-    "originalLength": {"type": "integer", "minimum": 0},
-    "originalSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "cartridge": {"type": ["object", "null"]},
-    "diagnostics": {"type": "array", "items": {"type": "string"}},
+    "schemaVersion": {
+      "const": 2
+    },
+    "language": {
+      "const": "SM83:LE:16:default"
+    },
+    "compiler": {
+      "type": "string"
+    },
+    "cartridge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rawHeader": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "cgb": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "sgb": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "type": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "romSizeCode": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "ramSizeCode": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "headerChecksum": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "computedHeaderChecksum": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "globalChecksum": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 65535
+        },
+        "computedGlobalChecksum": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 65535
+        },
+        "declaredRomBanks": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 512
+        },
+        "ramBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inputLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mapper": {
+          "enum": [
+            "ROM_ONLY",
+            "MBC1",
+            "MBC2",
+            "MBC3",
+            "MBC5",
+            "RAW"
+          ]
+        },
+        "hardware": {
+          "enum": [
+            "GB",
+            "CGB",
+            "UNKNOWN"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "geometry": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "actualLength": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "declaredLength": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "addressableLength": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trailingOffset": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trailingLength": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "policy": {
+              "enum": [
+                "STRICT",
+                "SALVAGE"
+              ]
+            }
+          },
+          "required": [
+            "actualLength",
+            "addressableLength",
+            "trailingOffset",
+            "trailingLength",
+            "policy"
+          ]
+        },
+        "headerStatus": {
+          "enum": [
+            "COMPLETE",
+            "TRUNCATED",
+            "UNKNOWN_SIZE"
+          ]
+        }
+      },
+      "required": [
+        "rawHeader",
+        "title",
+        "manufacturer",
+        "cgb",
+        "sgb",
+        "type",
+        "romSizeCode",
+        "ramSizeCode",
+        "headerChecksum",
+        "computedHeaderChecksum",
+        "globalChecksum",
+        "computedGlobalChecksum",
+        "declaredRomBanks",
+        "ramBytes",
+        "inputLength",
+        "inputSha256",
+        "mapper",
+        "hardware",
+        "warnings"
+      ]
+    },
+    "inputMode": {
+      "type": "string"
+    },
+    "originalLength": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "originalSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rawLoading": {
+          "enum": [
+            "SUPPORTED",
+            "RAW_ONLY",
+            "ASSUMPTION_REQUIRED",
+            "UNSUPPORTED"
+          ]
+        },
+        "physicalBanks": {
+          "enum": [
+            "SUPPORTED",
+            "RAW_ONLY",
+            "ASSUMPTION_REQUIRED",
+            "UNSUPPORTED"
+          ]
+        },
+        "translation": {
+          "enum": [
+            "SUPPORTED",
+            "RAW_ONLY",
+            "ASSUMPTION_REQUIRED",
+            "UNSUPPORTED"
+          ]
+        },
+        "inference": {
+          "enum": [
+            "SUPPORTED",
+            "RAW_ONLY",
+            "ASSUMPTION_REQUIRED",
+            "UNSUPPORTED"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "rawLoading",
+        "physicalBanks",
+        "translation",
+        "inference",
+        "limitations"
+      ]
+    },
     "ranges": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["region", "bank", "offset", "length", "space", "start", "read", "write", "execute", "provenance"],
+        "additionalProperties": false,
         "properties": {
-          "region": {"type": "string"},
-          "bank": {"type": "integer", "minimum": -1},
-          "offset": {"type": "integer", "minimum": 0},
-          "length": {"type": "integer", "minimum": 1},
-          "space": {"type": "string"},
-          "start": {"type": "integer", "minimum": 0, "maximum": 65535},
-          "fileOffset": {"type": ["integer", "null"], "minimum": 0},
-          "alias": {"type": ["string", "null"]},
-          "read": {"type": "boolean"},
-          "write": {"type": "boolean"},
-          "execute": {"type": "boolean"},
-          "provenance": {"enum": ["file-source", "byte-mapping", "loader-anchor"]}
+          "region": {
+            "enum": [
+              "ROM",
+              "BOOT",
+              "ALIAS",
+              "WRAM",
+              "VRAM",
+              "SRAM",
+              "MBC2_RAM",
+              "OAM",
+              "IO",
+              "HRAM",
+              "IE"
+            ]
+          },
+          "bank": {
+            "type": "integer",
+            "minimum": -1
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "space": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "fileOffset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "alias": {
+            "type": "string"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "write": {
+            "type": "boolean"
+          },
+          "execute": {
+            "type": "boolean"
+          },
+          "provenance": {
+            "enum": [
+              "file-source",
+              "byte-mapping",
+              "loader-anchor",
+              "explicit-anchor",
+              "legacy-anchor"
+            ]
+          }
+        },
+        "required": [
+          "region",
+          "bank",
+          "offset",
+          "length",
+          "space",
+          "start",
+          "read",
+          "write",
+          "execute",
+          "provenance"
+        ]
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requestedMode": {
+          "type": "string"
+        },
+        "selectedMode": {
+          "type": "string"
+        },
+        "mapperOverride": {
+          "type": "string"
+        },
+        "selectedMapper": {
+          "enum": [
+            "ROM_ONLY",
+            "MBC1",
+            "MBC2",
+            "MBC3",
+            "MBC5",
+            "RAW",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "hardware": {
+          "enum": [
+            "GB",
+            "CGB",
+            "UNKNOWN"
+          ]
+        },
+        "hardwareSource": {
+          "type": "string"
         }
+      },
+      "required": [
+        "requestedMode",
+        "selectedMode",
+        "mapperOverride",
+        "selectedMapper",
+        "hardware",
+        "hardwareSource"
+      ]
+    },
+    "originalUnmapped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "enum": [
+              "BOOT_HOLE",
+              "SALVAGE_UNMAPPED"
+            ]
+          }
+        },
+        "required": [
+          "offset",
+          "length",
+          "reason"
+        ]
       }
     }
-  }
+  },
+  "required": [
+    "schemaVersion",
+    "language",
+    "compiler",
+    "inputMode",
+    "originalLength",
+    "originalSha256",
+    "ranges",
+    "diagnostics",
+    "request",
+    "originalUnmapped"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ghidraboy:mapping:2",
+  "title": "GhidraBoy static mapping contract v2"
 }
