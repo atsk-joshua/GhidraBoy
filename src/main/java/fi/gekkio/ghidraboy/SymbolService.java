@@ -42,57 +42,122 @@ public final class SymbolService {
             default -> false;
         };
     }
+    private static final String REGISTRY = "symbols.registry.v2";
+    private static final class Registry {
+        int version = 2;
+        Map<String, String> sources = new TreeMap<>();
+        Map<Long, LabelIdentity> labels = new TreeMap<>();
+    }
+    private static final class LabelIdentity {
+        long id;
+        String name;
+        String qualifiedName;
+        long namespace;
+        int space;
+        long offset;
+        boolean created;
+        Set<String> claims = new TreeSet<>();
+
+        LabelIdentity(ghidra.program.model.symbol.Symbol symbol, boolean created) {
+            id = symbol.getID(); name = symbol.getName(); qualifiedName = symbol.getName(true);
+            namespace = symbol.getParentNamespace().getID();
+            space = symbol.getAddress().getAddressSpace().getSpaceID(); offset = symbol.getAddress().getOffset();
+            this.created = created;
+        }
+        boolean unchanged(ghidra.program.model.symbol.Symbol symbol) {
+            return symbol != null && symbol.getSource() == SourceType.IMPORTED &&
+                symbol.getSymbolType() == ghidra.program.model.symbol.SymbolType.LABEL &&
+                symbol.getName().equals(name) && symbol.getName(true).equals(qualifiedName) &&
+                symbol.getParentNamespace().getID() == namespace &&
+                symbol.getAddress().getAddressSpace().getSpaceID() == space && symbol.getAddress().getOffset() == offset;
+        }
+    }
+    public record Source(String name, String retainedText, int claims) { }
+
+    private static Registry registry(Program p) throws IOException {
+        var opts = p.getOptions(ProgramMapping.OPTIONS);
+        String json = opts.getString(REGISTRY, null);
+        if (json != null) {
+            var registry = ProgramMapping.JSON.fromJson(json, Registry.class);
+            if (registry.version != 2) throw new IOException("Unsupported symbol registry version");
+            return registry;
+        }
+        // Migrate v1 retained sources as claims, including sources that created no new label.
+        var registry = new Registry();
+        var previouslyOwned = new HashSet<Long>();
+        for (String key : opts.getOptionNames()) if (key.startsWith("symbols.") && key.endsWith(".owned")) {
+            for (var old : ProgramMapping.JSON.fromJson(opts.getString(key, "[]"), Owned[].class)) {
+                var symbol = p.getSymbolTable().getSymbol(old.id);
+                if (symbol != null && symbol.getSource() == SourceType.IMPORTED && symbol.getName().equals(old.name) &&
+                    symbol.getAddress().toString().equals(old.address)) previouslyOwned.add(old.id);
+            }
+        }
+        for (String key : opts.getOptionNames()) if (key.startsWith("symbols.") && key.endsWith(".source")) {
+            String source = opts.getString(key, "");
+            String text = opts.getString(key.substring(0, key.length()-7) + ".text", "");
+            registry.sources.put(source, text);
+            var parsed = SymbolFile.parse(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            for (var placement : preview(p, parsed)) for (var address : placement.addresses()) {
+                var symbol = existing(p, address, placement.symbol().name());
+                if (symbol == null) continue;
+                var identity = registry.labels.computeIfAbsent(symbol.getID(), id -> new LabelIdentity(symbol, previouslyOwned.contains(id)));
+                identity.claims.add(source);
+            }
+        }
+        return registry;
+    }
+    private static ghidra.program.model.symbol.Symbol existing(Program p, Address address, String name) {
+        for (var symbol : p.getSymbolTable().getSymbols(address))
+            if (symbol.getName().equals(name) && symbol.getParentNamespace().isGlobal()) return symbol;
+        return null;
+    }
+    private static void collectUnclaimed(Program p, Registry registry, TaskMonitor monitor) throws Exception {
+        for (var identity : List.copyOf(registry.labels.values())) {
+            monitor.checkCancelled();
+            if (!identity.claims.isEmpty()) continue;
+            var symbol = p.getSymbolTable().getSymbol(identity.id);
+            if (identity.created && identity.unchanged(symbol)) symbol.delete();
+            registry.labels.remove(identity.id);
+        }
+    }
+    public static List<Source> sources(Program p) throws IOException {
+        var registry = registry(p);
+        return registry.sources.entrySet().stream().map(entry -> new Source(entry.getKey(), entry.getValue(),
+            (int) registry.labels.values().stream().filter(label -> label.claims.contains(entry.getKey())).count())).toList();
+    }
     public static List<Placement> importSymbols(Program p,SymbolFile.Result parsed,String source,TaskMonitor monitor) throws Exception {
-        var placements=preview(p,parsed);
-        int tx=p.startTransaction("Import Game Boy symbols"); boolean success=false;
+        var placements = preview(p, parsed);
+        monitor.checkCancelled();
+        int tx = p.startTransaction("Import Game Boy symbols"); boolean success = false;
         try {
-            var st=p.getSymbolTable(); var owned=new ArrayList<Owned>();
-            var opts=p.getOptions(ProgramMapping.OPTIONS);
-            String key="symbols."+Sha256.of(source.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            String existing=opts.getString(key+".owned","[]");
-            owned.addAll(Arrays.asList(ProgramMapping.JSON.fromJson(existing,Owned[].class)));
-            var desired=new HashSet<String>();
-            for(var placement:placements) for(var a:placement.addresses) desired.add(a+"\n"+placement.symbol.name());
-            for(var prior:List.copyOf(owned)) {
-                if(desired.contains(prior.address+"\n"+prior.name)) continue;
-                var sym=st.getSymbol(prior.id);
-                if(sym!=null && sym.getSource()==SourceType.IMPORTED && sym.getName().equals(prior.name) && sym.getAddress().toString().equals(prior.address)
-                    && sym.getSymbolType()==ghidra.program.model.symbol.SymbolType.LABEL) sym.delete();
-                owned.remove(prior);
-            }
-            for(var placement:placements) {
+            var registry = registry(p);
+            for (var identity : registry.labels.values()) identity.claims.remove(source);
+            for (var placement : placements) for (var address : placement.addresses()) {
                 monitor.checkCancelled();
-                for(var a:placement.addresses) {
-                    String name=placement.symbol.name();
-                    boolean present=false;
-                    for(var sym:st.getSymbols(a)) if(sym.getName().equals(name)) present=true;
-                    if(!present) {
-                        var sym=st.createLabel(a,name,SourceType.IMPORTED);
-                        owned.add(new Owned(sym.getID(),name,a.toString()));
-                    }
-                }
+                var symbol = existing(p, address, placement.symbol().name());
+                boolean created = symbol == null;
+                if (created) symbol = p.getSymbolTable().createLabel(address, placement.symbol().name(), SourceType.IMPORTED);
+                var identity = registry.labels.get(symbol.getID());
+                if (identity == null) { identity = new LabelIdentity(symbol, created); registry.labels.put(symbol.getID(), identity); }
+                identity.claims.add(source);
             }
-            opts.setString(key+".owned",ProgramMapping.JSON.toJson(owned));
-            opts.setString(key+".source",source);
-            opts.setString(key+".text",SymbolFile.format(parsed.symbols()));
-            success=true;
-        } finally { p.endTransaction(tx,success); }
+            collectUnclaimed(p, registry, monitor);
+            registry.sources.put(source, SymbolFile.format(parsed.symbols()));
+            p.getOptions(ProgramMapping.OPTIONS).setString(REGISTRY, ProgramMapping.JSON.toJson(registry));
+            monitor.checkCancelled(); success = true;
+        } finally { p.endTransaction(tx, success); }
         return placements;
     }
     public static void removeOwned(Program p,String source,TaskMonitor monitor) throws Exception {
-        var opts=p.getOptions(ProgramMapping.OPTIONS);
-        String key="symbols."+Sha256.of(source.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        var owned=ProgramMapping.JSON.fromJson(opts.getString(key+".owned","[]"),Owned[].class);
-        int tx=p.startTransaction("Remove owned Game Boy symbols"); boolean success=false;
+        int tx = p.startTransaction("Remove Game Boy symbol source"); boolean success = false;
         try {
-            for(var o:owned) {
-                monitor.checkCancelled();
-                var s=p.getSymbolTable().getSymbol(o.id);
-                if(s!=null && s.getSource()==SourceType.IMPORTED && s.getName().equals(o.name) && s.getAddress().toString().equals(o.address)
-                    && s.getSymbolType()==ghidra.program.model.symbol.SymbolType.LABEL) s.delete();
-            }
-            opts.removeOption(key+".owned"); success=true;
-        } finally { p.endTransaction(tx,success); }
+            var registry = registry(p);
+            registry.sources.remove(source);
+            for (var identity : registry.labels.values()) identity.claims.remove(source);
+            collectUnclaimed(p, registry, monitor);
+            p.getOptions(ProgramMapping.OPTIONS).setString(REGISTRY, ProgramMapping.JSON.toJson(registry));
+            monitor.checkCancelled(); success = true;
+        } finally { p.endTransaction(tx, success); }
     }
     public record Export(String text,List<String> diagnostics) { }
     public static Export exportSymbols(Program p,TaskMonitor monitor) throws Exception {
@@ -119,8 +184,7 @@ public final class SymbolService {
             .thenComparingInt(x->x.location().address()).thenComparing(SymbolFile.Symbol::name));
         return new Export(SymbolFile.format(out),List.copyOf(diagnostics));
     }
-    public static String exportRetained(Program p,String source) {
-        String key="symbols."+Sha256.of(source.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        return p.getOptions(ProgramMapping.OPTIONS).getString(key+".text","");
+    public static String exportRetained(Program p,String source) throws IOException {
+        return registry(p).sources.getOrDefault(source, "");
     }
 }
