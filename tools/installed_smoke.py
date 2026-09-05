@@ -13,6 +13,9 @@ ghidra=args.ghidra.resolve(); work=args.work.resolve(); work.mkdir(parents=True,
 if not any(ghidra.is_relative_to(root) for root in [pathlib.Path('/tmp').resolve(), pathlib.Path(tempfile.gettempdir()).resolve()]) or 'ghidraboy' not in str(ghidra).lower():
     raise SystemExit('Use a disposable Ghidra distribution under the temporary ghidraboy test directory')
 extensions=ghidra/'Ghidra/Extensions'; extensions.mkdir(exist_ok=True)
+if work.is_relative_to(ghidra): raise SystemExit('Test work/profile directory must be outside the installation')
+previous=extensions/'GhidraBoy'
+if previous.exists(): shutil.move(str(previous),str(work/'previous-extension'))
 with zipfile.ZipFile(args.zip) as z: z.extractall(extensions)
 ext=extensions/'GhidraBoy'; languages=ext/'data/languages'
 scripts=work/'scripts'; scripts.mkdir(exist_ok=True)
@@ -49,4 +52,6 @@ rom[0x150:0x153]=bytes.fromhex('3e 42 c9')
 (work/'synthetic.gb').write_bytes(rom)
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-import',work/'synthetic.gb','-noanalysis'],'discover-loader')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledCheck.java','-noanalysis'],'persisted-loader')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledLifecycle.java','prepare','-noanalysis'],'lifecycle-prepare')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledLifecycle.java','verify','-noanalysis'],'lifecycle-reopen')
 print('INSTALLED_ZIP_PRESERVATION_PASS')
