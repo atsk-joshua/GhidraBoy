@@ -22,30 +22,25 @@ public final class SymbolService {
                 reason="Region boundary or one-past-end marker requires explicit placement";
             else for(var r:snapshot.ranges()) {
                 if(l.address()<r.start() || l.address()>=r.start()+r.length()) continue;
-                if(r.alias()!=null) {
-                    var a=p.getAddressFactory().getAddressSpace(r.space()).getAddress(l.address());
-                    for(var physical:ProgramMapping.staticToPhysical(p,a,snapshot)) {
-                        boolean boot=physical.region().equals("BOOT");
-                        if((l.form().equals("BOOT") && boot) || (!boot && (l.form().equals("ANY") || l.bank()==physical.bank()))) found.add(a);
-                    }
-                    continue;
-                }
-                boolean match;
-                if(l.form().equals("BOOT")) match=r.region().equals("BOOT");
-                else if(r.region().equals("BOOT")) match=false;
-                else if(l.form().equals("ANY")) match=true;
-                else {
-                    long bank=r.bank();
-                    // RGBDS's unbanked 32 KiB ROM convention uses bank 0 for both windows.
-                    if(snapshot.cartridge()!=null && snapshot.cartridge().mapper()==Cartridge.Mapper.ROM_ONLY && r.region().equals("ROM")) bank=0;
-                    match=bank==l.bank();
-                }
-                if(match) found.add(p.getAddressFactory().getAddressSpace(r.space()).getAddress(l.address()));
+                var address=p.getAddressFactory().getAddressSpace(r.space()).getAddress(l.address());
+                for(var physical:ProgramMapping.staticToPhysical(p,address,snapshot))
+                    if(matches(l,physical,snapshot.cartridge())) found.add(address);
             }
             if(found.isEmpty() && reason.isEmpty()) reason="Unmapped or unsupported symbol location; source retained";
             out.add(new Placement(symbol,List.copyOf(found),reason));
         }
         return List.copyOf(out);
+    }
+    private static boolean matches(SymbolFile.Location location,MapperState.Physical physical,Cartridge cartridge) {
+        boolean boot=physical.region().equals("BOOT");
+        long bank=physical.bank();
+        if(cartridge!=null && cartridge.mapper()==Cartridge.Mapper.ROM_ONLY && physical.region().equals("ROM")) bank=0;
+        return switch(location.form()) {
+            case "BOOT" -> boot;
+            case "ANY" -> !boot;
+            case "BANK" -> !boot && location.bank()==bank;
+            default -> false;
+        };
     }
     public static List<Placement> importSymbols(Program p,SymbolFile.Result parsed,String source,TaskMonitor monitor) throws Exception {
         var placements=preview(p,parsed);

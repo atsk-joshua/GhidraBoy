@@ -97,5 +97,16 @@ class AuditRegressionTest : IntegrationTest() {
         val preview = SymbolService.preview(p, parsed).single()
         assertTrue(preview.addresses().isEmpty(), preview.toString())
         assertTrue(preview.diagnostic().isNotEmpty())
+        p.withTransaction {
+            p.memory.createByteMappedBlock("nested echo", address(0x5000), address(0xe000), 0x100, true)
+            p.memory.createByteMappedBlock("boot alias", address(0x6000), address(0), 0x100, true)
+        }
+        fun locations(text: String) = SymbolService.preview(p, SymbolFile.parse((text + "\n").toByteArray())).single().addresses()
+        assertTrue(locations("BOOT:5010 Wrong").isEmpty())
+        assertTrue(locations("BOOT:0010 Valid").isNotEmpty())
+        assertTrue(locations("BOOT:6010 Alias").isNotEmpty())
+        assertTrue(locations("6010 Any").isEmpty())
+        assertTrue(locations("0:6010 Bank").isEmpty())
+        assertTrue(locations("e010 Any").isNotEmpty())
     }
 }
