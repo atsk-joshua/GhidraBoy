@@ -19,3 +19,13 @@ void caller(void) {
  sink16=mixed(1,0x2345,6); sink8=pointer((const u8*)0xc123);
 }
 u16 mixed2(u16 a, u8 b, u16 c) __sdcccall(1) { return a + b + c; }
+/* Additional convention fixtures: compiler behavior, not inferred ABI promises. */
+#include <stdarg.h>
+struct Pair { u8 first; u16 second; };
+u16 variadic(u8 count, ...) { va_list ap; va_start(ap,count); u16 n=va_arg(ap,u16); va_end(ap); return n+count; }
+struct Pair aggregate(struct Pair a) { a.first++; return a; }
+u8 preserved(u8 a) __preserves_regs(b,c) { return a+1; }
+u8 banked(u8 a, u16 b) __banked { return a+b; }
+void extraCaller(void) { sink16=variadic(1,0x2345); sink8=preserved(3); sink8=banked(4,0x4567); }
+u8 first32_with8(u32 a, u8 b) { return a+b; }
+u32 first8_second32(u8 a, u32 b) { return a+b; }

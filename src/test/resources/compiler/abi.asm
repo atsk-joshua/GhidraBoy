@@ -8,6 +8,14 @@
 ;--------------------------------------------------------
 ; Public variables in this module
 ;--------------------------------------------------------
+	.globl _first8_second32
+	.globl _first32_with8
+	.globl _extraCaller
+	.globl b_banked
+	.globl _banked
+	.globl _preserved
+	.globl _aggregate
+	.globl _variadic
 	.globl _mixed2
 	.globl _caller
 	.globl _pointer
@@ -315,6 +323,158 @@ _mixed2::
 	ld	b, h
 	pop	hl
 	pop	af
+	jp	(hl)
+;src/test/resources/compiler/abi.c:25: u16 variadic(u8 count, ...) { va_list ap; va_start(ap,count); u16 n=va_arg(ap,u16); va_end(ap); return n+count; }
+;	---------------------------------
+; Function variadic
+; ---------------------------------
+_variadic::
+	ldhl	sp,	#3
+	ld	a, (hl+)
+	ld	c, a
+	ld	a, (hl-)
+	dec	hl
+	ld	b, a
+	ld	l, (hl)
+	ld	h, #0x00
+	add	hl, bc
+	ld	c, l
+	ld	b, h
+	ret
+;src/test/resources/compiler/abi.c:26: struct Pair aggregate(struct Pair a) { a.first++; return a; }
+;	---------------------------------
+; Function aggregate
+; ---------------------------------
+_aggregate::
+	ldhl	sp,	#4
+	inc	(hl)
+	ldhl	sp,	#2
+	ld	a, (hl+)
+	ld	c, a
+	ld	b, (hl)
+	ldhl	sp,	#4
+	ld	a, (hl+)
+	ld	(bc), a
+	inc	bc
+	ld	a, (hl+)
+	ld	(bc), a
+	inc	bc
+	ld	a, (hl)
+	ld	(bc), a
+	pop	hl
+	add	sp, #5
+	jp	(hl)
+;src/test/resources/compiler/abi.c:27: u8 preserved(u8 a) __preserves_regs(b,c) { return a+1; }
+;	---------------------------------
+; Function preserved
+; ---------------------------------
+_preserved::
+	inc	a
+	ret
+;src/test/resources/compiler/abi.c:28: u8 banked(u8 a, u16 b) __banked { return a+b; }
+;	---------------------------------
+; Function banked
+; ---------------------------------
+	b_banked	= 0
+_banked::
+	ldhl	sp,	#7
+	ld	a, (hl-)
+	add	a, (hl)
+	ret
+;src/test/resources/compiler/abi.c:29: void extraCaller(void) { sink16=variadic(1,0x2345); sink8=preserved(3); sink8=banked(4,0x4567); }
+;	---------------------------------
+; Function extraCaller
+; ---------------------------------
+_extraCaller::
+	ld	de, #0x2345
+	push	de
+	ld	a, #0x01
+	push	af
+	inc	sp
+	call	_variadic
+	add	sp, #3
+	ld	hl, #_sink16
+	ld	a, c
+	ld	(hl+), a
+	ld	(hl), b
+	ld	a, #0x03
+	call	_preserved
+	ld	(#_sink8),a
+	ld	de, #0x4567
+	push	de
+	ld	a, #0x04
+	push	af
+	inc	sp
+	ld	e, #b_banked
+	ld	hl, #_banked
+	call	___sdcc_bcall_ehl
+	add	sp, #3
+	ld	(#_sink8),a
+	ret
+;src/test/resources/compiler/abi.c:30: u8 first32_with8(u32 a, u8 b) { return a+b; }
+;	---------------------------------
+; Function first32_with8
+; ---------------------------------
+_first32_with8::
+	ld	a, c
+	ldhl	sp,	#2
+	add	a, (hl)
+	pop	hl
+	inc	sp
+	jp	(hl)
+;src/test/resources/compiler/abi.c:31: u32 first8_second32(u8 a, u32 b) { return a+b; }
+;	---------------------------------
+; Function first8_second32
+; ---------------------------------
+_first8_second32::
+	add	sp, #-8
+	ldhl	sp,	#0
+	ld	(hl+), a
+	xor	a, a
+	ld	(hl+), a
+	ld	(hl+), a
+	ld	(hl), a
+	pop	de
+	push	de
+	ld	a, e
+	ldhl	sp,	#10
+	add	a, (hl)
+	inc	hl
+	ld	e, a
+	ld	a, d
+	adc	a, (hl)
+	push	af
+	ldhl	sp,	#7
+	ld	(hl-), a
+	ld	a, e
+	ld	(hl-), a
+	dec	hl
+	ld	a, (hl+)
+	ld	e, a
+	ld	d, (hl)
+	ldhl	sp,	#14
+	pop	af
+	ld	a, e
+	adc	a, (hl)
+	inc	hl
+	ld	e, a
+	ld	a, d
+	adc	a, (hl)
+	ldhl	sp,	#7
+	ld	(hl-), a
+	ld	(hl), e
+	dec	hl
+	dec	hl
+	ld	c, (hl)
+	inc	hl
+	ld	b, (hl)
+	inc	hl
+	ld	e, (hl)
+	inc	hl
+	ld	d, (hl)
+	add	sp, #8
+	pop	hl
+	add	sp, #4
 	jp	(hl)
 	.area _CODE
 	.area _INITIALIZER
