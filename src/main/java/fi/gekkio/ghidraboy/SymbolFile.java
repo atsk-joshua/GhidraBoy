@@ -38,6 +38,14 @@ public final class SymbolFile {
                     long value=Long.parseLong(escape.group(2).substring(0,digits),16);
                     if(value<0xa0 || value>0x10ffff || (value>=0xd800 && value<=0xdfff)) throw new IllegalArgumentException("Invalid Unicode scalar escape");
                 }
+                var decoded=new StringBuilder();
+                for(int at=0;at<name.length();) {
+                    if(name.charAt(at)=='\\') {
+                        int digits=name.charAt(at+1)=='u'?4:8;
+                        decoded.appendCodePoint(Integer.parseInt(name.substring(at+2,at+2+digits),16)); at+=2+digits;
+                    } else decoded.append(name.charAt(at++));
+                }
+                name=decoded.toString();
                 if(name.startsWith(".") || name.endsWith(".") || name.chars().filter(c->c=='.').count()>1)
                     throw new IllegalArgumentException("Empty or nested local label unsupported");
                 var location=new Location(form,bank,address);
@@ -60,8 +68,16 @@ public final class SymbolFile {
             var l=s.location;
             if(l.form.equals("BOOT")) out.append("BOOT:");
             else if(l.form.equals("BANK")) out.append(Long.toHexString(l.bank)).append(':');
-            out.append(String.format(Locale.ROOT,"%04x",l.address)).append(' ').append(s.name).append('\n');
+            out.append(String.format(Locale.ROOT,"%04x",l.address)).append(' ').append(encodeName(s.name)).append('\n');
         }
+        return out.toString();
+    }
+    public static String encodeName(String name) {
+        var out=new StringBuilder();
+        name.codePoints().forEach(cp->{
+            if(cp>=0xa0 && !(cp>=0xd800 && cp<=0xdfff)) out.append(String.format(Locale.ROOT,cp<=0xffff?"\\u%04x":"\\U%08x",cp));
+            else out.appendCodePoint(cp);
+        });
         return out.toString();
     }
     public static Optional<Symbol> parent(Symbol local,List<Symbol> all) {

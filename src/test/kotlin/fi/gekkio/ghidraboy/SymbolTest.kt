@@ -38,4 +38,14 @@ class SymbolTest {
         assertEquals(6, parsed.diagnostics().size)
         assertThrows(CharacterCodingException::class.java) { SymbolFile.parse(byteArrayOf(0xc0.toByte(), 0xaf.toByte())) }
     }
+    @Test
+    fun `Unicode escapes identify the same character and all private metadata is ignored`() {
+        val input = "0:1234 Caf\\u00e9 @anything @ignore @tool=value\n0:1234 Caf\\u00E9\n"
+        val result = SymbolFile.parse(input.toByteArray())
+        assertEquals(1, result.symbols().size)
+        assertEquals("Café", result.symbols()[0].name())
+        assertEquals(0, result.diagnostics().size)
+        assertEquals("0:1234 Caf\\u00e9\n", SymbolFile.format(result.symbols()))
+    }
+
 }

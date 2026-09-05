@@ -31,6 +31,30 @@ public final class SymbolService {
         }
         return List.copyOf(out);
     }
+    public static String entryKey(SymbolFile.Symbol symbol) { return SymbolFile.format(List.of(symbol)).strip(); }
+    public static List<Address> boundaryCandidates(Program p,SymbolFile.Symbol symbol) throws IOException {
+        var snapshot=ProgramMapping.inspect(p); var out=new TreeSet<Address>(); int cpu=symbol.location().address();
+        for(var range:snapshot.ranges()) {
+            var space=p.getAddressFactory().getAddressSpace(range.space());
+            if(range.start()==cpu || range.start()+range.length()==cpu) {
+                long probe=range.start()==cpu?cpu:cpu-1;
+                for(var physical:ProgramMapping.staticToPhysical(p,space.getAddress(probe),snapshot))
+                    if(matches(symbol.location(),physical,snapshot.cartridge())) out.add(space.getAddressInThisSpaceOnly(cpu));
+            }
+        }
+        return List.copyOf(out);
+    }
+    public static Optional<java.nio.file.Path> companion(Program p) {
+        String executable=p.getExecutablePath();
+        if(executable==null || executable.isBlank()) return Optional.empty();
+        try {
+            var input=java.nio.file.Path.of(executable).toAbsolutePath().normalize();
+            if(!java.nio.file.Files.isRegularFile(input)) return Optional.empty();
+            String name=input.getFileName().toString(); int dot=name.lastIndexOf('.');
+            var candidate=input.resolveSibling((dot<0?name:name.substring(0,dot))+".sym");
+            return java.nio.file.Files.isRegularFile(candidate)?Optional.of(candidate):Optional.empty();
+        } catch(java.nio.file.InvalidPathException e) { return Optional.empty(); }
+    }
     private static boolean matches(SymbolFile.Location location,MapperState.Physical physical,Cartridge cartridge) {
         boolean boot=physical.region().equals("BOOT");
         long bank=physical.bank();
@@ -46,6 +70,7 @@ public final class SymbolService {
     private static final class Registry {
         int version = 2;
         Map<String, String> sources = new TreeMap<>();
+        Map<String, Map<String, AnalysisOwnership.Point>> placements = new TreeMap<>();
         Map<Long, LabelIdentity> labels = new TreeMap<>();
     }
     private static final class LabelIdentity {
@@ -126,7 +151,26 @@ public final class SymbolService {
             (int) registry.labels.values().stream().filter(label -> label.claims.contains(entry.getKey())).count())).toList();
     }
     public static List<Placement> importSymbols(Program p,SymbolFile.Result parsed,String source,TaskMonitor monitor) throws Exception {
-        var placements = preview(p, parsed);
+        return importSymbols(p,parsed,source,Map.of(),monitor);
+    }
+    public static List<Placement> importSymbols(Program p,SymbolFile.Result parsed,String source,Map<String,String> overrides,TaskMonitor monitor) throws Exception {
+        var registryBefore=registry(p);
+        var choices=new TreeMap<String,AnalysisOwnership.Point>(registryBefore.placements.getOrDefault(source,Map.of()));
+        for(var entry:overrides.entrySet()) {
+            var address=ProgramMapping.staticAddress(p,entry.getValue());
+            if(address==null) throw new IllegalArgumentException("Unknown static address "+entry.getValue());
+            choices.put(entry.getKey(),AnalysisOwnership.Point.of(address));
+        }
+        var placements=new ArrayList<Placement>();
+        for(var placement:preview(p,parsed)) {
+            var selected=choices.get(entryKey(placement.symbol()));
+            if(selected!=null) {
+                var address=selected.resolve(p);
+                if(!boundaryCandidates(p,placement.symbol()).contains(address)) throw new IllegalArgumentException("Stale or invalid boundary placement for "+entryKey(placement.symbol()));
+                placement=new Placement(placement.symbol(),List.of(address),"Explicit boundary/end-marker placement");
+            }
+            placements.add(placement);
+        }
         monitor.checkCancelled();
         int tx = p.startTransaction("Import Game Boy symbols"); boolean success = false;
         try {
@@ -143,6 +187,7 @@ public final class SymbolService {
             }
             collectUnclaimed(p, registry, monitor);
             registry.sources.put(source, SymbolFile.format(parsed.symbols()));
+            registry.placements.put(source,choices);
             p.getOptions(ProgramMapping.OPTIONS).setString(REGISTRY, ProgramMapping.JSON.toJson(registry));
             monitor.checkCancelled(); success = true;
         } finally { p.endTransaction(tx, success); }
@@ -153,6 +198,7 @@ public final class SymbolService {
         try {
             var registry = registry(p);
             registry.sources.remove(source);
+            registry.placements.remove(source);
             for (var identity : registry.labels.values()) identity.claims.remove(source);
             collectUnclaimed(p, registry, monitor);
             p.getOptions(ProgramMapping.OPTIONS).setString(REGISTRY, ProgramMapping.JSON.toJson(registry));
