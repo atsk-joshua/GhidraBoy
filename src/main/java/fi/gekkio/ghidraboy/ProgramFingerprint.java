@@ -1,56 +1,90 @@
 package fi.gekkio.ghidraboy;
 
+import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidra.util.task.TaskMonitor;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.HexFormat;
+import java.util.*;
 
-/** Invalidation dependency: mapped bytes, topology, data markings and instruction overrides. */
+/** Canonically ordered dependencies survive save/reopen and retain meaningful invalidation. */
 public final class ProgramFingerprint {
   private ProgramFingerprint() {}
 
-  public static String capture(Program p, TaskMonitor monitor) throws Exception {
-    var digest = MessageDigest.getInstance("SHA-256");
-    digest.update(
-        ProgramMapping.JSON.toJson(ProgramMapping.inspect(p)).getBytes(StandardCharsets.UTF_8));
+  private static String address(Address address) {
+    return address == null
+        ? "none"
+        : address.getAddressSpace().getName()
+            + ":"
+            + Long.toUnsignedString(address.getOffset(), 16);
+  }
+
+  public static Map<String, String> components(Program p, TaskMonitor monitor) throws Exception {
+    var parts = new TreeMap<String, String>();
+    parts.put(
+        "mapping",
+        Sha256.of(
+                ProgramMapping.JSON
+                    .toJson(ProgramMapping.inspect(p))
+                    .getBytes(StandardCharsets.UTF_8))
+            .toString());
+    var memory = MessageDigest.getInstance("SHA-256");
     byte[] buffer = new byte[16384];
-    for (var block : p.getMemory().getBlocks()) {
+    var blocks = new ArrayList<>(Arrays.asList(p.getMemory().getBlocks()));
+    blocks.sort(Comparator.comparing(block -> address(block.getStart())));
+    for (var block : blocks) {
       if (!block.isInitialized()) continue;
+      memory.update(
+          (address(block.getStart()) + ":" + block.getSize() + "\n")
+              .getBytes(StandardCharsets.UTF_8));
       for (long offset = 0; offset < block.getSize(); offset += buffer.length) {
         monitor.checkCancelled();
         int length = (int) Math.min(buffer.length, block.getSize() - offset);
         int read = p.getMemory().getBytes(block.getStart().add(offset), buffer, 0, length);
         if (read != length)
           throw new java.io.IOException("Incomplete fingerprint read at " + block.getStart());
-        digest.update(buffer, 0, length);
+        memory.update(buffer, 0, length);
       }
     }
-    for (var data : p.getListing().getDefinedData(true)) {
+    parts.put("memory", HexFormat.of().formatHex(memory.digest()));
+    var data = new ArrayList<String>();
+    for (var unit : p.getListing().getDefinedData(true)) {
       monitor.checkCancelled();
-      digest.update(
-          (data.getAddress()
-                  + ":"
-                  + data.getLength()
-                  + ":"
-                  + data.getDataType().getPathName()
-                  + "\n")
-              .getBytes(StandardCharsets.UTF_8));
+      data.add(
+          address(unit.getAddress())
+              + ":"
+              + unit.getLength()
+              + ":"
+              + unit.getDataType().getPathName());
     }
+    Collections.sort(data);
+    parts.put(
+        "data", Sha256.of(String.join("\n", data).getBytes(StandardCharsets.UTF_8)).toString());
+    var instructions = new ArrayList<String>();
     for (var ins : p.getListing().getInstructions(true)) {
       monitor.checkCancelled();
-      digest.update(
-          (ins.getAddress()
-                  + ":"
-                  + ins.getLength()
-                  + ":"
-                  + ins.getFlowOverride()
-                  + ":"
-                  + ins.getFallThrough()
-                  + "\n")
-              .getBytes(StandardCharsets.UTF_8));
+      instructions.add(
+          address(ins.getAddress())
+              + ":"
+              + ins.getLength()
+              + ":"
+              + ins.getFlowOverride()
+              + ":"
+              + ins.isFallThroughOverridden()
+              + ":"
+              + address(ins.getFallThrough()));
     }
-    return HexFormat.of().formatHex(digest.digest());
+    Collections.sort(instructions);
+    parts.put(
+        "instructions",
+        Sha256.of(String.join("\n", instructions).getBytes(StandardCharsets.UTF_8)).toString());
+    return Collections.unmodifiableMap(parts);
+  }
+
+  public static String capture(Program p, TaskMonitor monitor) throws Exception {
+    return Sha256.of(
+            ProgramMapping.JSON.toJson(components(p, monitor)).getBytes(StandardCharsets.UTF_8))
+        .toString();
   }
 
   public static void requireCurrent(Program p, AnalysisResult result, TaskMonitor monitor)

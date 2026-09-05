@@ -63,7 +63,11 @@ class SymbolOwnershipTest : IntegrationTest() {
         for (change in listOf("preexisting", "rename", "namespace", "promotion")) {
             program { p ->
                 val target = ProgramMapping.fileToStatic(p, 0x8010).single()
-                if (change == "preexisting") p.withTransaction { p.symbolTable.createLabel(target, "Shared", SourceType.USER_DEFINED) }
+                if (change == "preexisting") {
+                    p.withTransaction {
+                        p.symbolTable.createLabel(target, "Shared", SourceType.USER_DEFINED)
+                    }
+                }
                 put(p, "a")
                 put(p, "b")
                 val symbol = p.symbolTable.getSymbols("Shared").next()

@@ -49,6 +49,10 @@ public class GhidraBoyInstalledLifecycle extends GhidraScript {
       BankAnalysis.apply(p, result, monitor);
       FunctionDiscovery.discover(p, List.of(), result, monitor);
       check(p.getFunctionManager().getFunctionAt(target) != null, "owned function created");
+      p.getOptions(ProgramMapping.OPTIONS)
+          .setString(
+              "fingerprint.components",
+              ProgramMapping.JSON.toJson(ProgramFingerprint.components(p, monitor)));
       println("INSTALLED_LIFECYCLE_PREPARED");
     } else {
       check(
@@ -69,6 +73,12 @@ public class GhidraBoyInstalledLifecycle extends GhidraScript {
           ProgramMapping.JSON.fromJson(
               p.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", "null"),
               AnalysisResult.class);
+      println(
+          "BEFORE_COMPONENTS="
+              + p.getOptions(ProgramMapping.OPTIONS).getString("fingerprint.components", ""));
+      println(
+          "AFTER_COMPONENTS="
+              + ProgramMapping.JSON.toJson(ProgramFingerprint.components(p, monitor)));
       ProgramFingerprint.requireCurrent(p, result, monitor);
       var target = ProgramMapping.fileToStatic(p, 0x8000).get(0);
       AnalysisOwnership.removeAll(p, monitor);
