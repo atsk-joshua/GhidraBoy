@@ -26,7 +26,7 @@ public record Sha256(String value) {
         return this.value;
     }
 
-    private static final Pattern SHA256_HEX = Pattern.compile("^[0-9a-z]{64}$");
+    private static final Pattern SHA256_HEX = Pattern.compile("^[0-9a-f]{64}$");
 
     public static Sha256 parse(String sha256Hex) {
         if (!SHA256_HEX.matcher(sha256Hex).matches()) {
@@ -41,9 +41,12 @@ public record Sha256(String value) {
         }
     }
 
-    public static Sha256 of(byte[] bytes) throws IOException {
-        try (var stream = new ByteArrayInputStream(bytes)) {
-            return new Sha256(HashUtilities.getHash(HashUtilities.SHA256_ALGORITHM, stream));
+    public static Sha256 of(byte[] bytes) {
+        try {
+            return new Sha256(java.util.HexFormat.of().formatHex(
+                java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
         }
     }
 }

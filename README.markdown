@@ -1,3 +1,24 @@
+# GhidraBoy modernization (development preview)
+
+Current target: **Ghidra 12.1.3, JDK 21**. This branch contains static CPU,
+cartridge, mapping and script tooling; it is not a live debugger.
+
+- [Install, import, navigation, symbols, export and rollback](docs/user-workflows.md)
+- [Input and mapper policy](docs/input-policy.md)
+- [Versioned Java/JSON static contract](docs/static-contract.md)
+- [CPU validation](docs/cpu-validation.md)
+- [Compiler support](docs/compiler-support.md)
+- [Conservative analysis](docs/analysis.md)
+- [Acceptance evidence and remaining work](docs/modernization-evidence.md)
+- [Primary sources and attribution](docs/references.md)
+
+Build with `JAVA_HOME` pointing to JDK 21 and `GHIDRA_INSTALL_DIR` to 12.1.3:
+`./gradlew clean build`. ZIPs appear in `build/distributions`. The documentation
+records executed checks separately from incomplete requirements; this preview
+must not be treated as completion of the full modernization acceptance matrix.
+
+---
+
 # GhidraBoy: Sharp SM83 / Game Boy extension for Ghidra
 
 **Very experimental! No compatibility guarantees!**

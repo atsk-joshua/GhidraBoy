@@ -131,7 +131,12 @@ macro push16(val16) {
 }
 
 macro pop16(ret16) {
-  ret16 = *:2 SP;
+  # Explicit 16-bit byte addresses also handle a word straddling FFFF/0000.
+  local lowAddress:2 = SP;
+  local highAddress:2 = SP + 1;
+  local lowByte:1 = *:1 lowAddress;
+  local highByte:1 = *:1 highAddress;
+  ret16 = zext(lowByte) | (zext(highByte) << 8);
   SP = SP + 2;
 }
 
@@ -152,7 +157,7 @@ macro aluAdc(op8) {
   $(Z_flag) = (tmp == 0);
   $(N_flag) = 0;
   $(H_flag) = (((A & 0xf) + (x & 0xf) + cy) & 0x10) != 0;
-  $(C_flag) = carry(carry(A, x), cy);
+  $(C_flag) = carry(A, x) || carry(A + x, cy);
   A = tmp;
 }
 
@@ -170,10 +175,10 @@ macro aluSbc(op8) {
   local x:1 = op8;
   local cy = $(C_flag);
   local tmp:1 = A - x - cy;
-  $(Z_flag) = (A == 0);
+  $(Z_flag) = (tmp == 0);
   $(N_flag) = 1;
   $(H_flag) = (((A & 0xf) - (x & 0xf) - cy) & 0x10) != 0;
-  $(C_flag) = A < (x + cy);
+  $(C_flag) = (A < x) || ((A == x) && cy);
   A = tmp;
 }
 

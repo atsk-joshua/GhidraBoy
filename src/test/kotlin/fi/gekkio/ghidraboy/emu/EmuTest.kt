@@ -25,9 +25,10 @@ open class EmuTest : IntegrationTest() {
     protected lateinit var program: Program
     protected lateinit var emulator: EmulatorHelper
 
+    private val consumer = object {}
+
     @BeforeEach
     fun beforeEach() {
-        val consumer = object {}
         program = ProgramDB("test", language, language.defaultCompilerSpec, consumer)
         program.withTransaction {
             program.memory.createUninitializedBlock("rom", address(0x0000), 0x10000, false)
@@ -38,6 +39,10 @@ open class EmuTest : IntegrationTest() {
 
     @AfterEach
     fun afterEach() {
-        emulator.dispose()
+        try {
+            emulator.dispose()
+        } finally {
+            program.release(consumer)
+        }
     }
 }

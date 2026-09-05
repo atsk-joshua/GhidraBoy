@@ -13,8 +13,8 @@
 // limitations under the License.
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter.BASIC_ISO_DATE
+import java.time.Instant
+import java.time.ZoneOffset
 import java.util.Properties
 
 plugins {
@@ -36,15 +36,22 @@ val ghidraProps = Properties().apply { file("$ghidraDir/Ghidra/application.prope
 val ghidraVersion = ghidraProps.getProperty("application.version")!!
 val ghidraRelease = ghidraProps.getProperty("application.release.name")!!
 
+require(ghidraVersion == "12.1.3") { "This build targets Ghidra 12.1.3; found $ghidraVersion" }
+require(JavaVersion.current() == JavaVersion.VERSION_21) { "Run Gradle with JDK 21 (JAVA_HOME)" }
+version = "20260905-dev1"
+val buildEpoch = providers.environmentVariable("SOURCE_DATE_EPOCH").orElse("1788566400")
+val buildDate = Instant.ofEpochSecond(buildEpoch.get().toLong()).atZone(ZoneOffset.UTC).toLocalDate()
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
     withSourcesJar()
 }
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
         optIn.add("kotlin.ExperimentalUnsignedTypes")
     }
 }
@@ -79,10 +86,19 @@ val generateExtensionProps by tasks.registering {
                     ("name" to "GhidraBoy"),
                     ("description" to "Support for Sharp SM83 / Game Boy"),
                     ("author" to "Gekkio"),
-                    ("createdOn" to LocalDate.now().toString()),
+                    ("createdOn" to buildDate.toString()),
                     ("version" to ghidraVersion),
                 )
-            props.store(it, null)
+            it.write(
+                props
+                    .stringPropertyNames()
+                    .sorted()
+                    .joinToString(
+                        "\n",
+                        postfix = "\n",
+                    ) { key -> "$key=${props.getProperty(key)}" }
+                    .toByteArray(Charsets.UTF_8),
+            )
         }
     }
 }
@@ -105,7 +121,7 @@ val compileSleigh by tasks.registering(JavaExec::class) {
 }
 
 val zip by tasks.registering(Zip::class) {
-    archiveFileName.set("ghidra_${ghidraVersion}_${ghidraRelease}_${LocalDate.now().format(BASIC_ISO_DATE)}_${project.name}.zip")
+    archiveFileName.set("ghidra_${ghidraVersion}_${ghidraRelease}_${project.version}_${project.name}.zip")
 
     into("${project.name}/")
     from(tasks.named("jar")) {
@@ -124,6 +140,11 @@ val zip by tasks.registering(Zip::class) {
         into("data/")
         include("**/*.cspec", "**/*.ldefs", "**/*.pspec", "**/*.sinc", "**/*.slaspec", "**/sleighArgs.txt")
     }
+    dependsOn(compileSleigh)
+    from("data/languages/sm83.sla") { into("data/languages/") }
+    from("data/manuals") { into("data/manuals/") }
+    from("docs") { into("docs/") }
+    from("ghidra_scripts") { into("ghidra_scripts/") }
     from("README.markdown", "LICENSE", "Module.manifest")
 }
 
@@ -135,6 +156,7 @@ tasks.named<Test>("test") {
     dependsOn("compileSleigh")
     useJUnitPlatform()
 
+    System.getProperty("ghidraboy.vector.dir")?.let { systemProperty("ghidraboy.vector.dir", it) }
     systemProperty("ghidra.dir", ghidraDir)
     systemProperty("SystemUtilities.isTesting", true)
 
@@ -148,5 +170,14 @@ tasks.named<Test>("test") {
 defaultTasks("clean", "assemble")
 
 ktlint {
-    setVersion("1.7.1")
+    version.set("1.7.1")
+}
+
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
+
+tasks.named<Delete>("clean") {
+    delete("data/languages/sm83.sla")
 }

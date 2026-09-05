@@ -25,5 +25,9 @@
             id="SM83:LE:16:default">
     <description>Sharp SM83</description>
     <compiler name="default" spec="sm83.cspec" id="default"/>
+    <compiler name="SDCC 4.5.1 call0" spec="sdcc451-call0.cspec" id="sdcc451-call0"/>
+    <compiler name="SDCC 4.5.1 call1-first8" spec="sdcc451-call1-first8.cspec" id="sdcc451-call1-first8"/>
+    <compiler name="SDCC 4.5.1 call1-first16" spec="sdcc451-call1-first16.cspec" id="sdcc451-call1-first16"/>
+    <compiler name="SDCC 4.5.1 call1-first32" spec="sdcc451-call1-first32.cspec" id="sdcc451-call1-first32"/>
   </language>
 </language_definitions>

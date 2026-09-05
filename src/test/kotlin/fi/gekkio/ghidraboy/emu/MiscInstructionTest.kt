@@ -66,7 +66,6 @@ class MiscInstructionTest : EmuTest() {
 
     @Test
     fun `DAA`() {
-        emulator.registerCallOtherCallback("daaOperand", IgnorePCode())
         emulator.writeF(0b0000_0000u)
         emulator.writeA(0x00u)
         emulator.write(0x0000u, 0x27u)
@@ -110,5 +109,24 @@ class MiscInstructionTest : EmuTest() {
         emulator.assertPC(0x0001u)
         emulator.assertF(0b1111_0000u)
         emulator.assertA(0xaau)
+    }
+
+    @Test
+    fun `reviewed synthetic far trampoline adjusts return past inline payload`() {
+        emulator.write(0x100u, 0xefu, 2u, 0u, 0x40u)
+        val body =
+            java.util.HexFormat
+                .of()
+                .parseHex(fi.gekkio.ghidraboy.FarCallConvention.SUPPORTED_BODY)
+        emulator.writeMemory(address(0x28), body)
+        emulator.write(0x4000u, 0xc9u)
+        emulator.writePC(0x100u)
+        emulator.writeSP(0xc100u)
+        emulator.step()
+        repeat(10) { emulator.step() }
+        emulator.assertPC(0x4000u)
+        emulator.step()
+        emulator.assertPC(0x104u)
+        emulator.assertSP(0xc100u)
     }
 }

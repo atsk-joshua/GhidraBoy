@@ -457,14 +457,30 @@
 }
 
 :DAA is op0_8=0x27 {
-  local op8:1 = 0;
-  op8 = daaOperand(A, $(C_flag), $(H_flag), $(N_flag));
-  local tmp:1 = A + op8;
-  local co:1 = carry(A, op8);
-  $(Z_flag) = (tmp == 0);
+  # Snapshot all overlapping inputs. Keep the unused legacy userop declaration
+  # so existing userop indices remain stable; arithmetic needs no callback.
+  local old:1 = A;
+  local n:1 = $(N_flag);
+  local h:1 = $(H_flag);
+  local c:1 = $(C_flag);
+  local correction:1 = 0;
+  if (n) goto <subtract>;
+  if (!(h || ((old & 0xf) > 9))) goto <addHigh>;
+  correction = 6;
+<addHigh>
+  if (!(c || (old > 0x99))) goto <addDone>;
+  correction = correction | 0x60;
+  c = 1;
+<addDone>
+  A = old + correction;
+  goto <done>;
+<subtract>
+  correction = (h * 6) + (c * 0x60);
+  A = old - correction;
+<done>
+  $(Z_flag) = (A == 0);
   $(H_flag) = 0;
-  $(C_flag) = $(C_flag) || ((!$(N_flag)) && co);
-  A = tmp;
+  $(C_flag) = c;
 }
 
 :CPL is op0_8=0x2f {
@@ -513,8 +529,12 @@
   push16(qregpair4_2);
 }
 
-:POP qregpair4_2 is op6_2=0b11 & qregpair4_2 & op0_4=0b0001 {
+:POP qregpair4_2 is op6_2=0b11 & qregpair4_2 & op0_4=0b0001 & op3_3 {
   pop16(qregpair4_2);
+  local pairIndex:1 = op3_3;
+  if (pairIndex != 6) goto <popDone>;
+  F = F & 0xf0;
+<popDone>
 }
 
 # 16-bit arithmetic

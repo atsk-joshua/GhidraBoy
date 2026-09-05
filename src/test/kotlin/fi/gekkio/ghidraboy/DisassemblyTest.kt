@@ -13,15 +13,36 @@
 // limitations under the License.
 package fi.gekkio.ghidraboy
 
-import ghidra.app.emulator.EmulatorHelper
 import ghidra.program.database.ProgramDB
 import ghidra.program.disassemble.Disassembler
 import ghidra.program.model.listing.CodeUnit
 import ghidra.util.task.TaskMonitor
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class DisassemblyTest : IntegrationTest() {
+    private val ownedPrograms = mutableListOf<Pair<ProgramDB, Any>>()
+
+    @AfterEach
+    fun releasePrograms() {
+        ownedPrograms.forEach { (program, consumer) -> program.release(consumer) }
+        ownedPrograms.clear()
+    }
+
+    @Test
+    fun `all CB opcodes decode with correct operands and length`() {
+        val regs = listOf("B", "C", "D", "E", "H", "L", "(HL)", "A")
+        val shifts = listOf("RLC", "RRC", "RL", "RR", "SLA", "SRA", "SWAP", "SRL")
+        for (op in 0..255) {
+            val group = op shr 6
+            val index = (op shr 3) and 7
+            val mnemonic = if (group == 0) shifts[index] + " " else listOf("", "BIT", "RES", "SET")[group] + " 0x" + index + ","
+            test(0xcb, mnemonic + regs[op and 7], op) { assertEquals(2, it.length) }
+        }
+    }
+
     @Test
     fun `can disassemble NOP`() = test(0x00, "NOP")
 
@@ -759,11 +780,7 @@ class DisassemblyTest : IntegrationTest() {
     @Test
     fun `can disassemble RST 0x28`() =
         test(0xef, "RST 0x0028") {
-            val helper = EmulatorHelper(it.program)
-            helper.writeRegister("SP", 0xffff)
-            helper.step(TaskMonitor.DUMMY)
-            println(helper.readRegister("SP"))
-            println(helper.readRegister("PC"))
+            assertEquals(address(0x28), (it as ghidra.program.model.listing.Instruction).flows.single())
         }
 
     @Test
@@ -825,12 +842,24 @@ class DisassemblyTest : IntegrationTest() {
     ) {
         val codeUnit = disassemble(byteArrayOf(opcode.toByte(), *(args.map { it.toByte() }).toByteArray()))
         assertEquals(expected, codeUnit.toString())
+        assertEquals(1 + args.size, codeUnit.length)
         assertions(codeUnit)
+        if (codeUnit is ghidra.program.model.listing.Instruction) {
+            val original = codeUnit.bytes
+            val assembler =
+                ghidra.app.plugin.assembler.Assemblers
+                    .getAssembler(codeUnit.program)
+            codeUnit.program.withTransaction {
+                val encoded = assembler.assemble(codeUnit.address, codeUnit.toString()).next().bytes
+                assertArrayEquals(original, encoded, "Assembler round trip: $expected")
+            }
+        }
     }
 
     private fun disassemble(bytes: ByteArray): CodeUnit {
         val consumer = object {}
         val program = ProgramDB("test", language, language.defaultCompilerSpec, consumer)
+        ownedPrograms.add(program to consumer)
 
         val block = program.withTransaction { program.memory.loadBytes("rom", address(0x0000), bytes) }
 

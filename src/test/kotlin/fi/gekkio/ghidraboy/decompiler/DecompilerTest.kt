@@ -9,7 +9,6 @@ import fi.gekkio.ghidraboy.withTransaction
 import ghidra.app.decompiler.DecompInterface
 import ghidra.app.plugin.assembler.Assemblers
 import ghidra.app.util.importer.MessageLog
-import ghidra.framework.Application
 import ghidra.program.database.ProgramDB
 import ghidra.program.model.address.Address
 import ghidra.program.model.address.AddressSet
@@ -35,6 +34,7 @@ import org.junit.jupiter.api.Test
 
 class DecompilerTest : IntegrationTest() {
     private lateinit var program: Program
+    private val consumer = object {}
     private lateinit var decompiler: DecompInterface
 
     @Test
@@ -115,21 +115,8 @@ class DecompilerTest : IntegrationTest() {
             )
         assertDecompiled(
             f,
-            when (Application.getApplicationVersion()) {
-                "11.1", "11.1.1", "11.1.2" ->
-                    """
-            void memcpy(byte *dst,byte *src,word len)
-            {
-                for (; (byte)((byte)(len >> 8) | (byte)len) != 0; len = len - 1) {
-                    *dst = *src;
-                    src = src + 1;
-                    dst = dst + 1;
-                }
-                return;
-            }
+            // Reviewed Ghidra 12.1.3 golden.
             """
-                else ->
-                    """
             void memcpy(byte *dst,byte *src,word len)
             {
                 for (; (char)(len >> 8) != '\0' || (char)len != '\0'; len = len - 1) {
@@ -139,8 +126,7 @@ class DecompilerTest : IntegrationTest() {
                 }
                 return;
             }
-            """
-            },
+            """,
         )
     }
 
@@ -169,20 +155,8 @@ class DecompilerTest : IntegrationTest() {
             )
         assertDecompiled(
             f,
-            when (Application.getApplicationVersion()) {
-                "11.1", "11.1.1", "11.1.2" ->
-                    """
-            void memset(byte *dst,byte val,word len)
-            {
-                for (; (byte)((byte)(len >> 8) | (byte)len) != 0; len = len - 1) {
-                    *dst = val;
-                    dst = dst + 1;
-                }
-                return;
-            }
+            // Reviewed Ghidra 12.1.3 golden.
             """
-                else ->
-                    """
             void memset(byte *dst,byte val,word len)
             {
                 for (; (char)(len >> 8) != '\0' || (char)len != '\0'; len = len - 1) {
@@ -191,8 +165,7 @@ class DecompilerTest : IntegrationTest() {
                 }
                 return;
             }
-            """
-            },
+            """,
         )
     }
 
@@ -224,24 +197,14 @@ class DecompilerTest : IntegrationTest() {
             )
         assertDecompiled(
             f,
-            when {
-                Application.getApplicationVersion().startsWith("12") ->
-                    """
+            // Reviewed Ghidra 12.1.3 golden.
+            """
             byte popcnt4_upper(byte value)
             {
                 return (((value & 0x7f) >> 6) - ((char)value >> 7)) + ((value & 0x3f) >> 5) +
                     ((value & 0x10) >> 4);
             }
-            """
-                else ->
-                    """
-            byte popcnt4_upper(byte value)
-            {
-                return ((-((char)(value << 1) >> 7) - ((char)value >> 7)) - ((char)(value << 2) >> 7)) -
-                    ((char)(value << 3) >> 7); 
-            }
-            """
-            },
+            """,
         )
     }
 
@@ -331,24 +294,14 @@ class DecompilerTest : IntegrationTest() {
             )
         assertDecompiled(
             f,
-            when {
-                Application.getApplicationVersion().startsWith("12") ->
-                    """
+            // Reviewed Ghidra 12.1.3 golden.
+            """
             word sla8_to_16(byte value)
             {
                 return CONCAT11((((value >> 7) << 1 | (value & 0x7f) >> 6) << 1 | (value & 0x3f) >> 5) << 1 |
                     (value & 0x1f) >> 4,value << 4);
             }
-            """
-                else ->
-                    """
-            word sla8_to_16(byte value)
-            {
-                return CONCAT11((((value >> 7) << 1 | (byte)(value << 1) >> 7) << 1 | (byte)(value << 2) >> 7) <<
-                    1 | (byte)(value << 3) >> 7,value << 4);
-            }
-            """
-            },
+            """,
         )
     }
 
@@ -375,35 +328,27 @@ class DecompilerTest : IntegrationTest() {
             )
         assertDecompiled(
             f,
-            when {
-                Application.getApplicationVersion().startsWith("12") ->
-                    """
-            byte daa(byte value)
-            {
-                char cVar1;
-                cVar1 = daaOperand(value + 1,0xfe < value,((value & 0xf) + 1 & 0x10) != 0,0);
-                cVar1 = value + 1 + cVar1;
-                if (cVar1 == '\0') {
-                    return 0;
-                }
-                return cVar1 + 1;
-            }
+            // Reviewed 12.1.3 golden: correction is visible; the known N=0 branch is eliminated.
             """
-                else ->
-                    """
+            /* WARNING: Removing unreachable block (ram,0x0003) */
             byte daa(byte value)
             {
-                char cVar1;
+                byte bVar1;
                 byte bVar2;
-                cVar1 = daaOperand(value + 1,0xfe < value,((value & 0xf) + 1 & 0x10) != 0,0);
-                bVar2 = value + 1 + cVar1;
-                if (bVar2 == 0) {
-                    return bVar2;
+                bVar1 = value + 1;
+                bVar2 = 0;
+                if (((value & 0xf) + 1 & 0x10) != 0 || 9 < (bVar1 & 0xf)) {
+                    bVar2 = 6;
                 }
-                return bVar2 + 1;
+                if (value == 0xff || 0x99 < bVar1) {
+                    bVar2 = bVar2 | 0x60;
+                }
+                if ((byte)(bVar1 + bVar2) != '\0') {
+                    return bVar1 + bVar2 + 1;
+                }
+                return 0;
             }
-            """
-            },
+            """,
         )
     }
 
@@ -415,7 +360,6 @@ class DecompilerTest : IntegrationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        val consumer = object {}
         program = ProgramDB("test", language, language.defaultCompilerSpec, consumer)
         program.withTransaction {
             program.memory.createInitializedBlock("rom", address(0x0000), 0x8000, 0, TaskMonitor.DUMMY, false)
@@ -427,7 +371,11 @@ class DecompilerTest : IntegrationTest() {
 
     @AfterEach
     fun afterEach() {
-        decompiler.closeProgram()
+        try {
+            decompiler.closeProgram()
+        } finally {
+            program.release(consumer)
+        }
     }
 
     @AfterAll

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ghidraboy:mapping:1",
+  "title": "GhidraBoy static mapping snapshot version 1",
+  "type": "object",
+  "required": ["schemaVersion", "language", "compiler", "inputMode", "originalLength", "originalSha256", "ranges", "diagnostics"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "language": {"const": "SM83:LE:16:default"},
+    "compiler": {"type": "string"},
+    "inputMode": {"type": "string"},
+    "originalLength": {"type": "integer", "minimum": 0},
+    "originalSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "cartridge": {"type": ["object", "null"]},
+    "diagnostics": {"type": "array", "items": {"type": "string"}},
+    "ranges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["region", "bank", "offset", "length", "space", "start", "read", "write", "execute", "provenance"],
+        "properties": {
+          "region": {"type": "string"},
+          "bank": {"type": "integer", "minimum": -1},
+          "offset": {"type": "integer", "minimum": 0},
+          "length": {"type": "integer", "minimum": 1},
+          "space": {"type": "string"},
+          "start": {"type": "integer", "minimum": 0, "maximum": 65535},
+          "fileOffset": {"type": ["integer", "null"], "minimum": 0},
+          "alias": {"type": ["string", "null"]},
+          "read": {"type": "boolean"},
+          "write": {"type": "boolean"},
+          "execute": {"type": "boolean"},
+          "provenance": {"enum": ["file-source", "byte-mapping", "loader-anchor"]}
+        }
+      }
+    }
+  }
+}
