@@ -13,40 +13,39 @@
 // limitations under the License.
 package fi.gekkio.ghidraboy;
 
-import ghidra.app.util.bin.ByteProvider;
 import generic.hash.HashUtilities;
-
-import java.io.ByteArrayInputStream;
+import ghidra.app.util.bin.ByteProvider;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
 public record Sha256(String value) {
-    @Override
-    public String toString() {
-        return this.value;
-    }
+  @Override
+  public String toString() {
+    return this.value;
+  }
 
-    private static final Pattern SHA256_HEX = Pattern.compile("^[0-9a-f]{64}$");
+  private static final Pattern SHA256_HEX = Pattern.compile("^[0-9a-f]{64}$");
 
-    public static Sha256 parse(String sha256Hex) {
-        if (!SHA256_HEX.matcher(sha256Hex).matches()) {
-            throw new IllegalArgumentException("Invalid SHA256 " + sha256Hex);
-        }
-        return new Sha256(sha256Hex);
+  public static Sha256 parse(String sha256Hex) {
+    if (!SHA256_HEX.matcher(sha256Hex).matches()) {
+      throw new IllegalArgumentException("Invalid SHA256 " + sha256Hex);
     }
+    return new Sha256(sha256Hex);
+  }
 
-    public static Sha256 of(ByteProvider provider) throws IOException {
-        try (var stream = provider.getInputStream(0)) {
-            return new Sha256(HashUtilities.getHash(HashUtilities.SHA256_ALGORITHM, stream));
-        }
+  public static Sha256 of(ByteProvider provider) throws IOException {
+    try (var stream = provider.getInputStream(0)) {
+      return new Sha256(HashUtilities.getHash(HashUtilities.SHA256_ALGORITHM, stream));
     }
+  }
 
-    public static Sha256 of(byte[] bytes) {
-        try {
-            return new Sha256(java.util.HexFormat.of().formatHex(
-                java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
-        }
+  public static Sha256 of(byte[] bytes) {
+    try {
+      return new Sha256(
+          java.util.HexFormat.of()
+              .formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new AssertionError(e);
     }
+  }
 }

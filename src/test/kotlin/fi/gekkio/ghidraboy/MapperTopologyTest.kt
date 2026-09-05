@@ -19,7 +19,9 @@ class MapperTopologyTest : IntegrationTest() {
             val consumer = Any()
             val p = ProgramDB("topology", language, language.defaultCompilerSpec, consumer)
             try {
-                ByteArrayProvider(bytes).use { CartridgeLayout.load(p, it, "CARTRIDGE", "AUTO", GameBoyKind.GB, false, false, TaskMonitor.DUMMY, MessageLog()) }
+                ByteArrayProvider(bytes).use {
+                    CartridgeLayout.load(p, it, "CARTRIDGE", "AUTO", GameBoyKind.GB, false, false, TaskMonitor.DUMMY, MessageLog())
+                }
                 val c = ProgramMapping.cartridge(p)
                 for (view in MapperTopology.romViews(c)) {
                     val physical = MapperState.Physical("ROM", view.bank(), 0x34)
@@ -36,7 +38,9 @@ class MapperTopologyTest : IntegrationTest() {
                     assertEquals(0x55.toByte(), p.memory.getByte(address(0x34)))
                     assertEquals(0x55.toByte(), ProgramMapping.exportBytes(p, true, false, TaskMonitor.DUMMY)[0x34])
                 }
-            } finally { p.release(consumer) }
+            } finally {
+                p.release(consumer)
+            }
         }
     }
 }

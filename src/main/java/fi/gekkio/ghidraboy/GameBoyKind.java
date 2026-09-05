@@ -14,5 +14,6 @@
 package fi.gekkio.ghidraboy;
 
 public enum GameBoyKind {
-    GB, CGB
+  GB,
+  CGB
 }
