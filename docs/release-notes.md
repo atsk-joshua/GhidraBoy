@@ -1,4 +1,11 @@
-# 20260905-dev2 — hardening preview
+# 20260905-dev3 — hardening preview
+
+Function removal now preserves user stack locals and inline edits, along with
+other function annotations. Version 2 ownership receipts certify only unchanged
+bare functions; variables and non-default types are conservatively retained.
+Legacy receipts never re-baseline current user work and report relinquishment.
+Maintained tests cover explicit removal, removeAll, repeated discovery, cancellation,
+and installed save/close/reopen, including in-place data type edits.
 
 All six independently reproduced audit defects have maintained regressions and
 fixes: incomplete analysis no longer publishes a singleton as proof; wide accesses

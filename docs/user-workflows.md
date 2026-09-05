@@ -1,7 +1,7 @@
 # Install and first use
 
 Target **Ghidra 12.1.3, JDK 21**, using the checked-in Gradle 9.0.0 wrapper and
-Kotlin 2.2.10. Development version: **20260905-dev2**. Set `JAVA_HOME` and
+Kotlin 2.2.10. Development version: **20260905-dev3**. Set `JAVA_HOME` and
 `GHIDRA_INSTALL_DIR`, then run `./gradlew clean build`. `SOURCE_DATE_EPOCH` is a
 tracked metadata input, defaulting to 1788566400; use identical inputs when
 comparing clean ZIPs. Do not compare hashes from different platforms as an

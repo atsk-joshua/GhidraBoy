@@ -54,6 +54,10 @@ run([ghidra/'support/analyzeHeadless',projects,'fixture','-import',work/'synthet
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledCheck.java','-noanalysis'],'persisted-loader')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledLifecycle.java','prepare','-noanalysis'],'lifecycle-prepare')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledLifecycle.java','verify','-noanalysis'],'lifecycle-reopen')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledFunctionOwnership.java','prepare','-noanalysis'],'function-ownership-prepare')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-scriptPath',scripts,'-postScript','GhidraBoyInstalledFunctionOwnership.java','verify','-noanalysis'],'function-ownership-reopen')
+if 'INSTALLED_FUNCTION_OWNERSHIP_REOPEN_REMOVE_RERUN_PASS' not in (work/'function-ownership-reopen.log').read_text():
+    raise SystemExit('Missing installed function ownership verification marker')
 # Compile and execute every public script from the installed ZIP, separately from GUI acceptance.
 (work/'abi-request.json').write_text('{"profile":"sdcc451-call1","returnType":"u16","parameters":[{"name":"value","type":"u8"}]}')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-postScript','GhidraBoyAbi.java',work/'abi-request.json','persistent_bank::4000','-noanalysis'],'installed-abi-preview')

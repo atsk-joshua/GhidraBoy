@@ -75,7 +75,8 @@ public final class AnalysisOwnership {
               f.getSymbol().getID(),
               Point.of(f.getEntryPoint()),
               f.getSymbol().getSource().toString(),
-              functionStamp(f), VERSION));
+              functionStamp(f),
+              VERSION));
     }
   }
 
@@ -168,8 +169,10 @@ public final class AnalysisOwnership {
       var entry = receipt.entry.resolve(p);
       var f = entry == null ? null : p.getFunctionManager().getFunctionAt(entry);
       if (receipt.version != VERSION) {
-        diagnostics.add("Preserved legacy function " + receipt.id
-            + ": receipt lacks edit evidence; destructive ownership relinquished");
+        diagnostics.add(
+            "Preserved legacy function "
+                + receipt.id
+                + ": receipt lacks edit evidence; destructive ownership relinquished");
         continue;
       }
       String current = f == null ? null : functionStamp(f);
@@ -179,8 +182,11 @@ public final class AnalysisOwnership {
           && receipt.stamp != null
           && current != null
           && current.equals(receipt.stamp)) p.getFunctionManager().removeFunction(entry);
-      else diagnostics.add("Preserved edited, uncertain or removed function " + receipt.id
-          + ": destructive ownership relinquished");
+      else
+        diagnostics.add(
+            "Preserved edited, uncertain or removed function "
+                + receipt.id
+                + ": destructive ownership relinquished");
     }
     for (var receipt : group.flows) {
       monitor.checkCancelled();
@@ -199,12 +205,12 @@ public final class AnalysisOwnership {
   }
 
   /**
-   * Destructive ownership is deliberately limited to bare functions. Variables, non-default
-   * types (including pointers/typedefs to mutable types), tags and namespace children cannot
-   * be certified here. Retain them even when present at receipt creation. In particular, a
-   * data type's path/size/timestamp is not proof that its definition is unchanged in place.
-   * Null means uncertain, never an equality token. This policy survives save/reopen without
-   * event listeners and does not rely on the function symbol's source to detect user edits.
+   * Destructive ownership is deliberately limited to bare functions. Variables, non-default types
+   * (including pointers/typedefs to mutable types), tags and namespace children cannot be certified
+   * here. Retain them even when present at receipt creation. In particular, a data type's
+   * path/size/timestamp is not proof that its definition is unchanged in place. Null means
+   * uncertain, never an equality token. This policy survives save/reopen without event listeners
+   * and does not rely on the function symbol's source to detect user edits.
    */
   private static String functionStamp(Function f) {
     if (f.getLocalVariables().length != 0
@@ -228,7 +234,8 @@ public final class AnalysisOwnership {
     for (var ns = f.getParentNamespace(); ns != null; ns = ns.getParentNamespace()) {
       fields.add(ns.getID());
       fields.add(ns.getName());
-      if (!ns.isGlobal() && ns.getSymbol() != null) fields.add(ns.getSymbol().getSource().toString());
+      if (!ns.isGlobal() && ns.getSymbol() != null)
+        fields.add(ns.getSymbol().getSource().toString());
     }
     for (var range : f.getBody().getAddressRanges()) {
       fields.add(Point.of(range.getMinAddress()));
@@ -263,7 +270,8 @@ public final class AnalysisOwnership {
     fields.add(storage.isAutoStorage());
     fields.add(storage.getAutoParameterType());
     // JSON preserves field boundaries, nulls and escaping; display delimiters do not.
-    return Sha256.of(ProgramMapping.JSON.toJson(fields)
-        .getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+    return Sha256.of(
+            ProgramMapping.JSON.toJson(fields).getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        .toString();
   }
 }

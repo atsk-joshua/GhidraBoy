@@ -1,19 +1,23 @@
 # Modernization evidence — hardening preview
 
-The six independent reproductions are fixed and regression-tested. Full
-modernization acceptance remains **incomplete because installed GUI workflows have
-not been verified**. The requirement ledger below distinguishes implementation and
+The six independent reproductions remain fixed and regression-tested. The final
+function ownership preservation defect is addressed by version 2 conservative
+receipts and FunctionOwnershipTest, with installed persistence coverage. Full
+acceptance remains incomplete while installed GUI workflows are unverified; the
+final generated ledger also requires the ownership and all existing gates to pass. The requirement ledger below distinguishes implementation and
 executed tests from that external environment gate. Generated reports are the
 authority for the final commit, dirty state, exact counts and ZIP hashes.
 
 ## Baseline, provenance and environment
 
-Work continues from reviewed `a9e1ca7d3c265cdd905ff3b8363cfd3e48b5d85d` on
+Work continues from reviewed `7dd6ed18652dd3eaea0161506ebf9b711b0ad55f` on
 `modernization`. Existing `-x` cherry-picks are preserved: ac77201 → 937253d,
 a3ade39 → 94ececd, 91169cd → e8ad870. No wholesale import, production 11/12 source
 split, history rewrite or GhiGBC change was performed. Baseline
-[Actions run 33944856183](https://github.com/atsk-joshua/GhidraBoy/actions/runs/33944856183)
-passed on a9e1ca7, including clean build and installed preservation. The branch had
+[Actions run 33956121926](https://github.com/atsk-joshua/GhidraBoy/actions/runs/33956121926)
+passed on 7dd6ed1: 399 tests, 21,000 selected external vectors, installed lifecycle,
+actual 11.3.1 migration and package/schema checks. Its successful status and exact
+head were read from GitHub during this continuation; draft release was skipped. The branch had
 already been pushed; this continuation is local and does not push or publish.
 The tag-triggered draft-release job is preserved.
 
@@ -24,8 +28,8 @@ Ghidra12.1.3/mac_arm_64 and OpenJDK21.0.12.1. Installed tests use a separately
 extracted official12.1.3 distribution. Actual migration uses official11.3.1 with
 the matching 20250830 extension in a disposable installation. Current/historical
 compiler fixtures use GBDK4.5.0/4.0.6, SDCC4.5.1/4.1.6. See compiler-support.md.
-Only macOS arm64 is a local native platform claim. Baseline Linux CI is separate;
-updated CI definitions are not evidence of a new remote run. Windows is untested.
+Only macOS arm64 is a local native platform claim. The successful Linux CI run above applies to the reviewed baseline;
+the dev3 continuation has local validation only. Windows is untested.
 
 ## Requirement ledger
 
@@ -46,7 +50,8 @@ actual production code and compiled p-code, with real Ghidra Programs.
 | R6 BOOT direct/alias isolation | PASS | SymbolService; AuditRegressionTest, SymbolTest | Unresolved entries retained |
 | Evaluation/aggregation/application separation | PASS | PcodeConstants, MapperKnowledge, AnalysisCandidates, AnalysisApplication, AnalysisOwnership | Java formatting committed separately from fixes |
 | Versioned results/stale invalidation | PASS | AnalysisResult, ProgramFingerprint; AnalysisLifecycleTest, installed lifecycle | Canonical iteration survives rename/reopen; changed dependencies require new preview |
-| Owned preview/apply/remove/reapply | PASS | AnalysisOwnership; AnalysisLifecycleTest, installed lifecycle | Only unchanged additions are removed; dialogs remain unverified |
+| Owned preview/apply/remove/reapply | PASS | AnalysisOwnership; AnalysisLifecycleTest, FunctionOwnershipTest, installed lifecycle | Bare functions only; variables/types and legacy receipts retained conservatively; dialogs unverified |
+| Function user edits and legacy ownership migration | Executed by final runner | FunctionOwnershipTest, GhidraBoyInstalledFunctionOwnership; function-ownership-before.log.txt | 20 edit categories across three removal routes, variable details, legacy edits, type mutations, cancellation and separate-process reopen |
 | Partial mapper knowledge | PASS | MapperKnowledge; AnalysisHardeningTest, AnalysisBoundaryTest | No generic interprocedural summaries |
 | Seed-based functions | PASS | FunctionDiscovery; AnalysisLifecycleTest, AnalysisHardeningTest | No symbol/vector sweep |
 | Far-call target and return/SP/identity | PASS | FarCallConvention; AnalysisLifecycleTest, BankAnalysisTest | Exact MBC3 body and fixed-ROM callers only; switchable callers rejected |
@@ -66,11 +71,11 @@ actual production code and compiled p-code, with real Ghidra Programs.
 | Genuine11.3.1 database migration | PASS | migration_smoke.py; Create1131Fixture/Verify1131Upgrade | Copied legal fixture; original tree hash unchanged; old/new ADC p-code checked |
 | Separate old-language-on12.1.3 preservation | PASS | installed_smoke.py; GhidraBoyPreservation | Does not substitute for historical database gate |
 | Clean installed ZIP/public script discovery | PASS (headless) | installed_smoke.py; InstalledCheck/InstalledLifecycle | All public scripts compiled/executed; dialogs not inferred |
-| Installed GUI workflows | BLOCKED | gui-validation.md; GUI receipt in generated evidence | CUA shares Java identifier with another agent's12.1.2 window; rerun in an isolated GUI session |
+| Installed GUI workflows | Requires observed final receipt | gui-validation.md; artifact-bound GUI receipt in generated evidence | User authorized single-instance desktop testing after other agent stopped; verify process and ZIP before interaction |
 | CPU exhaustive/external/boundary tests | PASS | emu suites, AnalysisBoundaryTest; cpu-validation.md | Static semantics only, no cycle/HALT/STOP/IME timing claim |
 | Actual vector/sample hashes/counts | PASS | ExternalVectorTest, fetch_vectors.py | 21 selected files ×1000=21000; ordinary samples168; not full upstream corpus |
 | Clean reproducibility/metadata/package doctor | Executed by final runner | run_validation.py; build metadata tracked inputs; doctor.py | Compare same platform/JDK/Ghidra/epoch; generated receipts hold both hashes |
-| Machine evidence/CI report retention | Implemented | release_evidence.py, run_validation.py, CI validate.sh | Remote continuation CI not run; logs/reports retained as artifacts |
+| Machine evidence/CI report retention | Implemented | release_evidence.py, run_validation.py, CI validate.sh | Baseline run33956121926 passed; dev3 remains local, with retained logs/reports |
 | Documentation/rollback/static independence | Updated | user-workflows, input-policy, static-contract, compiler-support, release-notes | Full acceptance not claimed while GUI is blocked |
 
 ## Reproduce the gates
@@ -101,7 +106,7 @@ required markers are recorded. No requested vector count is treated as execution
 Outputs: `build/reports/evidence/release-evidence.json`, `requirements.md`, command
 logs, copied comprehensive-vector XML, installed/migration receipts, ordinary
 JUnit XML in `build/test-results/test`, and `build/distributions/SHA256SUMS` beside
-the installable dev2 ZIP. Generated evidence records commit/dirty state, dependency
+the installable dev3 ZIP. Generated evidence records commit/dirty state, dependency
 pins, tested platform, actual suite/file/vector counts and skipped/blocked gates.
-The prior full native suite had395 tests with zero failures/errors/skips; final
+The reviewed baseline suite had399 tests with zero failures/errors/skips; final
 reports, not this historical count, establish the delivered checkout's result.

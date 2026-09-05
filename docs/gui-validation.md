@@ -1,16 +1,17 @@
 # Installed GUI acceptance checklist
 
-Status on 2026-09-05: **BLOCKED — not accepted**. A disposable 12.1.3 profile
-started successfully after the user allowed the native `decompile` helper.
-Computer use resolves Java windows through `net.java.openjdk.java` and selected a
-concurrent 12.1.2 instance used by another agent. A retained foreground process,
-distinct dock name and unique `.app` wrapper did not yield a separately selectable
-app. The other instance and its project must not be used for these tests.
+Status at dev3 packaging on 2026-09-05: **not yet accepted**. The user has
+confirmed the other agent is no longer running and authorized GUI testing on this
+desktop. Before interaction, verify a single Ghidra GUI process, its 12.1.3 install
+path, and every installed extension member against the exact dev3 ZIP. A renamed
+Java wrapper alone is not identity evidence. Use a disposable profile and project.
 
-Next action: when the other GUI session is finished, rerun with an isolated 12.1.3
-profile, or use computer control that can select a specific process ID. Record the
-actual operated dialogs and screenshots. Headless installed script compilation,
-execution and database persistence are separate passing gates.
+Final observed workflows, screenshots, artifact SHA256 and any remaining blockers
+belong in `docs/evidence/` and the generated validation receipts (excluded from ZIP
+packaging to avoid a self-referential artifact hash). The checklist below records
+requirements, not a PASS inferred from startup or headless scripts. Prior dev2
+attempts were blocked by shared `net.java.openjdk.java` targeting of the other
+agent's 12.1.2 instance; that instance must never be selected or terminated.
 
 Use only self-authored synthetic inputs and a disposable project. Install the
 current ZIP cleanly (remove the previous extension first). Record its hash,

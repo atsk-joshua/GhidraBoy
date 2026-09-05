@@ -42,6 +42,24 @@ New applied runs remove unchanged old additions before replacement, avoiding sta
 bookmarks. Transactions and cancellation roll back partial mutations. Installed
 separate-process tests verify save/reopen and lifecycle, not only in-memory calls.
 
+Function ownership receipts use envelope version 2 and individual function version
+2 under the existing `analysis.ownership.v1` option key. Legacy function receipts
+are retained with an explicit reason and their destructive ownership is dropped;
+saving another feature never upgrades old function proof or re-baselines it against
+current annotations. Discovery returns these preservation diagnostics on reruns.
+
+Destructive removal is limited to unchanged bare functions with the built-in default
+undefined return, no locals/parameters, tags, thunks, or namespace children. Any
+variables or non-default types (including pointers and typedefs) make ownership
+uncertain and prevent deletion, even if already present when the receipt was made.
+This deliberately retains more functions: a data type path, size or timestamp cannot
+prove that its members, comments or nested definitions are unchanged in place.
+Eligible receipts compare function identity/name/namespace, body, signature source,
+return storage, comments, calling convention, inline/no-return/varargs, call fixup,
+stack cleanup/frame, pinning and entry-point status. Retained functions are skipped
+on subsequent discovery; destructive ownership is not reacquired. Cancellation
+rolls back both deletion and relinquishment. Existing user functions are never claimed.
+
 Function discovery is seed based: existing entry points, explicitly declared code
 and proven direct calls. It uses defined instructions and preserves existing
 functions, bodies, prototypes, storage, overrides and marked data. Labels and

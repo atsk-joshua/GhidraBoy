@@ -39,7 +39,7 @@ if a.native:
  built=run('clean-build','full-build',['./gradlew','clean','build','--console=plain'])
 else:
  blocked('full-build','Native decompiler/full suite not enabled for this run')
- patterns=['*AuditRegressionTest','*CartridgeTest','*MapperTopologyTest','*Symbol*Test','*SalvageTest','*AnalysisHardeningTest','*AnalysisBoundaryTest','*BankAnalysisTest','*emu.*','*CompilerSpecTest']
+ patterns=['*FunctionOwnershipTest','*AuditRegressionTest','*CartridgeTest','*MapperTopologyTest','*Symbol*Test','*SalvageTest','*AnalysisHardeningTest','*AnalysisBoundaryTest','*BankAnalysisTest','*emu.*','*CompilerSpecTest']
  command=['./gradlew','clean','test','assemble','ktlintCheck','--console=plain']
  for pattern in patterns:command+=['--tests',pattern]
  built=run('pure-java-gates','pure-java-gates',command)

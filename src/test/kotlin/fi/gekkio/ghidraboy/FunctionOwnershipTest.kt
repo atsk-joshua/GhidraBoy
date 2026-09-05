@@ -43,130 +43,193 @@ class FunctionOwnershipTest : IntegrationTest() {
     private fun discover(p: ProgramDB) =
         FunctionDiscovery.discover(p, listOf(address(0x300)), emptyList<BankAnalysis.Finding>(), TaskMonitor.DUMMY)
 
-    private fun receipt(p: ProgramDB, f: Function) = p.withTransaction {
+    private fun receipt(
+        p: ProgramDB,
+        f: Function,
+    ) = p.withTransaction {
         val group = AnalysisOwnership.Group()
         group.function(f)
         AnalysisOwnership.save(p, "functions", group)
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["local", "inline", "noreturn", "varargs", "cleanup", "namespace", "body", "comment", "repeatable", "tag", "fixup", "return", "storage", "signature", "parameter", "local-label", "thunk"])
-    fun `edited discovered functions survive every removal route`(edit: String) = program { p, f ->
-        val id = f.id
-        p.withTransaction {
-            when (edit) {
-                "local" -> f.addLocalVariable(LocalVariableImpl("saved", WordDataType.dataType, -2, p), SourceType.USER_DEFINED)
-                "inline" -> f.isInline = true
-                "noreturn" -> f.setNoReturn(true)
-                "varargs" -> f.setVarArgs(true)
-                "cleanup" -> f.stackPurgeSize = 4
-                "namespace" -> f.parentNamespace = p.symbolTable.createNameSpace(null, "UserSpace", SourceType.USER_DEFINED)
-                "body" -> f.body = AddressSet(address(0x300), address(0x301))
-                "comment" -> f.comment = "user comment"
-                "repeatable" -> f.repeatableComment = "user repeatable"
-                "tag" -> f.addTag("user tag")
-                "fixup" -> f.callFixup = "user_fixup"
-                "return" -> f.setReturnType(ByteDataType.dataType, SourceType.USER_DEFINED)
-                "storage" -> f.setCustomVariableStorage(true)
-                "signature" -> f.signatureSource = SourceType.USER_DEFINED
-                "parameter" -> f.addParameter(ParameterImpl("input", WordDataType.dataType, 2, p), SourceType.USER_DEFINED)
-                "local-label" -> p.symbolTable.createLabel(address(0x301), "user_local", f, SourceType.USER_DEFINED)
-                "thunk" -> f.setThunkedFunction(p.functionManager.createFunction("target", address(0x310), AddressSet(address(0x310)), SourceType.USER_DEFINED))
+    @ValueSource(
+        strings = ["local", "inline", "noreturn", "varargs", "cleanup", "namespace", "body", "comment", "repeatable", "tag", "fixup", "return", "storage", "signature", "parameter", "local-label", "thunk", "pinned", "entry", "convention"],
+    )
+    fun `edited discovered functions survive every removal route`(edit: String) =
+        listOf("discover", "remove", "removeAll").forEach { route ->
+            program { p, f ->
+                val id = f.id
+                p.withTransaction {
+                    when (edit) {
+                        "pinned" -> f.symbol.isPinned = true
+                        "entry" -> p.symbolTable.addExternalEntryPoint(f.entryPoint)
+                        "convention" -> f.setCallingConvention("__sdcc451_call0")
+                        "local" -> f.addLocalVariable(LocalVariableImpl("saved", WordDataType.dataType, -2, p), SourceType.USER_DEFINED)
+                        "inline" -> f.isInline = true
+                        "noreturn" -> f.setNoReturn(true)
+                        "varargs" -> f.setVarArgs(true)
+                        "cleanup" -> f.stackPurgeSize = 4
+                        "namespace" -> f.parentNamespace = p.symbolTable.createNameSpace(null, "UserSpace", SourceType.USER_DEFINED)
+                        "body" -> f.body = AddressSet(address(0x300), address(0x301))
+                        "comment" -> f.comment = "user comment"
+                        "repeatable" -> f.repeatableComment = "user repeatable"
+                        "tag" -> f.addTag("user tag")
+                        "fixup" -> f.callFixup = "user_fixup"
+                        "return" -> f.setReturnType(ByteDataType.dataType, SourceType.USER_DEFINED)
+                        "storage" -> f.setCustomVariableStorage(true)
+                        "signature" -> f.signatureSource = SourceType.USER_DEFINED
+                        "parameter" -> f.addParameter(ParameterImpl("input", WordDataType.dataType, 2, p), SourceType.USER_DEFINED)
+                        "local-label" -> p.symbolTable.createLabel(address(0x301), "user_local", f, SourceType.USER_DEFINED)
+                        "thunk" ->
+                            f.setThunkedFunction(
+                                p.functionManager.createFunction(
+                                    "target",
+                                    address(0x310),
+                                    AddressSet(address(0x310)),
+                                    SourceType.USER_DEFINED,
+                                ),
+                            )
+                    }
+                }
+                val messages =
+                    when (route) {
+                        "discover" -> discover(p)
+                        "remove" -> AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY)
+                        else -> AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
+                    }
+                assertEquals(id, p.functionManager.getFunctionAt(address(0x300))?.id, edit)
+                assertTrue(messages.any { it.contains("Preserved") }, messages.toString())
+                AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY)
+                AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
+                discover(p)
+                assertEquals(id, p.functionManager.getFunctionAt(address(0x300))?.id, edit)
             }
         }
-        val messages = discover(p)
-        assertEquals(id, p.functionManager.getFunctionAt(address(0x300))?.id, edit)
-        assertTrue(messages.any { it.contains("Preserved") }, messages.toString())
-        AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY)
-        AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
-        discover(p)
-        assertEquals(id, p.functionManager.getFunctionAt(address(0x300))?.id, edit)
-    }
 
     @ParameterizedTest
     @ValueSource(strings = ["local", "parameter", "return"])
-    fun `variable detail edits survive explicit removal`(kind: String) = program { p, f ->
-        for (edit in if (kind == "return") listOf("type", "storage") else listOf("name", "comment", "type", "storage")) {
-            val v = p.withTransaction {
-                when (kind) {
-                    "local" -> {
-                        f.localVariables.forEach { f.removeVariable(it) }
-                        f.addLocalVariable(LocalVariableImpl("local_2", WordDataType.dataType, -2, p), SourceType.ANALYSIS)
+    fun `variable detail edits survive explicit removal`(kind: String) =
+        program { p, f ->
+            for (edit in if (kind == "return") listOf("type", "storage") else listOf("name", "comment", "type", "storage")) {
+                val v =
+                    p.withTransaction {
+                        when (kind) {
+                            "local" -> {
+                                f.localVariables.forEach { f.removeVariable(it) }
+                                f.addLocalVariable(LocalVariableImpl("local_2", WordDataType.dataType, -2, p), SourceType.ANALYSIS)
+                            }
+                            "parameter" -> {
+                                if (f.parameterCount > 0) f.removeParameter(0)
+                                f.addParameter(ParameterImpl("param_1", WordDataType.dataType, 2, p), SourceType.ANALYSIS)
+                            }
+                            else -> {
+                                f.setReturnType(WordDataType.dataType, SourceType.ANALYSIS)
+                                f.getReturn()
+                            }
+                        }
                     }
-                    "parameter" -> {
-                        if (f.parameterCount > 0) f.removeParameter(0)
-                        f.addParameter(ParameterImpl("param_1", WordDataType.dataType, 2, p), SourceType.ANALYSIS)
+                receipt(p, f)
+                p.withTransaction {
+                    when (edit) {
+                        "name" ->
+                            if (kind !=
+                                "return"
+                            ) {
+                                v.setName("renamed", SourceType.USER_DEFINED)
+                            } else {
+                                f.setReturnType(ByteDataType.dataType, SourceType.USER_DEFINED)
+                            }
+                        "comment" -> v.comment = "preserve variable comment"
+                        "type" -> v.setDataType(ByteDataType.dataType, SourceType.USER_DEFINED)
+                        "storage" -> {
+                            f.setCustomVariableStorage(true)
+                            v.setDataType(WordDataType.dataType, VariableStorage(p, p.getRegister("BC")), true, SourceType.USER_DEFINED)
+                        }
                     }
-                    else -> { f.setReturnType(WordDataType.dataType, SourceType.ANALYSIS); f.getReturn() }
                 }
+                assertTrue(AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY).any { it.contains("Preserved") }, "$kind $edit")
+                assertEquals(f.id, p.functionManager.getFunctionAt(address(0x300))?.id, "$kind $edit")
             }
+        }
+
+    @Test
+    fun `in place referenced type mutation never certifies unchanged ownership`() =
+        program { p, f ->
+            val type =
+                p.withTransaction {
+                    val structure = StructureDataType("Mutable", 0)
+                    structure.add(ByteDataType.dataType, "field", null)
+                    val resolved = p.dataTypeManager.resolve(structure, DataTypeConflictHandler.DEFAULT_HANDLER) as Structure
+                    f.setReturnType(resolved, SourceType.ANALYSIS)
+                    resolved
+                }
             receipt(p, f)
+            p.withTransaction { type.getComponent(0).comment = "edited without changing path or size" }
+            assertTrue(AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY).any { it.contains("Preserved") })
+            assertNotNull(p.functionManager.getFunctionAt(address(0x300)))
+        }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["unchanged", "local", "inline"])
+    fun `legacy receipts retain even apparently unchanged functions and never rebaseline`(edit: String) =
+        program { p, f ->
             p.withTransaction {
-                when (edit) {
-                    "name" -> if (kind != "return") v.setName("renamed", SourceType.USER_DEFINED) else f.setReturnType(ByteDataType.dataType, SourceType.USER_DEFINED)
-                    "comment" -> v.comment = "preserve variable comment"
-                    "type" -> v.setDataType(ByteDataType.dataType, SourceType.USER_DEFINED)
-                    "storage" -> {
-                        f.setCustomVariableStorage(true)
-                        v.setDataType(WordDataType.dataType, VariableStorage(p, p.getRegister("BC")), true, SourceType.USER_DEFINED)
+                val json = ProgramMapping.JSON.toJsonTree(AnalysisOwnership.Group().apply { function(f) }).asJsonObject
+                json.getAsJsonArray("functions").forEach { it.asJsonObject.remove("version") }
+                p.getOptions(ProgramMapping.OPTIONS).setString("analysis.ownership.v1", "{\"version\":1,\"groups\":{\"functions\":$json}}")
+            }
+            p.withTransaction {
+                if (edit ==
+                    "local"
+                ) {
+                    f.addLocalVariable(LocalVariableImpl("legacy_user", WordDataType.dataType, -2, p), SourceType.USER_DEFINED)
+                }
+                if (edit == "inline") f.isInline = true
+                AnalysisOwnership.save(p, "other", AnalysisOwnership.Group())
+            }
+            val messages = discover(p)
+            assertTrue(messages.any { it.contains("legacy") }, messages.toString())
+            AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
+            assertEquals(f.id, p.functionManager.getFunctionAt(address(0x300))?.id)
+        }
+
+    @Test
+    fun `unchanged functions remove but preexisting user functions survive`() =
+        program { p, _ ->
+            AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY)
+            assertNull(p.functionManager.getFunctionAt(address(0x300)))
+            p.withTransaction {
+                p.functionManager.createFunction(
+                    "user",
+                    address(0x300),
+                    AddressSet(address(0x300)),
+                    SourceType.USER_DEFINED,
+                )
+            }
+            discover(p)
+            AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
+            assertEquals("user", p.functionManager.getFunctionAt(address(0x300)).name)
+        }
+
+    @Test
+    fun `cancelled removal restores function and receipts including relinquished edits`() =
+        program { p, f ->
+            p.withTransaction { f.isInline = true }
+            val before = p.getOptions(ProgramMapping.OPTIONS).getString("analysis.ownership.v1", "")
+            val monitor =
+                object : TaskMonitorAdapter() {
+                    override fun checkCancelled() {
+                        if (p.getOptions(ProgramMapping.OPTIONS).getString("analysis.ownership.v1", "") !=
+                            before
+                        ) {
+                            throw CancelledException()
+                        }
                     }
                 }
-            }
-            assertTrue(AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY).any { it.contains("Preserved") }, "$kind $edit")
-            assertEquals(f.id, p.functionManager.getFunctionAt(address(0x300))?.id, "$kind $edit")
+            assertThrows(CancelledException::class.java) { AnalysisOwnership.removeAll(p, monitor) }
+            assertEquals(before, p.getOptions(ProgramMapping.OPTIONS).getString("analysis.ownership.v1", ""))
+            assertTrue(p.functionManager.getFunctionAt(address(0x300)).isInline)
+            assertTrue(AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY).any { it.contains("Preserved") })
         }
-    }
-
-    @Test
-    fun `in place referenced type mutation never certifies unchanged ownership`() = program { p, f ->
-        val type = p.withTransaction {
-            val structure = StructureDataType("Mutable", 0)
-            structure.add(ByteDataType.dataType, "field", null)
-            val resolved = p.dataTypeManager.resolve(structure, DataTypeConflictHandler.DEFAULT_HANDLER) as Structure
-            f.setReturnType(resolved, SourceType.ANALYSIS)
-            resolved
-        }
-        receipt(p, f)
-        p.withTransaction { type.getComponent(0).comment = "edited without changing path or size" }
-        assertTrue(AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY).any { it.contains("Preserved") })
-        assertNotNull(p.functionManager.getFunctionAt(address(0x300)))
-    }
-
-    @Test
-    fun `legacy receipts retain even apparently unchanged functions and never rebaseline`() = program { p, f ->
-        p.withTransaction {
-            val json = ProgramMapping.JSON.toJsonTree(AnalysisOwnership.Group().apply { function(f) }).asJsonObject
-            json.getAsJsonArray("functions").forEach { it.asJsonObject.remove("version") }
-            p.getOptions(ProgramMapping.OPTIONS).setString("analysis.ownership.v1", "{\"version\":1,\"groups\":{\"functions\":$json}}")
-        }
-        val messages = discover(p)
-        assertTrue(messages.any { it.contains("legacy") }, messages.toString())
-        AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
-        assertEquals(f.id, p.functionManager.getFunctionAt(address(0x300))?.id)
-    }
-
-    @Test
-    fun `unchanged functions remove but preexisting user functions survive`() = program { p, _ ->
-        AnalysisOwnership.remove(p, "functions", TaskMonitor.DUMMY)
-        assertNull(p.functionManager.getFunctionAt(address(0x300)))
-        p.withTransaction { p.functionManager.createFunction("user", address(0x300), AddressSet(address(0x300)), SourceType.USER_DEFINED) }
-        discover(p)
-        AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY)
-        assertEquals("user", p.functionManager.getFunctionAt(address(0x300)).name)
-    }
-
-    @Test
-    fun `cancelled removal restores function and receipts including relinquished edits`() = program { p, f ->
-        p.withTransaction { f.isInline = true }
-        val before = p.getOptions(ProgramMapping.OPTIONS).getString("analysis.ownership.v1", "")
-        val monitor = object : TaskMonitorAdapter() {
-            override fun checkCancelled() {
-                if (p.getOptions(ProgramMapping.OPTIONS).getString("analysis.ownership.v1", "") != before) throw CancelledException()
-            }
-        }
-        assertThrows(CancelledException::class.java) { AnalysisOwnership.removeAll(p, monitor) }
-        assertEquals(before, p.getOptions(ProgramMapping.OPTIONS).getString("analysis.ownership.v1", ""))
-        assertTrue(p.functionManager.getFunctionAt(address(0x300)).isInline)
-        assertTrue(AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY).any { it.contains("Preserved") })
-    }
 }

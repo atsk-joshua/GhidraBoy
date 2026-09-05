@@ -16,7 +16,7 @@ checks={}
 for audit in ['R1','R2','R3','R4','R5','R6']:
  matches=[case for case in cases if case['class'].endswith('AuditRegressionTest') and case['name'].startswith(audit+' ')]
  checks[audit]={'status':'PASS' if matches and all(c['passed'] for c in matches) else 'NOT_PASSED','tests':matches}
-for label,classes in {'analysis':['AnalysisLifecycleTest','AnalysisHardeningTest','AnalysisBoundaryTest'],'symbols':['SymbolTest','SymbolOwnershipTest','SymbolBoundaryTest'],'mapping':['CartridgeTest','MapperTopologyTest','SalvageTest'],'abi':['CompilerAbiTest','CompilerSpecTest']}.items():
+for label,classes in {'function-ownership':['FunctionOwnershipTest'],'analysis':['AnalysisLifecycleTest','AnalysisHardeningTest','AnalysisBoundaryTest'],'symbols':['SymbolTest','SymbolOwnershipTest','SymbolBoundaryTest'],'mapping':['CartridgeTest','MapperTopologyTest','SalvageTest'],'abi':['CompilerAbiTest','CompilerSpecTest']}.items():
  matches=[s for s in suites if s['name'].split('.')[-1] in classes]
  checks[label]={'status':'PASS' if len(matches)==len(classes) and all(s['failures']==s['errors']==s['skipped']==0 for s in matches) else 'NOT_PASSED','reports':[s['report'] for s in matches]}
 externalRuns=[]
