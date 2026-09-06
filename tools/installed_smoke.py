@@ -33,15 +33,26 @@ def run(cmd, name):
         raise SystemExit(f'{name} failed, see log')
 # Preserve maintained files and compile original upstream language independently of checkout files.
 backup={p.name:p.read_bytes() for p in languages.iterdir() if p.is_file()}
+opcode_fixture=work/'instruction-compatibility.bin'
+opcode_fixture.write_bytes(bytes(0x8000))
 try:
     for name in ['sm83.sinc','sm83_instructions.sinc','sm83.slaspec','sm83.ldefs','sm83.pspec','sm83.cspec']:
         data=subprocess.check_output(['git','show',f'42032f9:data/languages/{name}'],cwd=repo)
         (languages/name).write_bytes(data)
     run([args.jdk/'bin/java','-cp',classpath,'ghidra.pcodeCPort.slgh_compile.SleighCompile',languages/'sm83.slaspec'],'compile-old')
     run([ghidra/'support/analyzeHeadless',projects,'fixture','-scriptPath',scripts,'-preScript','GhidraBoyPreservation.java','create','-noanalysis'],'create-old')
+    run([ghidra/'support/analyzeHeadless',projects,'fixture','-import',opcode_fixture,
+         '-loader','BinaryLoader','-processor','SM83:LE:16:default','-cspec','default',
+         '-scriptPath',scripts,'-postScript','GhidraBoyInstructionCompatibility.java','seed',
+         work/'instructions-old.txt','-noanalysis'],'create-old-instructions')
 finally:
     for name,data in backup.items(): (languages/name).write_bytes(data)
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','preserved','-scriptPath',scripts,'-postScript','GhidraBoyPreservation.java','verify','-noanalysis'],'reopen-current')
+run([ghidra/'support/analyzeHeadless',projects,'fixture','-process',opcode_fixture.name,
+     '-scriptPath',scripts,'-postScript','GhidraBoyInstructionCompatibility.java','check',
+     work/'instructions-current.txt','-noanalysis'],'reopen-current-instructions')
+if 'INSTRUCTION_COMPATIBILITY_PASS instructions=501' not in (work/'reopen-current-instructions.log').read_text():
+    raise SystemExit('Missing persisted instruction compatibility verification marker')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','preserved','-postScript','GhidraBoyTools.java','inspect','-noanalysis'],'installed-tools')
 # Synthetic code with the standard 48-byte detection signature; no commercial ROM.
 rom=bytearray(0x10000)
