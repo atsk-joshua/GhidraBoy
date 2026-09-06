@@ -53,10 +53,10 @@
       "requirement": "executable probes and result receipts identify tested versions, exact operations, observed semantics, missing capabilities and any required upstream patches.",
       "status": "IN_PROGRESS",
       "evidence": [
-        "/private/tmp/ghidraboy-integration-20260906/mgba-probe-build2/receipt.json",
-        "/private/tmp/ghidraboy-integration-20260906/emulicious-probe2/receipt.json"
+        "docs/integration/backend-decisions.md",
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
       ],
-      "note": "mGBA public API probe passes with unsafe full rawRead8 inspection explicitly identified; Emulicious initialize succeeds but launch is unresolved. No second backend support claim."
+      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
     },
     {
       "id": "SPIKE-02",
@@ -64,10 +64,10 @@
       "requirement": "compare cost of native embedding versus remote attachment, including pause safety, safe peeks and identity verification; select mGBA integration mode based on evidence.",
       "status": "IN_PROGRESS",
       "evidence": [
-        "/private/tmp/ghidraboy-integration-20260906/mgba-probe-build2/receipt.json",
-        "/private/tmp/ghidraboy-integration-20260906/emulicious-probe2/receipt.json"
+        "docs/integration/backend-decisions.md",
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
       ],
-      "note": "mGBA public API probe passes with unsafe full rawRead8 inspection explicitly identified; Emulicious initialize succeeds but launch is unresolved. No second backend support claim."
+      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
     },
     {
       "id": "SPIKE-03",
@@ -75,10 +75,10 @@
       "requirement": "provisional contract covers both probes without exposing either engine's internal types. Unsupported external coherence is rejected or explicitly graded; never fabricated.",
       "status": "IN_PROGRESS",
       "evidence": [
-        "/private/tmp/ghidraboy-integration-20260906/mgba-probe-build2/receipt.json",
-        "/private/tmp/ghidraboy-integration-20260906/emulicious-probe2/receipt.json"
+        "docs/integration/backend-decisions.md",
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
       ],
-      "note": "mGBA public API probe passes with unsafe full rawRead8 inspection explicitly identified; Emulicious initialize succeeds but launch is unresolved. No second backend support claim."
+      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
     },
     {
       "id": "SPIKE-04",
@@ -86,10 +86,10 @@
       "requirement": "record a go/no-go decision for mGBA Basic Debugging. If it cannot meet the minimum, Release A may continue; Release B remains incomplete until an evidence-backed second backend is selected and passes M8. Do not add more candidates without resolving the failed requirement.",
       "status": "IN_PROGRESS",
       "evidence": [
-        "/private/tmp/ghidraboy-integration-20260906/mgba-probe-build2/receipt.json",
-        "/private/tmp/ghidraboy-integration-20260906/emulicious-probe2/receipt.json"
+        "docs/integration/backend-decisions.md",
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
       ],
-      "note": "mGBA public API probe passes with unsafe full rawRead8 inspection explicitly identified; Emulicious initialize succeeds but launch is unresolved. No second backend support claim."
+      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
     },
     {
       "id": "MOVE-01",
@@ -149,11 +149,12 @@
       "id": "BUILD-03",
       "milestone": "M3",
       "requirement": "packages contain one static provider, no bundled compile-only provider copy, correct notices, no private assets, and a deterministic source/dependency manifest.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/m3-evidence.json"
+        "docs/integration/m3-evidence.json",
+        "docs/integration/m3-linux-evidence.json"
       ],
-      "note": "macOS package reproduced byte-for-byte, excludes untracked/internal documents, preserves one provider, and passes real RMI plus 11 installed recovery/rollback checks. Linux package/native dependency/SDL qualification remains open."
+      "note": "Both macOS and Linux packages validated at the M3 source snapshot; Linux ran offline without build tools/system SDL. Later M4 changes require fresh release checks."
     },
     {
       "id": "BUILD-04",
@@ -179,36 +180,56 @@
       "id": "BACKEND-01",
       "milestone": "M4",
       "requirement": "structural checks find no SameBoy headers/private fields outside its adapter, and no native handle/API access from generic agent/UI/display/profile code. Compatibility readers and labeled provenance may mention SameBoy.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "debugger/docs/contracts/backend.md",
+        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+      ],
+      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
     },
     {
       "id": "BACKEND-02",
       "milestone": "M4",
       "requirement": "run identical self-authored fixtures through the pre-extraction and new SameBoy paths; compare defined registers, physical bytes, stop reasons, event order/precision, bank mappings, edits and restore semantics.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "debugger/docs/contracts/backend.md",
+        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+      ],
+      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
     },
     {
       "id": "BACKEND-03",
       "milestone": "M4",
       "requirement": "pause during run/queue saturation, timed-out requests, disconnect/reconnect, target exit, callback ordering, event overflow and shutdown have bounded behavior with visible error/loss reporting.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "debugger/docs/contracts/backend.md",
+        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+      ],
+      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
     },
     {
       "id": "BACKEND-04",
       "milestone": "M4",
       "requirement": "display input, focus loss, minimized/paused pumping, frame copying and close work through the abstraction without stale held keys or lock inversion.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "debugger/docs/contracts/backend.md",
+        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+      ],
+      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
     },
     {
       "id": "BACKEND-05",
       "milestone": "M4",
       "requirement": "startup and action requests reject unsupported model/mapper/capability combinations explicitly; capability enforcement does not rely on disabled UI controls alone.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "debugger/docs/contracts/backend.md",
+        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+      ],
+      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
     },
     {
       "id": "COMPAT-01",

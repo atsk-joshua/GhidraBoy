@@ -131,6 +131,8 @@ public class RealTraceTest {
             TraceRmiConnection conn=acceptor.accept();trace=conn.waitForTrace(15000);waitCapture(0);
             var methods=conn.getMethods();
             require("generic".equals(attr("Machine","Profile")),"generic install runs without optional profile");
+            require("sameboy".equals(attr("Machine","Backend"))&&"CGB-E".equals(attr("Machine","Model")),"capture publishes the selected backend and actual hardware model");
+            require(((Number)attr("Machine","TicksPerSecond")).longValue()==8388608&&attr("Machine","Ticks").equals(attr("Machine","Ticks8MHz")),"generic timebase agrees with the compatible legacy tick field");
             require(object("Machine.ProfileFields")!=null,"generic typed profile container is discoverable");
             for(String stale:List.of("session","epoch","capture")) {
                 var request=new HashMap<String,Object>();request.put("process",object("Machine"));request.put("region","wram");request.put("bank",1L);request.put("offset",0x34L);request.put("length",1L);
@@ -262,6 +264,7 @@ public class RealTraceTest {
                 require(reopened.getStaticMappingManager().findContaining(reopened.getBaseAddressFactory().getDefaultAddressSpace().getAddress(0x4029),first).getStaticAddress().equals(firstMapping.getStaticAddress()),"reopened persisted trace retains historic mapping");
                 require(BankMappings.isReady(reopened.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine")),first),"reopened historical mapping retains its exact completion marker");
                 var reopenedMachine=reopened.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine"));
+                require("sameboy".equals(reopenedMachine.getValue(registerRestoreSnap,"Backend").getValue()),"reopened history retains captured backend identity");
                 require(registerRecovery.toString().equals(reopenedMachine.getValue(registerRestoreSnap,"ParentCheckpoint").getValue()),"reopened restore retains its original checkpoint link");
                 require(reopenedMachine.getValue(registerRestoreSnap,"ParentCheckpointSHA256").getValue().toString().length()==64,"reopened restore retains the checkpoint state fingerprint");
             }finally{reopened.release(RealTraceTest.class);}

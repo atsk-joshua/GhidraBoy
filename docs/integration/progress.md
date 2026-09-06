@@ -4,7 +4,7 @@ Plan: [debugger-integration-plan.md](../debugger-integration-plan.md). This ledg
 
 ## Active work
 
-M0 is in progress. M1 feasibility probes have executed. M2's mechanical import is complete and M3 build integration is in progress. The import proceeded independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changed no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
+M0 and the remaining M1 conformance inventory are in progress. M2's mechanical import and M3 build/package qualification are complete at their recorded source snapshots. M4's Python adapter boundary is implemented and under validation; generic session/recovery extraction remains open. The import proceeded independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changed no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
 
 The `integrate-ghigbc` branch preserves the prior `suite-offdevice-candidate` ref. Unrelated untracked reports and GhiGBC output remain untouched. No remote writes or publication occurred.
 
@@ -60,7 +60,7 @@ The root wrapper now optionally includes `GhiGBC` with `-PwithDebugger=true`. It
 
 Final public-wrapper build and Kotlin script checks passed (`unified-wrapper-final.log`); static-only project/configuration checks passed and explicitly list no subprojects (`static-configuration-final.log`). `unified-artifacts.json` retains the verified output identities. Archive inspection confirms exactly `GhiGBC/lib/GhiGBC.jar`, no duplicate provider classes, and no second SM83 language in the debugger archive.
 
-M3's macOS build/package work is implemented and verified; Linux package qualification remains open. No generated integration archive is being declared a release.
+M3's macOS and Linux build/package work is implemented and verified at the recorded snapshots. No generated integration archive is being declared a release; later backend changes require renewed release qualification.
 
 ### M3 dependency, package and clean-build checks
 
@@ -81,6 +81,28 @@ Executed checks are collected in [m3-evidence.json](m3-evidence.json):
 
 The final tested package and native binary hashes are in the evidence JSON and retained artifact manifests. The existing Ghidra terminal-close diagnostic remains visible in RMI logs with the same explicit successful termination/async-error checks as the baseline. Legacy game delegates now resolve the optional GhiBW3 checkout beside the root GhidraBoy repository, or use explicit `GHIBW3_ROOT`.
 
+### M3 Linux qualification
+
+[Linux evidence](m3-linux-evidence.json) records the exact builder/runtime images and artifacts. The adapter was built from verified source with GCC 11.4.0, inspected as ELF64 x86-64 with every required ABI export, and packaged with the hash-pinned Debian SDL 2.32.4 runtime and notice. The inspector no longer incorrectly labels every library as a Zig/glibc-2.28 build.
+
+The native decompiler companion was applied through its copy-only updater in Linux; its real startup/protocol probe passed while preserving the source distribution. The package then passed 46 native/Python tests, real Trace RMI including 250 captures, 11 installer/recovery/rollback checks and display smoke in an unprivileged, network-disabled container with no compiler/make/javac/Gradle/RGBDS and no system SDL. The bundled SDL was loaded from the package.
+
+Initial attempts remain recorded: the compiler/linker completed but a trailing `file` utility was absent, so the retained binary was inspected with the Python ELF verifier; an Xvfb PID-1 readiness wait was corrected with Docker `--init`; offline hostname resolution was corrected with an explicit loopback hostname entry. The successful run did not suppress test failures. Shader-cache permission warnings remained visible, with SDL disabling that optional cache. This is virtual-display/emulated-x86 evidence, not Steam Deck or physical GUI acceptance. The reusable environment guidance is in `tools/linux/`.
+
+### M1 external attachment follow-up
+
+The Emulicious probe passed in the Linux environment using the exact earlier JAR. It exposed registers and hardware scopes, including cartridge ROM-bank state, stepped from PC 0x0100 to 0x0101, and preserved the process for a bounded observation after disconnect. The earlier macOS native-audio failure remains an environment-specific failure. Raw bulk-memory coherence, exact loaded-ROM identity and broader pause/error conformance are not inferred from this result. [Backend decisions](backend-decisions.md) record the measured limitations and why mGBA remains the next embedded implementation.
+
+### M4 initial adapter boundary
+
+The SameBoy binding now lives in `ghigbc.backends.sameboy`; `ghigbc.native` retains compatibility imports. The shared protocol contains immutable descriptors, semantic buttons, normalized bank access, explicit CPU coverage, frame dimensions, capabilities and an optional timebase. Generic imports do not load an emulator adapter. Captures retain their descriptor so later configuration changes cannot relabel an earlier observation.
+
+The agent/display no longer import the native module, access native handles, or interpret the flat native capture layout. They use backend control/input/frame methods, capture bank/coverage accessors and adapter-supplied event precision. The agent publishes additive backend/model/capability/timebase attributes and preserves the legacy 8 MHz field only for matching units. Profiles receive the selected backend's capability set. Direct unsupported edits are rejected before recovery creation, and ordinary reads reject a closed backend.
+
+All 53 native/Python tests pass, including the new boundary, capability, immutable-buffer, descriptor-history, input/frame and closed-handle checks. Extracted real Trace RMI validation passed after the refactor. The SDL smoke aborted under the filesystem/process sandbox and passed with desktop execution permission; no physical input/focus acceptance is claimed. An overlapping validation invocation was refused by the existing-instance guard; its result is not counted. The separate serial run passed all new identity/timebase/reopen assertions; [boundary evidence](m4-boundary-evidence.json) records its exact logs.
+
+M4 is not complete: generic session/recovery ownership, complete native source-directory isolation, model/mapper validation and broader failure/conformance checks remain open. The current adapter remains SameBoy only.
+
 ## Next gates
 
-Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Resolve Emulicious launch and the remaining M1 semantics, preserving unsupported operations explicitly. Qualify the M3 Linux runtime package and companion native/SDL dependencies, then proceed through backend/session extraction and compatibility gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.
+Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Finish the remaining M1 conformance inventory, preserving unsupported observations explicitly. Continue generic session/recovery extraction and native adapter isolation, then the M5 compatibility and release gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.

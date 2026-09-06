@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "status": "PARTIAL",
+  "scope": "M4 initial Python adapter extraction; generic session/recovery and full conformance remain open",
+  "checks": {
+    "m4-contract-tests-final.log": {
+      "sha256": "8dbb5793a633953c70e6196930aafd9731d1a99d2b136eade600d8ca511f5b0a",
+      "path": "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+    },
+    "m4-display-unsandboxed.log": {
+      "sha256": "34e14f4ed7230d885939dcda8bb03db23478f6b8679c38d06f6fd7cb8c2dccd6",
+      "path": "dist/integration-baseline-20260906/m4-display-unsandboxed.log"
+    },
+    "m4-metadata-serial.log": {
+      "sha256": "f0aebb4320662a4f4969bb60295592a86b1409a9824b23c59294d0a7ec8c6f6e",
+      "path": "dist/integration-baseline-20260906/m4-metadata-serial.log"
+    }
+  },
+  "tests": 53
+}

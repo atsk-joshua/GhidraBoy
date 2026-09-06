@@ -135,8 +135,23 @@ def main():
             result["stepReply"] = dap.request("stepIn", dict(threadId=thread, granularity="instruction"))
             result["stepStop"] = dap.event("stopped", after=cursor)
             result["stackAfterStep"] = dap.request("stackTrace", dict(threadId=thread))
+            frame_after = result["stackAfterStep"]["stackFrames"][0]["id"]
+            scopes_after = dap.request("scopes", dict(frameId=frame_after))
+            registers_scope = next(scope for scope in scopes_after["scopes"] if scope.get("presentationHint") == "registers")
+            result["registersAfterStep"] = dap.request("variables", dict(variablesReference=registers_scope["variablesReference"]))
+            def pc(variables):
+                value = next(v["value"] for v in variables["variables"] if v["name"] == "PC")
+                return int(value.removeprefix('$'), 16)
+            result["pcBefore"] = pc(result["variables"]["Registers"])
+            result["pcAfter"] = pc(result["registersAfterStep"])
+            if result["pcBefore"] == result["pcAfter"]:
+                raise RuntimeError("Step stop did not advance the observed PC")
             dap.request("disconnect", dict(terminateDebuggee=False))
-            result["detachPreservesEmulator"] = process.poll() is None
+            try:
+                process.wait(timeout=0.5)
+                result["detachPreservesEmulator"] = False
+            except subprocess.TimeoutExpired:
+                result["detachPreservesEmulator"] = True
             if not result["detachPreservesEmulator"]:
                 raise RuntimeError("Disconnect terminated the external emulator")
             result["status"] = "PASS"

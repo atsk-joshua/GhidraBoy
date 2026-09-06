@@ -12,7 +12,7 @@ import threading
 import time
 from ghidratrace.client import Client, MethodRegistry, Address, AddressRange, RegVal, TraceObject
 from ghidratrace import sch
-from .native import Machine, REASONS, ROOT, CORE, CONFIG, PATCH
+from .backend import Backend, REGIONS, ROOT, available_backends, create_backend
 from .dispatch import OrderedExecutor
 
 def object_schema(name):
@@ -27,18 +27,18 @@ def window(region,bank):return {'cpu':0,'rom':0 if bank==0 else 0x4000,'wram':0x
 
 def physical_writer_address(event):
     writer=event['writer']
-    region=('cpu','rom','wram','vram','cart','boot','oam','hram','io','unknown')[writer['region']]
+    region=REGIONS[writer['region']]
     if region in ('rom','wram','vram','cart','boot'):
         return Address(space_for(region,writer['bank']),window(region,writer['bank'])+writer['offset'])
     return Address('ram',event['writer_pc'])
 
 class Agent:
-    def __init__(self,machine):
+    def __init__(self,machine: Backend):
         from .mapping import EnvelopeTransfer
         self.mapping_transfer=EnvelopeTransfer()
         from .profile import ProfileSession, installed_providers
         providers,errors=installed_providers(ROOT)
-        self.profile=ProfileSession(machine.rom_bytes,providers,errors)
+        self.profile=ProfileSession(machine.rom_bytes,providers,errors,capabilities=machine.descriptor.profile_capabilities)
         self.machine=machine;self.queue=Queue(maxsize=64);self.executor=OrderedExecutor(self.command_overflow)
         self.registry=MethodRegistry(self.executor);self.trace=None;self.client=None;self.quit=threading.Event();self.last=None;self.exit_at=None;self.static_binding=None;self.last_event_sequence=0;self.objects={};self.remotes()
     def command_overflow(self):
@@ -162,13 +162,13 @@ class Agent:
         value='RUNNING' if running else 'STOPPED'
         self.obj('Machine',_state=value);self.obj(THREAD,_state=value)
     def publish(self,c,removals=()):
-        t=self.trace;s=c.state
+        t=self.trace;s=c.state;descriptor=c.descriptor
         with self.transaction('GBC stopped capture'):
-            description=f'debugger {c.edit["kind"]} edit' if c.edit else 'running boundary' if self.machine.running else REASONS[s['reason']]
+            description=f'debugger {c.edit["kind"]} edit' if c.edit else 'running boundary' if self.machine.running else c.stop_reason
             snap=t.snapshot(f'{description} epoch {s["epoch"]} capture {s["capture_id"]}')
             for removed in removals:removed.remove()
             self.state(self.machine.running)
-            self.obj('Machine',ROMHash=c.rom_hash,Session=c.session,Core=CORE,Config=CONFIG,CorePatch=PATCH,Schema=1,TimingUnits='ticks at 8388608 Hz',Profile=self.profile.id,ProfileAPI=1,ProfileVersion=self.profile.provider.version if self.profile.provider else "",Ticks8MHz=s['ticks'],Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage='CPU-origin accesses; DMA/HDMA watches excluded',MemorySemantics='CPU safe inspection; raw physical RAM banks',Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
+            self.obj('Machine',ROMHash=c.rom_hash,Session=c.session,Core=descriptor.core,Config=descriptor.config,CorePatch=descriptor.patch,Schema=1,Backend=descriptor.id,BackendAPI=1,Model=descriptor.model,HardwareMode=descriptor.mode,Capabilities=json.dumps(sorted(descriptor.features)),TimingUnits=f'ticks at {descriptor.ticks_per_second} Hz' if descriptor.ticks_per_second else 'unavailable',TicksPerSecond=descriptor.ticks_per_second,Ticks=s['ticks'],Profile=self.profile.id,ProfileAPI=1,ProfileVersion=self.profile.provider.version if self.profile.provider else "",Ticks8MHz=s['ticks'] if descriptor.ticks_per_second==8388608 else None,Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage=descriptor.observation_coverage,MemorySemantics=descriptor.memory_semantics,Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
             if self.static_binding:
                 generation,envelope=self.static_binding
                 self.obj('Machine',BoundStaticGeneration=generation)
@@ -189,7 +189,7 @@ class Agent:
                 self.obj('Machine',ProfileError=str(error))
             if c.parent_checkpoint:
                 parent=c.parent_checkpoint
-                self.obj('Machine',ParentCheckpoint=parent['path'],ParentCheckpointSHA256=parent['state_sha256'],CheckpointSourceSession=parent['source_session'],CheckpointSourceEpoch=parent['source_epoch'],CheckpointSourceTicks8MHz=parent['source_ticks'])
+                self.obj('Machine',ParentCheckpoint=parent['path'],ParentCheckpointSHA256=parent['state_sha256'],CheckpointSourceSession=parent['source_session'],CheckpointSourceEpoch=parent['source_epoch'],CheckpointSourceTicks=parent['source_ticks'],CheckpointSourceTicks8MHz=parent['source_ticks'] if descriptor.ticks_per_second==8388608 else None)
             self.obj(FRAME,_pc=Address('ram',s['pc']))
             regvals=[]
             for name in ('AF','BC','DE','HL','SP','PC'):
@@ -199,11 +199,11 @@ class Agent:
             # Register aliases are also sent to support languages whose pairs are independent.
             aliases={n:s[p.lower()]>>shift&255 for p in ('AF','BC','DE','HL') for n,shift in zip(p,(8,0))}
             t.put_registers(REGISTERS,[RegVal(n,v.to_bytes(1,'big')) for n,v in aliases.items()])
-            self.put_bytes(Address('ram',0),c.memory[:65536])
-            t.set_memory_state(Address('ram',0xfea0).extend(0x60),'unknown')
-            if s['rtc_selected'] or not s['cart_enabled']:t.set_memory_state(Address('ram',0xa000).extend(0x2000),'unknown')
-            for region,count in [('wram',8),('vram',2),('cart',s['cart_size']//8192)]:
-                for b in range(count):self.put_bank(region,b,c.bank_bytes(region,b))
+            self.put_bytes(Address('ram',0),c.cpu_bytes)
+            for offset,length in c.unknown_cpu_ranges:
+                t.set_memory_state(Address('ram',offset).extend(length),'unknown')
+            for bank in c.mutable_banks():
+                self.put_bank(bank.region,bank.bank,bank.data)
             for id,(region,b,offset,kinds,length,enabled) in self.machine.breakpoints.items():
                 space='ram' if region=='cpu' else space_for(region,b)
                 flags=[]
@@ -214,9 +214,9 @@ class Agent:
             for e in c.events:
                 if e["sequence"]<=self.last_event_sequence:continue
                 w=e['writer'];target=e['target']
-                region=('cpu','rom','wram','vram','cart','boot','oam','hram','io','unknown')[w['region']]
+                region=REGIONS[w['region']]
                 writer=physical_writer_address(e)
-                self.obj(f'Machine.Events[{e["sequence"]}]',Snapshot=snap,Epoch=s['epoch'],Writer=writer,WriterPC=e['writer_pc'],WriterRegion=region,WriterBank=w['bank'],WriterOffset=w['offset'],TargetRegion=target['region'],TargetBank=target['bank'],TargetOffset=target['offset'],TargetCPU=e['cpu_address'],Bank=target['bank'],Before=e['before'],After=e['after'],Attempt=e['value'],Access=e['access'],Origin='cpu',Precision='attempt + final physical byte at instruction boundary',Valid=bool(e['valid']))
+                self.obj(f'Machine.Events[{e["sequence"]}]',Snapshot=snap,Epoch=s['epoch'],Writer=writer,WriterPC=e['writer_pc'],WriterRegion=region,WriterBank=w['bank'],WriterOffset=w['offset'],TargetRegion=target['region'],TargetBank=target['bank'],TargetOffset=target['offset'],TargetCPU=e['cpu_address'],Bank=target['bank'],Before=e['before'],After=e['after'],Attempt=e['value'],Access=e['access'],Origin=e['origin_name'],Precision=e['precision'],Valid=bool(e['valid']))
             if c.edit:
                 edit=c.edit
                 attrs=dict(Snapshot=snap,Epoch=s['epoch'],Capture=s['capture_id'],Origin='debugger',Kind=edit['kind'],
@@ -255,14 +255,14 @@ class Agent:
         host,port=address.rsplit(':',1)
         if host not in ('127.0.0.1','localhost','::1'):raise ValueError('Only loopback Trace RMI supported')
         sock=socket.create_connection((host,int(port)),timeout=10);sock.settimeout(None)
-        self.client=Client(sock,'GBC / SameBoy',self.registry)
+        self.client=Client(sock,'GBC / '+self.machine.descriptor.name,self.registry)
         extra={'extra':None} if 'extra' in inspect.signature(self.client.create_trace).parameters else {}
         self.trace=self.client.create_trace('GBC/'+self.machine.rom.stem,'SM83:LE:16:default','default',**extra)
         with self.transaction('Create GBC machine'):
             self.trace.snapshot('initializing')
             root=self.trace.create_root_object(Path(__file__).with_name('schema.xml').read_text(),'Session');self.objects['']=root
             for p in ('Machine','Machine.Threads',THREAD,THREAD+'.Stack',FRAME,REGISTERS,'Machine.Memory','Machine.Breakpoints','Machine.Events','Machine.Edits','Machine.ProfileFields'):self.obj(p)
-            self.obj('Machine',_pid=0,_display='GBC / SameBoy');self.obj(THREAD,_tid=0,_display='SM83')
+            self.obj('Machine',_pid=0,_display='GBC / '+self.machine.descriptor.name);self.obj(THREAD,_tid=0,_display='SM83')
             self.trace.create_overlay_space('register',REGISTERS)
             self.obj('Machine.Memory[cpu]',_range=Address('ram',0).extend(65536),_readable=True,_writable=True,_executable=True)
             for b in range(len(self.machine.rom_bytes)//16384):self.put_bank('rom',b,self.machine.rom_bytes[b*16384:(b+1)*16384])
@@ -271,13 +271,13 @@ class Agent:
     def resume(self):
         if self.machine.running:return
         self.machine.prepare();self.machine.running=True
-        self.play_start=time.monotonic();self.play_ticks=self.machine.lib.gc_ticks(self.machine.handle)
+        self.play_start=time.monotonic();self.play_ticks=self.machine.ticks()
         with self.transaction('Resume GBC'):self.state(True)
     def begin_step(self,mode):
         if self.machine.running:raise RuntimeError('Pause before stepping')
         if self.profile.provider and mode in getattr(self.profile.provider,'unsupported_steps',()):raise RuntimeError('Selected profile does not support this step mode; use Step Into')
-        if self.machine.lib.gc_prepare_step(self.machine.handle,mode):raise RuntimeError('No observed ordinary call frame; Step Out unavailable after restore')
-        self.machine.running=True;self.play_start=time.monotonic();self.play_ticks=self.machine.lib.gc_ticks(self.machine.handle)
+        self.machine.prepare_step(mode)
+        self.machine.running=True;self.play_start=time.monotonic();self.play_ticks=self.machine.ticks()
         with self.transaction('Step over/out'):self.state(True)
     def request_terminate(self):
         self.machine.pause()
@@ -356,10 +356,11 @@ class Agent:
                         except BaseException as e:future.set_exception(e)
                 if self.machine.running:
                     reason=self.machine.run_slice()
-                    # Keep play close to the emulated 8 MHz clock; at most 4 ms between pause checks.
-                    if not reason:
-                        ticks=self.machine.lib.gc_ticks(self.machine.handle)
-                        delay=(ticks-self.play_ticks)/8388608-(time.monotonic()-self.play_start)
+                    # Optional pacing uses the selected backend timebase, with bounded pause checks.
+                    frequency=self.machine.descriptor.ticks_per_second
+                    if not reason and frequency and self.play_ticks is not None:
+                        ticks=self.machine.ticks()
+                        delay=(ticks-self.play_ticks)/frequency-(time.monotonic()-self.play_start)
                         if delay>0:time.sleep(min(delay,.004))
                     if reason:
                         self.machine.running=False;self.publish(self.machine.capture())
@@ -379,8 +380,9 @@ class Agent:
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--connect',default=os.environ.get('GHIDRA_TRACE_RMI_ADDR'));parser.add_argument('--rom',required=True);parser.add_argument('--display',action='store_true');parser.add_argument('--fixture-ready',action='store_true');parser.add_argument('--experiment',action='store_true')
+    parser.add_argument('--backend',choices=available_backends(),default='sameboy')
     args=parser.parse_args()
-    with Machine(args.rom,experiment=args.experiment) as m:
+    with create_backend(args.backend,args.rom,experiment=args.experiment) as m:
         if args.fixture_ready:
             m.breakpoint('rom',1,0x29);m.prepare()
             for _ in range(5000):

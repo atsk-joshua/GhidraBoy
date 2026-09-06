@@ -93,14 +93,14 @@ def installed_providers(root):
 
 
 class ProfileSession:
-    def __init__(self, rom, providers=(), errors=()):
+    def __init__(self, rom, providers=(), errors=(), capabilities=CAPABILITIES):
         self.provider=None;self.decoder=None;self.error='; '.join(errors);self.ranges=()
         self.rom_hash=hashlib.sha256(rom).hexdigest()
         matches=[]
         for provider in providers:
             try:
                 if self.rom_hash not in provider.fingerprints:continue
-                if provider.api_version!=API_VERSION or not set(provider.requires)<=CAPABILITIES:raise ValueError('Unsupported profile API/capability requirements')
+                if provider.api_version!=API_VERSION or not set(provider.requires)<=capabilities:raise ValueError('Unsupported profile API/capability requirements')
                 if not all(isinstance(v,str) and 0<len(v)<=128 for v in (provider.id,provider.version)):raise ValueError('Bounded profile ID/version required')
                 ranges=tuple(r.validate() for r in provider.ranges)
                 if sum(r.length for r in ranges)>MAX_CAPTURE or len(ranges)>64:raise ValueError('Profile capture budget exceeded')
