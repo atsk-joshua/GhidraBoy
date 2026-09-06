@@ -128,6 +128,10 @@ def main(default_platform=None):
         if 'sameboy' in backends and source.name!='test_mgba.py' and source.relative_to(REPOSITORY).as_posix() in tracked:copy(source,source.relative_to(ROOT))
     if 'mgba' in backends:copy(ROOT/'tests/test_mgba.py','tests/test_mgba.py')
     copy(ROOT/'tests/test_package_selection.py','tests/test_package_selection.py')
+    # The precompiled experiment records these exact sources as provenance.
+    # They are data inputs at runtime; no compiler or source checkout is needed.
+    for relative in ('tests/fixtures/banks.asm','tests/ghidra/ResearchExperimentTest.java'):
+        copy(ROOT/relative,relative)
     # Precompile the real RMI acceptance harness on the build host. Runtime checks need only java.
     debugger=inputs['GhiGBC']['archive']
     classes=ROOT/'build/candidate-test-classes'
