@@ -65,6 +65,10 @@
       <unaffected>
         <register name="SP"/>
       </unaffected>
+      <!-- Unknown assembly callees may change every flag. -->
+      <killedbycall>
+        <register name="F"/>
+      </killedbycall>
     </prototype>
   </default_proto>
 

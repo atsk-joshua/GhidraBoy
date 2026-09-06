@@ -7,6 +7,7 @@ import fi.gekkio.ghidraboy.GameBoyUtils
 import fi.gekkio.ghidraboy.IntegrationTest
 import fi.gekkio.ghidraboy.withTransaction
 import ghidra.app.decompiler.DecompInterface
+import ghidra.app.emulator.EmulatorHelper
 import ghidra.app.plugin.assembler.Assemblers
 import ghidra.app.util.importer.MessageLog
 import ghidra.program.database.ProgramDB
@@ -21,6 +22,7 @@ import ghidra.program.model.listing.Parameter
 import ghidra.program.model.listing.ParameterImpl
 import ghidra.program.model.listing.Program
 import ghidra.program.model.listing.ReturnParameterImpl
+import ghidra.program.model.pcode.PcodeOp
 import ghidra.program.model.symbol.SourceType
 import ghidra.util.task.TaskMonitor
 import org.intellij.lang.annotations.Language
@@ -31,6 +33,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class DecompilerTest : IntegrationTest() {
     private lateinit var program: Program
@@ -59,6 +63,81 @@ class DecompilerTest : IntegrationTest() {
             }
             """.trimIndent(),
         )
+    }
+
+    @Test
+    fun `balanced register restores have no unreachable pcode blocks`() {
+        val f =
+            assembleFunction(
+                address(0x0000),
+                """
+                PUSH BC
+                PUSH DE
+                PUSH HL
+                POP HL
+                POP DE
+                POP BC
+                RET
+                """.trimIndent(),
+                name = "restore_word",
+                params = listOf(parameter("value", u16, register("HL"))),
+                returnParam = returnParameter(u16, register("HL")),
+            )
+        assertDecompiled(
+            f,
+            """
+            word restore_word(word value)
+            {
+                return value;
+            }
+            """,
+        )
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `assembly calls do not preserve incoming carry`(setCarry: Boolean) {
+        assembleFunction(address(0x0300), "CCF\nRET", name = "toggle_carry")
+        val f =
+            assembleFunction(
+                address(0x0000),
+                """
+                ${if (setCarry) "SCF" else "NOP"}
+                CALL 0x0300
+                LD A, 1
+                JR C, 0x000a
+                LD A, 2
+                LD (0xc000), A
+                RET
+                """.trimIndent(),
+                name = "carry_after_call",
+            )
+        val result = decompiler.decompileFunction(f, 10, TaskMonitor.DUMMY)
+        assertTrue(result.decompileCompleted(), result.errorMessage)
+        val c = result.decompiledFunction.c
+        assertTrue(!c.contains("WARNING"), c)
+        // F must be a call effect, not the incoming F or the pre-call SCF result.
+        val flagAddress = register("F").address
+        assertTrue(
+            result.highFunction.pcodeOps.asSequence().any {
+                it.opcode == PcodeOp.INDIRECT && it.output?.address == flagAddress
+            },
+            c,
+        )
+        val emulator = EmulatorHelper(program)
+        try {
+            emulator.writeRegister("PC", 0)
+            emulator.writeRegister("SP", 0xd000)
+            emulator.writeRegister("F", 0)
+            var steps = 0
+            while (emulator.readRegister("PC").toInt() != 0x000d && steps++ < 20) {
+                assertTrue(emulator.step(TaskMonitor.DUMMY), emulator.lastError)
+            }
+            assertEquals(0x000d, emulator.readRegister("PC").toInt())
+            assertEquals(if (setCarry) 2 else 1, emulator.readMemoryByte(address(0xc000)).toInt())
+        } finally {
+            emulator.dispose()
+        }
     }
 
     @Test
@@ -328,28 +407,37 @@ class DecompilerTest : IntegrationTest() {
             )
         assertDecompiled(
             f,
-            // Reviewed 12.1.3 golden: correction is visible; the known N=0 branch is eliminated.
+            // Reviewed 12.1.3 golden: correction remains visible without an internal CFG branch.
             """
-            /* WARNING: Removing unreachable block (ram,0x0003) */
             byte daa(byte value)
             {
                 byte bVar1;
-                byte bVar2;
+                char cVar2;
                 bVar1 = value + 1;
-                bVar2 = 0;
-                if (((value & 0xf) + 1 & 0x10) != 0 || 9 < (bVar1 & 0xf)) {
-                    bVar2 = 6;
+                cVar2 = bVar1 + (((value & 0xf) + 1 & 0x10) != 0 || 9 < (bVar1 & 0xf)) * '\x06' +
+                    (0xfe < value || 0x99 < bVar1) * '`';
+                if (cVar2 == '\0') {
+                    return 0;
                 }
-                if (value == 0xff || 0x99 < bVar1) {
-                    bVar2 = bVar2 | 0x60;
-                }
-                if ((byte)(bVar1 + bVar2) != '\0') {
-                    return bVar1 + bVar2 + 1;
-                }
-                return 0;
+                return cVar2 + 1;
             }
             """,
         )
+    }
+
+    @Test
+    fun `DAA decompilation with unconstrained flags has no warnings`() {
+        val f =
+            assembleFunction(
+                address(0x0000),
+                "DAA\nRET",
+                name = "daa_unknown_flags",
+                params = listOf(parameter("value_and_flags", u16, register("AF"))),
+                returnParam = returnParameter(u16, register("AF")),
+            )
+        val c = decompile(f)
+        assertTrue(!c.contains("WARNING"), c)
+        assertTrue(!c.contains("daaOperand"), c)
     }
 
     @BeforeAll

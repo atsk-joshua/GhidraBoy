@@ -49,6 +49,7 @@ class SignedStackInstructionTest : EmuTest() {
         emulator.writePC(0x100u)
         emulator.writeSP(1u)
         emulator.writeBC(0x1234u)
+        emulator.writeF(0xb0u)
         emulator.step()
         emulator.assertSP(0xffffu)
         assertEquals(0x34, emulator.read(0xffffu).toInt())
@@ -56,5 +57,6 @@ class SignedStackInstructionTest : EmuTest() {
         emulator.step()
         emulator.assertDE(0x1234u)
         emulator.assertSP(1u)
+        emulator.assertF(0xb0u)
     }
 }

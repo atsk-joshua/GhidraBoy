@@ -23,11 +23,22 @@ base decode tests plus every CB encoding check operands and lengths. Invalid
 base opcodes remain undefined bytes. Ordinary assembler/decompiler and
 parameterized control-flow tests remain enabled.
 
+Native decompiler call-effect regressions also execute the compiled p-code of
+`SCF; CALL` into a `CCF; RET` callee and then test carry. The assembly-default
+model now kills F at the call: recovered F has an INDIRECT call-effect definition
+instead of propagating the pre-call carry. Both explicitly set and incoming
+carry cases are covered. Architectural execution checks the resulting memory
+write, while the default C intentionally retains an unknown callee flag result
+until a proven per-function return convention is supplied.
+
 DAA now uses pure p-code. Expected results use independent sequential wider
 arithmetic, checked against SameBoy v1.0.3's `daa` implementation. The reviewed
-12.1.3 text golden exposes correction arithmetic and folds the known N=0 branch;
-this is intentional semantic improvement from the former ignored userop, not
-an assertion that the former arithmetic was correct.
+12.1.3 text golden exposes correction arithmetic. Boolean low/high corrections
+and an eight-bit add/subtract factor preserve all 2,048 A/N/H/C combinations
+without internal control-flow branches, avoiding artificial unreachable-block
+diagnostics when preceding instructions establish the flags. Both known and
+unconstrained input flags have native decompiler regressions. This is a semantic
+improvement from the former ignored userop.
 
 HALT/STOP/IME remain visible userops. The unused daaOperand declaration remains
 to keep existing userop indices stable. STOP retains historical one-byte decode;
@@ -35,11 +46,23 @@ this static model does not claim hardware padding-fetch, speed-switch,
 interrupt-delay or HALT-bug fidelity. Tests use flat 64 KiB RAM. Runtime mapper
 switching and bus/cycle timing are outside this memory model.
 
-Language 1.0 is retained: register layout/context/IDs are unchanged, no opcode
-boundaries changed, and POP's newly bound token field adds no match constraint.
-Only p-code behavior changes. This follows the pinned Ghidra 12.1.3
-GhidraDocs/languages/versioning.html rules. Existing code can be selectively
-reanalyzed from a backed-up project; no major-version translation is warranted.
+POP retains its original single constructor and token bindings. A branchless
+mask clears the unused flag bits for AF and preserves all flags for BC/DE/HL.
+This replaces a conditional p-code branch on a constant opcode field. A balanced
+PUSH/POP decompiler regression retains the input/output register value without
+artificial unreachable-block diagnostics; stack execution initializes and checks
+the preserved flags explicitly.
+
+Language 1.0 requires preservation of persisted constructor identity as well as
+register/context layout and instruction boundaries. The withdrawn decomp1
+candidate added a dedicated POP AF constructor: fresh decoding passed, but saved
+POP BC/DE/HL instructions reopened as POP AF. It must not be installed or used to
+save annotated Programs. The decomp2 correction retains the exact original POP
+constructor pattern and token bindings. Acceptance additionally requires an
+old-provider save/new-provider reopen comparison against fresh decoding and
+p-code; fresh-import tests alone cannot establish compatibility. Follow the
+pinned Ghidra 12.1.3 GhidraDocs/languages/versioning.html rules and preserve
+backed-up projects until that gate passes.
 
 The locally executed comprehensive cross-check covered **all 21,000 vectors**
 in the 21 selected upstream files (1,000 each). The corpus files contain 1,000,

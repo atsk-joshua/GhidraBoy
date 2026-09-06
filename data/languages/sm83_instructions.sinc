@@ -463,24 +463,16 @@
   local n:1 = $(N_flag);
   local h:1 = $(H_flag);
   local c:1 = $(C_flag);
-  local correction:1 = 0;
-  if (n) goto <subtract>;
-  if (!(h || ((old & 0xf) > 9))) goto <addHigh>;
-  correction = 6;
-<addHigh>
-  if (!(c || (old > 0x99))) goto <addDone>;
-  correction = correction | 0x60;
-  c = 1;
-<addDone>
-  A = old + correction;
-  goto <done>;
-<subtract>
-  correction = (h * 6) + (c * 0x60);
-  A = old - correction;
-<done>
+  # Boolean corrections and an 8-bit add/subtract factor express both paths
+  # without artificial basic blocks when preceding arithmetic fixes N/H/C.
+  local low:1 = h || (!n && ((old & 0xf) > 9));
+  local high:1 = c || (!n && (old > 0x99));
+  local correction:1 = (low * 6) + (high * 0x60);
+  local direction:1 = 1 - (n * 2);
+  A = old + (correction * direction);
   $(Z_flag) = (A == 0);
   $(H_flag) = 0;
-  $(C_flag) = c;
+  $(C_flag) = high;
 }
 
 :CPL is op0_8=0x2f {
@@ -535,10 +527,12 @@
 
 :POP qregpair4_2 is op6_2=0b11 & qregpair4_2 & op0_4=0b0001 & op3_3 {
   pop16(qregpair4_2);
+  # Retain the original constructor and token bindings for saved parse trees.
+  # Non-AF POPs use an all-ones mask; POP AF alone clears the unused flag bits.
   local pairIndex:1 = op3_3;
-  if (pairIndex != 6) goto <popDone>;
-  F = F & 0xf0;
-<popDone>
+  local isAf:1 = (pairIndex == 6);
+  local flagMask:1 = 0xff - (isAf * 0xf);
+  F = F & flagMask;
 }
 
 # 16-bit arithmetic

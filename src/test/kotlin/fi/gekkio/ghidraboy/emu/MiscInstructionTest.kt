@@ -122,11 +122,13 @@ class MiscInstructionTest : EmuTest() {
         emulator.write(0x4000u, 0xc9u)
         emulator.writePC(0x100u)
         emulator.writeSP(0xc100u)
+        emulator.writeF(0xb0u)
         emulator.step()
         repeat(10) { emulator.step() }
         emulator.assertPC(0x4000u)
         emulator.step()
         emulator.assertPC(0x104u)
         emulator.assertSP(0xc100u)
+        emulator.assertF(0xb0u)
     }
 }
