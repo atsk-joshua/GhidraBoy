@@ -5,6 +5,7 @@ synthetic OS keyboard event. A real desktop focus change must release it.
 No dummy/offscreen SDL driver and no emulation while the window is open.
 """
 import json
+import ctypes
 import os
 from pathlib import Path
 import queue
@@ -12,7 +13,7 @@ import sys
 import threading
 import time
 
-from ghigbc.display import run
+from ghigbc import display
 from ghigbc.backend import Button, ROOT, create_backend
 
 
@@ -79,12 +80,34 @@ def main():
         reader.start()
         watcher.start()
         error = None
+        original_loader = display.load_sdl
+
+        def observed_sdl():
+            """Passively record real SDL window events; never synthesize input."""
+            library = original_loader()
+            poll = library.SDL_PollEvent
+            poll.argtypes = [ctypes.c_void_p]
+            poll.restype = ctypes.c_int
+
+            def observed_poll(pointer):
+                result = poll(pointer)
+                if result:
+                    raw = ctypes.string_at(pointer, 56)
+                    if int.from_bytes(raw[:4], sys.byteorder) == 0x200:
+                        record('sdl_window_event', event=raw[12])
+                return result
+
+            library.SDL_PollEvent = observed_poll
+            return library
+
+        display.load_sdl = observed_sdl
         try:
-            run(machine, stop, on_close=close_requested)
+            display.run(machine, stop, on_close=close_requested)
         except BaseException as failure:
             error = repr(failure)
             raise
         finally:
+            display.load_sdl = original_loader
             stop.set()
             watcher.join()
             record('display_returned')

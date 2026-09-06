@@ -25,6 +25,7 @@ import ghigbc.BankMappings;
 public class RealTraceTest {
     static class Manager extends DefaultProjectManager { Manager(){super();} }
     static Trace trace;
+    static IdleCleanup activeCleanup;
     static final Queue<Throwable> asyncErrors=new ConcurrentLinkedQueue<>();
     static TraceObject object(String path){return trace.getObjectManager().getObjectByCanonicalPath(KeyPath.parse(path));}
     static TraceObject latestEdit(){
@@ -84,6 +85,217 @@ public class RealTraceTest {
         }
         throw new AssertionError("Timed out awaiting real stopped capture");
     }
+    static void awaitPublished(long old)throws Exception {
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(15);
+        while(System.nanoTime()<deadline) {
+            var machine=object("Machine");long at=snap();
+            if(machine!=null) {
+                var marker=machine.getValue(at,"CaptureSnapshot");var capture=machine.getValue(at,"Capture");var state=machine.getValue(at,"_state");
+                if(marker!=null&&capture!=null&&state!=null&&((Number)marker.getValue()).longValue()==at
+                        &&((Number)capture.getValue()).longValue()>old&&"STOPPED".equals(state.getValue()))return;
+            }
+            Thread.sleep(5);
+        }
+        throw new AssertionError("Capture publication timed out");
+    }
+    static Map<String,Object> distribution(List<Double> values) {
+        var sorted=new ArrayList<>(values);Collections.sort(sorted);int n=sorted.size();
+        return Map.of("count",n,"samples_ms",values,"median_ms",n%2==0?(sorted.get(n/2-1)+sorted.get(n/2))/2:sorted.get(n/2),
+            "p95_ms",sorted.get((int)Math.ceil(n*.95)-1));
+    }
+    static void prepareLoop(Path root,TraceRmiConnection connection,Path directory)throws Exception {
+        Files.createDirectories(directory);
+        // Self-authored DI; JR $ loop in mutable WRAM, using normal recoverable edit APIs.
+        int[] bytes={0xf3,0x18,0xfe};
+        for(int i=0;i<bytes.length;i++)connection.getMethods().get("experiment_memory").invokeAsync(Map.of("process",object("Machine"),"address",0xc000L+i,"value",(long)bytes[i],"recovery",directory.resolve("byte-"+i).toString())).get(15,TimeUnit.SECONDS);
+        connection.getMethods().get("experiment_register").invokeAsync(Map.of("process",object("Machine"),"register","PC","value",0xc000L,"recovery",directory.resolve("pc").toString())).get(15,TimeUnit.SECONDS);
+    }
+    static void measurePerformance(Path root,TraceRmiConnection connection)throws Exception {
+        Path directory=root.resolve("build/performance-"+System.currentTimeMillis());prepareLoop(root,connection,directory);
+        var stepReply=new ArrayList<Double>();var stepCapture=new ArrayList<Double>();
+        var pauseReply=new ArrayList<Double>();var pauseCapture=new ArrayList<Double>();
+        for(int i=0;i<25;i++) {
+            long previous=((Number)attr("Machine","Capture")).longValue();long started=System.nanoTime();
+            connection.getMethods().get("step_into").invokeAsync(Map.of("thread",object("Machine.Threads[0]"))).get(15,TimeUnit.SECONDS);
+            double reply=(System.nanoTime()-started)/1e6;awaitPublished(previous);double capture=(System.nanoTime()-started)/1e6;
+            connection.getMethods().get("resume").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            require("RUNNING".equals(attr("Machine","_state")),"performance fixture runs until requested pause");
+            Thread.sleep(20);previous=((Number)attr("Machine","Capture")).longValue();started=System.nanoTime();
+            connection.getMethods().get("interrupt").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            double interrupted=(System.nanoTime()-started)/1e6;awaitPublished(previous);double stopped=(System.nanoTime()-started)/1e6;
+            if(i>=5){stepReply.add(reply);stepCapture.add(capture);pauseReply.add(interrupted);pauseCapture.add(stopped);}
+        }
+        var report=new LinkedHashMap<String,Object>();
+        report.put("schema",1);report.put("host",java.net.InetAddress.getLocalHost().getHostName());report.put("os",System.getProperty("os.name"));
+        report.put("architecture",System.getProperty("os.arch"));report.put("ghidra",Application.getApplicationVersion());
+        report.put("java",System.getProperty("java.version"));report.put("core",attr("Machine","Core"));report.put("config",attr("Machine","Config"));report.put("rom_sha256",attr("Machine","ROMHash"));
+        var python=new ProcessBuilder(System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv12/bin/python").toString()),"--version").redirectErrorStream(true).start();
+        String pythonVersion=new String(python.getInputStream().readAllBytes()).trim();
+        require(python.waitFor(5,TimeUnit.SECONDS)&&python.exitValue()==0,"performance interpreter identity is available");report.put("python",pythonVersion);
+        report.put("step_reply",distribution(stepReply));report.put("step_capture_ready",distribution(stepCapture));
+        report.put("pause_reply",distribution(pauseReply));report.put("pause_capture_ready",distribution(pauseCapture));
+        report.put("scope","Five warmup samples excluded; 20 actual step and pause cycles. Capture-ready uses a 5ms polling interval without artificial settling delay. Includes command and publication latency, not isolated network transit.");
+        Files.writeString(evidence(root).resolve("session-performance.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+    }
+    static long countHandles(long pid)throws Exception {
+        Path descriptors=Path.of("/proc",Long.toString(pid),"fd");
+        if(Files.isDirectory(descriptors)){try(var files=Files.list(descriptors)){return files.count();}}
+        var process=new ProcessBuilder("/usr/sbin/lsof","-a","-p",Long.toString(pid),"-Ff").start();
+        String output=new String(process.getInputStream().readAllBytes());
+        if(!process.waitFor(5,TimeUnit.SECONDS)){process.destroyForcibly();throw new IOException("Handle count timed out");}
+        if(process.exitValue()!=0)throw new IOException("Handle count unavailable");
+        return output.lines().filter(line->line.matches("f[0-9]+.*")).count();
+    }
+    static long countThreads(long pid)throws Exception {
+        Path threads=Path.of("/proc",Long.toString(pid),"task");
+        if(Files.isDirectory(threads)){try(var files=Files.list(threads)){return files.count();}}
+        var process=new ProcessBuilder("ps","-M","-p",Long.toString(pid)).start();
+        String output=new String(process.getInputStream().readAllBytes());
+        if(!process.waitFor(5,TimeUnit.SECONDS)){process.destroyForcibly();throw new IOException("Thread count timed out");}
+        if(process.exitValue()!=0)throw new IOException("Thread count unavailable");
+        return Math.max(0,output.lines().count()-1);
+    }
+    static void soak(Path root,TraceRmiConnection connection,Process agent,GhidraTool tool,int seconds)throws Exception {
+        require(seconds>=1800,"release soak duration is at least 30 minutes");
+        Path directory=root.resolve("build/soak-"+System.currentTimeMillis());prepareLoop(root,connection,directory);
+        var samples=new ArrayList<Map<String,Object>>();long started=System.nanoTime();int cycles=0;
+        while((System.nanoTime()-started)/1e9<seconds||cycles<100) {
+            Path checkpoint=directory.resolve("checkpoint-"+cycles);
+            connection.getMethods().get("checkpoint").invokeAsync(Map.of("process",object("Machine"),"path",checkpoint.toString())).get(15,TimeUnit.SECONDS);
+            connection.getMethods().get("resume").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            Thread.sleep(15000);
+            long previous=((Number)attr("Machine","Capture")).longValue();long pause=System.nanoTime();
+            connection.getMethods().get("interrupt").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);awaitPublished(previous);
+            double pauseMs=(System.nanoTime()-pause)/1e6;require(pauseMs<2000,"soak pause meets the declared native-host 2s budget");
+            restoreAndAwait(connection,checkpoint);
+            for(int i=0;i<5;i++)connection.getMethods().get("step_into").invokeAsync(Map.of("thread",object("Machine.Threads[0]"))).get(15,TimeUnit.SECONDS);
+            connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            cycles++;
+            if(cycles==30||cycles==60)failureLifecycle(root,tool);
+            var sample=new LinkedHashMap<String,Object>();sample.put("cycle",cycles);sample.put("seconds",(System.nanoTime()-started)/1e9);
+            sample.put("capture",attr("Machine","Capture"));sample.put("snapshot",snap());sample.put("pause_ms",pauseMs);
+            sample.put("agent_rss_kib",rssKiB(agent.pid()));sample.put("ghidra_rss_kib",rssKiB(ProcessHandle.current().pid()));
+            sample.put("agent_threads",countThreads(agent.pid()));sample.put("ghidra_threads",java.lang.management.ManagementFactory.getThreadMXBean().getThreadCount());
+            sample.put("agent_handles",countHandles(agent.pid()));sample.put("ghidra_handles",countHandles(ProcessHandle.current().pid()));
+            sample.put("trace_bytes",trace.getDomainFile().length());sample.put("dropped",attr("Machine","Dropped"));samples.add(sample);
+            var report=Map.of("schema",1,"status","RUNNING","requested_seconds",seconds,"cycles",cycles,"samples",samples,
+                "scope","Real Trace RMI, 15s execution intervals, bounded five-step batches, checkpoint/restore each cycle, separate target replacements at cycles 30/60. History growth is intentional.");
+            Files.writeString(evidence(root).resolve("session-soak.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+            System.out.println("SOAK_PROGRESS cycles="+cycles+" seconds="+sample.get("seconds"));System.out.flush();
+        }
+        require(((Number)attr("Machine","Dropped")).longValue()==0,"soak has no unexplained event loss");
+        var report=Map.of("schema",1,"status","COMPLETED_MEASUREMENTS","requested_seconds",seconds,"cycles",cycles,"samples",samples);
+        Files.writeString(evidence(root).resolve("session-soak.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+    }
+    /** Fixed-workload measurements: never labels this short series a release soak. */
+    static class IdleCleanup {
+        final Path output;
+        final Process agent;
+        final long started=System.nanoTime();
+        final Map<String,Object> report=new LinkedHashMap<>();
+        final List<Map<String,Object>> samples=new ArrayList<>();
+        final Map<Long,ProcessHandle> owned=new LinkedHashMap<>();
+        final List<Map<String,Object>> ownedIdentities=new ArrayList<>();
+        final List<Map<String,Object>> lifecycleTargets=new ArrayList<>();
+        IdleCleanup(Path root,Process agent)throws Exception {
+            this.agent=agent;output=evidence(root).resolve("session-idle-cleanup.json");
+            report.put("schema",1);report.put("status","RUNNING");report.put("samples",samples);report.put("owned_descendants",ownedIdentities);report.put("lifecycle_targets",lifecycleTargets);
+            report.put("host",InetAddress.getLocalHost().getHostName());report.put("os",System.getProperty("os.name"));
+            report.put("architecture",System.getProperty("os.arch"));report.put("ghidra",Application.getApplicationVersion());
+            report.put("java",System.getProperty("java.version"));report.put("ghidra_pid",ProcessHandle.current().pid());
+            report.put("agent_pid",agent.pid());report.put("core",attr("Machine","Core"));report.put("config",attr("Machine","Config"));
+            report.put("rom_sha256",attr("Machine","ROMHash"));report.put("session",attr("Machine","Session"));
+            report.put("scope","Full real-RMI workload followed by 120s stopped idle at fixed capture/ticks/storage, then 20s after tool/project disposal. No forced GC. Existing resource budgets are descriptive comparators; this is not the 1800s release soak. Queue occupancy is not exposed by the trace contract.");
+            sample("before_workload",true);
+        }
+        void write()throws Exception {
+            Files.writeString(output,new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+        }
+        void rememberOwned() {
+            ProcessHandle.current().descendants().forEach(process->{
+                if(owned.putIfAbsent(process.pid(),process)==null) {
+                    var info=process.info();
+                    ownedIdentities.add(Map.of("pid",process.pid(),"started",info.startInstant().map(Object::toString).orElse("unavailable"),"command",info.command().orElse("unavailable")));
+                }
+            });
+        }
+        void sample(String phase,boolean liveTrace)throws Exception {
+            rememberOwned();
+            var row=new LinkedHashMap<String,Object>();row.put("phase",phase);row.put("seconds",(System.nanoTime()-started)/1e9);
+            row.put("ghidra_rss_kib",rssKiB(ProcessHandle.current().pid()));
+            row.put("ghidra_threads",java.lang.management.ManagementFactory.getThreadMXBean().getThreadCount());
+            row.put("ghidra_handles",countHandles(ProcessHandle.current().pid()));row.put("agent_alive",agent.isAlive());
+            if(agent.isAlive()) {
+                row.put("agent_rss_kib",rssKiB(agent.pid()));row.put("agent_threads",countThreads(agent.pid()));
+                row.put("agent_handles",countHandles(agent.pid()));
+            }
+            if(liveTrace) {
+                row.put("capture",attr("Machine","Capture"));row.put("snapshot",snap());row.put("ticks",attr("Machine","Ticks8MHz"));
+                row.put("trace_bytes",trace.getDomainFile().length());row.put("dropped",attr("Machine","Dropped"));
+            }
+            samples.add(row);write();
+        }
+        void paused(TraceRmiConnection connection,Program program)throws Exception {
+            // First let the plugin's automatic transfer settle. A new stopped capture is
+            // the producer's acknowledgement; inherited Java envelope values alone aren't.
+            Thread.sleep(1000);
+            var mapping=new BankMappings(program);String generation=mapping.generation();
+            long prior=((Number)attr("Machine","Capture")).longValue();
+            connection.getMethods().get("step_into").invokeAsync(Map.of("thread",object("Machine.Threads[0]"))).get(15,TimeUnit.SECONDS);
+            awaitPublished(prior);
+            require(generation.equals(attr("Machine","BoundStaticGeneration")),"quiescent automatic static binding is acknowledged by the next real capture");
+            // Explicit stale rejection and accepted complete transfer prove current session/
+            // epoch validation independently of diagnostic warnings from historical races.
+            String envelope=mapping.envelope();int count=(envelope.length()+15999)/16000;
+            var request=new HashMap<String,Object>();request.put("process",object("Machine"));request.put("generation",generation);
+            request.put("index",0L);request.put("count",(long)count);request.put("part",envelope.substring(0,Math.min(16000,envelope.length())));
+            request.put("expected_session",attr("Machine","Session"));request.put("expected_epoch",((Number)attr("Machine","Epoch")).longValue()-1);
+            try {
+                connection.getMethods().get("static_mapping").invokeAsync(request).get(15,TimeUnit.SECONDS);
+                throw new AssertionError("Stale static binding accepted");
+            }catch(ExecutionException expected){require(expected.getCause().getMessage().contains("Stale"),"real static transfer rejects the former epoch");}
+            request.put("expected_epoch",attr("Machine","Epoch"));
+            for(int index=0;index<count;index++) {
+                request.put("index",(long)index);request.put("part",envelope.substring(index*16000,Math.min(envelope.length(),(index+1)*16000)));
+                connection.getMethods().get("static_mapping").invokeAsync(new HashMap<>(request)).get(15,TimeUnit.SECONDS);
+            }
+            prior=((Number)attr("Machine","Capture")).longValue();
+            connection.getMethods().get("step_into").invokeAsync(Map.of("thread",object("Machine.Threads[0]"))).get(15,TimeUnit.SECONDS);
+            awaitPublished(prior);
+            require(generation.equals(attr("Machine","BoundStaticGeneration")),"accepted current-epoch RMI transfer appears in a subsequent capture");
+            connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            long at=snap(),capture=((Number)attr("Machine","Capture")).longValue();
+            require(((Number)attr("Machine","MappingSaveBarrier")).longValue()==capture&&((Number)attr("Machine","MappingSaveReady")).longValue()==capture,"current capture mapping save barrier has exact nonzero acknowledgement");
+            var reopened=(Trace)trace.getDomainFile().getReadOnlyDomainObject(RealTraceTest.class,-1,TaskMonitor.DUMMY);
+            try {
+                var machine=reopened.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine"));
+                require(BankMappings.isReady(machine,at)&&generation.equals(machine.getValue(at,"BoundStaticGeneration").getValue()),"saved latest capture preserves completed mapping and accepted binding");
+                require(((Number)machine.getValue(at,"MappingSaveReady").getValue()).longValue()==capture&&((Number)machine.getValue(at,"MappingSaveBarrier").getValue()).longValue()==capture,"saved latest capture preserves exact mapping save barrier");
+            }finally{reopened.release(RealTraceTest.class);}
+            report.put("binding",Map.of("generation",generation,"epoch",attr("Machine","Epoch"),"capture",capture,"snapshot",at,"stale_epoch_rejected",true,"current_epoch_accepted",true,"saved_barrier_verified",true));
+            long ticks=((Number)attr("Machine","Ticks8MHz")).longValue(),bytes=trace.getDomainFile().length();
+            long idleStarted=System.nanoTime();
+            for(int index=0;index<=24;index++) {
+                long remaining=idleStarted+TimeUnit.SECONDS.toNanos(index*5L)-System.nanoTime();
+                if(remaining>0)TimeUnit.NANOSECONDS.sleep(remaining);
+                require("STOPPED".equals(attr("Machine","_state"))&&snap()==at&&((Number)attr("Machine","Capture")).longValue()==capture&&((Number)attr("Machine","Ticks8MHz")).longValue()==ticks&&trace.getDomainFile().length()==bytes,"paused idle retains fixed capture, guest ticks and saved storage");
+                sample("paused_idle",true);System.out.println("IDLE_PROGRESS sample="+index);System.out.flush();
+            }
+        }
+        void lifecycle(String mode,Process process)throws Exception {
+            lifecycleTargets.add(Map.of("mode",mode,"pid",process.pid(),"session",attr("Machine","Session"),
+                "snapshot",snap(),"saved_trace_bytes",trace.getDomainFile().length(),"agent_rss_kib",rssKiB(process.pid()),
+                "agent_threads",countThreads(process.pid()),"agent_handles",countHandles(process.pid())));write();
+        }
+        void afterClose()throws Exception {
+            require(!agent.isAlive(),"primary agent remains absent after tool/project disposal");
+            for(int index=0;index<=4;index++){if(index>0)Thread.sleep(5000);sample("post_close",false);}
+            var survivors=owned.values().stream().filter(ProcessHandle::isAlive).map(ProcessHandle::pid).toList();
+            report.put("surviving_owned_descendants",survivors);write();
+            require(survivors.isEmpty(),"all descendants inventoried at owned launch boundaries exit after disposal");
+            report.put("status","COMPLETED_MEASUREMENTS");write();
+        }
+    }
     static GhidraApplicationConfiguration testConfiguration(){
         var config=new GhidraApplicationConfiguration();config.setShowSplashScreen(false);return config;
     }
@@ -106,10 +318,12 @@ public class RealTraceTest {
                 Process process=builder.start();TraceRmiConnection connection=null;
                 try {
                     connection=acceptor.accept();trace=connection.waitForTrace(15000);waitCapture(0);
+                    if(activeCleanup!=null)activeCleanup.rememberOwned();
                     String session=String.valueOf(attr("Machine","Session"));
                     long savedSnap=snap();
                     connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
                     var file=trace.getDomainFile();
+                    if(activeCleanup!=null)activeCleanup.lifecycle(mode,process);
                     if(mode.equals("replacement")) {
                         require(!session.equals(formerSession),"replacement target has a new session identity");
                         int count=object("Machine.Breakpoints").getElements(Lifespan.at(snap())).size();
@@ -160,10 +374,12 @@ public class RealTraceTest {
     public static void runTest(String[] args) throws Exception {
         Path root=Path.of(args[0]).toRealPath();
         boolean studyExpected=Arrays.asList(args).contains("--with-study");
+        boolean legacyBaseline=Arrays.asList(args).contains("--legacy-baseline");
         try{Class.forName("ghibw3.StudyPlugin");require(studyExpected,"optional study classes are present only in the selected consumer gate");}
         catch(ClassNotFoundException expected){require(!studyExpected,"generic classpath has no GhiBW3");}
         Application.initializeApplication(new GhidraApplicationLayout(new File(System.getenv().getOrDefault("GHIDRA_INSTALL_DIR",root.resolve(".deps/ghidra_11.3.1_PUBLIC").toString()))),testConfiguration());
         String projectName="TraceTest-"+System.currentTimeMillis();
+        Files.createDirectories(root.resolve("build/projects"));
         Project project=new Manager().createProject(new ProjectLocator(root.resolve("build/projects").toString(),projectName),null,false);
         var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",RealTraceTest.class,new MessageLog(),TaskMonitor.DUMMY);
         imported.save(TaskMonitor.DUMMY);
@@ -198,15 +414,20 @@ public class RealTraceTest {
         ProcessBuilder pb=new ProcessBuilder(System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv/bin/python").toString()),"-m","ghigbc.agent","--connect","127.0.0.1:"+port,"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready","--experiment");
         pb.environment().put("PYTHONPATH",root.resolve("python").toString());pb.redirectErrorStream(true);pb.redirectOutput(evidence(root).resolve("real-agent.log").toFile());
         Process agent=pb.start();
+        IdleCleanup idle=null;
         try {
             TraceRmiConnection conn=acceptor.accept();trace=conn.waitForTrace(15000);waitCapture(0);
+            if(Arrays.asList(args).contains("--idle-cleanup")){idle=new IdleCleanup(root,agent);activeCleanup=idle;}
             var methods=conn.getMethods();
             String expectedProfile=Arrays.asList(args).contains("--synthetic-profile")?"synthetic-counter":"generic";
             require(expectedProfile.equals(attr("Machine","Profile")),"selected test profile is recognized without game-specific classes");
             if(Arrays.asList(args).contains("--failing-profile"))require(String.valueOf(attr("Machine","ProfileError")).contains("deliberate profile failure"),"failing provider reports its error while the generic target remains usable");
             if(expectedProfile.equals("synthetic-counter"))require(((Number)attr("Machine","ProfileRecordCount")).intValue()==1,"synthetic profile publishes its one bounded field");
-            require("sameboy".equals(attr("Machine","Backend"))&&"CGB-E".equals(attr("Machine","Model")),"capture publishes the selected backend and actual hardware model");
-            require(((Number)attr("Machine","TicksPerSecond")).longValue()==8388608&&attr("Machine","Ticks").equals(attr("Machine","Ticks8MHz")),"generic timebase agrees with the compatible legacy tick field");
+            if(legacyBaseline)require(object("Machine").getValue(snap(),"Backend")==null,"baseline mode uses the actual pre-backend producer");
+            else {
+                require("sameboy".equals(attr("Machine","Backend"))&&"CGB-E".equals(attr("Machine","Model")),"capture publishes the selected backend and actual hardware model");
+                require(((Number)attr("Machine","TicksPerSecond")).longValue()==8388608&&attr("Machine","Ticks").equals(attr("Machine","Ticks8MHz")),"generic timebase agrees with the compatible legacy tick field");
+            }
             require(object("Machine.ProfileFields")!=null,"generic typed profile container is discoverable");
             for(String stale:List.of("session","epoch","capture")) {
                 var request=new HashMap<String,Object>();request.put("process",object("Machine"));request.put("region","wram");request.put("bank",1L);request.put("offset",0x34L);request.put("length",1L);
@@ -306,6 +527,8 @@ public class RealTraceTest {
                 long started=System.nanoTime();methods.get("step_into").invokeAsync(Map.of("thread",object("Machine.Threads[0]"))).get(15,TimeUnit.SECONDS);times.add((System.nanoTime()-started)/1e6);
             }
             Collections.sort(times);System.out.println("REMOTE_STEP_P95_MS "+times.get(18));
+            if(Arrays.asList(args).contains("--metrics"))measurePerformance(root,conn);
+            if(Arrays.asList(args).contains("--soak"))soak(root,conn,agent,tool,1800);
             if(Arrays.asList(args).contains("--growth"))measureGrowth(root,conn,agent);
             restoreAndAwait(conn,checkpointDir);
             require(((Number)attr("Machine","Epoch")).longValue()>epoch,"remote checkpoint restore creates new epoch");
@@ -329,7 +552,7 @@ public class RealTraceTest {
             var fixture=Map.of("schema",1,"directory",root.resolve("build/projects").toString(),"project",projectName,
                 "trace",traceFile.getPathname(),"snapshot",first,"backend","sameboy","profile",expectedProfile,
                 "profileFields",expectedProfile.equals("synthetic-counter")?1:0,"requireEdits",true);
-            Files.writeString(evidence(root).resolve("trace-fixture.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(fixture));
+            if(!legacyBaseline)Files.writeString(evidence(root).resolve("trace-fixture.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(fixture));
             var reopened=(Trace)traceFile.getReadOnlyDomainObject(RealTraceTest.class,-1,TaskMonitor.DUMMY);
             try {
                 ByteBuffer bytes=ByteBuffer.allocate(1);reopened.getMemoryManager().getBytes(first,reopened.getBaseAddressFactory().getDefaultAddressSpace().getAddress(0x402a),bytes);
@@ -342,7 +565,7 @@ public class RealTraceTest {
                 require(reopened.getStaticMappingManager().findContaining(reopened.getBaseAddressFactory().getDefaultAddressSpace().getAddress(0x4029),first).getStaticAddress().equals(firstMapping.getStaticAddress()),"reopened persisted trace retains historic mapping");
                 require(BankMappings.isReady(reopened.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine")),first),"reopened historical mapping retains its exact completion marker");
                 var reopenedMachine=reopened.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine"));
-                require("sameboy".equals(reopenedMachine.getValue(registerRestoreSnap,"Backend").getValue()),"reopened history retains captured backend identity");
+                if(!legacyBaseline)require("sameboy".equals(reopenedMachine.getValue(registerRestoreSnap,"Backend").getValue()),"reopened history retains captured backend identity");
                 require(registerRecovery.toString().equals(reopenedMachine.getValue(registerRestoreSnap,"ParentCheckpoint").getValue()),"reopened restore retains its original checkpoint link");
                 require(reopenedMachine.getValue(registerRestoreSnap,"ParentCheckpointSHA256").getValue().toString().length()==64,"reopened restore retains the checkpoint state fingerprint");
             }finally{reopened.release(RealTraceTest.class);}
@@ -362,6 +585,7 @@ public class RealTraceTest {
                 if(launched.exception()!=null)throw new AssertionError("Ghidra launcher failed",launched.exception());
                 require(launched.trace()!=null&&launched.connection()!=null,"Ghidra SameBoy menu launcher starts real agent automatically");
                 Trace previousTrace=trace;trace=launched.trace();waitCapture(0);
+                if(idle!=null)idle.rememberOwned();
                 if(studyExpected)require("generic".equals(attr("Machine","Profile")),"installed game profile rejects a nonmatching ROM while generic controls remain usable");
                 launched.connection().getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
                 require(object("Machine").getValue(snap(),"Capture")!=null,"automatic launcher publishes and saves a complete initial capture");
@@ -394,6 +618,7 @@ public class RealTraceTest {
                 methods.get("restore").invokeAsync(Map.of("process",object("Machine"),"path",checkpointDir.toString())).get(15,TimeUnit.SECONDS);
                 Thread.sleep(120000);
             }
+            if(idle!=null)idle.paused(conn,staticProgram);
             Swing.runNow(()->{tool.setVisible(false);tool.getService(DebuggerTraceManagerService.class).activateTrace(null);});
             methods.get("kill").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
             conn.waitClosed();
@@ -407,6 +632,7 @@ public class RealTraceTest {
             Swing.runNow(()->tool.dispose());imported.close();project.close();
         }
         Swing.runNow(()->{});
+        if(idle!=null)idle.afterClose();
         require(asyncErrors.isEmpty(),"no asynchronous JVM errors through cleanup");
         System.out.println("REAL_TRACE_TEST_PASSED");
         System.exit(0);

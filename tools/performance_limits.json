@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "scope": "M6 budgets declared before the first extended soak; bounded evidence, not proof of absence of all leaks",
+  "comparison": {
+    "minimum_runs": 3,
+    "relative_p95_regression": 0.2,
+    "absolute_p95_allowance_ms": 10,
+    "matched_fields": ["host", "os", "architecture", "ghidra", "java", "python", "core", "config", "rom_sha256"]
+  },
+  "soak": {
+    "minimum_seconds": 1800,
+    "minimum_cycles": 100,
+    "warmup_cycles": 5,
+    "window_samples": 3,
+    "agent_rss_growth_kib": 32768,
+    "ghidra_rss_growth_kib": 524288,
+    "agent_thread_growth": 4,
+    "ghidra_thread_growth": 12,
+    "agent_handle_growth": 8,
+    "ghidra_handle_growth": 32,
+    "trace_bytes_per_capture": 65536,
+    "maximum_pause_ms": 2000,
+    "dropped_events": 0
+  }
+}
