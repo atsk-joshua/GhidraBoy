@@ -4,7 +4,7 @@ Plan: [debugger-integration-plan.md](../debugger-integration-plan.md). This ledg
 
 ## Active work
 
-M0 and the remaining M1 conformance inventory are in progress. M2's mechanical import and M3 build/package qualification are complete at their recorded source snapshots. M4's Python adapter boundary is implemented and under validation; generic session/recovery extraction remains open. The import proceeded independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changed no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
+M0 and the remaining M1 conformance inventory are in progress. M2's mechanical import and M3 build/package qualification are complete at their recorded source snapshots. M4's shared session/recovery policies and native adapter boundary are implemented; remaining crash/lifecycle and physical display/focus acceptance are open. The import proceeded independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changed no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
 
 The `integrate-ghigbc` branch preserves the prior `suite-offdevice-candidate` ref. Unrelated untracked reports and GhiGBC output remain untouched. No remote writes or publication occurred.
 
@@ -101,8 +101,25 @@ The agent/display no longer import the native module, access native handles, or 
 
 All 53 native/Python tests pass, including the new boundary, capability, immutable-buffer, descriptor-history, input/frame and closed-handle checks. Extracted real Trace RMI validation passed after the refactor. The SDL smoke aborted under the filesystem/process sandbox and passed with desktop execution permission; no physical input/focus acceptance is claimed. An overlapping validation invocation was refused by the existing-instance guard; its result is not counted. The separate serial run passed all new identity/timebase/reopen assertions; [boundary evidence](m4-boundary-evidence.json) records its exact logs.
 
-M4 is not complete: generic session/recovery ownership, complete native source-directory isolation, model/mapper validation and broader failure/conformance checks remain open. The current adapter remains SameBoy only.
+### M4 shared session and recovery ownership
+
+`ghigbc.session.Session` now owns UUIDs, public epoch/capture counters, execution policy, durable checkpoint/edit metadata, verified restore copies and recovery after failed writes. SameBoy supplies only hardware hooks and its compatible schema-2 identity. The default generic envelope uses schema 3 and supports a backend-specific payload filename and unavailable timebase; a separate test fixture verifies that policy without using SameBoy's payload format.
+
+`CommandQueue` now owns bounded enqueue/execution, execution-time context checks, timeout cancellation and disconnect draining. Already executing commands are not falsely reported cancelled. Internal shutdown is intentionally independent of a prior epoch. The agent retains the separate ordered Trace RMI callback worker and records fault captures when a mutation fails after changing state.
+
+The C sources/header/instrumentation patch moved byte-identically to `debugger/backends/sameboy/native`. Build scripts, canonical dependency paths and packaging follow the new location. Structural checks confirm generic modules do not import native bindings or access native handles. Explicit unsupported hardware models are rejected before reading inputs, and unsupported cartridge/controller requests remain rejected by the real backend.
+
+[Session evidence](m4-session-evidence.json) records these executed checks:
+
+- 69 native/Python tests and 7 build/architecture checks pass. New coverage includes a real pause while the execution owner holds the session lock, 80 matching watches producing a bounded 64-event prefix plus 16 reported losses, stale replacement/disconnect contexts, cancellation and post-write recovery.
+- Eleven before/after records match the pre-refactor implementation's legacy state fields, full memory hashes and native event values, including physical bank stops, writes, same-value watches, edits and restore. Session UUID/path and new descriptive attributes are excluded from this comparison explicitly.
+- An actual pre-refactor schema-2 checkpoint restores the expected PC through the new session reader; its original files remain hash-identical. A separate test replaces the original state file after verification and proves that the private verified copy is loaded.
+- Real installed Trace RMI validation passes in macOS and the isolated Linux runtime. Linux also passes the packaged recovery/rollback installer and display smoke with no build tools or system SDL.
+
+The physical window probe reached the paused fixture, but CUA reported that the Mac was locked. An asynchronous unlock request was sent. No desktop input/focus actions occurred; the bounded probe timed out and cleaned up with unchanged ticks and released keys. This is explicitly blocked acceptance, not a GUI pass.
+
+M4 remains open for the remaining forced-crash/end-to-end lifecycle checks and physical keyboard/focus/minimize/close validation. The only production adapter is still SameBoy; no mGBA support claim is inferred from the shared code.
 
 ## Next gates
 
-Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Finish the remaining M1 conformance inventory, preserving unsupported observations explicitly. Continue generic session/recovery extraction and native adapter isolation, then the M5 compatibility and release gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.
+Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Finish the remaining M1/M4 failure/lifecycle inventory and resume physical window acceptance when the Mac is unlocked. Continue the independent M5 compatibility and release gates, then hardware/model expansion and mGBA implementation. Device gates remain unexecuted until their actual checks run.

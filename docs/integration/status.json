@@ -180,23 +180,21 @@
       "id": "BACKEND-01",
       "milestone": "M4",
       "requirement": "structural checks find no SameBoy headers/private fields outside its adapter, and no native handle/API access from generic agent/UI/display/profile code. Compatibility readers and labeled provenance may mention SameBoy.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "debugger/docs/contracts/backend.md",
-        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+        "docs/integration/m4-session-evidence.json"
       ],
-      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
+      "note": "Native source isolated under its backend; shared session/agent/display contain no native handles/layouts; structural checks pass."
     },
     {
       "id": "BACKEND-02",
       "milestone": "M4",
       "requirement": "run identical self-authored fixtures through the pre-extraction and new SameBoy paths; compare defined registers, physical bytes, stop reasons, event order/precision, bank mappings, edits and restore semantics.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "debugger/docs/contracts/backend.md",
-        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+        "docs/integration/m4-session-evidence.json"
       ],
-      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
+      "note": "11 actual before/after records match legacy state, full memory hashes and native event values; old schema-2 checkpoint and real Mac/Linux RMI pass."
     },
     {
       "id": "BACKEND-03",
@@ -204,32 +202,29 @@
       "requirement": "pause during run/queue saturation, timed-out requests, disconnect/reconnect, target exit, callback ordering, event overflow and shutdown have bounded behavior with visible error/loss reporting.",
       "status": "IN_PROGRESS",
       "evidence": [
-        "debugger/docs/contracts/backend.md",
-        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+        "docs/integration/m4-session-evidence.json"
       ],
-      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
+      "note": "Real pause-under-lock, bounded native event loss, cancellation, stale/replacement/disconnect contexts, fault recovery and Mac/Linux RMI cleanup pass; remaining forced-crash/end-to-end lifecycle conformance is open."
     },
     {
       "id": "BACKEND-04",
       "milestone": "M4",
       "requirement": "display input, focus loss, minimized/paused pumping, frame copying and close work through the abstraction without stale held keys or lock inversion.",
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "evidence": [
-        "debugger/docs/contracts/backend.md",
-        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+        "docs/integration/m4-session-evidence.json"
       ],
-      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
+      "note": "Input/frame and display smoke pass; physical keyboard/focus/minimize/close checks require an unlocked Mac. User was asked; probe timed out and cleaned up."
     },
     {
       "id": "BACKEND-05",
       "milestone": "M4",
       "requirement": "startup and action requests reject unsupported model/mapper/capability combinations explicitly; capability enforcement does not rely on disabled UI controls alone.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "debugger/docs/contracts/backend.md",
-        "dist/integration-baseline-20260906/m4-contract-tests-final.log"
+        "docs/integration/m4-session-evidence.json"
       ],
-      "note": "Python adapter separated; generic imports lazy; native handles/fixed capture layout removed from agent/display. Generic session/recovery and complete conformance still open."
+      "note": "Explicit unsupported model, mapper and capability requests fail; recovery is not created for invalid edits; shared policy and real native tests pass."
     },
     {
       "id": "COMPAT-01",

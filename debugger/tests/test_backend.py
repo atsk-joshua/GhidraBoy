@@ -24,6 +24,14 @@ class BackendTests(unittest.TestCase):
         with self.assertRaisesRegex(UnsupportedFeature,'CGB-E only'):
             create_backend('sameboy',Path('/no-such-rom'),model='unsupported-model')
 
+    def test_unsupported_mapper_fails_before_a_session_can_be_used(self):
+        with tempfile.TemporaryDirectory() as directory:
+            rom=bytearray((ROOT/'build/teaching.gbc').read_bytes())
+            rom[0x147]=0xfc
+            path=Path(directory)/'unsupported.gbc';path.write_bytes(rom)
+            with self.assertRaisesRegex(RuntimeError,'mapper unsupported'):
+                create_backend('sameboy',path)
+
     def test_normalized_capture_matches_legacy_bytes_and_keeps_its_descriptor(self):
         with create_backend('sameboy', ROOT/'build/teaching.gbc') as machine:
             snapshot=machine.capture()

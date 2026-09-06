@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "status": "PARTIAL",
+  "scope": "M4 session/recovery and adapter isolation; physical focus/input and remaining crash/lifecycle conformance open",
+  "tests": 69,
+  "sourceChecks": 7,
+  "linuxInstallerChecks": 11,
+  "logs": {
+    "m4-final-session-tests.log": {
+      "path": "dist/integration-baseline-20260906/m4-final-session-tests.log",
+      "sha256": "cd7c8f74852016c2a15b53cbb110a68b2b8d293aa5a1dac25902f19b6e2e94b7"
+    },
+    "m4-final-source-checks.log": {
+      "path": "dist/integration-baseline-20260906/m4-final-source-checks.log",
+      "sha256": "c2886dda137ab8511ad424fdca39e7984b4e88716acf7bb88f5c1c2b669b32b2"
+    },
+    "m4-session-rmi.log": {
+      "path": "dist/integration-baseline-20260906/m4-session-rmi.log",
+      "sha256": "c43f0bde2d1e719f9b271ad5f754f3785053659b9705d307427d342c2dd4247b"
+    },
+    "m4-session-linux-runtime.log": {
+      "path": "dist/integration-baseline-20260906/m4-session-linux-runtime.log",
+      "sha256": "8ec88146f8fcfb912c4762c958d22739f89524c8636174a6cee09c4cf96dbcc4"
+    }
+  },
+  "parity": {
+    "status": "PASS",
+    "referenceCommit": "3d27f5b",
+    "checkpoints": "Actual frozen pre-refactor schema-2 checkpoint",
+    "records": 11,
+    "work": "/private/tmp/ghidraboy-integration-20260906/m4-session-parity-events",
+    "scope": "Exact legacy state fields, complete capture memory hashes and native event values; session UUID/path and new descriptive attributes are intentionally not compared"
+  },
+  "legacyCheckpoint": {
+    "status": "PASS",
+    "sourceCheckpoint": "/private/tmp/ghidraboy-integration-20260906/m3-final-extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64/build/trace-checkpoint-1788679441917",
+    "oldSchema": 2,
+    "originalFiles": {
+      "state.sbs": "c9ef9f01700231ab5de3c5d700ac355f5fc83e756682547a71db71dac757e8ae",
+      "metadata.json": "8c74b50dbbf5c8a6c5318a20fc7ad9ac309ab7473d0d48759eefbb036cd14732"
+    },
+    "restoredPc": 17767,
+    "sourceUnchanged": true,
+    "scope": "Actual pre-session-refactor synthetic checkpoint restored by generic Session"
+  },
+  "ui": {
+    "status": "BLOCKED",
+    "reason": "CUA confirmed Mac locked; paused probe timed out without physical input/focus actions",
+    "evidence": "dist/integration-baseline-20260906/m4-paused-window/paused-display.json"
+  }
+}
