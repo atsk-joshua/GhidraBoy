@@ -151,7 +151,8 @@ class AnalysisLifecycleTest : IntegrationTest() {
                 val decompiled = decompiler.decompileFunction(function, 30, TaskMonitor.DUMMY)
                 assertTrue(decompiled.decompileCompleted(), decompiled.errorMessage)
                 val c = decompiled.decompiledFunction.c
-                assertTrue(c.contains("MBC_ROM_CONTROL = 2"), c)
+                assertTrue(c.contains("gb_cartridge_write8(0x2000,2)"), c)
+                assertFalse(c.contains("MBC_ROM_CONTROL ="), c)
                 assertTrue(!p.memory.getBlock(address(0x2000)).isWrite)
             } finally {
                 decompiler.dispose()
@@ -228,5 +229,35 @@ class AnalysisLifecycleTest : IntegrationTest() {
                 assertFalse(p.referenceManager.getReferencesFrom(address(site)).any { it.operandIndex == -1 })
             }
             assertEquals(0, p.bookmarkManager.bookmarkCount)
+        }
+
+    @Test
+    fun `pre bus analysis snapshots reject without altering stored receipts`() =
+        program { p ->
+            val current = BankAnalysis.preview(p, address(0x150), null, AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY)
+            BankAnalysis.apply(p, current, TaskMonitor.DUMMY)
+            val prior =
+                AnalysisResult(
+                    current.schemaVersion(),
+                    "20260905-dev2.1",
+                    current.starts(),
+                    current.assumption(),
+                    current.configuration(),
+                    current.completion(),
+                    current.exploredStates(),
+                    current.pendingStates(),
+                    current.fingerprint(),
+                    current.findings(),
+                    current.diagnostics(),
+                )
+            val stored = ProgramMapping.JSON.toJson(prior)
+            val options = p.getOptions(ProgramMapping.OPTIONS)
+            p.withTransaction { options.setString("analysis.latest", stored) }
+            val before = options.optionNames.associateWith { options.getValueAsString(it) }
+            val bookmarkCount = p.bookmarkManager.bookmarkCount
+            assertThrows(IllegalArgumentException::class.java) { AnalysisResult.read(stored) }
+            assertThrows(IllegalStateException::class.java) { BankAnalysis.apply(p, prior, TaskMonitor.DUMMY) }
+            assertEquals(before, options.optionNames.associateWith { options.getValueAsString(it) })
+            assertEquals(bookmarkCount, p.bookmarkManager.bookmarkCount)
         }
 }

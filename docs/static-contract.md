@@ -35,12 +35,15 @@ state JSON example:
 {"romLow":1,"romHigh":0,"mode":0,"ramSelect":0,"ramEnabled":false,"vbk":0,"svbk":1,"latch":0}
 ```
 
-Write ROM addresses are mapper control operations, not ROM patches. I/O and RTC
-selections are device results. A byte-mapped ROM view does not make writes
-redirect automatically in Ghidra p-code: CPU p-code still addresses the static
-`ram` space. Analysis records those controls in bookmarks and only adds
-supplemental references when justified. References do not rewrite indirect
-p-code or implement dynamic memory banking.
+Writes in the ROM CPU range are cartridge control/ignored bus operations, not
+ROM patches. I/O and RTC selections are device results. Encoded `LD (nn),A` and
+`LD (nn),SP` now carry direct-write hooks. Program-aware injection lowers proven
+non-RAW cartridge controls to visible bus operations and ordinary/RAW writes to
+STOREs; a byte-mapped ROM view alone never redirects them. Analysis consumes the
+same hooks and only adds justified supplemental references. Indirect p-code and
+dynamic banking remain separate unresolved mechanisms. References do not rewrite
+those operations. See [direct bus semantics](direct-bus-semantics.md) for scope,
+legacy metadata activation, RAW policy and bounded validation helpers.
 
 The present schema is a snapshot, not a live protocol. Space names can change;
 regenerate snapshots after renaming or editing topology. Stable physical ROM

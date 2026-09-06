@@ -15,5 +15,9 @@
   limitations under the License.
 -->
 <processor_spec>
+  <properties>
+    <property key="pcodeInjectLibraryClass" value="fi.gekkio.ghidraboy.CartridgeBusInjectLibrary"/>
+    <property key="emulateInstructionStateModifierClass" value="fi.gekkio.ghidraboy.CartridgeBusEmulation"/>
+  </properties>
   <programcounter register="PC"/>
 </processor_spec>

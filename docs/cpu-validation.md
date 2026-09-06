@@ -15,6 +15,12 @@ not compared as runtime hardware state. Samples contain no excluded arithmetic
 vectors. Fresh emulator memory/decode state per vector avoids opcode-cache
 leakage; one Program/application is shared and all helpers/programs disposed.
 
+Encoded direct byte/word stores use Program-aware bus hooks. Native, compiled
+p-code and independent SameBoy regressions cover ROM immutability, selector
+changes, byte ordering, wrapping, ordinary/RAW memory behavior and bounded
+context safety. See [direct bus semantics](direct-bus-semantics.md); this does not
+claim general indirect-store coverage or absolute entry-SP recovery in C.
+
 Independent exhaustive tests execute actual compiled SLEIGH for ADC and SBC
 (131072 cases each), all A/N/H/C DAA combinations (2048), overlapping A operands,
 and 256 CB operations x 256 values x 2 carry states. CB tests cover memory forms,

@@ -121,4 +121,16 @@
       <unaffected><register name="SP"/></unaffected>
       <killedbycall><register name="AF"/><register name="BC"/><register name="DE"/><register name="HL"/></killedbycall>
     </prototype>
+  <callotherfixup targetop="gb_direct_write8">
+    <pcode dynamic="true">
+      <input name="cpuAddress" size="2"/>
+      <input name="value" size="1"/>
+    </pcode>
+  </callotherfixup>
+  <callotherfixup targetop="gb_direct_write16">
+    <pcode dynamic="true">
+      <input name="cpuAddress" size="2"/>
+      <input name="value" size="2"/>
+    </pcode>
+  </callotherfixup>
 </compiler_spec>

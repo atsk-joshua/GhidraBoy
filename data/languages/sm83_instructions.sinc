@@ -63,7 +63,7 @@
 }
 
 :LD Mem8, A is op0_8=0xea & A; Mem8 {
-  Mem8 = A;
+  gb_direct_write8(&:2 Mem8, A);
 }
 
 :LD A, HLInc is op0_8=0x2a & A & HLInc {
@@ -488,11 +488,7 @@
 }
 
 :LD Mem16, SP is op0_8=0x08 & SP; Mem16 {
-  local stored:2 = SP;
-  local lowAddress:2 = &:2 Mem16;
-  local highAddress:2 = lowAddress + 1;
-  *:1 lowAddress = stored:1;
-  *:1 highAddress = stored[8,8];
+  gb_direct_write16(&:2 Mem16, SP);
 }
 
 :LD SP, HL is op0_8=0xf9 & SP & HL {

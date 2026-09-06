@@ -125,6 +125,11 @@ define pcodeop daaOperand;
 define pcodeop halt;
 define pcodeop stop;
 
+# Appended indices; existing userop identities remain stable.
+define pcodeop gb_direct_write8;
+define pcodeop gb_cartridge_write8;
+define pcodeop gb_direct_write16;
+
 macro push16(val16) {
   local pushed:2 = val16;
   SP = SP - 1;

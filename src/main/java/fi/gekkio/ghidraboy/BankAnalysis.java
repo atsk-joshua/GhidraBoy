@@ -113,7 +113,7 @@ public final class BankAnalysis {
                     targets,
                     reasons);
             }
-          if (op.getOpcode() == PcodeOp.STORE) {
+          if (op.getOpcode() == PcodeOp.STORE || CartridgeBus.isDirectWrite(p.getLanguage(), op)) {
             Long ptr = value(op.getInput(1), regs, unique),
                 val = value(op.getInput(2), regs, unique);
             if (internal || ptr == null) {
