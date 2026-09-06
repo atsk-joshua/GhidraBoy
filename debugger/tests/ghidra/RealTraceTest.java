@@ -305,6 +305,9 @@ public class RealTraceTest {
         require(connection.isClosed(),"disconnected target closes its real RMI connection within the bound");
     }
     static void failureLifecycle(Path root,GhidraTool tool)throws Exception {
+        failureLifecycle(root,tool,"sameboy");
+    }
+    static void failureLifecycle(Path root,GhidraTool tool,String backend)throws Exception {
         Trace previous=trace;String formerSession=null;
         try {
             for(String mode:List.of("disconnect","crash","replacement")) {
@@ -312,7 +315,7 @@ public class RealTraceTest {
                 acceptor.setTimeout(15000);
                 int port=((InetSocketAddress)acceptor.getAddress()).getPort();
                 var builder=new ProcessBuilder(System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv12/bin/python").toString()),
-                    "-m","ghigbc.agent","--connect","127.0.0.1:"+port,"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready");
+                    "-m","ghigbc.agent","--backend",backend,"--connect","127.0.0.1:"+port,"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready");
                 builder.environment().put("PYTHONPATH",root.resolve("python").toString());
                 builder.redirectErrorStream(true);builder.redirectOutput(evidence(root).resolve(mode+"-agent.log").toFile());
                 Process process=builder.start();TraceRmiConnection connection=null;
@@ -327,12 +330,12 @@ public class RealTraceTest {
                     if(mode.equals("replacement")) {
                         require(!session.equals(formerSession),"replacement target has a new session identity");
                         int count=object("Machine.Breakpoints").getElements(Lifespan.at(snap())).size();
-                        var request=new HashMap<String,Object>();request.put("process",object("Machine"));request.put("region","wram");
-                        request.put("bank",1L);request.put("offset",0x34L);request.put("length",1L);
+                        var request=new HashMap<String,Object>();request.put("process",object("Machine"));request.put("region","rom");
+                        request.put("bank",1L);request.put("offset",0x29L);request.put("kinds",1L);
                         request.put("expected_session",formerSession);request.put("expected_epoch",attr("Machine","Epoch"));
                         request.put("expected_capture",attr("Machine","Capture"));
                         try {
-                            connection.getMethods().get("profile_watch").invokeAsync(request).get(5,TimeUnit.SECONDS);
+                            connection.getMethods().get("bank_breakpoint").invokeAsync(request).get(5,TimeUnit.SECONDS);
                             throw new AssertionError("Replacement accepted former target context");
                         }catch(ExecutionException expected){require(expected.getCause().getMessage().contains("Stale"),"real replacement target rejects former-session action");}
                         require(object("Machine.Breakpoints").getElements(Lifespan.at(snap())).size()==count,"former-session request creates no replacement breakpoint");

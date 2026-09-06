@@ -8,6 +8,7 @@ import ghidra.framework.Application;
 import ghidra.framework.model.ProjectLocator;
 import ghidra.framework.project.tool.GhidraTool;
 import ghidra.app.services.*;
+import ghidra.debug.api.tracermi.TraceRmiConnection;
 import ghidra.app.util.importer.*;
 import ghidra.trace.model.Trace;
 import ghidra.util.Swing;
@@ -16,6 +17,26 @@ import ghigbc.BankMappings;
 
 /** Same real Trace RMI / mapping / saved-history contract for every selected engine. */
 public final class BackendTraceTest extends RealTraceTest {
+    static void captureOnlySoak(Path root,TraceRmiConnection connection,Process process,GhidraTool tool,String backend)throws Exception {
+        if(connection.getMethods().get("checkpoint")!=null)throw new IllegalArgumentException("Use the checkpoint/restore soak for checkpoint-capable backends");
+        long started=System.nanoTime();int cycles=0;var samples=new ArrayList<Map<String,Object>>();
+        while((System.nanoTime()-started)/1e9<1800||cycles<100) {
+            connection.getMethods().get("resume").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            Thread.sleep(15000);long prior=((Number)attr("Machine","Capture")).longValue();long pause=System.nanoTime();
+            connection.getMethods().get("interrupt").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);awaitPublished(prior);
+            double pauseMs=(System.nanoTime()-pause)/1e6;require(pauseMs<2000,"capture-only soak pause stays within original native-host budget");
+            for(int step=0;step<5;step++)connection.getMethods().get("step_into").invokeAsync(Map.of("thread",object("Machine.Threads[0]"))).get(15,TimeUnit.SECONDS);
+            connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            cycles++;if(cycles==30||cycles==60)failureLifecycle(root,tool,backend);
+            var sample=new LinkedHashMap<String,Object>();sample.put("cycle",cycles);sample.put("seconds",(System.nanoTime()-started)/1e9);sample.put("capture",attr("Machine","Capture"));sample.put("snapshot",snap());sample.put("pause_ms",pauseMs);
+            sample.put("agent_rss_kib",rssKiB(process.pid()));sample.put("ghidra_rss_kib",rssKiB(ProcessHandle.current().pid()));sample.put("agent_threads",countThreads(process.pid()));sample.put("ghidra_threads",java.lang.management.ManagementFactory.getThreadMXBean().getThreadCount());
+            sample.put("agent_handles",countHandles(process.pid()));sample.put("ghidra_handles",countHandles(ProcessHandle.current().pid()));sample.put("trace_bytes",trace.getDomainFile().length());sample.put("dropped",attr("Machine","Dropped"));samples.add(sample);
+            var report=Map.of("schema",1,"status","RUNNING","requested_seconds",1800,"cycles",cycles,"samples",samples,"backend",backend,"scope","Real RMI capture-only backend; no checkpoint capability. Separate crash/disconnect/replacement targets at cycles 30/60.");
+            Files.writeString(evidence(root).resolve("backend-soak.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
+            System.out.println("BACKEND_SOAK_PROGRESS "+backend+" cycles="+cycles);System.out.flush();
+        }
+        Files.writeString(evidence(root).resolve("backend-soak.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(Map.of("schema",1,"status","COMPLETED_MEASUREMENTS","requested_seconds",1800,"cycles",cycles,"samples",samples,"backend",backend,"scope","No checkpoint capability; assessed against predeclared native-host resource budgets.")));
+    }
     public static void main(String[] args) {
         try {runBackends(args);System.exit(0);}
         catch(Throwable error){error.printStackTrace();System.exit(1);}
@@ -37,7 +58,7 @@ public final class BackendTraceTest extends RealTraceTest {
         });
         var tool=holder[0];
         try {
-            for(String backend:Arrays.copyOfRange(args,1,args.length)) {
+            for(String backend:Arrays.stream(Arrays.copyOfRange(args,1,args.length)).filter(arg->!arg.startsWith("--")).toList()) {
                 var acceptor=tool.getService(TraceRmiService.class).acceptOne(new InetSocketAddress("127.0.0.1",0));acceptor.setTimeout(15000);
                 var command=new ArrayList<String>();command.add(System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv12/bin/python").toString()));
                 if("true".equals(System.getenv("GBC_TEST_STATIC_RETRY")))command.add(root.resolve("tests/static_retry_agent.py").toString());
@@ -67,6 +88,8 @@ public final class BackendTraceTest extends RealTraceTest {
                     methods.get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
                     require(BankMappings.isReady(object("Machine"),snap()),"shared static mappings complete: "+backend);
                     require(attr("Machine","BoundStaticGeneration").equals(attr("Machine","StaticMappingGeneration")),"automatic static upload recovers and binds this unchanged epoch: "+backend);
+                    if(Arrays.asList(args).contains("--failure-lifecycle"))failureLifecycle(root,tool,backend);
+                    if(Arrays.asList(args).contains("--soak"))captureOnlySoak(root,connection,process,tool,backend);
                     long saved=snap();var file=trace.getDomainFile();
                     methods.get("kill").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
                     awaitClosed(connection);require(process.waitFor(5,TimeUnit.SECONDS),"owned backend process exits: "+backend);
