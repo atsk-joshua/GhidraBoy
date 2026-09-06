@@ -4,7 +4,7 @@ Plan: [debugger-integration-plan.md](../debugger-integration-plan.md). This ledg
 
 ## Active work
 
-M0 is in progress. M1 feasibility probes have executed. Mechanical M2 import can proceed independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changes no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
+M0 is in progress. M1 feasibility probes have executed. M2's mechanical import is complete and M3 build integration is in progress. The import proceeded independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changed no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
 
 The `integrate-ghigbc` branch preserves the prior `suite-offdevice-candidate` ref. Unrelated untracked reports and GhiGBC output remain untouched. No remote writes or publication occurred.
 
@@ -48,6 +48,20 @@ Two integration hazards were exposed rather than hidden:
 
 Emulicious archive SHA256: `6e1c6d511014033bbc2668360a0194389a5bad2bf6c5ffd0fe093b84da33c0fc`, official download, changelog 2026-03-27. Its official VS Code adapter source is pinned to `172b0b88ae682badfb8b6b6e9b0c480946db2c65`. The owned-process probe connected to its DAP port and received capabilities; launch did not complete within the bound. In particular this connection advertised no standard read-memory, instruction-breakpoint, data-breakpoint or stepping-granularity support. This is partial feasibility evidence, not proof those underlying emulator functions are unavailable through every interface. The two attempts and DAP messages are retained under the baseline work directory; owned processes were terminated after probe cleanup.
 
+Further diagnosis found a first-run update dialog in the third attempt. The fourth uses an isolated application copy with its inspected `Update=0` setting, retaining the exact JAR without automatic updates. That passes the startup dialog but stalls while Java initializes native audio during ROM loading; `threads.log` identifies `SoundOutput.openLine` on the DAP thread. This is an unresolved environment/integration gate, not a successful ROM session or proof of safe remote capture.
+
+## M2 import and M3 build integration
+
+Import commit `7ab89505b5d982c7c1efeeb2a44de21271e323b6` has both the migration branch and original GhiGBC `c1cfeef` as parents. Its 83 selected source files were all verified against the inventory before committing. The 107 excluded files remain available in the original history and bundle. No GhiGBC or GhiBW3 source checkout was changed.
+
+The relocated native/Python suite passes all 46 tests (`imported-debugger-tests.log`). This relocation test deliberately used hash-verified copies of the baseline native binary, boot and ROM fixtures in ignored build/dependency directories, and the existing test interpreter. It does not pass the fresh-checkout bootstrap or standalone runtime packaging gates.
+
+The root wrapper now optionally includes `GhiGBC` with `-PwithDebugger=true`. Its compile-only dependency resolves the actual root project output; `integrationArtifacts` writes relative paths and SHA256 identities for selected archives/JARs. Without the property, the debugger subproject is absent. `debugger/scripts/build_extension.sh` delegates to this root build. The migration artifacts use the distinct `20260905-integration1` version and retain both extension IDs. Kotlin script formatting violations found during iteration were corrected with the repository formatter; final checked-build evidence is recorded separately from earlier failed attempts.
+
+Final public-wrapper build and Kotlin script checks passed (`unified-wrapper-final.log`); static-only project/configuration checks passed and explicitly list no subprojects (`static-configuration-final.log`). `unified-artifacts.json` retains the verified output identities. Archive inspection confirms exactly `GhiGBC/lib/GhiGBC.jar`, no duplicate provider classes, and no second SM83 language in the debugger archive.
+
+M3 is not complete. Remaining work includes canonical dependency locks, source-independent native/bootstrap setup, runtime packaging driven by the artifact manifest, consolidation of old 12.1.2 handoff helpers, exclusion of unrelated untracked documentation from release packaging, and clean-checkout/package/rollback checks. The root provider ZIP's existing broad docs copy currently includes untracked docs; it must be corrected before any release qualification. No generated integration archive is being declared a release.
+
 ## Next gates
 
-Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Resolve Emulicious launch and the remaining M1 semantics, preserving unsupported operations explicitly. Import only selected generic sources with original history, wire the root build, and proceed through backend/session extraction and compatibility gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.
+Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Resolve Emulicious launch and the remaining M1 semantics, preserving unsupported operations explicitly. Finish M3 runtime/build/package consolidation, then proceed through backend/session extraction and compatibility gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.

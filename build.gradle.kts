@@ -11,8 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import groovy.json.JsonOutput
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.Properties
@@ -38,7 +40,7 @@ val ghidraRelease = ghidraProps.getProperty("application.release.name")!!
 
 require(ghidraVersion == "12.1.3") { "This build targets Ghidra 12.1.3; found $ghidraVersion" }
 require(JavaVersion.current() == JavaVersion.VERSION_21) { "Run Gradle with JDK 21 (JAVA_HOME)" }
-version = "20260905-decomp3"
+version = "20260905-integration1"
 val buildEpoch = providers.environmentVariable("SOURCE_DATE_EPOCH").orElse("1788566400")
 val buildDate = Instant.ofEpochSecond(buildEpoch.get().toLong()).atZone(ZoneOffset.UTC).toLocalDate()
 
@@ -195,4 +197,70 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 tasks.named<Delete>("clean") {
     delete("data/languages/sm83.sla")
+}
+
+val debuggerProject = findProject(":GhiGBC")
+if (debuggerProject != null) {
+    tasks.named("assemble") { dependsOn(":GhiGBC:buildExtension") }
+}
+
+// Resolve product files from actual task outputs, not dated names or neighboring checkouts.
+tasks.register("integrationArtifacts") {
+    group = "distribution"
+    description = "Build selected extensions and write their paths and SHA256 identities."
+    dependsOn(zip)
+    if (debuggerProject != null) dependsOn(":GhiGBC:buildExtension")
+    val manifest = layout.buildDirectory.file("integration/artifacts.json")
+    outputs.file(manifest)
+    outputs.upToDateWhen { false }
+    doLast {
+        fun artifact(file: File): Map<String, String> =
+            mapOf(
+                "path" to file.relativeTo(rootDir).invariantSeparatorsPath,
+                "sha256" to
+                    MessageDigest
+                        .getInstance("SHA-256")
+                        .digest(file.readBytes())
+                        .joinToString("") { "%02x".format(it.toInt() and 0xff) },
+            )
+
+        fun component(
+            owner: Project,
+            archiveTask: String,
+        ): Map<String, Map<String, String>> {
+            val jarFile =
+                owner.tasks
+                    .named<Jar>("jar")
+                    .get()
+                    .archiveFile
+                    .get()
+                    .asFile
+            val archiveFile =
+                owner.tasks
+                    .named<Zip>(archiveTask)
+                    .get()
+                    .archiveFile
+                    .get()
+                    .asFile
+            return mapOf("jar" to artifact(jarFile), "archive" to artifact(archiveFile))
+        }
+        val components = linkedMapOf("GhidraBoy" to component(project, "zip"))
+        if (debuggerProject != null) {
+            components["GhiGBC"] = component(debuggerProject, "buildExtension")
+        }
+        val output = manifest.get().asFile
+        output.parentFile.mkdirs()
+        output.writeText(
+            JsonOutput.prettyPrint(
+                JsonOutput.toJson(
+                    mapOf(
+                        "schema" to 1,
+                        "ghidra" to ghidraVersion,
+                        "release" to project.version.toString(),
+                        "components" to components,
+                    ),
+                ),
+            ) + "\n",
+        )
+    }
 }

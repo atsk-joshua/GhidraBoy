@@ -12,3 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 rootProject.name = "GhidraBoy"
+
+// Static-only builds must not configure debugger tooling or its dependencies.
+if (providers.gradleProperty("withDebugger").map { it != "false" }.getOrElse(false)) {
+    include("GhiGBC")
+    project(":GhiGBC").projectDir = file("debugger/ghidra-extension")
+}

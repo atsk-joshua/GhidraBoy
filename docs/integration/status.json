@@ -95,57 +95,85 @@
       "id": "MOVE-01",
       "milestone": "M2",
       "requirement": "source history is reachable or explicitly retained in the source bundle; every imported supported file matches the source hash before subsequent edits.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/ghigbc-import.json",
+        "git:7ab89505b5d982c7c1efeeb2a44de21271e323b6"
+      ],
+      "note": "Mechanical import verified byte-for-byte before later build/path changes; original source history is a merge parent."
     },
     {
       "id": "MOVE-02",
       "milestone": "M2",
       "requirement": "all exclusions/relocations have recorded reasons and license provenance. No duplicate SM83 language or study implementation appears.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/ghigbc-import.json",
+        "git:7ab89505b5d982c7c1efeeb2a44de21271e323b6"
+      ],
+      "note": "Mechanical import verified byte-for-byte before later build/path changes; original source history is a merge parent."
     },
     {
       "id": "MOVE-03",
       "milestone": "M2",
       "requirement": "original static build and imported component tests run from their documented paths. No unexplained behavioral difference from M0.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "dist/integration-baseline-20260906/imported-debugger-tests.log",
+        "dist/integration-baseline-20260906/unified-build.log",
+        "dist/integration-baseline-20260906/provider-test-results/"
+      ],
+      "note": "46 relocated debugger tests pass with hashed baseline runtime dependencies; static implementation is unchanged and root/optional Java builds pass. Fresh dependency bootstrap/package isolation remains M3."
     },
     {
       "id": "BUILD-01",
       "milestone": "M3",
       "requirement": "clean static checkout builds/tests without emulator binaries, Python runtime setup, SDL, native compiler or debugger project dependency downloads.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/progress.md"
+      ],
+      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
     },
     {
       "id": "BUILD-02",
       "milestone": "M3",
       "requirement": "clean full checkout builds without neighboring GhiGBC/GhiBW3 repositories, absolute developer paths, stale build outputs or manually selected provider JAR filenames.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/progress.md"
+      ],
+      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
     },
     {
       "id": "BUILD-03",
       "milestone": "M3",
       "requirement": "packages contain one static provider, no bundled compile-only provider copy, correct notices, no private assets, and a deterministic source/dependency manifest.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/progress.md"
+      ],
+      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
     },
     {
       "id": "BUILD-04",
       "milestone": "M3",
       "requirement": "root commands are documented and exercised from a fresh checkout and paths containing spaces. Existing public commands either work through thin delegates or have tested migration guidance.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/progress.md"
+      ],
+      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
     },
     {
       "id": "BUILD-05",
       "milestone": "M3",
       "requirement": "packaging identifies stock versus patched native decompiler requirements; the doctor detects mismatches and never silently overwrites an active Ghidra distribution.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/progress.md"
+      ],
+      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
     },
     {
       "id": "BACKEND-01",

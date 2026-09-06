@@ -3,7 +3,7 @@
   "sourceRepository": "GhiGBC",
   "sourceCommit": "c1cfeef2140a48302f4bcccffd4464df5349d98c",
   "sourceBundle": "dist/integration-baseline-20260906/GhiGBC.bundle",
-  "status": "INVENTORIED_NOT_IMPORTED",
+  "status": "IMPORTED",
   "files": [
     {
       "source": ".github/workflows/components.yml",
@@ -1715,5 +1715,6 @@
       "gitBlob": "3fb4b549a29f7258bede3013b46cbb15a9416955",
       "sha256": "98a3a4b4711f117c670a7d5b2c92f393989d9e6bdadc8e2eb73dc067dab24d6b"
     }
-  ]
+  ],
+  "importCommit": "7ab89505b5d982c7c1efeeb2a44de21271e323b6"
 }

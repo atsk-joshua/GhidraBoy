@@ -1,13 +1,19 @@
-# GhiGBC
+# GhidraBoy debugger
 
-A generic SameBoy-backed Game Boy debugger for Ghidra: real Trace RMI, physical bank mappings, breakpoints and CPU access watches, immutable captured history, checkpoints, explicit recoverable edits, and an SDL game window.
+Optional Game Boy/Game Boy Color debugging through Trace RMI: physical bank mappings, breakpoints, CPU access watches, immutable captured history, checkpoints, recoverable edits and an SDL game window. The existing backend is SameBoy. Further backends are under development and are not yet supported.
 
-GhidraBoy is the sole SM83/static-analysis provider. GhiGBC owns live hardware observations, trace publication, execution ordering and installation. Optional GhiBW3 supplies exact-revision game decoding and study UI; generic debugging does not require it.
+The root GhidraBoy project is the sole static SM83 provider. This module owns execution, trace publication and generic debugging services. Optional GhiBW3 supplies game-specific decoders and research views through the profile/action APIs.
 
-The local candidate targets Ghidra12.1.3 with Java21, the existing Python3.9+ on macOS arm64 or Linux x86-64. Use the prebuilt platform archive and [installation/rollback guide](docs/INSTALL.md), then the [generic teaching walkthrough](docs/TEACHING.md). See [support and limits](docs/SUPPORT.md), [mapping boundary](docs/contracts/mapping.md) and [profile API](docs/contracts/profiles.md).
+With `GHIDRA_INSTALL_DIR` pointing to Ghidra 12.1.3 and `JAVA_HOME` to JDK 21, build both Java extensions from the repository root:
 
-Contributor dependency order is maintained GhidraBoy → GhiGBC → optional GhiBW3. Set GHIDRA_INSTALL_DIR/JAVA_HOME, then run scripts/build_native.sh and scripts/build_extension.sh. Run scripts/test_native.sh for standalone native/Python gates; scripts/test_ghidra.sh uses an isolated installed profile and a real Trace RMI process. scripts/package_candidate.py creates reproducible prebuilt archives; use --help for explicit inputs. scripts/test_installer.py exercises actual recovery/rollback behavior against matched manifests.
+```sh
+./gradlew -PwithDebugger=true integrationArtifacts
+```
 
-The source/validation ledger is in the existing GhiBW3 repository at docs/integration/LEDGER.md. Old 12.1.2 student archives remain intact as rollback. Interactive GUI/Deck acceptance and publication are separate; local package results do not imply a completed Steam Deck installation.
+`build/integration/artifacts.json` identifies the actual provider/debugger JARs and extension archives by relative path and SHA256. No neighboring GhiGBC checkout is required. Omit `-PwithDebugger` for the static-only build, which does not configure debugger dependencies. `debugger/scripts/build_extension.sh` delegates to the root wrapper.
 
-Credit: SameBoy by LIJI32 and contributors; GhidraBoy by Joonas Javanainen/Gekkio and contributors; Ghidra by the NSA; RGBDS contributors. Exact file notices are in LICENSES and the component archives. Private commercial ROMs, Programs and checkpoints are excluded from packages.
+The native runtime and packaged installation are separate from the Java extension build. Their consolidation and acceptance are tracked in the [integration ledger](../docs/integration/progress.md); existing imported scripts remain available during that work. Runtime requirements remain existing Python 3.9+ on the declared macOS arm64/Linux x86-64 lanes. See [runtime limits](docs/SUPPORT.md), [mapping contract](docs/contracts/mapping.md), [profile API](docs/contracts/profiles.md), and [installation/rollback](docs/INSTALL.md).
+
+Native/Python tests are under `debugger/tests`; real installed Trace RMI tests are under `debugger/tests/ghidra`. Release qualification additionally requires isolated installation/recovery, saved-work compatibility and actual claimed-platform GUI/device checks. The old repository and release archives remain available for rollback and source provenance.
+
+Credit: SameBoy by LIJI32 and contributors; GhidraBoy by Joonas Javanainen/Gekkio and contributors; Ghidra by the NSA; RGBDS contributors. Preserve the component notices in `LICENSES`. Private ROMs, Programs and checkpoints are excluded from distributions.

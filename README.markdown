@@ -1,7 +1,9 @@
 # GhidraBoy modernization (development preview)
 
-Current target: **Ghidra 12.1.3, JDK 21**. This branch contains static CPU,
-cartridge, mapping and script tooling; it is not a live debugger.
+Current target: **Ghidra 12.1.3, JDK 21**. The default build provides static CPU,
+cartridge, mapping and script tooling. The optional [debugger module](debugger/README.md)
+adds SameBoy execution and Trace RMI; qualification of the integrated release is
+tracked in the [integration ledger](docs/integration/progress.md).
 
 - [Install, import, navigation, symbols, export and rollback](docs/user-workflows.md)
 - [Input and mapper policy](docs/input-policy.md)

@@ -1,15 +1,26 @@
-def installDir = System.getenv('GHIDRA_INSTALL_DIR')
+def installDir = rootProject.findProperty('ghidra.dir') ?: System.getenv('GHIDRA_INSTALL_DIR')
 if (!installDir) throw new GradleException('Set GHIDRA_INSTALL_DIR to the selected Ghidra distribution')
 apply from: new File(installDir, 'support/buildExtension.gradle')
 
-// Provider APIs are discovered from the separate extension at runtime, never bundled here.
-def providerJar = System.getenv('GHIDRABOY_JAR') ?: new File(projectDir, '../../GhidraBoy/build/libs/GhidraBoy-20260905-suite1.jar').absolutePath
-if (!file(providerJar).isFile()) throw new GradleException('Build maintained GhidraBoy first or set GHIDRABOY_JAR')
-dependencies { compileOnly files(providerJar) }
+// The separate static extension remains the sole provider at runtime.
+// In the unified build, Gradle selects and builds the exact provider artifact.
+if (project != rootProject) {
+    dependencies { compileOnly project(':') }
+} else {
+    // Retain explicit standalone consumer builds; never guess a sibling/datestamped JAR.
+    def providerJar = System.getenv('GHIDRABOY_JAR')
+    if (!providerJar || !file(providerJar).isFile()) {
+        throw new GradleException('Use the root wrapper with -PwithDebugger, or supply GHIDRABOY_JAR explicitly')
+    }
+    dependencies { compileOnly files(providerJar) }
+}
 tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
 
 // Release identity is stable across rebuild dates.
-tasks.named('buildExtension') { archiveFileName = 'ghidra_12.1.3_PUBLIC_20260905_GhiGBC.zip' }
+tasks.named('buildExtension') {
+    def release = project == rootProject ? 'standalone' : rootProject.version.toString()
+    archiveFileName = "ghidra_${ghidra_version}_${RELEASE_NAME}_${release}_GhiGBC.zip"
+}
