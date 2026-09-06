@@ -29,6 +29,7 @@ public class UiActionTest {
         @Override protected void shutdown(){}
     }
     static Path root;
+    static final Queue<Throwable> asyncErrors=new ConcurrentLinkedQueue<>();
     static Trace trace;
     static long snap(){Long latest=trace.getTimeManager().getMaxSnap();return latest==null?Long.MIN_VALUE:latest;}
     static TraceObject object(String path){return trace.getObjectManager().getObjectByCanonicalPath(KeyPath.parse(path));}
@@ -54,7 +55,11 @@ public class UiActionTest {
         root=Path.of(args[0]).toAbsolutePath().normalize();
         try{
             PrintStream output=new PrintStream(root.resolve("docs/evidence/ui-actions.log").toFile());System.setOut(output);System.setErr(output);
-            run(args);System.exit(0);
+            Thread.setDefaultUncaughtExceptionHandler((thread,error)->{asyncErrors.add(error);error.printStackTrace();});
+            run(args);
+            Swing.runNow(()->{});
+            if(!asyncErrors.isEmpty())throw new AssertionError("Uncaught asynchronous UI errors: "+asyncErrors.size());
+            System.out.println("UI_ACTIONS_CLEANUP_PASSED");System.exit(0);
         }catch(Throwable failure){failure.printStackTrace();System.exit(1);}
     }
     static void run(String[] args)throws Exception{
@@ -124,6 +129,16 @@ public class UiActionTest {
             if(!comment.contains("Existing student observation"))throw new AssertionError("Student observation was overwritten");
             System.out.println("PASS existing student bookmark text preserved");
             connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+            if(Arrays.asList(args).contains("--extended")) {
+                Path completion=root.resolve("docs/evidence/ui-extended-complete.txt");
+                if(Files.exists(completion))throw new AssertionError("Use a fresh runtime for extended UI acceptance");
+                phase("extended","Perform final report, error recovery, selection, launch and control workflows through the UI; record physical observations separately, then write ui-extended-complete.txt to permit cleanup.");
+                long deadline=System.nanoTime()+TimeUnit.MINUTES.toNanos(90);
+                while(!Files.exists(completion)&&System.nanoTime()<deadline)Thread.sleep(250);
+                if(!Files.exists(completion))throw new AssertionError("Extended physical UI acceptance was not completed");
+                // This marker permits teardown only. The separate physical receipt qualifies the extra workflows.
+                System.out.println("EXTENDED_UI_TEARDOWN_REQUESTED "+Files.readString(completion));
+            }
             phase("passed","UI_ACTIONS_PASSED");System.out.println("UI_ACTIONS_PASSED");
             connection.getMethods().get("kill").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
             connection.waitClosed();

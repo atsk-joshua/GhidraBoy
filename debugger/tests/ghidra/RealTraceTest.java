@@ -27,6 +27,31 @@ public class RealTraceTest {
     static Trace trace;
     static IdleCleanup activeCleanup;
     static final Queue<Throwable> asyncErrors=new ConcurrentLinkedQueue<>();
+    static void installAsyncErrorCollector() {
+        asyncErrors.clear();
+        System.out.println("OWNED_PROCESS jvm="+ProcessHandle.current().pid());
+        Thread.setDefaultUncaughtExceptionHandler((thread,error)->{
+            asyncErrors.add(error);
+            System.err.println("UNCAUGHT_JVM_ERROR thread="+thread.getName());
+            error.printStackTrace();
+        });
+    }
+    static void injectAsyncErrorIfRequested(String[] args)throws Exception {
+        if(!Arrays.asList(args).contains("--inject-uncaught-awt"))return;
+        java.awt.EventQueue.invokeLater(()->{throw new AssertionError("INJECTED_UNCAUGHT_AWT_ERROR");});
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+        while(asyncErrors.isEmpty()&&System.nanoTime()<deadline)Thread.sleep(10);
+        require(!asyncErrors.isEmpty(),"injected AWT error reaches the shared JVM collector");
+    }
+    static void assertNoAsyncErrors() {
+        Swing.runNow(()->{});
+        if(!asyncErrors.isEmpty()) {
+            var failure=new AssertionError("Uncaught asynchronous JVM errors: "+asyncErrors.size());
+            asyncErrors.forEach(failure::addSuppressed);
+            throw failure;
+        }
+        require(true,"no asynchronous JVM errors through cleanup");
+    }
     static TraceObject object(String path){return trace.getObjectManager().getObjectByCanonicalPath(KeyPath.parse(path));}
     static TraceObject latestEdit(){
         long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(15);
@@ -304,6 +329,31 @@ public class RealTraceTest {
         while(!connection.isClosed()&&System.nanoTime()<deadline)Thread.sleep(20);
         require(connection.isClosed(),"disconnected target closes its real RMI connection within the bound");
     }
+    static void renderRegisterTables(java.awt.Component component,int[] counts) {
+        if(component instanceof javax.swing.JTable table) {
+            for(int row=0;row<table.getRowCount();row++)for(int col=0;col<table.getColumnCount();col++) {
+                table.prepareRenderer(table.getCellRenderer(row,col),row,col);counts[0]++;
+            }
+        }
+        if(component instanceof java.awt.Container container)
+            for(var child:container.getComponents())renderRegisterTables(child,counts);
+    }
+    static void verifyRegistersVisible(GhidraTool tool,String phase) {
+        Swing.runNow(()->{
+            var provider=(ghidra.app.plugin.core.debug.gui.register.DebuggerRegistersProvider)tool.getComponentProvider("Registers");
+            require(provider!=null&&provider.isVisible(),phase+" keeps the register provider visible");
+            int[] counts={0};renderRegisterTables(provider.getComponent(),counts);
+            require(counts[0]>0,phase+" renders populated real register cells");
+            var current=provider.getCurrent().getTrace();var prior=provider.getPrevious().getTrace();
+            System.out.println("REGISTER_LIFETIME "+phase+" current="+System.identityHashCode(current)+" previous="+System.identityHashCode(prior)+" previous_closed="+(prior!=null&&prior.isClosed()));
+        });
+    }
+    static void awaitTraceClosed(Trace target)throws Exception {
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(10);
+        while(!target.isClosed()&&System.nanoTime()<deadline)Thread.sleep(20);
+        require(target.isClosed(),"terminated target trace is actually released by automatic close");
+        Swing.runNow(()->{});
+    }
     static void failureLifecycle(Path root,GhidraTool tool)throws Exception {
         failureLifecycle(root,tool,"sameboy");
     }
@@ -319,9 +369,11 @@ public class RealTraceTest {
                 builder.environment().put("PYTHONPATH",root.resolve("python").toString());
                 builder.redirectErrorStream(true);builder.redirectOutput(evidence(root).resolve(mode+"-agent.log").toFile());
                 Process process=builder.start();TraceRmiConnection connection=null;
+                System.out.println("OWNED_PROCESS backend="+backend+" phase="+mode+" agent="+process.pid());
                 try {
                     connection=acceptor.accept();trace=connection.waitForTrace(15000);waitCapture(0);
                     if(activeCleanup!=null)activeCleanup.rememberOwned();
+                    verifyRegistersVisible(tool,backend+" "+mode+" active");
                     String session=String.valueOf(attr("Machine","Session"));
                     long savedSnap=snap();
                     connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
@@ -349,6 +401,8 @@ public class RealTraceTest {
                     }
                     awaitClosed(connection);
                     require(process.waitFor(5,TimeUnit.SECONDS),mode+" leaves no owned agent process running");
+                    awaitTraceClosed(trace);
+                    verifyRegistersVisible(tool,backend+" "+mode+" after automatic trace close");
                     var reopened=(Trace)file.getReadOnlyDomainObject(RealTraceTest.class,-1,TaskMonitor.DUMMY);
                     try {
                         ByteBuffer value=ByteBuffer.allocate(1);
@@ -371,7 +425,7 @@ public class RealTraceTest {
         }
     }
     public static void main(String[] args) {
-        Thread.setDefaultUncaughtExceptionHandler((thread,error)->{asyncErrors.add(error);error.printStackTrace();});
+        installAsyncErrorCollector();
         try {runTest(args);}catch(Throwable error){error.printStackTrace();System.exit(1);}
     }
     public static void runTest(String[] args) throws Exception {
@@ -381,6 +435,7 @@ public class RealTraceTest {
         try{Class.forName("ghibw3.StudyPlugin");require(studyExpected,"optional study classes are present only in the selected consumer gate");}
         catch(ClassNotFoundException expected){require(!studyExpected,"generic classpath has no GhiBW3");}
         Application.initializeApplication(new GhidraApplicationLayout(new File(System.getenv().getOrDefault("GHIDRA_INSTALL_DIR",root.resolve(".deps/ghidra_11.3.1_PUBLIC").toString()))),testConfiguration());
+        injectAsyncErrorIfRequested(args);
         String projectName="TraceTest-"+System.currentTimeMillis();
         Files.createDirectories(root.resolve("build/projects"));
         Project project=new Manager().createProject(new ProjectLocator(root.resolve("build/projects").toString(),projectName),null,false);
@@ -636,7 +691,7 @@ public class RealTraceTest {
         }
         Swing.runNow(()->{});
         if(idle!=null)idle.afterClose();
-        require(asyncErrors.isEmpty(),"no asynchronous JVM errors through cleanup");
+        assertNoAsyncErrors();
         System.out.println("REAL_TRACE_TEST_PASSED");
         System.exit(0);
     }

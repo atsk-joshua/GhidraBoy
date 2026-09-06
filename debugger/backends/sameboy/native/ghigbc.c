@@ -150,6 +150,10 @@ static gc_machine *configure_machine(gc_machine *m) {
     /* RTC selectors are unknown, not RAM. MBC2 uses 512 physical nibble cells. */
     uint8_t mapper=m->gb->rom[0x147];
     if (!(mapper==0 || (mapper>=1&&mapper<=3) || mapper==5 || mapper==6 || (mapper>=0x0f&&mapper<=0x13) || (mapper>=0x19&&mapper<=0x1e))) {gc_destroy(m);return NULL;}
+    /* The core detects some multicarts from their content, overriding the header.
+       Never label an unsupported detected controller with the header's identity. */
+    unsigned expected_mapper=mapper==0?GB_NO_MBC:mapper<=3?GB_MBC1:mapper<=6?GB_MBC2:mapper<=0x13?GB_MBC3:GB_MBC5;
+    if (m->gb->cartridge_type->mbc_type != expected_mapper) {gc_destroy(m);return NULL;}
     GB_set_user_data(m->gb,m);GB_debugger_set_disabled(m->gb,true);GB_set_async_input_callback(m->gb,NULL);
     GB_set_execution_callback(m->gb,executed);m->gb->ghigbc_bus_callback=bus;
     m->gb->ghigbc_instruction_callback=before_opcode;

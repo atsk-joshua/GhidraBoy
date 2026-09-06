@@ -19,19 +19,40 @@ def sha(path):
 
 
 def run(command, cwd, env, log, timeout=300):
-    with log.open('w') as output:
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
-                                   stderr=subprocess.STDOUT, start_new_session=True)
-        try:
-            code = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGTERM)
+    record = dict(command=list(map(str, command)), cwd=str(cwd), started_at=time.time(),
+                  environment={key: env[key] for key in ('JAVA_HOME', 'GHIDRA_INSTALL_DIR',
+                      'GBC_PYTHON', 'GBC_EVIDENCE_DIR') if key in env},
+                  wrapper_pid=os.getpid(), pid=None, exit_code=None, status='STARTING')
+    receipt = log.with_suffix('.command.json')
+    def save():
+        temporary = receipt.with_suffix('.tmp')
+        temporary.write_text(json.dumps(record, indent=2) + '\n')
+        temporary.replace(receipt)
+    save()
+    try:
+        with log.open('w') as output:
+            process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
+                                       stderr=subprocess.STDOUT, start_new_session=True)
+            record.update(pid=process.pid, status='RUNNING'); save()
             try:
-                process.wait(timeout=5)
+                code = process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                process.wait()
-            raise RuntimeError(f'Timed out: {log}')
+                os.killpg(process.pid, signal.SIGTERM)
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait()
+                record.update(exit_code=process.returncode, status='TIMEOUT')
+                raise RuntimeError(f'Timed out: {log}')
+            record.update(exit_code=code, status='PASS' if code == 0 else 'FAIL')
+    except BaseException as error:
+        record['error'] = repr(error)
+        if record['status'] in ('STARTING', 'RUNNING'): record['status'] = 'WRAPPER_ERROR'
+        raise
+    finally:
+        record.update(ended_at=time.time(), log_sha256=sha(log) if log.exists() else None)
+        save()
     if code:
         raise RuntimeError(f'Command exited {code}: {log}')
 
@@ -50,6 +71,9 @@ def main():
     sources = [source / name for name in ('RealTraceTest.java', 'MappingContractTest.java')]
     receipt = dict(schema=1, scope='Matched latency measurements; no final release qualification',
                    harness={str(p): sha(p) for p in sources}, runs=[])
+    receipt['ghidra_jars'] = {str(p.relative_to(args.ghidra)): sha(p)
+                             for p in sorted(args.ghidra.rglob('*.jar')) if 'yajsw' not in str(p)}
+    (args.output / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
     for index in range(1, args.runs + 1):
         for label in ('baseline', 'candidate'):
             root = getattr(args, label).resolve()

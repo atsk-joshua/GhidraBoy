@@ -25,6 +25,9 @@ def runtime_dependencies(root):
             "sourceLockSha256": native["pristineSourceLockSha256"],
             "baseGhidraVersion": data["primaryGhidra"]["version"],
         }
+        java = data["debuggerJavaPatch"]
+        runtime["debugger_java"] = {key: value for key, value in java.items()
+                                    if key not in ("patch", "baselineSourceArchiveSha256")}
         return runtime
     # Extracted runtime packages carry a generated view, never a second source lock.
     return json.loads((root / "dependencies.lock.json").read_text())
@@ -70,4 +73,38 @@ def verify_native_decompiler(ghidra, requirement, platform):
     binary = directory / "os" / native_platform / "decompile"
     if not binary.is_file() or sha(binary) != identity.get("binarySha256"):
         raise ValueError("Selected native decompiler executable does not match its identity marker")
+    return dict(status="MATCHED", identity=identity)
+
+
+def verify_debugger_java(ghidra, requirement):
+    """Require the reviewed register-lifetime JAR and its declared identity."""
+    instruction = ("; use the copy-only updater: python3 scripts/debugger_dependency_update.py "
+                   "install --ghidra <source> --package <debugger-java-dependency.zip> "
+                   "--sha256 <trusted-package-sha256> --output <new-bundle>; then select "
+                   "<new-bundle>/distribution")
+    if not requirement:
+        raise ValueError("Missing debugger Java package requirement; rebuild the runtime package" + instruction)
+    if ghidra is None:
+        raise ValueError("Select the patched Ghidra distribution" + instruction)
+    selected = Path(ghidra).resolve()
+    directory = selected / "Ghidra/Debug/Debugger"
+    marker = directory / "ghidraboy-java-dependency.json"
+    jar = directory / "lib/Debugger.jar"
+    for path in (marker, jar):
+        for parent in (path, *path.parents):
+            if parent == selected:
+                break
+            if parent.is_symlink():
+                raise ValueError("Debugger Java dependency contains a symlink" + instruction)
+    if not marker.is_file():
+        raise ValueError("Missing GhidraBoy debugger Java dependency " + requirement["dependencyVersion"] + instruction)
+    try:
+        identity = json.loads(marker.read_text())
+    except (ValueError, OSError) as error:
+        raise ValueError("Unreadable debugger Java identity marker" + instruction) from error
+    expected = dict(requirement, schema="ghidraboy-debugger-java-dependency-v1")
+    if identity != expected:
+        raise ValueError("Selected debugger Java identity does not match the package requirement" + instruction)
+    if not jar.is_file() or sha(jar) != requirement["jarSha256"]:
+        raise ValueError("Selected Debugger.jar does not match the pinned Java dependency" + instruction)
     return dict(status="MATCHED", identity=identity)

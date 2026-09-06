@@ -74,5 +74,32 @@ class CGBDeviceTests(unittest.TestCase):
                 self.assertEqual(capture.events,())
                 self.assertEqual(capture.state['dropped'],0)
 
+    def test_mode3_cpu_bus_restrictions_preserve_physical_vram(self):
+        # Guest instructions, rather than debugger peeks, exercise CPU lockouts.
+        # Polling mode 3 leaves enough of its transfer interval for these accesses.
+        code=bytes.fromhex(
+            'f3 af e0 40 3e 44 ea 00 80 3e 55 ea 00 fe '
+            '3e 91 e0 40 f0 41 e6 03 fe 03 20 f8 '
+            'fa 00 80 ea 00 c0 3e 99 ea 00 80 '
+            'fa 00 fe ea 01 c0 3e 66 ea 00 fe 18 fe')
+        machine=self.machine(code)
+        setup=self.until(machine,0x15e)
+        self.assertEqual(setup.bank_bytes('vram',0)[0],0x44)
+        watch=machine.breakpoint('vram',0,0,kinds=4)
+        machine.prepare()
+        for _ in range(5000):
+            if machine.run_slice():
+                capture=machine.capture()
+                if capture.stop_reason=='watchpoint':break
+        else:self.fail('Blocked VRAM write was not observed within the bound')
+        self.assertEqual(capture.cpu_bytes[0xc000],0xff)
+        self.assertEqual(capture.bank_bytes('vram',0)[0],0x44)
+        event=capture.events[0]
+        self.assertEqual((event['value'],event['before'],event['after']),(0x99,0x44,0x44))
+        machine.remove(watch)
+        final=self.until(machine,0x150+len(code)-2)
+        self.assertEqual(final.cpu_bytes[0xc001],0xff)
+        self.assertEqual(final.state['dropped'],0)
+
 
 if __name__=='__main__':unittest.main()

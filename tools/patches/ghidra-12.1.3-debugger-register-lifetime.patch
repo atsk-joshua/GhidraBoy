@@ -1,0 +1,34 @@
+--- a/Ghidra/Debug/Debugger/src/main/java/ghidra/app/plugin/core/debug/gui/register/DebuggerRegistersProvider.java
++++ b/Ghidra/Debug/Debugger/src/main/java/ghidra/app/plugin/core/debug/gui/register/DebuggerRegistersProvider.java
+@@ -824,7 +824,10 @@
+ 			return false;
+ 		}
+ 
+-		previous = current;
++		// A trace can close before its queued activation event reaches this provider.
++		// Closed coordinates cannot serve as the register-change comparison baseline.
++		previous = current.getTrace() != null && current.getTrace().isClosed()
++				? DebuggerCoordinates.NOWHERE : current;
+ 		current = coordinates;
+ 
+ 		readTheseCoords.forget();
+@@ -839,11 +842,16 @@
+ 	}
+ 
+ 	protected void traceClosed(Trace trace) {
+-		if (isClone) {
+-			if (current.getTrace() == trace) {
+-				coordinatesActivated(DebuggerCoordinates.NOWHERE);
++		// The connected provider can still have the closing trace as its current or
++		// previous coordinates while the trace manager's activation event is queued.
++		if (current.getTrace() == trace) {
++			coordinatesActivated(DebuggerCoordinates.NOWHERE);
++			if (isClone) {
+ 				removeFromTool();
+ 			}
++		}
++		if (previous.getTrace() == trace) {
++			previous = DebuggerCoordinates.NOWHERE;
+ 		}
+ 	}
+ 

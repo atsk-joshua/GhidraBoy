@@ -85,5 +85,25 @@ if json.loads(a.manifest.read_text()).get('native_decompiler'):
     run('native-dependency-refused',[sys.executable,str(root/'scripts/install.py'),'--manifest',str(a.manifest),'--ghidra',str(unpatched),'--java-home',str(a.java_home),'--user-home',str(rejected)],1)
     assert 'Missing GhidraBoy native decompiler dependency' in (a.work/'native-dependency-refused.log').read_text()
     assert not rejected.exists()
+# Java dependency checks use a small version/wheel/native-matched distribution.
+# Both missing marker and corrupted JAR must fail before creating the user's home.
+if json.loads(a.manifest.read_text()).get('debugger_java'):
+    rejected_ghidra=a.work/'unpatched-java-ghidra'
+    (rejected_ghidra/'Ghidra').mkdir(parents=True)
+    shutil.copy2(a.ghidra/'Ghidra/application.properties',rejected_ghidra/'Ghidra/application.properties')
+    for relative in ('Ghidra/Debug/Debugger-rmi-trace/pypkg/dist','Ghidra/Features/Decompiler'):
+        shutil.copytree(a.ghidra/relative,rejected_ghidra/relative)
+    rejected=a.work/'java-rejected-home'
+    command=[sys.executable,str(root/'scripts/install.py'),'--manifest',str(a.manifest),'--ghidra',str(rejected_ghidra),'--java-home',str(a.java_home),'--user-home',str(rejected)]
+    run('java-dependency-refused',command,1)
+    assert 'Missing GhidraBoy debugger Java dependency' in (a.work/'java-dependency-refused.log').read_text()
+    assert not rejected.exists()
+    directory='Ghidra/Debug/Debugger'
+    (rejected_ghidra/directory/'lib').mkdir(parents=True)
+    shutil.copy2(a.ghidra/directory/'ghidraboy-java-dependency.json',rejected_ghidra/directory/'ghidraboy-java-dependency.json')
+    (rejected_ghidra/directory/'lib/Debugger.jar').write_bytes(b'corrupt')
+    run('java-jar-corruption-refused',command,1)
+    assert 'Debugger.jar does not match' in (a.work/'java-jar-corruption-refused.log').read_text()
+    assert not rejected.exists()
 (a.work/'results.json').write_text(json.dumps(results,indent=2)+'\n')
 print(json.dumps({'status':'PASS','checks':len(results),'results':str(a.work/'results.json')}))

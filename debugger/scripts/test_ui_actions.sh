@@ -24,4 +24,4 @@ else
   "$JAVA_HOME/bin/javac" -proc:none -cp "$ui_classpath" -d "$ui_classes" tests/ghidra/UiActionTest.java
 fi
 printf '%s\n' 'Follow docs/UI_ACTION_VALIDATION.md; phases are written to docs/evidence/ui-action-phase.txt.'
-"$JAVA_HOME/bin/java" -Duser.home="$ui_home" -cp "$ui_classes:$ui_classpath" "$ui_test" "$PWD" "$GHIDRA_INSTALL_DIR"
+"$JAVA_HOME/bin/java" -Duser.home="$ui_home" -cp "$ui_classes:$ui_classpath" "$ui_test" "$PWD" "$GHIDRA_INSTALL_DIR" "$@"

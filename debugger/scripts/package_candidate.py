@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 import zipfile
 
@@ -37,11 +38,19 @@ def main(default_platform=None):
     p.add_argument('--provider',type=Path,help='Compatibility override; must match the verified provider artifact')
     p.add_argument('--ghidra',required=True,type=Path)
     p.add_argument('--jdk',required=True,type=Path)
+    p.add_argument('--debugger-java-package',type=Path,help='Optional verified copy-only Java dependency companion ZIP')
+    p.add_argument('--debugger-java-package-sha256',help='Trusted SHA256 from companion build receipt')
     p.add_argument('--platform',required=default_platform is None,default=default_platform,choices=['macos-arm64','linux-x86_64'])
     a=p.parse_args()
     backends=['sameboy','mgba'] if a.backend=='both' else [a.backend]
     products,inputs=artifact_inputs(REPOSITORY,a.artifacts)
     lock=runtime_dependencies(ROOT)
+    if bool(a.debugger_java_package) != bool(a.debugger_java_package_sha256):
+        p.error('Specify both --debugger-java-package and --debugger-java-package-sha256')
+    if a.debugger_java_package:
+        sys.path.insert(0,str(REPOSITORY/'tools'))
+        from debugger_dependency_update import read_package
+        read_package(a.debugger_java_package,a.debugger_java_package_sha256)
     for backend in set(('sameboy','mgba'))-set(backends):lock.pop(backend,None)
     if products['ghidra']!=lock['ghidra']['version']:raise ValueError('Build/dependency Ghidra mismatch')
     release=products['release']
@@ -124,10 +133,16 @@ def main(default_platform=None):
     for relative in ('scripts/test_ui_actions.sh','scripts/test_display_runtime.py','scripts/test_installer.py','scripts/test_native.sh','scripts/run_native_tests.py','scripts/test_ghidra.sh','scripts/test_backend_trace.sh','scripts/test_java_common.sh','scripts/test_observation_report.sh','scripts/test_research_experiment.sh','scripts/prepare_runtime.py','scripts/deck_handoff.py','scripts/collect_results.py'):
         copy(ROOT/relative,relative)
     copy(REPOSITORY/'tools/native_dependency_update.py','scripts/native_dependency_update.py')
+    copy(REPOSITORY/'tools/debugger_dependency_update.py','scripts/debugger_dependency_update.py')
+    runtime_files.append('scripts/debugger_dependency_update.py')
+    if a.debugger_java_package:
+        copy(a.debugger_java_package,'dependencies/debugger-java-dependency.zip')
     for source in (ROOT/'tests').glob('test_*.py'):
         if 'sameboy' in backends and source.name!='test_mgba.py' and source.relative_to(REPOSITORY).as_posix() in tracked:copy(source,source.relative_to(ROOT))
     if 'mgba' in backends:copy(ROOT/'tests/test_mgba.py','tests/test_mgba.py')
-    copy(ROOT/'tests/test_package_selection.py','tests/test_package_selection.py')
+    for name in ('test_package_selection.py','shared_profile_fixture.py'):
+        copy(ROOT/'tests'/name,'tests/'+name)
+    if 'sameboy' in backends:copy(ROOT/'tests/test_mapper_geometry.py','tests/test_mapper_geometry.py')
     # The precompiled experiment records these exact sources as provenance.
     # They are data inputs at runtime; no compiler or source checkout is needed.
     for relative in ('tests/fixtures/banks.asm','tests/ghidra/ResearchExperimentTest.java'):
@@ -175,6 +190,9 @@ def main(default_platform=None):
                 source[repo.name]['files'][name]=sha(file)
     manifest=dict(schema=1,kind='generic',version=release+'-candidate',ghidra=products['ghidra'],platform=a.platform,python_requirement='>=3.9',python_selection='Existing system python3, or explicit GBC_PYTHON/--python; verified by capability and installed-runtime checks',native_abi=1,checkpoint_schema=2,profile_api=1,mapping_schema=2,python_wheels=wheels,runtime_files=sorted(set(runtime_files)),extensions=[dict(name='GhidraBoy',path='extensions/'+provider.name),dict(name='GhiGBC',path='extensions/'+debugger.name)],sources=source,files=copies)
     manifest['native_decompiler']=lock['native_decompiler']
+    manifest['debugger_java']=lock['debugger_java']
+    if a.debugger_java_package:
+        manifest['debugger_java_companion']=dict(path='dependencies/debugger-java-dependency.zip',sha256=a.debugger_java_package_sha256)
     manifest['backends']=backends
     manifest['default_backend']=backends[0]
     (stage/'suite.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')

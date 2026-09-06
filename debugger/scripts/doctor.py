@@ -3,7 +3,7 @@
 import argparse, ctypes, hashlib, json, os, platform, re, shutil, socket, subprocess
 import ctypes.util
 from pathlib import Path
-from build_inputs import runtime_dependencies, verify_native_decompiler
+from build_inputs import runtime_dependencies, verify_native_decompiler, verify_debugger_java
 root=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser();p.add_argument('--ghidra',type=Path,default=os.environ.get('GHIDRA_INSTALL_DIR'));p.add_argument('--rom',type=Path);p.add_argument('--user-home',type=Path,default=Path(os.environ.get('GBC_TEST_HOME',str(Path.home()))));p.add_argument('--java-home',type=Path,default=os.environ.get('JAVA_HOME'));p.add_argument('--require-ready',action='store_true');a=p.parse_args()
 report={'host':platform.node(),'os':platform.system(),'architecture':platform.machine(),'python':platform.python_version(),'ghidra':None,'native':False,'display':bool(os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY') or platform.system()=='Darwin'),'loopback':False}
@@ -61,7 +61,11 @@ try:
  report['native_decompiler']=verify_native_decompiler(a.ghidra,requirement,lane)
  report['native_decompiler_usable']=report['native_decompiler']['status']=='MATCHED'
 except Exception as error:report['native_decompiler_usable']=False;report['native_decompiler_error']=str(error)
-report['ready_for_generic_tests']=report['native'] and report['ghidra']=='12.1.3' and report['loopback'] and report['java_usable'] and report.get('ghidratrace_client')=='12.1' and report.get('protobuf')=='6.31.0' and len(report['sm83_definitions'])==1 and report['native_decompiler_usable']
+try:
+ report['debugger_java']=verify_debugger_java(a.ghidra,runtime_dependencies(root).get('debugger_java'))
+ report['debugger_java_usable']=report['debugger_java']['status']=='MATCHED'
+except Exception as error:report['debugger_java_usable']=False;report['debugger_java_error']=str(error)
+report['ready_for_generic_tests']=report['native'] and report['ghidra']=='12.1.3' and report['loopback'] and report['java_usable'] and report.get('ghidratrace_client')=='12.1' and report.get('protobuf')=='6.31.0' and len(report['sm83_definitions'])==1 and report['native_decompiler_usable'] and report['debugger_java_usable']
 report['ready_for_desktop_validation']=report['ready_for_generic_tests'] and report['display'] and report['sdl2_available']
 print(json.dumps(report,indent=2))
 
