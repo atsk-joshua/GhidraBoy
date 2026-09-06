@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import socket
+import shutil
 import subprocess
 import time
 
@@ -77,12 +78,19 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
     work = args.work.resolve()
+    if work.is_relative_to(args.jar.resolve().parent):
+        parser.error("Work directory must be outside the supplied emulator directory")
     work.mkdir(parents=True, exist_ok=False)
+    emulator = work / "emulator"
+    shutil.copytree(args.jar.resolve().parent, emulator, ignore=shutil.ignore_patterns("Emulicious.ini"))
+    # The inspected vendor startup handler uses Update=0 for no update checks.
+    # Pin the test copy and avoid its first-run modal; never change the supplied app's settings.
+    (emulator / "Emulicious.ini").write_text("Update=0\nAudioSync=false\n")
     with socket.socket() as reservation:
         reservation.bind(("127.0.0.1", 0))
         port = reservation.getsockname()[1]
     command = [str(args.java.resolve()), "-Duser.home=" + str(work / "home"),
-               "-jar", str(args.jar.resolve()), "-remotedebug", str(port)]
+               "-jar", str(emulator / args.jar.name), "-remotedebug", str(port), "-muted"]
     result = dict(schema=1, status="RUNNING", command=command, scope="M1 external attachment feasibility",
                   jarSha256=hashlib.sha256(args.jar.read_bytes()).hexdigest(),
                   romSha256=hashlib.sha256(args.rom.read_bytes()).hexdigest())
@@ -134,6 +142,14 @@ def main():
             result["status"] = "PASS"
         except Exception as error:
             result.update(status="FAIL", error=str(error))
+            jcmd = args.java.resolve().with_name("jcmd")
+            if process.poll() is None and jcmd.is_file():
+                with (work / "threads.log").open("w") as threads:
+                    try:
+                        subprocess.run([str(jcmd), str(process.pid), "Thread.print"],
+                                       stdout=threads, stderr=subprocess.STDOUT, timeout=5, check=False)
+                    except subprocess.TimeoutExpired:
+                        result["threadDiagnostic"] = "TIMED_OUT"
         finally:
             if dap:
                 (work / "dap.json").write_text(json.dumps(dap.messages, indent=2) + "\n")
