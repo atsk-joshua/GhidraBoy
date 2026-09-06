@@ -8,7 +8,27 @@ The integrated candidate requires the matching GhidraBoy native decompiler updat
 python3 scripts/native_dependency_update.py install --source "/path/to/ghidra_12.1.3_PUBLIC" --package "/path/to/native-platform.zip" --package-sha256 "EXPECTED_SHA256" --output "/path/to/new-ghidra-bundle"
 ```
 
-Then select the new bundle's `distribution` directory for Setup. The updater preserves the source installation; Setup does not patch it or download a native executable. Keep the native archive and updater receipt for verified rollback. Native companion binaries remain separate platform artifacts and require their own release acceptance.
+The debugger also requires **12.1.3+ghidraboy.register-lifetime.1**, a separate
+Ghidra Java correction for register rendering after target/trace closure. Apply
+the included platform-independent companion to a new copy of the distribution
+that already has the native decompiler update:
+
+```sh
+python3 scripts/debugger_dependency_update.py install --ghidra "/canonical/path/to/native-bundle/distribution" --package dependencies/debugger-java-dependency.zip --sha256 9bf8b95ad0eca51c7ffc78f91943fdf58b3e92a6727dbe12ac6ff18343f970a2 --output "/canonical/path/to/new-debugger-bundle"
+```
+
+Select that new bundle's `distribution` directory for Setup. Both updaters
+preserve their source installation; Setup verifies both dependency identities
+and never patches the chosen distribution in place. The Java companion includes
+the matching source, patch and exact original JAR for rollback. Its updater
+requires canonical paths (on macOS use `/private/tmp`, not `/tmp`).
+
+To undo the Java update, use the same command with `rollback`, the updated
+distribution as `--ghidra`, and another unused output directory. This restores
+the original JAR in a new copy; the current debugger installer will correctly
+reject that unpatched copy. Keep the companion archives and updater receipts.
+Native companion binaries remain separate platform artifacts with their own
+acceptance evidence. Static-only GhidraBoy does not require the debugger Java fix.
 
 ```sh
 bash Setup.sh --ghidra "/path with spaces/ghidra_12.1.3_PUBLIC" --java-home "/path/to/jdk-21"

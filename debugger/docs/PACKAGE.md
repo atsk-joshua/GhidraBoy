@@ -2,7 +2,9 @@
 
 Integration candidate for Game Boy/Game Boy Color debugging with Ghidra 12.1.3, Java 21 and an existing Python 3.9+ interpreter. This package contains the static GhidraBoy extension, the compatible debugger extension, the selected prebuilt emulator runtime(s), and synthetic validation fixtures. `suite.json` records `sameboy`, experimental `mgba`, or both; the default build selects SameBoy.
 
-Use [installation and rollback](docs/INSTALL.md) to select the correct Ghidra distribution and native decompiler companion. With Ghidra closed:
+Use [installation and rollback](docs/INSTALL.md) to prepare a Ghidra distribution
+with the native decompiler companion and included register-lifetime Java
+companion. Both updates create new distribution copies. With Ghidra closed:
 
 ```sh
 bash Setup.sh --ghidra "/path/to/selected/distribution" --java-home "/path/to/java-21"
@@ -17,6 +19,10 @@ Restart Ghidra, import a supported ROM, open its Debugger tool, and select the l
 - [Static/live mapping](docs/contracts/mapping.md)
 - [Optional research profiles](docs/contracts/profiles.md)
 
-The archive's `suite.json` records exact file identities, dependencies and required native decompiler metadata. Python dependencies are installed offline in an isolated environment. No compiler, Gradle, RGBDS or source checkout is required on the runtime host. Game-specific GhiBW3 profiles remain optional and require a matched composition.
+The archive's `suite.json` records exact file identities, dependencies and required
+native decompiler and debugger Java metadata. Python dependencies are installed
+offline in an isolated environment. No compiler, Gradle, RGBDS or source checkout
+is required on the runtime host. Game-specific GhiBW3 profiles remain optional
+private household tooling and require a matched composition.
 
 Component attribution and licenses are retained under LICENSES. Packages including mGBA also carry complete pinned corresponding source and rebuild instructions in docs/MGBA_SOURCE.md. Private ROMs, Programs, saves and checkpoints are not distributed.

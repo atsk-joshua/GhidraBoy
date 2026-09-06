@@ -17,6 +17,10 @@ and portable observation reports can be reopened without the original backend.
 
 SameBoy MBC2 exposes 512 low-nibble storage cells; mirrored CPU reads retain their
 high nibble. RTC/device selections and unsupported geometries remain explicit.
+Core-detected controller changes are rejected: a header that the engine
+reinterprets as a different mapper is not reported as the header's mapper.
+This includes ambiguous 32 KiB type-11 MBC3 images detected as MMM01 and oversized
+ROM-only images. Multicart wiring is not qualified by ordinary mapper tests.
 Watches distinguish attempted CPU accesses from final instruction-boundary bytes;
 DMA/HDMA writer attribution and per-access commit timing are not claimed.
 
