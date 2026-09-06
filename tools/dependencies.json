@@ -46,5 +46,46 @@
     "pristineSourceLock": "tools/patches/ghidra-12.1.3-decompiler-source.json",
     "pristineSourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9",
     "officialNative": false
+  },
+  "debuggerRuntime": {
+    "sameboy": {
+      "version": "1.0.3",
+      "commit": "208ba4afabffab9edde416f2dbb8ae459e34adb8",
+      "patch_sha256": "a352600754f52b4b4d9118b1e17c00396374f0581e6f225508d8056691f27f6d",
+      "build": "make lib CONF=release; make bootroms CONF=release",
+      "repository": "https://github.com/LIJI32/SameBoy.git",
+      "patch": "native/patches/0001-cpu-bus-provenance.patch"
+    },
+    "rgbds": {
+      "version": "1.0.1",
+      "commit": "92bfe5d930c07dd4672b148f811305aa294d6e6f"
+    },
+    "python": {
+      "ghidratrace": "12.1",
+      "protobuf": "6.31.0",
+      "tested": {
+        "macos-arm64": "3.14",
+        "linux-x86_64": "3.13"
+      }
+    },
+    "downloads": {
+      "rgbds-macos.zip": {
+        "sha256": "2f6f13c6ec984313656c07b08d97dfcd3a471c7d3901d3ff486e5814bb503645",
+        "size": 1022408,
+        "url": "https://github.com/gbdev/rgbds/releases/download/v1.0.1/rgbds-macos.zip"
+      },
+      "rgbds-linux-x86_64.tar.xz": {
+        "url": "https://github.com/gbdev/rgbds/releases/download/v1.0.1/rgbds-linux-x86_64.tar.xz",
+        "sha256": "80a5cad8dae27e24e46a93041352c47cadbc165103983f41c2b3082c42f6dad9",
+        "size": 1399916
+      }
+    },
+    "cross_compiler": {
+      "name": "zig",
+      "version": "0.14.1",
+      "archive_sha256": "39f3dc5e79c22088ce878edc821dedb4ca5a1cd9f5ef915e9b3cc3053e8faefa",
+      "target": "x86_64-linux-gnu.2.28",
+      "url": "https://ziglang.org/download/0.14.1/zig-aarch64-macos-0.14.1.tar.xz"
+    }
   }
 }

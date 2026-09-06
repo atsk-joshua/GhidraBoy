@@ -2,6 +2,14 @@
 
 Extract the platform archive in your home folder. Keep Ghidra closed while changing its extensions. Use the existing system Python3.9+ (including the Python already on Steam Deck), Ghidra **12.1.3**, and Java21. No compiler, Gradle, RGBDS, root access, SteamOS read-only change, or global JVM library-path change is required.
 
+The integrated candidate requires the matching GhidraBoy native decompiler update, `12.1.3+ghidraboy.switch-recovery.2`, for its static decompiler fixes. Setup verifies the selected distribution's identity marker and executable hash before changing any user directories. If the update is absent, use the separately supplied native archive and its trusted build/release SHA256 with the included copy-only updater:
+
+```sh
+python3 scripts/native_dependency_update.py install --source "/path/to/ghidra_12.1.3_PUBLIC" --package "/path/to/native-platform.zip" --package-sha256 "EXPECTED_SHA256" --output "/path/to/new-ghidra-bundle"
+```
+
+Then select the new bundle's `distribution` directory for Setup. The updater preserves the source installation; Setup does not patch it or download a native executable. Keep the native archive and updater receipt for verified rollback. Native companion binaries remain separate platform artifacts and require their own release acceptance.
+
 ```sh
 bash Setup.sh --ghidra "/path with spaces/ghidra_12.1.3_PUBLIC" --java-home "/path/to/jdk-21"
 ```

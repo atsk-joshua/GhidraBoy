@@ -3,9 +3,10 @@
 import argparse,hashlib,importlib.util,json,os,shutil,subprocess,sys,tempfile
 from pathlib import Path
 p=argparse.ArgumentParser()
-for name in ('manifest','study','ghidra','java-home','work'):p.add_argument('--'+name,type=Path,required=True)
+for name in ('manifest','study','ghidra','java-home','work'):p.add_argument('--'+name,type=Path,required=name!='study')
 a=p.parse_args();a.work.mkdir(parents=True,exist_ok=False)
-root=Path(__file__).resolve().parents[1]
+root=a.manifest.resolve().parent
+sys.path.insert(0,str(root/'scripts'))
 spec=importlib.util.spec_from_file_location('suite_installer',root/'scripts/install.py');installer=importlib.util.module_from_spec(spec);spec.loader.exec_module(installer)
 home=a.work/'home with spaces';home.mkdir()
 settings=home/('Library/ghidra' if sys.platform=='darwin' else '.config/ghidra')/'ghidra_12.1.3_PUBLIC'
@@ -30,23 +31,30 @@ run('crash-after-install',base,86,{'GBC_INSTALL_FAIL_AFTER':'install:GhiGBC'})
 interrupted=sorted((settings/'GhiGBC-rollback').glob('*/manifest.json'))[-1]
 run('recover-second',[sys.executable,str(root/'scripts/install.py'),'--recover',str(interrupted)])
 assert installer.hashes(settings/'Extensions')==active
-study=run('install-study',base+['--study',str(a.study)])
-assert (Path(study['runtime'])/'python/ghibw3/profile.py').exists()
-assert (settings/'Extensions/GhiBW3Live').is_dir()
-removed=run('remove-study',base+['--remove-study'])
-assert not (settings/'Extensions/GhiBW3Live').exists() and not (Path(removed['runtime'])/'profiles.json').exists()
+if a.study:
+    study=run('install-study',base+['--study',str(a.study)])
+    assert (Path(study['runtime'])/'python/ghibw3/profile.py').exists()
+    assert (settings/'Extensions/GhiBW3Live').is_dir()
+    removed=run('remove-study',base+['--remove-study'])
+    assert not (settings/'Extensions/GhiBW3Live').exists() and not (Path(removed['runtime'])/'profiles.json').exists()
+    run('self-rollback',[sys.executable,str(Path(removed['runtime'])/'scripts/install.py'),'--rollback',removed['rollback_manifest']])
+    assert (settings/'Extensions/GhiBW3Live').exists()
+    protected=study
+else:
+    upgraded=run('upgrade',base)
+    run('self-rollback',[sys.executable,str(Path(upgraded['runtime'])/'scripts/install.py'),'--rollback',upgraded['rollback_manifest']])
+    assert installer.hashes(settings/'Extensions')==active
+    protected=first
 assert (settings/'Extensions/Unrelated/notes.txt').read_text()=='unrelated\n'
-# Rollback from the installed runtime restores the optional composition.
-run('self-rollback',[sys.executable,str(Path(removed['runtime'])/'scripts/install.py'),'--rollback',removed['rollback_manifest']])
-assert (settings/'Extensions/GhiBW3Live').exists()
 # A user edit must reject rollback before any other managed extension is changed.
 marker=settings/'Extensions/GhiGBC/user-change.txt';marker.write_text('must not delete\n')
 before=installer.hashes(settings/'Extensions')
-run('user-edit-refused',[sys.executable,str(root/'scripts/install.py'),'--rollback',study['rollback_manifest']],1)
+run('user-edit-refused',[sys.executable,str(root/'scripts/install.py'),'--rollback',protected['rollback_manifest']],1)
 assert installer.hashes(settings/'Extensions')==before
 # Remove only this test-authored marker so the valid rollback can be exercised.
 marker.unlink()
-run('rollback-study',[sys.executable,str(root/'scripts/install.py'),'--rollback',study['rollback_manifest']])
+if a.study:
+    run('rollback-study',[sys.executable,str(root/'scripts/install.py'),'--rollback',study['rollback_manifest']])
 assert installer.hashes(settings/'Extensions')==active
 run('rollback-original',[sys.executable,str(root/'scripts/install.py'),'--rollback',first['rollback_manifest']])
 assert (settings/'Extensions/GhiGBC/original-user-file.txt').read_text()=='preserve original user work\n'
@@ -56,5 +64,17 @@ copied=a.work/'corrupt-package';shutil.copytree(a.manifest.parent,copied)
 relative=json.loads(a.manifest.read_text())['runtime_files'][0];(copied/relative).write_bytes(b'corrupt')
 run('hash-refused',[sys.executable,str(root/'scripts/install.py'),'--manifest',str(copied/a.manifest.name),'--ghidra',str(a.ghidra),'--java-home',str(a.java_home),'--user-home',str(a.work/'rejected-home')],1)
 assert not (a.work/'rejected-home').exists()
+# The native dependency guard must reject an otherwise version/wheel-matched
+# distribution before creating the selected user home or installing anything.
+if json.loads(a.manifest.read_text()).get('native_decompiler'):
+    unpatched=a.work/'unpatched-ghidra'
+    (unpatched/'Ghidra').mkdir(parents=True)
+    shutil.copy2(a.ghidra/'Ghidra/application.properties',unpatched/'Ghidra/application.properties')
+    wheels='Ghidra/Debug/Debugger-rmi-trace/pypkg/dist'
+    shutil.copytree(a.ghidra/wheels,unpatched/wheels)
+    rejected=a.work/'native-rejected-home'
+    run('native-dependency-refused',[sys.executable,str(root/'scripts/install.py'),'--manifest',str(a.manifest),'--ghidra',str(unpatched),'--java-home',str(a.java_home),'--user-home',str(rejected)],1)
+    assert 'Missing GhidraBoy native decompiler dependency' in (a.work/'native-dependency-refused.log').read_text()
+    assert not rejected.exists()
 (a.work/'results.json').write_text(json.dumps(results,indent=2)+'\n')
 print(json.dumps({'status':'PASS','checks':len(results),'results':str(a.work/'results.json')}))

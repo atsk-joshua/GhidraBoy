@@ -14,6 +14,7 @@ import sys
 import zipfile
 
 from runtime_python import check_runtime, prepare_environment
+from build_inputs import verify_native_decompiler
 
 ROOT=Path(__file__).resolve().parents[1]
 MANAGED={'GhidraBoy','GhiGBC','GhiBW3Static','GhiBW3Live'}
@@ -144,6 +145,7 @@ def main():
         if digest(args.ghidra/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist'/name)!=sha:raise ValueError('Selected Ghidra wheel hash mismatch: '+name)
     system=platform.system();arch=platform.machine().lower();target=('macos-arm64' if system=='Darwin' and arch=='arm64' else 'linux-x86_64' if system=='Linux' and arch in ('x86_64','amd64') else 'unsupported')
     if manifest['platform']!=target:raise ValueError('Wrong native package for '+system+'/'+arch)
+    verify_native_decompiler(args.ghidra,manifest.get('native_decompiler'),target)
     python_info=check_runtime(args.python)
     java=subprocess.run([str(args.java_home/'bin/java'),'-version'],text=True,capture_output=True,check=True)
     if 'version "21.' not in java.stderr+java.stdout:raise ValueError('This candidate requires tested JDK/JRE21')

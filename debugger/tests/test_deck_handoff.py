@@ -28,8 +28,8 @@ class DeckHandoffTests(unittest.TestCase):
             root = Path(folder)
             (root/'Ghidra').mkdir()
             props = root/'Ghidra/application.properties'
-            props.write_text('application.version=12.1.3\n')
-            with self.assertRaisesRegex(RuntimeError, '12.1.2 is required'):
-                choose_ghidra(str(root))
             props.write_text('application.version=12.1.2\n')
+            with self.assertRaisesRegex(RuntimeError, '12.1.3 is required'):
+                choose_ghidra(str(root))
+            props.write_text('application.version=12.1.3\n')
             self.assertEqual(choose_ghidra(str(root)), root.resolve())

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-export PATH="$PWD/.deps/rgbds-bin:/opt/homebrew/opt/sdl2/bin:$PATH"
+export PATH="$PWD/.deps/rgbds-bin:$PATH"
 make -C .deps/SameBoy -j "${JOBS:-4}" lib CONF=release
 make -C .deps/SameBoy -j "${JOBS:-4}" bootroms CONF=release
 mkdir -p build

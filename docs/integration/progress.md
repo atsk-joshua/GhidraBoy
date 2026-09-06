@@ -60,8 +60,27 @@ The root wrapper now optionally includes `GhiGBC` with `-PwithDebugger=true`. It
 
 Final public-wrapper build and Kotlin script checks passed (`unified-wrapper-final.log`); static-only project/configuration checks passed and explicitly list no subprojects (`static-configuration-final.log`). `unified-artifacts.json` retains the verified output identities. Archive inspection confirms exactly `GhiGBC/lib/GhiGBC.jar`, no duplicate provider classes, and no second SM83 language in the debugger archive.
 
-M3 is not complete. Remaining work includes canonical dependency locks, source-independent native/bootstrap setup, runtime packaging driven by the artifact manifest, consolidation of old 12.1.2 handoff helpers, exclusion of unrelated untracked documentation from release packaging, and clean-checkout/package/rollback checks. The root provider ZIP's existing broad docs copy currently includes untracked docs; it must be corrected before any release qualification. No generated integration archive is being declared a release.
+M3's macOS build/package work is implemented and verified; Linux package qualification remains open. No generated integration archive is being declared a release.
+
+### M3 dependency, package and clean-build checks
+
+The root `tools/dependencies.json` is now the canonical dependency source. The debugger's duplicate source lock was removed; runtime packages receive a generated view. Bootstrap uses the existing interpreter, creates a pipless environment, verifies pinned downloads and the complete SameBoy source diff, and refuses extra source edits or symlink destinations. It no longer downloads a separate Gradle distribution or assumes a neighboring repository.
+
+Packaging consumes the hash-verified root artifact manifest, uses one packager for ordinary/Linux compatibility commands, and copies only selected tracked runtime sources. The static documentation payload is explicitly listed in `packaging/static-docs.txt`; unrelated untracked reports and internal migration ledgers are excluded. Install-facing READMEs are separate from developer build instructions. Internal migration and evidence directories are excluded from the source-hash payload to avoid circular artifact identities.
+
+New packages declare the required native decompiler identity, carry the copy-only updater, and verify the selected marker/platform/executable hash before creating user directories. Schema-2 rollback remains supported through a small compatibility reader; new installations always use the current journaled installer. The installer test harness runs the extracted package's installer and no longer requires a game-specific study package for generic checks. Optional study checks remain available for M5.
+
+Executed checks are collected in [m3-evidence.json](m3-evidence.json):
+
+- Clean static source build: 456 tests passed with no debugger runtime, cache or subproject output present.
+- Clean full source build: canonical dependency acquisition, fresh native build, both Java extensions and 46 native/Python tests passed without any neighboring repository. The native library, boot and ROM fixtures are byte-identical across independent build directories.
+- Source path containing spaces: bootstrap, fresh native build, clean combined Java build and all 46 runtime tests passed.
+- Five build-input checks passed, covering stale/path-escaping artifacts, dependency view generation, native identity mismatches, extra edits inside patched source and preservation of files behind symlinks.
+- The final macOS runtime package reproduced byte-for-byte. Its extracted `Validate.sh` passed native tests and real installed Trace RMI, including 250 captures, mapping/history, edits/restore, launcher and cleanup.
+- Its packaged installer passed 11 install/upgrade/interruption/recovery/self-rollback/user-preservation checks, including refusal of a missing native dependency before any user-home creation.
+
+The final tested package and native binary hashes are in the evidence JSON and retained artifact manifests. The existing Ghidra terminal-close diagnostic remains visible in RMI logs with the same explicit successful termination/async-error checks as the baseline. Legacy game delegates now resolve the optional GhiBW3 checkout beside the root GhidraBoy repository, or use explicit `GHIBW3_ROOT`.
 
 ## Next gates
 
-Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Resolve Emulicious launch and the remaining M1 semantics, preserving unsupported operations explicitly. Finish M3 runtime/build/package consolidation, then proceed through backend/session extraction and compatibility gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.
+Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Resolve Emulicious launch and the remaining M1 semantics, preserving unsupported operations explicitly. Qualify the M3 Linux runtime package and companion native/SDL dependencies, then proceed through backend/session extraction and compatibility gates. GUI/device gates and later release gates remain unexecuted until their actual checks run.

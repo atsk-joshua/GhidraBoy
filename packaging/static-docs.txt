@@ -1,0 +1,24 @@
+# Explicit documentation payload; relative to docs/. No wildcards.
+analysis.md
+compiler-support.md
+cpu-validation.md
+decompiler-call-flags.md
+direct-bus-semantics.md
+gui-validation.md
+input-policy.md
+instruction-compatibility.md
+mapper-write-semantics.md
+mapping-schema.json
+modernization-evidence.md
+native-decompiler/build-and-rollback.md
+native-decompiler/install-and-rollback.md
+native-decompiler/logical-shift-range.md
+native-decompiler/normalized-switch-index.md
+native-decompiler/updater-validation-20260905.json
+native-decompiler/validation-20260905.json
+native-decompiler/validation-switch2-20260905.json
+publication.md
+references.md
+release-notes.md
+static-contract.md
+user-workflows.md

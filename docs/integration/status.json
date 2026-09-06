@@ -129,21 +129,21 @@
       "id": "BUILD-01",
       "milestone": "M3",
       "requirement": "clean static checkout builds/tests without emulator binaries, Python runtime setup, SDL, native compiler or debugger project dependency downloads.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/progress.md"
+        "docs/integration/m3-evidence.json"
       ],
-      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
+      "note": "Clean static build: 456 tests, no debugger project/runtime/cache used. macOS arm64 execution; broader platform release acceptance remains separate."
     },
     {
       "id": "BUILD-02",
       "milestone": "M3",
       "requirement": "clean full checkout builds without neighboring GhiGBC/GhiBW3 repositories, absolute developer paths, stale build outputs or manually selected provider JAR filenames.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/progress.md"
+        "docs/integration/m3-evidence.json"
       ],
-      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
+      "note": "Clean isolated full source build obtained canonical dependencies directly and built/tested 46 native cases plus both Java extensions, without sibling repositories."
     },
     {
       "id": "BUILD-03",
@@ -151,29 +151,29 @@
       "requirement": "packages contain one static provider, no bundled compile-only provider copy, correct notices, no private assets, and a deterministic source/dependency manifest.",
       "status": "IN_PROGRESS",
       "evidence": [
-        "docs/integration/progress.md"
+        "docs/integration/m3-evidence.json"
       ],
-      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
+      "note": "macOS package reproduced byte-for-byte, excludes untracked/internal documents, preserves one provider, and passes real RMI plus 11 installed recovery/rollback checks. Linux package/native dependency/SDL qualification remains open."
     },
     {
       "id": "BUILD-04",
       "milestone": "M3",
       "requirement": "root commands are documented and exercised from a fresh checkout and paths containing spaces. Existing public commands either work through thin delegates or have tested migration guidance.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/progress.md"
+        "docs/integration/m3-evidence.json"
       ],
-      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
+      "note": "Root commands documented and exercised from clean source and a path containing spaces; legacy packagers delegate and explicit provider override remains verified."
     },
     {
       "id": "BUILD-05",
       "milestone": "M3",
       "requirement": "packaging identifies stock versus patched native decompiler requirements; the doctor detects mismatches and never silently overwrites an active Ghidra distribution.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/progress.md"
+        "docs/integration/m3-evidence.json"
       ],
-      "note": "Optional unified Gradle build and artifact manifest implemented; dependency/native/package consolidation and clean-install gates remain incomplete."
+      "note": "Packages declare the native decompiler identity; updater is included; marker/platform/hash mismatch checks and pre-install refusal pass without changing user directories."
     },
     {
       "id": "BACKEND-01",

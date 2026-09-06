@@ -12,7 +12,13 @@ import subprocess
 import sys
 import zipfile
 
+if __package__:
+    from .build_inputs import runtime_dependencies
+else:
+    from build_inputs import runtime_dependencies
+
 ROOT = Path(__file__).resolve().parents[1]
+GHIDRA_VERSION = runtime_dependencies(ROOT)['ghidra']['version']
 RESULT_NAMES = ('setup.log', 'failure.log', 'install.json', 'install.stderr.log', 'doctor.json', 'doctor.stderr.log', 'native.log', 'ghidra.log',
                 'ui.log', 'integrated-growth.json', 'ui-actions.log')
 
@@ -32,17 +38,17 @@ def choose_ghidra(explicit):
         path = Path(explicit).expanduser().resolve()
     else:
         candidates = sorted({p.resolve() for base in (Path.home(), Path.home()/'Downloads', Path.home()/'Applications')
-                             for p in base.glob('ghidra*PUBLIC') if ghidra_version(p) == '12.1.2'})
+                             for p in base.glob('ghidra*PUBLIC') if ghidra_version(p) == GHIDRA_VERSION})
         if len(candidates) == 1:
             path = candidates[0]
         elif sys.stdin.isatty():
             for candidate in candidates:
                 print('Found:', candidate)
-            path = Path(input('Ghidra 12.1.2 folder: ').strip()).expanduser().resolve()
+            path = Path(input('Ghidra '+GHIDRA_VERSION+' folder: ').strip()).expanduser().resolve()
         else:
-            raise RuntimeError('Pass --ghidra /absolute/path/to/ghidra_12.1.2_PUBLIC')
-    if ghidra_version(path) != '12.1.2':
-        raise RuntimeError(f'Ghidra 12.1.2 is required; selected folder: {path}')
+            raise RuntimeError('Pass --ghidra /absolute/path/to/ghidra_'+GHIDRA_VERSION+'_PUBLIC')
+    if ghidra_version(path) != GHIDRA_VERSION:
+        raise RuntimeError(f'Ghidra {GHIDRA_VERSION} is required; selected folder: {path}')
     return path
 
 
@@ -57,13 +63,13 @@ def environment(args):
         java = shutil.which('java')
         if java:
             java_home = str(Path(java).resolve().parent.parent)
-    if not java_home or not (Path(java_home).expanduser()/'bin/javac').is_file():
-        raise RuntimeError('A JDK 21 or newer is required. Pass --java-home /absolute/path/to/jdk-21')
+    if not java_home or not (Path(java_home).expanduser()/'bin/java').is_file():
+        raise RuntimeError('Java 21 is required. Pass --java-home /absolute/path/to/jdk-21')
     java_home = Path(java_home).expanduser().resolve()
     version = subprocess.run([str(java_home/'bin/java'), '-version'], capture_output=True, text=True, timeout=8)
     major = re.search(r'version "(\d+)', version.stderr or version.stdout)
-    if version.returncode or major is None or int(major.group(1)) < 21:
-        raise RuntimeError('The selected JDK must be Java 21 or newer.')
+    if version.returncode or major is None or int(major.group(1)) != 21:
+        raise RuntimeError('The selected runtime must be Java 21.')
     env = dict(os.environ, GHIDRA_INSTALL_DIR=str(ghidra), JAVA_HOME=str(java_home),
                GBC_PYTHON=str(ROOT/'.venv12/bin/python'))
     return env, {'ghidra': str(ghidra), 'java_home': str(java_home)}
@@ -103,9 +109,9 @@ def collect(root=ROOT):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('setup', 'validate', 'collect'))
-    parser.add_argument('--ghidra', help='Ghidra 12.1.2 folder; remembered after setup')
+    parser.add_argument('--ghidra', help='Selected Ghidra folder; remembered after setup')
     parser.add_argument('--java-home', help='JDK folder; remembered after setup')
-    parser.add_argument('--ui', action='store_true', help='Run only the interactive teaching-ROM button walkthrough after the automated checks')
+    parser.add_argument('--ui', action='store_true', help='Run the installed debugger UI acceptance checks')
     args = parser.parse_args()
     if args.action == 'collect':
         print(collect())
@@ -141,8 +147,8 @@ def main():
                 growth = ROOT/'docs/evidence/integrated-growth.json'
                 if growth.exists():
                     shutil.copy2(growth, results/growth.name)
-        print('Setup complete. Restart Ghidra and follow START-HERE.md.' if args.action == 'setup'
-              else 'Checks passed. Complete the playable-window and focus checks in START-HERE.md.')
+        print('Setup complete. Restart Ghidra and follow docs/INSTALL.md.' if args.action == 'setup'
+              else 'Checks passed. Complete the playable-window and focus checks in docs/INSTALL.md.')
     finally:
         # Copy a partially completed UI log too, so failures are reviewable.
         if args.action == 'validate' and args.ui:

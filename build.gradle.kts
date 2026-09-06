@@ -14,6 +14,7 @@
 import groovy.json.JsonOutput
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.nio.file.Files
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneOffset
@@ -150,13 +151,30 @@ val zip by tasks.registering(Zip::class) {
     dependsOn(compileSleigh)
     from("data/languages/sm83.sla") { into("data/languages/") }
     from("data/manuals") { into("data/manuals/") }
+    val documentation = file("packaging/static-docs.txt")
+    val documentationPaths = documentation.readLines().filter { it.isNotBlank() && !it.startsWith("#") }
+    inputs.file(documentation)
+    doFirst {
+        documentationPaths.forEach { path ->
+            require(!File(path).isAbsolute && path.split('/').none { it == ".." } && path.none { it in "*?[]{}" }) {
+                "Invalid packaged documentation path: $path"
+            }
+            require(file("docs/$path").isFile) { "Missing packaged documentation: $path" }
+            val document = file("docs/$path").toPath()
+            require(!Files.isSymbolicLink(document) && document.toRealPath().startsWith(file("docs").toPath().toRealPath())) {
+                "Packaged documentation must be a regular file inside docs/: $path"
+            }
+        }
+    }
     from("docs") {
         into("docs/")
-        exclude("evidence/**")
+        include(documentationPaths)
     }
     from("LICENSES") { into("LICENSES/") }
     from("ghidra_scripts") { into("ghidra_scripts/") }
-    from("README.markdown", "LICENSE", "Module.manifest")
+    from("packaging/README.markdown")
+    from("tools/native_dependency_update.py") { into("tools/") }
+    from("LICENSE", "Module.manifest")
 }
 
 tasks.named("assemble") {

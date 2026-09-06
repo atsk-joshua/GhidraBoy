@@ -1,58 +1,135 @@
 #!/usr/bin/env python3
-"""Acquire pinned sources in this checkout. Never installs global packages."""
-import hashlib,inspect,json,os,platform,subprocess,sys,urllib.request,zipfile,tarfile
+"""Prepare pinned native sources/tools and an isolated Python runtime for this checkout."""
+import argparse
+import inspect
+import os
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1];os.chdir(ROOT)
+import platform
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+import urllib.request
+import zipfile
 
-def archive(name,destination):
-    locked=json.loads((ROOT/'dependencies.lock.json').read_text())['downloads'][name]
-    file=ROOT/'.deps'/name
-    if not file.exists():
-        temporary=file.with_suffix(file.suffix+'.partial')
-        urllib.request.urlretrieve(locked['url'],temporary);temporary.rename(file)
-    if hashlib.sha256(file.read_bytes()).hexdigest()!=locked['sha256']:raise RuntimeError(f'Checksum mismatch: {name}')
-    destination=Path(destination);destination.mkdir(parents=True,exist_ok=True)
-    if file.suffix=='.zip':
-        with zipfile.ZipFile(file) as z:
-            for member in z.infolist():
-                if Path(member.filename).is_absolute() or '..' in Path(member.filename).parts:raise RuntimeError('Invalid archive member')
-                z.extract(member,destination)
-                target=destination/member.filename
-                if target.is_file() and member.external_attr>>16:target.chmod((member.external_attr>>16)&0o777)
+if __package__:
+    from .build_inputs import runtime_dependencies, sha
+    from .runtime_python import prepare_environment
+else:
+    from build_inputs import runtime_dependencies, sha
+    from runtime_python import prepare_environment
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def run(*args, **kwargs):
+    return subprocess.run([str(arg) for arg in args], check=True, **kwargs)
+
+
+def prepare_source(root, spec):
+    destination = root / '.deps/SameBoy'
+    if (root / '.deps').is_symlink() or destination.is_symlink():
+        raise ValueError('Dependency source directory must not be a symlink')
+    patch = root / spec['patch']
+    if sha(patch) != spec['patch_sha256']:
+        raise ValueError('SameBoy instrumentation patch does not match the canonical lock')
+    destination.mkdir(parents=True, exist_ok=True)
+    if not (destination / '.git').exists():
+        run('git', 'init', destination)
+        run('git', '-C', destination, 'remote', 'add', 'origin', spec['repository'])
+        run('git', '-C', destination, 'fetch', '--depth', '1', 'origin', spec['commit'])
+        run('git', '-C', destination, 'checkout', '--detach', spec['commit'])
+    head = subprocess.check_output(['git', '-C', str(destination), 'rev-parse', 'HEAD'], text=True).strip()
+    if head != spec['commit']:
+        raise ValueError('Existing SameBoy source has a different revision; preserve it before replacing the dependency')
+    actual = subprocess.check_output(['git', '-C', str(destination), 'diff', '--no-ext-diff', '--binary', 'HEAD'])
+    if not actual:
+        run('git', '-C', destination, 'apply', patch)
+        actual = subprocess.check_output(['git', '-C', str(destination), 'diff', '--no-ext-diff', '--binary', 'HEAD'])
+    # Compare the whole change, not just whether our patch can be reversed. This
+    # rejects additional modifications even inside a file the patch also edits.
+    with tempfile.TemporaryDirectory(prefix='ghidraboy-source-index-') as temporary:
+        env = dict(os.environ, GIT_INDEX_FILE=str(Path(temporary) / 'index'))
+        run('git', '-C', destination, 'read-tree', 'HEAD', env=env)
+        run('git', '-C', destination, 'apply', '--cached', patch, env=env)
+        expected = subprocess.check_output(['git', '-C', str(destination), 'diff', '--no-ext-diff', '--binary', '--cached', 'HEAD'], env=env)
+    untracked = subprocess.check_output(['git', '-C', str(destination), 'ls-files', '--others', '--exclude-standard'])
+    if actual != expected or untracked:
+        raise ValueError('SameBoy contains changes beyond the pinned patch; preserving source for review')
+
+
+def prepare_archive(root, name, spec, cache=None):
+    archive = root / '.deps' / name
+    if (root / '.deps').is_symlink() or archive.is_symlink():
+        raise ValueError('Dependency cache must not be a symlink')
+    if not archive.exists():
+        temporary = archive.with_suffix(archive.suffix + '.partial')
+        if cache and (cache / name).is_file():
+            shutil.copy2(cache / name, temporary)
+        else:
+            urllib.request.urlretrieve(spec['url'], temporary)
+        if sha(temporary) != spec['sha256']:
+            raise ValueError('Dependency digest mismatch: ' + name)
+        temporary.replace(archive)
+    if sha(archive) != spec['sha256']:
+        raise ValueError('Dependency digest mismatch: ' + name)
+    destination = root / '.deps/rgbds-bin'
+    if destination.is_symlink():
+        raise ValueError('Unsafe tool destination')
+    destination.mkdir(parents=True, exist_ok=True)
+
+    def validate_destination(name):
+        target = destination / name
+        if target.is_symlink() or not target.resolve().is_relative_to(destination.resolve()):
+            raise ValueError('Unsafe tool destination: ' + name)
+
+    if archive.suffix == '.zip':
+        with zipfile.ZipFile(archive) as zipped:
+            for member in zipped.infolist():
+                path = Path(member.filename)
+                if path.is_absolute() or '..' in path.parts or (member.external_attr >> 16) & 0o170000 == 0o120000:
+                    raise ValueError('Unsafe tool archive member')
+                validate_destination(member.filename)
+            for member in zipped.infolist():
+                zipped.extract(member, destination)
+                target = destination / member.filename
+                if target.is_file() and member.external_attr >> 16:
+                    target.chmod((member.external_attr >> 16) & 0o777)
     else:
-        with tarfile.open(file) as t:
-            for member in t.getmembers():
-                if Path(member.name).is_absolute() or '..' in Path(member.name).parts or not (member.isfile() or member.isdir()):raise RuntimeError('Invalid archive member')
-            t.extractall(destination,**({'filter':'data'} if 'filter' in inspect.signature(t.extractall).parameters else {}))
+        with tarfile.open(archive) as compressed:
+            for member in compressed.getmembers():
+                path = Path(member.name)
+                if path.is_absolute() or '..' in path.parts or not (member.isfile() or member.isdir()):
+                    raise ValueError('Unsafe tool archive member')
+                validate_destination(member.name)
+            options = {'filter': 'data'} if 'filter' in inspect.signature(compressed.extractall).parameters else {}
+            compressed.extractall(destination, **options)
 
-def run(*args):subprocess.run(args,check=True)
-def git(name,url,commit,patch=None):
-    dest=ROOT/'.deps'/name
-    if not (dest/'.git').exists():
-        dest.mkdir(parents=True,exist_ok=True)
-        run('git','init',str(dest));run('git','-C',str(dest),'remote','add','origin',url)
-        run('git','-C',str(dest),'fetch','--depth','1','origin',commit)
-        run('git','-C',str(dest),'checkout','--detach',commit)
-    current=subprocess.check_output(['git','-C',str(dest),'rev-parse','HEAD'],text=True).strip()
-    if current!=commit:
-        if subprocess.check_output(['git','-C',str(dest),'status','--porcelain'],text=True).strip():raise RuntimeError(f'{name}: preserve local changes before changing pin')
-        run('git','-C',str(dest),'checkout','--detach',commit)
-    if patch:
-        reverse=subprocess.run(['git','-C',str(dest),'apply','--reverse','--check',str(ROOT/patch)],capture_output=True)
-        if reverse.returncode:run('git','-C',str(dest),'apply',str(ROOT/patch))
 
-if __name__=='__main__':
-    (ROOT/'.deps').mkdir(exist_ok=True)
-    git('SameBoy','https://github.com/LIJI32/SameBoy.git','208ba4afabffab9edde416f2dbb8ae459e34adb8','native/patches/0001-cpu-bus-provenance.patch')
-    # Maintained GhidraBoy is a separate checkout/artifact; never fetch a second private provider.
-    git('rgbds','https://github.com/gbdev/rgbds.git','92bfe5d930c07dd4672b148f811305aa294d6e6f')
-    system=platform.system();arch=platform.machine()
-    if (system,arch) not in (('Darwin','arm64'),('Linux','x86_64')):raise RuntimeError('Supported lanes: macOS arm64 and Linux x86-64')
-    archive('rgbds-macos.zip' if system=='Darwin' else 'rgbds-linux-x86_64.tar.xz',ROOT/'.deps/rgbds-bin')
-    archive('gradle.zip',ROOT/'.deps')
-    ghidra=Path(os.environ['GHIDRA_INSTALL_DIR'])
-    props=dict(line.split('=',1) for line in (ghidra/'Ghidra/application.properties').read_text().splitlines() if '=' in line and not line.startswith('#'))
-    if props['application.version']!='12.1.3':raise RuntimeError('This release requires Ghidra 12.1.3')
-    run(sys.executable,'-m','venv','.venv12')
-    run(str(ROOT/'.venv12/bin/python'),'-m','pip','install','--no-index','--find-links',str(ghidra/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist'),'ghidratrace==12.1','protobuf==6.31.0')
-    print('Pinned sources and Trace RMI environment ready. Build RGBDS if needed, then run scripts/build_native.sh and scripts/build_extension.sh.')
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--download-cache', type=Path, help='Optional archive cache; all bytes are verified against the lock')
+    parser.add_argument('--ghidra', type=Path, default=os.environ.get('GHIDRA_INSTALL_DIR'))
+    args = parser.parse_args()
+    if not args.ghidra:
+        parser.error('Select --ghidra or GHIDRA_INSTALL_DIR')
+    lock = runtime_dependencies(ROOT)
+    props = dict(line.split('=', 1) for line in (args.ghidra / 'Ghidra/application.properties').read_text().splitlines()
+                 if '=' in line and not line.startswith('#'))
+    if props['application.version'] != lock['ghidra']['version']:
+        raise ValueError('Selected Ghidra does not match the canonical dependency lock')
+    lane = (platform.system(), platform.machine())
+    archives = {('Darwin', 'arm64'): 'rgbds-macos.zip', ('Linux', 'x86_64'): 'rgbds-linux-x86_64.tar.xz'}
+    if lane not in archives:
+        raise ValueError('Supported native build lanes: macOS arm64 and Linux x86-64')
+    prepare_source(ROOT, lock['sameboy'])
+    name = archives[lane]
+    prepare_archive(ROOT, name, lock['downloads'][name], args.download_cache)
+    python = prepare_environment(sys.executable, ROOT / '.venv12', args.ghidra.resolve() / 'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist')
+    print('Verified native sources and tools; isolated Python:', python)
+    print('Next: bash debugger/scripts/build_native.sh; bash debugger/scripts/build_extension.sh')
+
+
+if __name__ == '__main__':
+    main()
