@@ -185,7 +185,9 @@ class SessionTests(unittest.TestCase):
         with create_backend('sameboy', ROOT/'build/teaching.gbc') as machine, tempfile.TemporaryDirectory() as directory:
             checkpoint=machine.checkpoint(Path(directory)/'state')
             path=checkpoint/'metadata.json';original=json.loads(path.read_text())
-            for key,value in (('backend','other'),('state_file','../other'),('ticks_per_second',1)):
+            for key,value in (('backend','other'),('state_file','../other'),('ticks_per_second',1),
+                              ('schema',999),('core','other'),('config','other'),('patch','other'),
+                              ('model','other'),('rom_hash','other'),('boot_hash','other')):
                 path.write_text(json.dumps(dict(original,**{key:value})))
                 with patch.object(machine,'_load_state') as load:
                     with self.assertRaisesRegex(ValueError,'metadata mismatch'):

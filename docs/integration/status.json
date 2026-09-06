@@ -29,13 +29,12 @@
       "id": "BASE-03",
       "milestone": "M0",
       "requirement": "saved annotated Program fixtures cover historical upstream and current provider formats, including the persisted POP constructor regression. Trace fixtures cover legacy/current mappings, profiles, edits and checkpoints.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "dist/integration-baseline-20260906/constructor-smoke.log",
-        "dist/integration-baseline-20260906/database-migration.log",
-        "dist/integration-baseline-20260906/rmi/"
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
       ],
-      "note": "Old-language 501-instruction/annotation fixtures and actual old database migration pass. Current pre-migration traces/checkpoints retained; older legacy/profile trace catalog still needs explicit provenance and coverage."
+      "note": "Authentic pre-backend/current traces, synthetic legacy-boolean variant, decoded-profile/edit/parent history, old checkpoints and historical/current Program fixtures are catalogued and verified. Remaining baseline performance sampling is separate."
     },
     {
       "id": "BASE-04",
@@ -200,11 +199,12 @@
       "id": "BACKEND-03",
       "milestone": "M4",
       "requirement": "pause during run/queue saturation, timed-out requests, disconnect/reconnect, target exit, callback ordering, event overflow and shutdown have bounded behavior with visible error/loss reporting.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/m4-session-evidence.json"
+        "docs/integration/m4-session-evidence.json",
+        "docs/integration/m5-evidence.json"
       ],
-      "note": "Real pause-under-lock, bounded native event loss, cancellation, stale/replacement/disconnect contexts, fault recovery and Mac/Linux RMI cleanup pass; remaining forced-crash/end-to-end lifecycle conformance is open."
+      "note": "Real RMI disconnect, forced sidecar death, bounded process exit, saved-history reopen and replacement-session stale-action rejection pass, supplementing queue/pause/overflow/failure tests."
     },
     {
       "id": "BACKEND-04",
@@ -230,50 +230,78 @@
       "id": "COMPAT-01",
       "milestone": "M5",
       "requirement": "copied old Programs reopen with preserved constructor identity, comments, symbols, types, functions, overrides and ownership receipts; removal never deletes later user work.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "COMPAT-02",
       "milestone": "M5",
       "requirement": "legacy and new traces reopen in separate processes with no emulator runtime loaded and no optional study profile; raw memory, old paths, historical mappings, writer precision and edit/parent-checkpoint evidence remain inspectable.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "COMPAT-03",
       "milestone": "M5",
       "requirement": "schema-2 SameBoy checkpoints restore only with compatible identities. Wrong engine/core/patch/ROM/boot/model, corrupt payloads and unsupported schema versions fail before mutation.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "MAP-01",
       "milestone": "M5",
       "requirement": "renamed/split/partial blocks, overlays, alias ambiguity, current patches, detached sources, view selection and conflicting user mappings retain existing correctness and ownership behavior.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "MAP-02",
       "milestone": "M5",
       "requirement": "capture/save/mapping barriers survive rapid stepping, Program switching, save/close/reopen and reconnect; historical selections never silently follow or modify the current target.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "PROFILE-01",
       "milestone": "M5",
       "requirement": "GhiBW3 static-only, live, missing/failing/wrong-revision profile and profile-removal/reopen cases pass. Generic package class loading and startup require no study code.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "PROFILE-02",
       "milestone": "M5",
       "requirement": "stale session/epoch/capture actions, oversized declarations and failed decodes are rejected with preserved raw controls/history; field batches retain complete provenance and counts.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/m4-session-evidence.json"
+      ],
+      "note": "Current Program preservation/migration, four independent Java-only trace reopens, exact checkpoint identities, mapping/stale context, optional consumer linkage/static isolation, failure/nonmatching/removal and exact-revision captured-profile parity pass at recorded snapshots."
     },
     {
       "id": "A-STATIC",

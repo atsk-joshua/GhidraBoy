@@ -4,7 +4,7 @@ Plan: [debugger-integration-plan.md](../debugger-integration-plan.md). This ledg
 
 ## Active work
 
-M0 and the remaining M1 conformance inventory are in progress. M2's mechanical import and M3 build/package qualification are complete at their recorded source snapshots. M4's shared session/recovery policies and native adapter boundary are implemented; remaining crash/lifecycle and physical display/focus acceptance are open. The import proceeded independently of the remaining legacy/profile trace catalog: original source, archives and baseline runtime remain preserved for comparison, and import itself changed no behavior. This ordering adjustment does not waive BASE-03, remaining performance details, or any later gate. No supported second-backend claim has been made.
+M0's fixture inventory is complete; remaining baseline performance sampling and M1 conformance remain open. M2/M3 and M5 are complete at their recorded source snapshots. M4's implementation and process-failure checks pass, with physical display/focus acceptance still blocked by the locked desktop. The earlier sequencing adjustment did not waive any gate; the legacy/profile fixture catalog has now been verified. No supported second-backend claim has been made.
 
 The `integrate-ghigbc` branch preserves the prior `suite-offdevice-candidate` ref. Unrelated untracked reports and GhiGBC output remain untouched. No remote writes or publication occurred.
 
@@ -118,8 +118,26 @@ The C sources/header/instrumentation patch moved byte-identically to `debugger/b
 
 The physical window probe reached the paused fixture, but CUA reported that the Mac was locked. An asynchronous unlock request was sent. No desktop input/focus actions occurred; the bounded probe timed out and cleaned up with unchanged ticks and released keys. This is explicitly blocked acceptance, not a GUI pass.
 
-M4 remains open for the remaining forced-crash/end-to-end lifecycle checks and physical keyboard/focus/minimize/close validation. The only production adapter is still SameBoy; no mGBA support claim is inferred from the shared code.
+### M4 real process-failure completion
+
+The actual Ghidra harness now tests transport disconnect, forced termination of its owned sidecar, and a replacement process. Connections close and owned processes exit within their bounds. Saved raw bytes, source identity and completed mappings survive target loss. The replacement has a new session ID and rejects an action carrying the former session without creating a breakpoint. These checks passed with the existing async-error/cleanup assertions; logs are in `m4-failure-lifecycle-final.log` and [M5 evidence](m5-evidence.json).
+
+M4 remains open only for physical keyboard/focus/minimize/close acceptance. CUA revalidated the locked Mac during this work. The only production adapter is still SameBoy; no mGBA support claim is inferred from the shared code.
+
+### M5 saved-work and external consumer compatibility
+
+[M5 evidence](m5-evidence.json) records the current artifacts, logs and fixture identities. The optional consumer changes are committed independently in GhiBW3 as `c8a858f` on `integrated-debugger-consumer`; its previous branch and untracked files are preserved.
+
+- GhiBW3 uses the integrated root wrapper and a hash-verified debugger artifact manifest. Static-only builds work with deliberately missing live dependencies; stale JAR hashes and ambiguous composition inputs are rejected. Old explicit JAR/Gradle overrides remain available. Package composition accepts exact generic manifests rather than assuming old GhiGBC paths.
+- The installed GhiBW3 static component and exporter pass without the live debugger. Its live Java plugin links to the integrated action/mapping services; an installed game profile rejects the synthetic nonmatching ROM while generic controls remain usable. The matched optional composition passes 13 installation/removal/recovery/rollback checks.
+- Four copied trace fixtures reopen in independent Java-only processes with no emulator runtime or profile decoder installed: an authentic pre-backend trace, a clearly labeled synthetic legacy-boolean mapping variant, synthetic decoded-profile history, and history created with the live consumer installed. CPU bytes, mapping readiness, backend/profile identity, edit recovery hashes and checkpoint-parent provenance survive. Original project hashes remain unchanged.
+- The existing old schema-2 checkpoint restores through the shared session reader. Expanded rejection cases cover schema, backend, core, configuration, patch, model, ROM, boot, payload path and timebase mismatches before native loading.
+- Current installed Program preservation passes all 501 old-language constructor checks with zero mismatches, together with annotation/ownership/lifecycle checks. A fresh copied 11.3.1 → 12.1.3 database migration passes and preserves its original project.
+- A failing synthetic decoder reports its error while real execution, mapping, edits and history checks continue successfully. Profile bounds, missing capabilities and stale session/epoch/capture checks retain their passing runtime tests.
+- The existing exact-revision regression ROM copy passes current table and captured-decoder parity: 53 unit templates, 33 weapon templates, 100 captured units and 1,623 typed fields. Only hashes/counts are recorded; its bytes are unchanged and excluded from artifacts. This check does not claim a new battle replay.
+
+`tools/prepare_profile_fixture.py` reproduces the synthetic/failing provider composition using the actual lowercase public `provider` entry point; the initial fixture's incorrect uppercase entry point was rejected by installation and corrected. `tools/reopen_trace_fixture.py` copies projects and runs the standalone reader; its optional legacy transformation is confined to the copied project and checked in a separate JVM.
 
 ## Next gates
 
-Retain detailed performance samples and the older trace/profile fixture catalog to complete M0. Finish the remaining M1/M4 failure/lifecycle inventory and resume physical window acceptance when the Mac is unlocked. Continue the independent M5 compatibility and release gates, then hardware/model expansion and mGBA implementation. Device gates remain unexecuted until their actual checks run.
+Complete the remaining baseline/performance and M1 conformance details, and resume physical window acceptance when the Mac is unlocked. Proceed through M6 release/resource qualification, hardware/model expansion and mGBA implementation. Final release/device gates remain open; completed component checks do not imply the full migration is finished.

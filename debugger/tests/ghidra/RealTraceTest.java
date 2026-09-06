@@ -87,15 +87,84 @@ public class RealTraceTest {
     static GhidraApplicationConfiguration testConfiguration(){
         var config=new GhidraApplicationConfiguration();config.setShowSplashScreen(false);return config;
     }
+    static void awaitClosed(TraceRmiConnection connection)throws Exception {
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+        while(!connection.isClosed()&&System.nanoTime()<deadline)Thread.sleep(20);
+        require(connection.isClosed(),"disconnected target closes its real RMI connection within the bound");
+    }
+    static void failureLifecycle(Path root,GhidraTool tool)throws Exception {
+        Trace previous=trace;String formerSession=null;
+        try {
+            for(String mode:List.of("disconnect","crash","replacement")) {
+                var acceptor=tool.getService(TraceRmiService.class).acceptOne(new InetSocketAddress("127.0.0.1",0));
+                acceptor.setTimeout(15000);
+                int port=((InetSocketAddress)acceptor.getAddress()).getPort();
+                var builder=new ProcessBuilder(System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv12/bin/python").toString()),
+                    "-m","ghigbc.agent","--connect","127.0.0.1:"+port,"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready");
+                builder.environment().put("PYTHONPATH",root.resolve("python").toString());
+                builder.redirectErrorStream(true);builder.redirectOutput(evidence(root).resolve(mode+"-agent.log").toFile());
+                Process process=builder.start();TraceRmiConnection connection=null;
+                try {
+                    connection=acceptor.accept();trace=connection.waitForTrace(15000);waitCapture(0);
+                    String session=String.valueOf(attr("Machine","Session"));
+                    long savedSnap=snap();
+                    connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+                    var file=trace.getDomainFile();
+                    if(mode.equals("replacement")) {
+                        require(!session.equals(formerSession),"replacement target has a new session identity");
+                        int count=object("Machine.Breakpoints").getElements(Lifespan.at(snap())).size();
+                        var request=new HashMap<String,Object>();request.put("process",object("Machine"));request.put("region","wram");
+                        request.put("bank",1L);request.put("offset",0x34L);request.put("length",1L);
+                        request.put("expected_session",formerSession);request.put("expected_epoch",attr("Machine","Epoch"));
+                        request.put("expected_capture",attr("Machine","Capture"));
+                        try {
+                            connection.getMethods().get("profile_watch").invokeAsync(request).get(5,TimeUnit.SECONDS);
+                            throw new AssertionError("Replacement accepted former target context");
+                        }catch(ExecutionException expected){require(expected.getCause().getMessage().contains("Stale"),"real replacement target rejects former-session action");}
+                        require(object("Machine.Breakpoints").getElements(Lifespan.at(snap())).size()==count,"former-session request creates no replacement breakpoint");
+                        connection.getMethods().get("kill").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
+                    }else if(mode.equals("disconnect")) {
+                        formerSession=session;
+                        connection.close();
+                    }else {
+                        formerSession=session;
+                        process.destroyForcibly();
+                    }
+                    awaitClosed(connection);
+                    require(process.waitFor(5,TimeUnit.SECONDS),mode+" leaves no owned agent process running");
+                    var reopened=(Trace)file.getReadOnlyDomainObject(RealTraceTest.class,-1,TaskMonitor.DUMMY);
+                    try {
+                        ByteBuffer value=ByteBuffer.allocate(1);
+                        reopened.getMemoryManager().getBytes(savedSnap,reopened.getBaseAddressFactory().getDefaultAddressSpace().getAddress(0x402a),value);
+                        require((value.array()[0]&255)==0x11,mode+" preserves saved raw capture bytes after target loss");
+                        var machine=reopened.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine"));
+                        require(session.equals(machine.getValue(savedSnap,"Session").getValue()),mode+" preserves historical source identity");
+                        require(BankMappings.isReady(machine,savedSnap),mode+" preserves completed historical mappings");
+                    }finally{reopened.release(RealTraceTest.class);}
+                }finally {
+                    if(connection!=null)connection.close();
+                    if(process.isAlive()){process.destroyForcibly();process.waitFor(5,TimeUnit.SECONDS);}
+                    if(!acceptor.isClosed())acceptor.cancel();
+                    Swing.runNow(()->tool.getService(DebuggerTraceManagerService.class).activateTrace(null));
+                }
+            }
+        }finally {
+            trace=previous;
+            Swing.runNow(()->tool.getService(DebuggerTraceManagerService.class).activateTrace(previous));
+        }
+    }
     public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler((thread,error)->{asyncErrors.add(error);error.printStackTrace();});
         try {runTest(args);}catch(Throwable error){error.printStackTrace();System.exit(1);}
     }
     public static void runTest(String[] args) throws Exception {
         Path root=Path.of(args[0]).toRealPath();
-        try{Class.forName("ghibw3.StudyPlugin");throw new AssertionError("Study extension unexpectedly installed in generic gate");}catch(ClassNotFoundException expected){System.out.println("PASS generic classpath has no GhiBW3");}
+        boolean studyExpected=Arrays.asList(args).contains("--with-study");
+        try{Class.forName("ghibw3.StudyPlugin");require(studyExpected,"optional study classes are present only in the selected consumer gate");}
+        catch(ClassNotFoundException expected){require(!studyExpected,"generic classpath has no GhiBW3");}
         Application.initializeApplication(new GhidraApplicationLayout(new File(System.getenv().getOrDefault("GHIDRA_INSTALL_DIR",root.resolve(".deps/ghidra_11.3.1_PUBLIC").toString()))),testConfiguration());
-        Project project=new Manager().createProject(new ProjectLocator(root.resolve("build/projects").toString(),"TraceTest-"+System.currentTimeMillis()),null,false);
+        String projectName="TraceTest-"+System.currentTimeMillis();
+        Project project=new Manager().createProject(new ProjectLocator(root.resolve("build/projects").toString(),projectName),null,false);
         var imported=AutoImporter.importByUsingBestGuess(root.resolve("build/teaching.gbc").toFile(),project,"/",RealTraceTest.class,new MessageLog(),TaskMonitor.DUMMY);
         imported.save(TaskMonitor.DUMMY);
         Program staticProgram=imported.getPrimaryDomainObject();
@@ -115,6 +184,7 @@ public class RealTraceTest {
             try {
                 GhidraTool tool=new GhidraTool(project,"GBC Debugger Integration");holder[0]=tool;
                 tool.addPlugins(List.of("ghidra.app.plugin.core.debug.service.tracermi.TraceRmiPlugin","ghidra.app.plugin.core.debug.service.tracemgr.DebuggerTraceManagerServicePlugin","ghidra.app.plugin.core.debug.gui.register.DebuggerRegistersPlugin","ghidra.app.plugin.core.debug.gui.thread.DebuggerThreadsPlugin","ghidra.app.plugin.core.debug.gui.time.DebuggerTimePlugin","ghidra.app.plugin.core.debug.gui.model.DebuggerModelPlugin","ghigbc.GbcPlugin","ghidra.app.plugin.core.debug.gui.tracermi.launcher.TraceRmiLauncherServicePlugin"));
+                if(studyExpected)tool.addPlugins(List.of("ghibw3.StudyPlugin"));
                 tool.getService(ProgramManager.class).openProgram(staticProgram);
                 tool.setVisible(true);
             }catch(Exception e){startupError[0]=e;}
@@ -122,6 +192,7 @@ public class RealTraceTest {
         if(startupError[0]!=null)throw new AssertionError("Debugger plugin initialization failed",startupError[0]);
         GhidraTool tool=holder[0];
         require(tool.getManagedPlugins().stream().anyMatch(p->p instanceof ghigbc.GbcPlugin)&&tool.getService(ghigbc.GbcActionService.class)!=null,"generic plugin initializes with its action service");
+        if(studyExpected)require(tool.getManagedPlugins().stream().anyMatch(p->p.getClass().getName().equals("ghibw3.StudyPlugin")),"optional study plugin links to the integrated action/mapping services");
         var acceptor=tool.getService(TraceRmiService.class).acceptOne(new InetSocketAddress("127.0.0.1",0));acceptor.setTimeout(15000);
         int port=((InetSocketAddress)acceptor.getAddress()).getPort();
         ProcessBuilder pb=new ProcessBuilder(System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv/bin/python").toString()),"-m","ghigbc.agent","--connect","127.0.0.1:"+port,"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready","--experiment");
@@ -130,7 +201,10 @@ public class RealTraceTest {
         try {
             TraceRmiConnection conn=acceptor.accept();trace=conn.waitForTrace(15000);waitCapture(0);
             var methods=conn.getMethods();
-            require("generic".equals(attr("Machine","Profile")),"generic install runs without optional profile");
+            String expectedProfile=Arrays.asList(args).contains("--synthetic-profile")?"synthetic-counter":"generic";
+            require(expectedProfile.equals(attr("Machine","Profile")),"selected test profile is recognized without game-specific classes");
+            if(Arrays.asList(args).contains("--failing-profile"))require(String.valueOf(attr("Machine","ProfileError")).contains("deliberate profile failure"),"failing provider reports its error while the generic target remains usable");
+            if(expectedProfile.equals("synthetic-counter"))require(((Number)attr("Machine","ProfileRecordCount")).intValue()==1,"synthetic profile publishes its one bounded field");
             require("sameboy".equals(attr("Machine","Backend"))&&"CGB-E".equals(attr("Machine","Model")),"capture publishes the selected backend and actual hardware model");
             require(((Number)attr("Machine","TicksPerSecond")).longValue()==8388608&&attr("Machine","Ticks").equals(attr("Machine","Ticks8MHz")),"generic timebase agrees with the compatible legacy tick field");
             require(object("Machine.ProfileFields")!=null,"generic typed profile container is discoverable");
@@ -252,6 +326,10 @@ public class RealTraceTest {
             methods.get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
             System.out.println("TRACE_FILE "+trace.getDomainFile().getPathname());
             var traceFile=trace.getDomainFile();
+            var fixture=Map.of("schema",1,"directory",root.resolve("build/projects").toString(),"project",projectName,
+                "trace",traceFile.getPathname(),"snapshot",first,"backend","sameboy","profile",expectedProfile,
+                "profileFields",expectedProfile.equals("synthetic-counter")?1:0,"requireEdits",true);
+            Files.writeString(evidence(root).resolve("trace-fixture.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(fixture));
             var reopened=(Trace)traceFile.getReadOnlyDomainObject(RealTraceTest.class,-1,TaskMonitor.DUMMY);
             try {
                 ByteBuffer bytes=ByteBuffer.allocate(1);reopened.getMemoryManager().getBytes(first,reopened.getBaseAddressFactory().getDefaultAddressSpace().getAddress(0x402a),bytes);
@@ -269,6 +347,7 @@ public class RealTraceTest {
                 require(reopenedMachine.getValue(registerRestoreSnap,"ParentCheckpointSHA256").getValue().toString().length()==64,"reopened restore retains the checkpoint state fingerprint");
             }finally{reopened.release(RealTraceTest.class);}
             require(staticProgram.getSymbolTable().getPrimarySymbol(staticBankTwo).getName().equals("StudentBankTwo"),"student annotations preserved");
+            if(Arrays.asList(args).contains("--failure-lifecycle"))failureLifecycle(root,tool);
             // Ghidra owns acceptor, subprocess and terminals for this launch; no manual socket.
             var offers=tool.getService(TraceRmiLauncherService.class).getOffers(staticProgram);
             var offer=offers.stream().filter(o->o.getTitle().equals("GBC / SameBoy")).findFirst().orElseThrow(()->new AssertionError("SameBoy launcher not discovered"));
@@ -283,6 +362,7 @@ public class RealTraceTest {
                 if(launched.exception()!=null)throw new AssertionError("Ghidra launcher failed",launched.exception());
                 require(launched.trace()!=null&&launched.connection()!=null,"Ghidra SameBoy menu launcher starts real agent automatically");
                 Trace previousTrace=trace;trace=launched.trace();waitCapture(0);
+                if(studyExpected)require("generic".equals(attr("Machine","Profile")),"installed game profile rejects a nonmatching ROM while generic controls remain usable");
                 launched.connection().getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
                 require(object("Machine").getValue(snap(),"Capture")!=null,"automatic launcher publishes and saves a complete initial capture");
                 var deniedDefault=root.resolve("build/denied-default-"+System.currentTimeMillis());

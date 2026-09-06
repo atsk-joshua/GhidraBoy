@@ -82,7 +82,8 @@ def main(default_platform=None):
     classes.mkdir()
     cp=[str(f) for f in a.ghidra.rglob('*.jar') if 'yajsw' not in str(f)]
     cp += [str(inputs[name]['jar']) for name in ('GhiGBC','GhidraBoy')]
-    subprocess.run([str(a.jdk/'bin/javac'),'-proc:none','-cp',os.pathsep.join(cp),'-d',str(classes),str(ROOT/'tests/ghidra/RealTraceTest.java'),str(ROOT/'tests/ghidra/MappingContractTest.java'),str(ROOT/'tests/ghidra/UiActionTest.java')],check=True)
+    harnesses=('RealTraceTest.java','MappingContractTest.java','UiActionTest.java','ReopenTraceFixture.java')
+    subprocess.run([str(a.jdk/'bin/javac'),'-proc:none','-cp',os.pathsep.join(cp),'-d',str(classes),*[str(ROOT/'tests/ghidra'/name) for name in harnesses]],check=True)
     jar=stage/'build/GhiGBC-acceptance.jar'
     with zipfile.ZipFile(jar,'w',compression=zipfile.ZIP_DEFLATED) as z:
         for f in sorted(classes.rglob('*.class')):
