@@ -172,6 +172,15 @@ public final class CartridgeLayout {
                     SourceType.IMPORTED);
           p.getSymbolTable().addExternalEntryPoint(as.getAddress(0x100));
           p.getSymbolTable().createLabel(as.getAddress(0x100), "entry", SourceType.IMPORTED);
+          if (selected.equals("CARTRIDGE")) {
+            // A validated cartridge starts here, but its startup need not be a returning
+            // subroutine. Imported vector labels make Ghidra's entry analyzer apply that
+            // heuristic even to the external entry. CodeMap is its supported loader seed;
+            // it respects existing code/data and does not select a switchable ROM bank.
+            var code = p.getAddressSetPropertyMap("CodeMap");
+            if (code == null) code = p.createAddressSetPropertyMap("CodeMap");
+            code.add(as.getAddress(0x100), as.getAddress(0x100));
+          }
         }
         if (types && banks > 0 && cartridge.headerStatus() != Cartridge.HeaderStatus.TRUNCATED) {
           DataUtilities.createData(
