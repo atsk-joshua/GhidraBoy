@@ -68,6 +68,7 @@ class Session:
         self.error = ''
         self.parent_checkpoint = None
         self.lock = threading.RLock()
+        self._pause_lifetime = threading.Lock()
         self._closed = False
         self._epoch = 0
         self._capture_id = 0
@@ -82,7 +83,7 @@ class Session:
             raise RuntimeError('Restore a recovery checkpoint before continuing: ' + self.error)
 
     def close(self):
-        with self.lock:
+        with self.lock, self._pause_lifetime:
             if not self._closed:
                 # Close is terminal even if native teardown reports a failure.
                 self._closed = True
@@ -96,9 +97,10 @@ class Session:
         self.close()
 
     def pause(self):
-        # Does not acquire the execution lock. Close occurs after workers stop.
-        if not self._closed:
-            self._request_pause()
+        # Urgent pause bypasses execution, but cannot use a handle during teardown.
+        with self._pause_lifetime:
+            if not self._closed:
+                self._request_pause()
 
     def prepare(self):
         self.descriptor.require('run')

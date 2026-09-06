@@ -13,6 +13,26 @@ from ghigbc.session import CommandQueue, Session
 
 
 class SessionTests(unittest.TestCase):
+    def test_close_waits_for_inflight_pause_without_using_execution_lock(self):
+        entered=threading.Event();release=threading.Event();closed=threading.Event()
+        class LifetimeSession(Session):
+            def _request_pause(self):entered.set();release.wait(2)
+            def _close(self):closed.set()
+        machine=LifetimeSession()
+        pausing=threading.Thread(target=machine.pause)
+        closing=threading.Thread(target=machine.close)
+        pausing.start()
+        try:
+            self.assertTrue(entered.wait(1))
+            closing.start()
+            self.assertFalse(closed.wait(.1),'Native teardown overtook an in-flight pause')
+        finally:
+            release.set();pausing.join(2)
+            if closing.ident is not None:closing.join(2)
+        self.assertTrue(closed.is_set())
+        self.assertFalse(pausing.is_alive() or closing.is_alive())
+        machine.pause()  # Late interrupt remains harmless after native teardown.
+
     def test_new_session_rejects_context_from_a_closed_machine(self):
         from ghigbc.profile import ActionContext
         with create_backend('sameboy', ROOT/'build/teaching.gbc') as previous:
