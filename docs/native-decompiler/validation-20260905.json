@@ -1,0 +1,144 @@
+{
+  "baseGhidraVersion": "12.1.3",
+  "componentDecompilerTests": {
+    "nativeSha256": "9693c8b0c606a19ff9eedf50354be9f2f1a222b2d741cd5be836c6fd7bcc86ea",
+    "platform": "mac_arm_64",
+    "receipt": "/tmp/ghidraboy-native-index1-mac/build.json",
+    "status": "PASS",
+    "tests": 12,
+    "xmlSha256": "d824a206c3d9280d3bf9fbe64edcc9083e0b02a340b1e1e60c1c36d1d108c456"
+  },
+  "limitations": [
+    "No active installation was modified",
+    "Ubuntu22 runtime floor is GLIBC2.34/GLIBCXX3.4.29; broader official baseline is not claimed",
+    "Whole upstream native suite and downstream deployment remain separate gates",
+    "No commercial ROM/project/save data is included in native packages"
+  ],
+  "nativeDependencyVersion": "12.1.3+ghidraboy.jumpbasic-override-index.1",
+  "officialNative": false,
+  "patchSha256": "49d05f6757001a40be6a2cfab0e99f22b88a8cd771ed78afbf830440450952b8",
+  "platforms": [
+    {
+      "buildReceiptPath": "/tmp/ghidraboy-native-index1-mac-final/build.json",
+      "buildReceiptSha256": "e1afb9a52805e339f4392646e6844910248e86d24de5c666040f5f262cd1ec35",
+      "generatedCCases": 256,
+      "generatedCFailures": 0,
+      "name": "mac_arm_64",
+      "nativeSha256": "9693c8b0c606a19ff9eedf50354be9f2f1a222b2d741cd5be836c6fd7bcc86ea",
+      "originalDistributionUnchanged": true,
+      "packagePath": "/tmp/ghidraboy-native-index1-mac-final/ghidra-native-12.1.3+ghidraboy.jumpbasic-override-index.1-mac_arm_64.zip",
+      "packageSha256": "91be25839cb6b28a6192601bcf7690b8629d9ebdf2d78d3d44c4ce2587f4c905",
+      "preferred": true,
+      "runtimeRequirements": null,
+      "status": "PASS_LOCAL_NATIVE_GATES"
+    },
+    {
+      "buildReceiptPath": "/tmp/ghidraboy-native-index1-linux/jammy-final/build.json",
+      "buildReceiptSha256": "8335361a5ec6e31be7f4ee29fabe11d4a28f41c64f19103c97386dc0898fee06",
+      "generatedCCases": 256,
+      "generatedCFailures": 0,
+      "name": "linux_x86_64-ubuntu22",
+      "nativeSha256": "a15df39d95e36ef39532c2fa48bc964ce7056f82e9e0c4cd6417d97dc43f7195",
+      "originalDistributionUnchanged": true,
+      "packagePath": "/tmp/ghidraboy-native-index1-linux/jammy-final/ghidra-native-12.1.3+ghidraboy.jumpbasic-override-index.1-linux_x86_64.zip",
+      "packageSha256": "82b65121a7bde325e0ade1f8bfd1475a18861c00bd195637e5a79f853300f69a",
+      "preferred": true,
+      "runtimeRequirements": {
+        "originalVersionSymbols": [
+          "CXXABI_1.3",
+          "CXXABI_1.3.5",
+          "CXXABI_1.3.8",
+          "GLIBCXX_3.4",
+          "GLIBCXX_3.4.11",
+          "GLIBCXX_3.4.15",
+          "GLIBCXX_3.4.18",
+          "GLIBCXX_3.4.20",
+          "GLIBCXX_3.4.21",
+          "GLIBCXX_3.4.9",
+          "GLIBC_2.14",
+          "GLIBC_2.2.5",
+          "GLIBC_2.3"
+        ],
+        "requiredVersionSymbols": [
+          "CXXABI_1.3",
+          "CXXABI_1.3.5",
+          "CXXABI_1.3.8",
+          "GLIBCXX_3.4",
+          "GLIBCXX_3.4.11",
+          "GLIBCXX_3.4.15",
+          "GLIBCXX_3.4.18",
+          "GLIBCXX_3.4.20",
+          "GLIBCXX_3.4.21",
+          "GLIBCXX_3.4.26",
+          "GLIBCXX_3.4.29",
+          "GLIBCXX_3.4.9",
+          "GLIBC_2.14",
+          "GLIBC_2.2.5",
+          "GLIBC_2.3",
+          "GLIBC_2.34",
+          "GLIBC_2.4"
+        ],
+        "targetDeploymentValidation": "UNVERIFIED: local container execution does not establish every downstream system's ABI support"
+      },
+      "status": "PASS_LOCAL_NATIVE_GATES"
+    },
+    {
+      "buildReceiptPath": "/tmp/ghidraboy-native-index1-linux/validated/build.json",
+      "buildReceiptSha256": "3e231649d4401705425000b413da22dfa621c04e8b79c354a699fdfad3fc5df3",
+      "generatedCCases": 256,
+      "generatedCFailures": 0,
+      "name": "linux_x86_64-debian13",
+      "nativeSha256": "ed0d89c0820ec46ca2d32d1ea4eb944509d1af3fd521acbbb6c2b8dbd1dd714d",
+      "originalDistributionUnchanged": true,
+      "packagePath": "/tmp/ghidraboy-native-index1-linux/validated/ghidra-native-12.1.3+ghidraboy.jumpbasic-override-index.1-linux_x86_64.zip",
+      "packageSha256": "e8f72c660a85db0641c88c4198b6eb97d562650234989a62cd8feed2db8d8209",
+      "preferred": false,
+      "runtimeRequirements": {
+        "originalVersionSymbols": [
+          "CXXABI_1.3",
+          "CXXABI_1.3.5",
+          "CXXABI_1.3.8",
+          "GLIBCXX_3.4",
+          "GLIBCXX_3.4.11",
+          "GLIBCXX_3.4.15",
+          "GLIBCXX_3.4.18",
+          "GLIBCXX_3.4.20",
+          "GLIBCXX_3.4.21",
+          "GLIBCXX_3.4.9",
+          "GLIBC_2.14",
+          "GLIBC_2.2.5",
+          "GLIBC_2.3"
+        ],
+        "requiredVersionSymbols": [
+          "CXXABI_1.3",
+          "CXXABI_1.3.5",
+          "CXXABI_1.3.8",
+          "GLIBCXX_3.4",
+          "GLIBCXX_3.4.11",
+          "GLIBCXX_3.4.15",
+          "GLIBCXX_3.4.18",
+          "GLIBCXX_3.4.20",
+          "GLIBCXX_3.4.21",
+          "GLIBCXX_3.4.26",
+          "GLIBCXX_3.4.29",
+          "GLIBCXX_3.4.32",
+          "GLIBCXX_3.4.9",
+          "GLIBC_2.14",
+          "GLIBC_2.2.5",
+          "GLIBC_2.3",
+          "GLIBC_2.34",
+          "GLIBC_2.38"
+        ],
+        "targetDeploymentValidation": "UNVERIFIED: local container execution does not establish every downstream system's ABI support"
+      },
+      "status": "PASS_LOCAL_NATIVE_GATES"
+    }
+  ],
+  "reproducibility": {
+    "linuxDebian13": "Two independent fresh-source helper builds produce identical native SHA256",
+    "mac": "Manual and helper fresh-source builds produce identical native SHA256",
+    "packageNote": "Packages contain run-specific provenance; native binaries are the reproducibility target"
+  },
+  "schema": "ghidraboy-native-validation-summary-v1",
+  "sourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9"
+}

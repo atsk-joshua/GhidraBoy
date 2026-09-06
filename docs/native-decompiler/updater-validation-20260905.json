@@ -1,0 +1,31 @@
+{
+  "schema": "ghidraboy-native-updater-validation-v1",
+  "updaterSha256": "dd8a9dee450910bafb743348ea892a915ff4d7a1d019354f1936545c340f2e2c",
+  "unitTests": {
+    "cases": 7,
+    "status": "PASS"
+  },
+  "mac": {
+    "install": "/tmp/ghidraboy-native-installed-copy/receipt.json",
+    "verify": "/tmp/ghidraboy-native-verify.log",
+    "rollback": "/tmp/ghidraboy-native-rolled-back-copy/receipt.json",
+    "status": "PASS"
+  },
+  "linux": {
+    "install": "/tmp/ghidraboy-native-update-linux/installed/receipt.json",
+    "validation": "/tmp/ghidraboy-native-update-linux/cli-validation.json",
+    "rollback": "/tmp/ghidraboy-native-update-linux/rolled-back/receipt.json",
+    "abiRefusal": "/tmp/ghidraboy-native-update-linux/abi-refusal.log",
+    "status": "PASS"
+  },
+  "mechanics": [
+    "Both managed file hashes/modes checked before staging and publication",
+    "Seven mechanics tests include both cancellation points and post-publication interrupt",
+    "Exclusive atomic whole-bundle publication refuses existing destination, even empty",
+    "Real newer-ABI binary refused before publication on Ubuntu22"
+  ],
+  "limits": [
+    "No active/source installation was modified",
+    "Startup/protocol readiness does not replace semantic/corpus validation"
+  ]
+}
