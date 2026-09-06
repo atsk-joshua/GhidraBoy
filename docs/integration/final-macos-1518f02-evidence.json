@@ -1,0 +1,889 @@
+{
+  "schema": "ghidraboy-final-macos-acceptance-v1",
+  "created_utc": "2026-09-06T21:45:24.839200+00:00",
+  "source_head": "1518f02f88921def373bf09aa67d4c499517b377",
+  "status": "PASS",
+  "scope": "Fresh isolated macOS arm64 installed component acceptance; all commands rerun; physical UI and paired measurements are separate; physical Steam Deck deferred",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "python": "3.9.6",
+    "controlled_PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+    "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+    "unavailable_build_tools": [
+      "cc",
+      "gcc",
+      "clang",
+      "make",
+      "cmake",
+      "javac",
+      "gradle",
+      "rgbasm"
+    ],
+    "scope": "Build tools excluded from PATH; Java runtime proxy exposes java only; host tools remain installed outside this controlled environment."
+  },
+  "cleanup": {
+    "checked_utc": "2026-09-06T21:45:24.694474+00:00",
+    "owned_test_processes_remaining": [],
+    "status": "PASS",
+    "scope": "Executable-filtered inspection of acceptance workspace Java, emulator-sidecar, and SDL test processes only; no other user processes modified",
+    "method_note": "Executable filter excludes shell command text from matching its own inspection expression."
+  },
+  "packages": [
+    {
+      "backend": "sameboy",
+      "status": "PASS",
+      "archive": "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/sameboy.tar.gz",
+      "archive_sha256": "e42343d75ba1aa4d6a54bc8fc97bea4e23fe51cc4a27d098dcb2d636f6f877aa",
+      "manifest_sha256": "7b4964d2cb037edc976f67cae67eae0b447c17a10b98aaec38f378c9b9fbd3e8",
+      "all_manifest_archive_files_verified": 83,
+      "native_sha256": {
+        "build/libghigbc.dylib": "67e39fead16cdddb492cef8b5d978072d32cd4d2d2109aa7efd076bd46ca7cb1"
+      },
+      "java_sha256": {
+        "build/GhiGBC-acceptance.jar": "ec23a495036968b33530febb204f9cfd245cbdf91b710f5d87b3965b6fd6b2ae",
+        "extensions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhiGBC.zip!/GhiGBC/lib/GhiGBC.jar": "dd76222e2666f663a165a1f6af8080ab9d80d9584816d32da1821c2b3e4f1788",
+        "extensions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip!/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar": "fd0536cf46d634b71ee676f0cffd0c9cb99b0c172a6dd0664e2e3024a0b645f1"
+      },
+      "source": {
+        "head": "1518f02f88921def373bf09aa67d4c499517b377",
+        "scope": "Tracked build/runtime sources; migration ledger and release evidence excluded",
+        "file_count": 342,
+        "canonical_files_sha256": "1efdfec039e5bf31d2f02fc1f7aeb5ff84da89b5a689ebf645abe15cd4486ad3",
+        "exact_file_hashes": "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/suite.json"
+      },
+      "commands": [
+        {
+          "name": "validate",
+          "command": [
+            "bash",
+            "Validate.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 35.35147285461426,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate.log"
+        },
+        {
+          "name": "installer",
+          "command": [
+            "python3",
+            "scripts/test_installer.py",
+            "--manifest",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64/suite.json",
+            "--ghidra",
+            "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "--java-home",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "--work",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/installer"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 4.363576173782349,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/installer.log"
+        },
+        {
+          "name": "display",
+          "command": [
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64/.venv12/bin/python",
+            "scripts/test_display_runtime.py"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 1.1677720546722412,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/display.log"
+        },
+        {
+          "name": "doctor",
+          "command": [
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64/.venv12/bin/python",
+            "scripts/doctor.py",
+            "--require-ready"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 0.18803000450134277,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/doctor.log"
+        },
+        {
+          "name": "observation",
+          "command": [
+            "bash",
+            "scripts/test_observation_report.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/observation-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/observation-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 4.141077995300293,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/observation.log"
+        }
+      ],
+      "counts": {
+        "native_python_tests": 91,
+        "trace_pass_assertions": 100,
+        "installer_checks": 11,
+        "observation_assertions": 34,
+        "sdl_backends": 1
+      },
+      "markers": [
+        "REAL_TRACE_TEST_PASSED",
+        "OBSERVATION_REPORT_TEST_PASSED",
+        "OBSERVATION_STANDALONE_REOPEN_PASSED"
+      ],
+      "doctor": {
+        "host": "MacBookPro.localdomain",
+        "os": "Darwin",
+        "architecture": "arm64",
+        "python": "3.9.6",
+        "ghidra": "12.1.3",
+        "native": true,
+        "display": true,
+        "loopback": true,
+        "ghidra_revision": "8b4c91d4d5bd1549622bfbade0df199585b98365",
+        "trace_wheels": [
+          "ghidratrace-12.1-py3-none-any.whl"
+        ],
+        "backends": {
+          "sameboy": {
+            "status": "READY",
+            "descriptor": "sameboy"
+          }
+        },
+        "sdl2_available": true,
+        "sdl2_version": "2.32.72",
+        "tools": {
+          "cc": null,
+          "make": null,
+          "rgbasm": null,
+          "java": null,
+          "gradle": null
+        },
+        "ghidratrace_client": "12.1",
+        "protobuf": "6.31.0",
+        "sm83_definitions": [
+          "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/sameboy/validate-home/Library/ghidra/ghidra_12.1.3_PUBLIC/Extensions/GhidraBoy/data/languages/sm83.ldefs"
+        ],
+        "java_version": "openjdk version \"21.0.12.1\" 2026-08-18",
+        "java_usable": true,
+        "native_decompiler": {
+          "status": "MATCHED",
+          "identity": {
+            "baseGhidraVersion": "12.1.3",
+            "binarySha256": "5b736c3e9236667d35a732f226c99f0014736b9fe506147886a7f15ccb94939a",
+            "nativeDependencyVersion": "12.1.3+ghidraboy.switch-recovery.2",
+            "officialNative": false,
+            "patchSha256": "1974f640681d2299ddc6825571a1c3ae35b24d0625dc7d996301ab8a5c1f0baf",
+            "platform": "mac_arm_64",
+            "schema": "ghidraboy-native-dependency-identity-v1",
+            "sourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9"
+          }
+        },
+        "native_decompiler_usable": true,
+        "ready_for_generic_tests": true,
+        "ready_for_desktop_validation": true
+      },
+      "display": [
+        {
+          "status": "PASS",
+          "backend": "sameboy",
+          "sdl_library": "/opt/homebrew/opt/sdl2/lib/libSDL2.dylib",
+          "seconds": 1.0385516659999998,
+          "scope": "SDL window creation, paused event pumping and cleanup on current display; no physical input/focus claim"
+        }
+      ]
+    },
+    {
+      "backend": "mgba",
+      "status": "PASS",
+      "archive": "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/mgba.tar.gz",
+      "archive_sha256": "c12c298fc413bc3ef7020541716eeb2bbe5806c8611e09b1dc68ea946b4d3992",
+      "manifest_sha256": "d2d629ffda7deea0f080e860ea4d937ccc7e5120850fe18ee2b65570e3f25d61",
+      "all_manifest_archive_files_verified": 74,
+      "native_sha256": {
+        "build/libghigbc_mgba.dylib": "9c0b84e7bd678e695950bbf5451aa916d6b2d6e7c55f08327d6659ff8ac675cf"
+      },
+      "java_sha256": {
+        "build/GhiGBC-acceptance.jar": "ec23a495036968b33530febb204f9cfd245cbdf91b710f5d87b3965b6fd6b2ae",
+        "extensions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhiGBC.zip!/GhiGBC/lib/GhiGBC.jar": "dd76222e2666f663a165a1f6af8080ab9d80d9584816d32da1821c2b3e4f1788",
+        "extensions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip!/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar": "fd0536cf46d634b71ee676f0cffd0c9cb99b0c172a6dd0664e2e3024a0b645f1"
+      },
+      "source": {
+        "head": "1518f02f88921def373bf09aa67d4c499517b377",
+        "scope": "Tracked build/runtime sources; migration ledger and release evidence excluded",
+        "file_count": 342,
+        "canonical_files_sha256": "1efdfec039e5bf31d2f02fc1f7aeb5ff84da89b5a689ebf645abe15cd4486ad3",
+        "exact_file_hashes": "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/suite.json"
+      },
+      "commands": [
+        {
+          "name": "validate",
+          "command": [
+            "bash",
+            "Validate.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 7.257742881774902,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate.log"
+        },
+        {
+          "name": "installer",
+          "command": [
+            "python3",
+            "scripts/test_installer.py",
+            "--manifest",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64-mgba/suite.json",
+            "--ghidra",
+            "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "--java-home",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "--work",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/installer"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 4.601647138595581,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/installer.log"
+        },
+        {
+          "name": "display",
+          "command": [
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64-mgba/.venv12/bin/python",
+            "scripts/test_display_runtime.py"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 1.1532669067382812,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/display.log"
+        },
+        {
+          "name": "doctor",
+          "command": [
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64-mgba/.venv12/bin/python",
+            "scripts/doctor.py",
+            "--require-ready"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 0.1838371753692627,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/doctor.log"
+        },
+        {
+          "name": "observation",
+          "command": [
+            "bash",
+            "scripts/test_observation_report.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/observation-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/observation-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 4.151496887207031,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/observation.log"
+        }
+      ],
+      "counts": {
+        "native_python_tests": 17,
+        "trace_pass_assertions": 14,
+        "installer_checks": 12,
+        "observation_assertions": 34,
+        "sdl_backends": 1
+      },
+      "markers": [
+        "BACKEND_TRACE_CONTRACT_PASSED",
+        "OBSERVATION_REPORT_TEST_PASSED",
+        "OBSERVATION_STANDALONE_REOPEN_PASSED"
+      ],
+      "doctor": {
+        "host": "MacBookPro.localdomain",
+        "os": "Darwin",
+        "architecture": "arm64",
+        "python": "3.9.6",
+        "ghidra": "12.1.3",
+        "native": true,
+        "display": true,
+        "loopback": true,
+        "ghidra_revision": "8b4c91d4d5bd1549622bfbade0df199585b98365",
+        "trace_wheels": [
+          "ghidratrace-12.1-py3-none-any.whl"
+        ],
+        "backends": {
+          "mgba": {
+            "status": "READY",
+            "descriptor": "mgba"
+          }
+        },
+        "sdl2_available": true,
+        "sdl2_version": "2.32.72",
+        "tools": {
+          "cc": null,
+          "make": null,
+          "rgbasm": null,
+          "java": null,
+          "gradle": null
+        },
+        "ghidratrace_client": "12.1",
+        "protobuf": "6.31.0",
+        "sm83_definitions": [
+          "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/mgba/validate-home/Library/ghidra/ghidra_12.1.3_PUBLIC/Extensions/GhidraBoy/data/languages/sm83.ldefs"
+        ],
+        "java_version": "openjdk version \"21.0.12.1\" 2026-08-18",
+        "java_usable": true,
+        "native_decompiler": {
+          "status": "MATCHED",
+          "identity": {
+            "baseGhidraVersion": "12.1.3",
+            "binarySha256": "5b736c3e9236667d35a732f226c99f0014736b9fe506147886a7f15ccb94939a",
+            "nativeDependencyVersion": "12.1.3+ghidraboy.switch-recovery.2",
+            "officialNative": false,
+            "patchSha256": "1974f640681d2299ddc6825571a1c3ae35b24d0625dc7d996301ab8a5c1f0baf",
+            "platform": "mac_arm_64",
+            "schema": "ghidraboy-native-dependency-identity-v1",
+            "sourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9"
+          }
+        },
+        "native_decompiler_usable": true,
+        "ready_for_generic_tests": true,
+        "ready_for_desktop_validation": true
+      },
+      "display": [
+        {
+          "status": "PASS",
+          "backend": "mgba",
+          "sdl_library": "/opt/homebrew/opt/sdl2/lib/libSDL2.dylib",
+          "seconds": 1.0437,
+          "scope": "SDL window creation, paused event pumping and cleanup on current display; no physical input/focus claim"
+        }
+      ]
+    },
+    {
+      "backend": "both",
+      "status": "PASS",
+      "archive": "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/both.tar.gz",
+      "archive_sha256": "01c0289f2c42513859340a6e902002d453dba33e1c9ff86ad31f5907d17a6673",
+      "manifest_sha256": "31dd5508ff35d0866e040eb837eb6774d9712b4e8c957c4191e6e268fabe3a85",
+      "all_manifest_archive_files_verified": 95,
+      "native_sha256": {
+        "build/libghigbc.dylib": "67e39fead16cdddb492cef8b5d978072d32cd4d2d2109aa7efd076bd46ca7cb1",
+        "build/libghigbc_mgba.dylib": "9c0b84e7bd678e695950bbf5451aa916d6b2d6e7c55f08327d6659ff8ac675cf"
+      },
+      "java_sha256": {
+        "build/GhiGBC-acceptance.jar": "ec23a495036968b33530febb204f9cfd245cbdf91b710f5d87b3965b6fd6b2ae",
+        "extensions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhiGBC.zip!/GhiGBC/lib/GhiGBC.jar": "dd76222e2666f663a165a1f6af8080ab9d80d9584816d32da1821c2b3e4f1788",
+        "extensions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip!/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar": "fd0536cf46d634b71ee676f0cffd0c9cb99b0c172a6dd0664e2e3024a0b645f1"
+      },
+      "source": {
+        "head": "1518f02f88921def373bf09aa67d4c499517b377",
+        "scope": "Tracked build/runtime sources; migration ledger and release evidence excluded",
+        "file_count": 342,
+        "canonical_files_sha256": "1efdfec039e5bf31d2f02fc1f7aeb5ff84da89b5a689ebf645abe15cd4486ad3",
+        "exact_file_hashes": "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/suite.json"
+      },
+      "commands": [
+        {
+          "name": "validate",
+          "command": [
+            "bash",
+            "Validate.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 16.354660749435425,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate.log"
+        },
+        {
+          "name": "installer",
+          "command": [
+            "python3",
+            "scripts/test_installer.py",
+            "--manifest",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64-both/suite.json",
+            "--ghidra",
+            "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "--java-home",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "--work",
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/installer"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 5.402691841125488,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/installer.log"
+        },
+        {
+          "name": "display",
+          "command": [
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64-both/.venv12/bin/python",
+            "scripts/test_display_runtime.py"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 2.2147669792175293,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/display.log"
+        },
+        {
+          "name": "doctor",
+          "command": [
+            "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/extracted/GhidraBoy-Debugger-20260905-integration1-macos-arm64-both/.venv12/bin/python",
+            "scripts/doctor.py",
+            "--require-ready"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 0.18559980392456055,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/doctor.log"
+        },
+        {
+          "name": "observation",
+          "command": [
+            "bash",
+            "scripts/test_observation_report.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/observation-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/observation-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 4.441359043121338,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/observation.log"
+        },
+        {
+          "name": "research",
+          "command": [
+            "bash",
+            "scripts/test_research_experiment.sh"
+          ],
+          "environment": {
+            "PATH": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/runtime-path",
+            "JAVA_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/java-runtime",
+            "GHIDRA_INSTALL_DIR": "/private/tmp/ghidraboy-integration-20260906/rmi-install",
+            "GBC_TEST_HOME": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/research-home",
+            "GBC_EVIDENCE_DIR": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/research-evidence"
+          },
+          "exit_code": 0,
+          "seconds": 9.266315937042236,
+          "log": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/research.log"
+        }
+      ],
+      "counts": {
+        "native_python_tests": 105,
+        "trace_pass_assertions": 28,
+        "installer_checks": 11,
+        "observation_assertions": 34,
+        "sdl_backends": 2
+      },
+      "markers": [
+        "BACKEND_TRACE_CONTRACT_PASSED",
+        "OBSERVATION_REPORT_TEST_PASSED",
+        "OBSERVATION_STANDALONE_REOPEN_PASSED"
+      ],
+      "doctor": {
+        "host": "MacBookPro.localdomain",
+        "os": "Darwin",
+        "architecture": "arm64",
+        "python": "3.9.6",
+        "ghidra": "12.1.3",
+        "native": true,
+        "display": true,
+        "loopback": true,
+        "ghidra_revision": "8b4c91d4d5bd1549622bfbade0df199585b98365",
+        "trace_wheels": [
+          "ghidratrace-12.1-py3-none-any.whl"
+        ],
+        "backends": {
+          "sameboy": {
+            "status": "READY",
+            "descriptor": "sameboy"
+          },
+          "mgba": {
+            "status": "READY",
+            "descriptor": "mgba"
+          }
+        },
+        "sdl2_available": true,
+        "sdl2_version": "2.32.72",
+        "tools": {
+          "cc": null,
+          "make": null,
+          "rgbasm": null,
+          "java": null,
+          "gradle": null
+        },
+        "ghidratrace_client": "12.1",
+        "protobuf": "6.31.0",
+        "sm83_definitions": [
+          "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/validate-home/Library/ghidra/ghidra_12.1.3_PUBLIC/Extensions/GhidraBoy/data/languages/sm83.ldefs"
+        ],
+        "java_version": "openjdk version \"21.0.12.1\" 2026-08-18",
+        "java_usable": true,
+        "native_decompiler": {
+          "status": "MATCHED",
+          "identity": {
+            "baseGhidraVersion": "12.1.3",
+            "binarySha256": "5b736c3e9236667d35a732f226c99f0014736b9fe506147886a7f15ccb94939a",
+            "nativeDependencyVersion": "12.1.3+ghidraboy.switch-recovery.2",
+            "officialNative": false,
+            "patchSha256": "1974f640681d2299ddc6825571a1c3ae35b24d0625dc7d996301ab8a5c1f0baf",
+            "platform": "mac_arm_64",
+            "schema": "ghidraboy-native-dependency-identity-v1",
+            "sourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9"
+          }
+        },
+        "native_decompiler_usable": true,
+        "ready_for_generic_tests": true,
+        "ready_for_desktop_validation": true
+      },
+      "display": [
+        {
+          "status": "PASS",
+          "backend": "sameboy",
+          "sdl_library": "/opt/homebrew/opt/sdl2/lib/libSDL2.dylib",
+          "seconds": 1.0338028750000001,
+          "scope": "SDL window creation, paused event pumping and cleanup on current display; no physical input/focus claim"
+        },
+        {
+          "status": "PASS",
+          "backend": "mgba",
+          "sdl_library": "/opt/homebrew/opt/sdl2/lib/libSDL2.dylib",
+          "seconds": 1.0468362500000001,
+          "scope": "SDL window creation, paused event pumping and cleanup on current display; no physical input/focus claim"
+        }
+      ]
+    }
+  ],
+  "blockers": [],
+  "payload_continuity": [
+    {
+      "backend": "sameboy",
+      "unchanged_prior_payload_count": 81,
+      "added_payload_sha256": {
+        "tests/fixtures/banks.asm": "3485ec6b78f9232aba899527aad387da9aaef50fd0c24ec40f18720ddc0cce18",
+        "tests/ghidra/ResearchExperimentTest.java": "e309117de1b24be7588da98b1977fb81c764daf1c9a24630b835f9b8bd84e172"
+      },
+      "artifact_manifest_sha256": "fa84c769065339233f441888b3201b2d7e8c72d808e85097baff0260cac72c05",
+      "previous_archive_sha256": "e056752fedd9de4ac9c8f5dc12086f032d709c36de62dcedc6e176e0b26686c0",
+      "archive_sha256": "e42343d75ba1aa4d6a54bc8fc97bea4e23fe51cc4a27d098dcb2d636f6f877aa",
+      "status": "PASS"
+    },
+    {
+      "backend": "mgba",
+      "unchanged_prior_payload_count": 72,
+      "added_payload_sha256": {
+        "tests/fixtures/banks.asm": "3485ec6b78f9232aba899527aad387da9aaef50fd0c24ec40f18720ddc0cce18",
+        "tests/ghidra/ResearchExperimentTest.java": "e309117de1b24be7588da98b1977fb81c764daf1c9a24630b835f9b8bd84e172"
+      },
+      "artifact_manifest_sha256": "fa84c769065339233f441888b3201b2d7e8c72d808e85097baff0260cac72c05",
+      "previous_archive_sha256": "9497ed529cd71523e7ba733108607dbb59d68dd3f4134c53f32e9b4b65b50be2",
+      "archive_sha256": "c12c298fc413bc3ef7020541716eeb2bbe5806c8611e09b1dc68ea946b4d3992",
+      "status": "PASS"
+    },
+    {
+      "backend": "both",
+      "unchanged_prior_payload_count": 93,
+      "added_payload_sha256": {
+        "tests/fixtures/banks.asm": "3485ec6b78f9232aba899527aad387da9aaef50fd0c24ec40f18720ddc0cce18",
+        "tests/ghidra/ResearchExperimentTest.java": "e309117de1b24be7588da98b1977fb81c764daf1c9a24630b835f9b8bd84e172"
+      },
+      "artifact_manifest_sha256": "fa84c769065339233f441888b3201b2d7e8c72d808e85097baff0260cac72c05",
+      "previous_archive_sha256": "ca55aa9d917a079989fba7078fbee069f01707712495e6c6e75319d4f278a74b",
+      "archive_sha256": "01c0289f2c42513859340a6e902002d453dba33e1c9ff86ad31f5907d17a6673",
+      "status": "PASS"
+    }
+  ],
+  "previous_evidence": {
+    "path": "/Users/joshuahansen/dev/GhidraBoy/docs/integration/final-macos-evidence.json",
+    "sha256": "70fbcf4d957cf99f77170320fde3581cb9d7acb2bf0687e4742b86fe3bc014a2",
+    "status": "Preserved failed 93b7130 research receipt; existing payload identity independently verified, all component commands rerun"
+  },
+  "sdl_prerequisite": {
+    "path": "/opt/homebrew/opt/sdl2/lib/libSDL2.dylib",
+    "sha256": "e20203a837218fa7a621d98b88a5bf58cd08d9b8b37791164cc7cb1fe98b3d0b",
+    "note": "Existing Homebrew SDL2 supplied macOS display readiness. No fresh-Mac bundled-SDL claim; Linux fallback qualification is separate."
+  },
+  "java_runtime_hashes": {
+    "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/release": "7b6f4e84249287203d8e1857254307a6b2dc0643b1efdeef5fa2aeaf791866f0",
+    "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin/java": "d7ab2ea6a7e731a8a2cee7d722046c9f7d8c5f184cd769b9954a392592337770",
+    "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/lib/server/libjvm.dylib": "1fdf8c0ddf96ad4d644100d0177ec206975e410ba575a421204eb5865c559cb2"
+  },
+  "diagnostics": [
+    {
+      "check": "sameboy validate",
+      "message": "Ghidra ThreadedTerminal console-close bad-file-descriptor diagnostic may appear during structured termination.",
+      "occurrences": 1,
+      "disposition": "Log retained; owned sidecar exit, truthful terminated state, and no uncaught asynchronous JVM errors verified."
+    }
+  ],
+  "totals": {
+    "top_level_commands": 16,
+    "passed_commands": 16,
+    "failed_commands": 0,
+    "native_python_tests": 213,
+    "installer_checks": 34,
+    "observation_assertions": 102,
+    "sdl_backend_smokes": 4,
+    "research_pass_assertions": 85
+  },
+  "research": {
+    "status": "PASS",
+    "markers": [
+      "RESEARCH_EXPERIMENT_PASSED",
+      "RESEARCH_EXPERIMENT_REOPEN_PASSED",
+      "PASS research direct mGBA checkpoint rejection"
+    ],
+    "pass_assertions": 85,
+    "recipe": {
+      "format": "ghidraboy-bounded-experiment",
+      "version": 1,
+      "scope": "one LD A,11 instruction in the self-authored MBC5 fixture, repeated in the same SameBoy process",
+      "romSHA256": "ee2d9eaa2523526d6f8f254873d0d4c1f7ee999d793985ad6b13e3585a7561b3",
+      "assemblySHA256": "3485ec6b78f9232aba899527aad387da9aaef50fd0c24ec40f18720ddc0cce18",
+      "assemblySource": "tests/fixtures/banks.asm: BankOne",
+      "coordinateEvidence": "Captured CPU 4029..402b bytes, ROMX=1, with each persisted static source independently reversed to physical rom bank1 offsets29..2b by the authoritative Program mapping",
+      "runnerSHA256": "e309117de1b24be7588da98b1977fb81c764daf1c9a24630b835f9b8bd84e172",
+      "checkpoint": {
+        "schema": 2,
+        "core": "208ba4afabffab9edde416f2dbb8ae459e34adb8",
+        "config": "ghigbc-abi1-cpu-bus-v1:CGB-E:accurate-rtc:copied-stop",
+        "patch": "afb55300828df629058e9fde30024801705cb4ffc3c935e58c5720da5d217b67",
+        "model": "CGB-E",
+        "clock": "accurate-emulated",
+        "rom_hash": "ee2d9eaa2523526d6f8f254873d0d4c1f7ee999d793985ad6b13e3585a7561b3",
+        "boot_hash": "f767b8e7e510a255f81328c89dba6e0c996b370e1bc86aebb8584a7da47a5bba",
+        "backend": "sameboy",
+        "state_file": "state.sbs",
+        "ticks_per_second": 8388608,
+        "input": "release-on-restore",
+        "session": "0569e544-59fb-453a-bdd9-f3ce15e57dfa",
+        "epoch": 0,
+        "capture": 4,
+        "ticks": 26171648,
+        "state_sha256": "3b45528b1d3a522e46170bc3517e16e4456072a7076caec2af83f0e261da0dd8",
+        "parent_checkpoint": null
+      },
+      "checkpointPath": "/private/tmp/ghidraboy-final-mac-acceptance-1518f02/both/research-evidence/bank1-checkpoint",
+      "clockControl": "Checkpoint restores emulated state; advance exactly one retired opcode. Cartridge type 0x19 has no RTC; fixture has DI and LCD off at the selected boundary. No host-time run/input request occurs in the measured interval.",
+      "counterSemantics": "Instrumentation tick/instruction counters are monotonic across restore; compare per-interval deltas, not absolute counter equality.",
+      "declaredTickDelta": 16,
+      "inputs": [],
+      "inputBoundary": "No input transitions between checkpoint and either one-opcode step; restore releases all buttons.",
+      "steps": [
+        "Stop at physical rom bank 1 offset 0x29 / CPU 0x4029 using fixture-ready",
+        "Delete the fixture-ready breakpoint before checkpoint so restore cannot re-arm a stop ahead of the opcode",
+        "Save backend-specific checkpoint and validate ROM/boot/state hashes",
+        "Step exactly one retired opcode; observe A=0x11, PC=0x402b, unchanged flags/BC/DE/HL/SP and ROM bytes 3e11c9",
+        "Restore that exact checkpoint into the compatible SameBoy session",
+        "Repeat one retired opcode and compare the declared observations",
+        "Reject incompatible checkpoint settings; keep captured observations usable"
+      ],
+      "hypotheses": [],
+      "conclusion": "The two controlled one-opcode intervals produced identical declared register/physical-byte results and equal emulated-tick deltas.",
+      "limits": "No portable state, reverse execution, general clock/input replay, causal stack, or cross-backend checkpoint parity is claimed.",
+      "status": "PASS"
+    },
+    "mgba_checkpoint_rejection": {
+      "status": "PASS",
+      "backend": "mgba",
+      "capabilities": [
+        "breakpoints",
+        "cpu-memory",
+        "input",
+        "physical-capture-v1",
+        "registers",
+        "run",
+        "step",
+        "video"
+      ],
+      "diagnostic": "mGBA (experimental) does not support: checkpoint",
+      "pc": 256,
+      "scope": "Direct API rejects unsupported checkpoint before mutation; no portable state produced"
+    },
+    "source_hashes_match_actual_packaged_files": true,
+    "observation_files": {
+      "mgba-observation.json": "e1d0370b1ed442c3182d01e614b1f6414ecb2e8b1c65a1e2a853cc3fc56b5ff2",
+      "repeat-observation.json": "6793602dccca8a36b230049d6f4325e20db84df042d33f3b01fc0d9d254de698",
+      "first-observation.json": "a08fa1240c9dc09c95d33227bae240c2dab4660bed89e8b4bf4fd596995b146f",
+      "initial-observation.json": "a89e0c21a9da30e544103388c6ed322bebda2711e445916d7027e38e31428338",
+      "restored-observation.json": "f5c5d32d85782488c4d88f54b449ed3a9d45b1fd3d6c68da71156772e091d2cd"
+    }
+  },
+  "evidence_files": {
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/commands.json": "43f22079eed5b1c4dbf2bdb8fae0bd7b3f166506c1ca48aa0347d2c76fa22e2b",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/display.log": "0e71fa588596542d300525f9a07a02fd2434520dd8c4b70d47ca6ecc97521c54",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/doctor.log": "59ddfdf12d9a615712c9e42dda7822fce52987ac0ba3f7476313c8524e9beaae",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/ghidra-logs/observation-home/application.log": "5c6da728602f8a4b3f625cf04f38df427b07e2918e99e6d50d3694ae74f34ed3",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/ghidra-logs/research-home/application.log": "e1981db326e237240fcbf26f24d96e980fde2055c9a06fc934e94e1ea00e88d6",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/ghidra-logs/validate-home/application.log": "e25be62657baa5753d4061f79502a461fa646f9d28eb0fb572cdea413da33ff9",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/crash-after-backup.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/crash-after-install.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/hash-refused.log": "31726cea69da0f75de7b8c9e7333b6943faf0926e9888026056669174b74c980",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/install.log": "a9b6e53e4a98c71927042f4fe5e16e958391066d591845bee6f7e9d40c44ae85",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/native-dependency-refused.log": "d2059579446f89965d2731d0003173c79cc77d99029c1e6af9ef54aa899139e9",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/recover-second.log": "bfac342a1ee97dc8f02195a0079cb6cbaf6fca72407b09fbbd272c59819dee6b",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/recover.log": "34ec2f0e6b9cece405710d6de8e8caf912599270a8a1acc0e21ec11cef56dff2",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/results.json": "0565ba336f0f9f75fb58692b1bc097ddb37fab91b5919f13203ce0932ebff095",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/rollback-original.log": "065b7a95489f75623b86a1b4739c980f1bb7050b3251f23c38a7728bb71b7623",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/self-rollback.log": "81e5ef32043c51850efa77b62121c230ef8a5e2d5bcf93424b3658f9492cfccf",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/upgrade.log": "8762a777f044b730de34cc4769de3a4006252b0e3312a1d68348c656a56fdd12",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer/user-edit-refused.log": "740e21de601b101419e5c471fd6d65ec8234b85e50b211031377ff1d857c9415",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/installer.log": "19965c382541421c1a1ac24a12df53ab116060d0085f12808792fbd461c14903",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/observation.json": "5ca2ae95cff46f5f2218d652beba725c2bd30fd4e9d9a7bd7e25c9571cb24de2",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/observation.log": "808aa0f0c5fcf15ef9e134c7f261ab8703fa0649e2265ac223a6f606283ba99d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/bank1-checkpoint/metadata.json": "8b249dcadb8b5580f55f281ff907957836a4f1a65b8b08edea7d25a5b67ac99a",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/bank1-checkpoint/state.sbs": "3b45528b1d3a522e46170bc3517e16e4456072a7076caec2af83f0e261da0dd8",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/comparison.txt": "a910a43dedf67fa5dffa1f47e65b4fe8a80428e606c8990fd6b15f9644894c0d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/experiment-recipe.json": "2e68f48c3936e6d15f340d79b4fb172eeb729a24bae740809539ff8003490712",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/first-observation.json": "a08fa1240c9dc09c95d33227bae240c2dab4660bed89e8b4bf4fd596995b146f",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/incompatible-checkpoint/metadata.json": "16aac615bfd61a58a5b98aa481ef6a96ab3bd7bf46abfd5aced1db8b2961037a",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/incompatible-checkpoint/state.sbs": "3b45528b1d3a522e46170bc3517e16e4456072a7076caec2af83f0e261da0dd8",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/initial-observation.json": "a89e0c21a9da30e544103388c6ed322bebda2711e445916d7027e38e31428338",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/mgba-checkpoint-rejection.json": "81d8614a1ef8aaf4165b8af1d8639dfe9356bfdc7f282a67839434c54bde8b2d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/mgba-observation.json": "e1d0370b1ed442c3182d01e614b1f6414ecb2e8b1c65a1e2a853cc3fc56b5ff2",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/mgba-research-agent.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/repeat-observation.json": "6793602dccca8a36b230049d6f4325e20db84df042d33f3b01fc0d9d254de698",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/restored-observation.json": "f5c5d32d85782488c4d88f54b449ed3a9d45b1fd3d6c68da71156772e091d2cd",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research-evidence/sameboy-research-agent.log": "b03c335b51bf1a65a36d1a03d1879faf356b4ceacbfb773de6670bbfcb94bb78",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/research.log": "db41599daf828c7ce4fdc7b8c88856040d5c79a51e8312fe70ac2a79c286637d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/suite.json": "31dd5508ff35d0866e040eb837eb6774d9712b4e8c957c4191e6e268fabe3a85",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/validate-evidence/mgba-backend-agent.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/validate-evidence/sameboy-backend-agent.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/both/validate.log": "c54ef0482dbeabca28e30558352cad3c173862f1974ed758fcf7f2ebe0a17d7e",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/cleanup.json": "76eca941346597d9804546d4bdf7f6452890321c6182da40004dfde6db2f04ff",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/environment.json": "4ad4a52cd4de41f82e529723a7b58d4566dcc8026506672e80897cddb715aa88",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/commands.json": "d94eb92b8541cc62df5c83a92b6f38bb01aded693417f8adb0841dde63bcc5b6",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/display.log": "9777501d3b9cb41278a4f642ac47054f4520d73207fe76768e31bc633324bde7",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/doctor.log": "f55baaf2bcfd9dddf60a3ced8e7b558e08c12fbc10461f9610005613ec0119fb",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/ghidra-logs/observation-home/application.log": "255118af4038709890b442b5ab8a958eb4d7a79f573619404c54d98eb3ed620d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/ghidra-logs/validate-home/application.log": "8a8de609445e98ea7f1e543be4f3c5f3e09a0e878ee177da17ac543f9380dfd9",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/crash-after-backup.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/crash-after-install.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/hash-refused.log": "0e3287f8903bdb153b333fb8a90c3d743b23df829763180fae4d50de49179277",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/independent-mgba-runtime.log": "cf377879076d829cc52e92448b0e959eb512596482fe6e17eef7076f07cfdcb0",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/install.log": "50d6f09b0510f87331613813a40b8d095e382dec0368690a51881a8a2eaa8be1",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/native-dependency-refused.log": "d2059579446f89965d2731d0003173c79cc77d99029c1e6af9ef54aa899139e9",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/recover-second.log": "b82d8f2f83a515d3d5dbf484faced5027a66e8a4c18cdb05ca50772e3d695de4",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/recover.log": "933a35a220e281676ca1228229d85591dc5fafc92e1a2b83dfe915c4ce9dfb72",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/results.json": "325786bf0873d2f51ea76eccaf336d02f821e073c2e38985e4ce53c2a9d55ab2",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/rollback-original.log": "aef769d6b883ff5f92bf74c055db36c8aa49bea09f710dedfdf71854586a8cc8",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/self-rollback.log": "2b688e2b9f266b92e94a494430ec58f110b66b6bf977cec5171fce13828db14b",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/upgrade.log": "3c72653e7a0d2f5c17a7913dcda76cc0e754cd5baf99f0cb42b128572ce535df",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer/user-edit-refused.log": "aeb21907d6bed34cc39b98fdcd089388154d7e1cfdb2a15c815c0e25ffa0dac8",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/installer.log": "3f8e18df1db0f9a6f74ca9c1321bcb0a1b3e7f990e9061314a84aee5e16f5107",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/observation.json": "a9bbd4292aeeb584c9d36a4ecd60dc7061eb84476edf5f1f4bf0a68b811f4c27",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/observation.log": "25a24065c83ee6db56da106411213af662789474d7d7fc9011e6a5131ee1d567",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/suite.json": "d2d629ffda7deea0f080e860ea4d937ccc7e5120850fe18ee2b65570e3f25d61",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/validate-evidence/mgba-backend-agent.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/mgba/validate.log": "2a815d7e653ef8c8be39ebd003d07bf1dc1522f39580e3f39925648d525db833",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/payload-continuity.json": "451a2559071308c9ffa0b93066f3c4981237780ffbc282b216402e6558c66147",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/run.py": "387f75daf71b43dbe6d514280ac409ff6b3f2ec5966e848463d3f39ceb04a856",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/commands.json": "7124b52f28843b441b2ac7f92324390944311580519c25d3c7b8e157aca1778c",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/display.log": "826da70908857ebc8dc54fbf403a507d3c54c5bc1d212a084ecf68d4b536401e",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/doctor.log": "61b8e99bb8ec88024d701a72d643ef3a3aff561c4d94cd0930977525ba1e8fb7",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/ghidra-logs/observation-home/application.log": "63f011b646c90efea6309d2830f0b886cbb94e9c00991ccb5b9b898668eb96f2",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/ghidra-logs/validate-home/application.log": "80b7f3b57fd9e2dacb49da587b128a8286828553890e5a7f35b612570daea95f",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/crash-after-backup.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/crash-after-install.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/hash-refused.log": "31726cea69da0f75de7b8c9e7333b6943faf0926e9888026056669174b74c980",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/install.log": "90223cd81e4eb081f3abf5fb0c8c5da09df34606f4e53b4b28d8ff00d56e7b17",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/native-dependency-refused.log": "d2059579446f89965d2731d0003173c79cc77d99029c1e6af9ef54aa899139e9",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/recover-second.log": "1eb209bf03e2a1d7599bfd85831ffe4f8576748f7be18a4afa86d1bf71b18d56",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/recover.log": "89ab9b218333ebd83caa74b69f8b33fe7db593af70c7197060ff883c8aacf41d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/results.json": "89e4d88cda881b9e3890e2da793db0fc1a09e233e7d21ce59febb64da5c2e2ec",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/rollback-original.log": "d37ae904316ed01acfb2c2e9b9a9d8db598995ba901048f03a44796867958679",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/self-rollback.log": "948a1053d3ba9e4afb516fc912d1b6a58a8623528247f0d12b092b798a2b9996",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/upgrade.log": "0c775384e490b1f4d85fcc828de67f707ed01a7ab1ec7ac2c18b1d76e0ccaa25",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer/user-edit-refused.log": "b8155e0a6734e7dfcfffb3fa4c56581859cca994d4fbb8b9856ef6b8735d3810",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/installer.log": "7c155e0f66bc85636cf186895ce55c6304ff927d5884f38f9fd682b9e69a48d0",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/observation.json": "3650b475c24f6d005d9ee75fe7a1efd9aa132670ec9d008124b43ca06584f4d8",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/observation.log": "fe18494deec4d2b20121c88b72c4f9448de8c9f064767b4b863aa3a5dd60da88",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/suite.json": "7b4964d2cb037edc976f67cae67eae0b447c17a10b98aaec38f378c9b9fbd3e8",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/validate-evidence/integrated-growth.json": "722417c2460e82fc18ffba30a5ba9e8891e502389d69ede96dddb095f4b946e4",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/validate-evidence/real-agent.log": "d8b6444207b1428355c2ce6d29030653dce484e61996ae3309bd1a65b58a9e0d",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/validate-evidence/trace-fixture.json": "590a6ead690c4786a254c289a527d4c69a69c0d25398390ff18610cf040ccb66",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/sameboy/validate.log": "fb7644b711f44fb78febd8b315ff6b9d0ba1898927c1ee56a83c5cfd178a4489",
+    "/Users/joshuahansen/dev/GhidraBoy/dist/integration-final-1518f02/macos/acceptance/summarize.py": "afaf052a51c652815c67398ada1c02690481d90232cb567b66cf04165f58ed1b"
+  }
+}

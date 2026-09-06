@@ -50,23 +50,25 @@
       "id": "SPIKE-01",
       "milestone": "M1",
       "requirement": "executable probes and result receipts identify tested versions, exact operations, observed semantics, missing capabilities and any required upstream patches.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
         "docs/integration/backend-decisions.md",
-        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json",
+        "docs/integration/m1-conformance-notes.md"
       ],
-      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
+      "note": "Feasibility evaluation recorded, including explicit no-go for Basic Debugging qualification until HALT-safe execution is proven. Probe PASS does not pass mGBA capabilities or Release B."
     },
     {
       "id": "SPIKE-02",
       "milestone": "M1",
       "requirement": "compare cost of native embedding versus remote attachment, including pause safety, safe peeks and identity verification; select mGBA integration mode based on evidence.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
         "docs/integration/backend-decisions.md",
-        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json",
+        "docs/integration/m1-conformance-notes.md"
       ],
-      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
+      "note": "Feasibility evaluation recorded, including explicit no-go for Basic Debugging qualification until HALT-safe execution is proven. Probe PASS does not pass mGBA capabilities or Release B."
     },
     {
       "id": "SPIKE-03",
@@ -83,12 +85,13 @@
       "id": "SPIKE-04",
       "milestone": "M1",
       "requirement": "record a go/no-go decision for mGBA Basic Debugging. If it cannot meet the minimum, Release A may continue; Release B remains incomplete until an evidence-backed second backend is selected and passes M8. Do not add more candidates without resolving the failed requirement.",
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "evidence": [
         "docs/integration/backend-decisions.md",
-        "dist/integration-baseline-20260906/emulicious-linux/receipt.json"
+        "dist/integration-baseline-20260906/emulicious-linux/receipt.json",
+        "docs/integration/m1-conformance-notes.md"
       ],
-      "note": "Embedded mGBA and real Linux Emulicious DAP probes pass their declared scopes; explicit limitations and remaining pause/coherent-memory conformance are documented."
+      "note": "Feasibility evaluation recorded, including explicit no-go for Basic Debugging qualification until HALT-safe execution is proven. Probe PASS does not pass mGBA capabilities or Release B."
     },
     {
       "id": "MOVE-01",
@@ -210,11 +213,12 @@
       "id": "BACKEND-04",
       "milestone": "M4",
       "requirement": "display input, focus loss, minimized/paused pumping, frame copying and close work through the abstraction without stale held keys or lock inversion.",
-      "status": "BLOCKED",
+      "status": "PASS",
       "evidence": [
-        "docs/integration/m4-session-evidence.json"
+        "docs/integration/m4-session-evidence.json",
+        "docs/integration/m6-measurements-evidence.json"
       ],
-      "note": "Input/frame and display smoke pass; physical keyboard/focus/minimize/close checks require an unlocked Mac. User was asked; probe timed out and cleaned up."
+      "note": "Physical paused SameBoy keyboard/focus/minimize/restore/close passed against frozen pre-M7 macOS candidate; additive source changes still need final matched acceptance."
     },
     {
       "id": "BACKEND-05",
@@ -307,211 +311,333 @@
       "id": "A-STATIC",
       "milestone": "M6",
       "requirement": "all current SLEIGH, static analysis, mapper, compiler ABI, generated-C/native decompiler, ownership, schema and actual database migration gates pass for the selected dependency tuple.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Final root build passes; full static/native/preservation gate reuse must be reconciled by source/artifact identity, not inferred from component counts."
     },
     {
       "id": "A-RUNTIME",
       "milestone": "M6",
       "requirement": "native/Python and real installed Trace RMI gates pass, including 250-stop growth, paused display, edits/checkpoints/reopen and shutdown error scanning.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/final-macos-1518f02-evidence.json",
+        "docs/integration/final-linux-1518f02-evidence.json",
+        "docs/integration/handoff-state.json"
+      ],
+      "note": "Final installed component suites pass. Final SameBoy soak and release-level cleanup remain uncollected; mGBA long-run failure is tracked separately."
     },
     {
       "id": "A-INSTALL",
       "milestone": "M6",
       "requirement": "clean install, upgrade, interrupted install/recovery, altered-user-file preservation, component removal and rollback pass on macOS arm64 and Linux x86-64 using extracted packages without source/build tools.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/final-macos-1518f02-evidence.json",
+        "docs/integration/final-linux-1518f02-evidence.json"
+      ],
+      "note": "Corrected1518 platform package installation/recovery/rollback/integrity gates pass for named Mac and emulated Linux configurations; not physical Deck acceptance."
     },
     {
       "id": "A-GUI",
       "milestone": "M6",
       "requirement": "identify the exact installed candidate and use real Ghidra actions for import, launch, step, physical breakpoint/watch, historical navigation, bookmark, save/reopen, cancel and close. Headless harnesses alone do not pass this gate.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m6-measurements-evidence.json",
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Earlier physical SameBoy sequence passed. Updated final M9/both-backend physical workflows remain unqualified."
     },
     {
       "id": "A-PERF",
       "milestone": "M6",
       "requirement": "comparable baseline/candidate runs meet the performance checks in section 6. No unexplained unbounded queue, memory or thread growth.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/handoff-state.json",
+        "docs/integration/agent-handoff.md",
+        "docs/integration/m6-assessor-notes.md",
+        "docs/integration/m6-measurements-evidence.json",
+        "dist/integration-final-93b7130/performance/assessment.json",
+        "dist/integration-final-1518f02/soak-sameboy/budget-assessment.json",
+        "dist/integration-final-1518f02/soak-mgba/budget-assessment.json"
+      ],
+      "note": "Final3+3 latency and both30-minute bounded budgets PASS. SameBoy final idle/descendant/no-async-error assertions and marker observed; recorded PIDs absent. Independent exits unavailable; full resource review and mGBA uncaught lifecycle failure still prevent release-level promotion."
     },
     {
       "id": "A-RELEASE",
       "milestone": "M6",
       "requirement": "reproducible artifacts and complete provenance exist; an installed end-to-end debugging smoke test passes with a self-authored fixture; each support claim points to a passing gate. Platform-specific blocked gates prevent claiming that platform supported.",
       "status": "NOT_RUN",
-      "evidence": []
+      "evidence": [],
+      "note": "Not qualified: final resource/lifecycle failure, physical GUI, consumer and full gate reconciliation remain; physical Deck explicitly deferred."
     },
     {
       "id": "HW-01",
       "milestone": "M7",
       "requirement": "boot/model selection and actual reported configuration agree; reject incompatible boot images and silent model fallback. Exercise true DMG and both CGB modes independently.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/handoff-state.json",
+        "docs/integration/agent-handoff.md",
+        "docs/integration/m7-model-notes.md",
+        "docs/integration/sameboy-wake-notes.md"
+      ],
+      "note": "Actual models/boot identities and strict rejection tests pass, including final wake/checkpoint fixes. Finish original exit-condition audit before blanket milestone promotion."
     },
     {
       "id": "HW-02",
       "milestone": "M7",
       "requirement": "ROM-only/MBC1/MBC2/MBC3/MBC5 advertised geometries pass selector/alias/boundary tests, including MBC2 nibble/mirror behavior, MBC5 bank 256, MBC1 lower-window changes, SVBK zero and echo RAM. Unimplemented wiring remains unknown/unsupported.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m7-model-notes.md",
+        "docs/integration/m7-mapping-notes.md"
+      ],
+      "note": "MBC2 nibble/mirror/bounds and prior mapper regressions pass; reconcile complete advertised geometry matrix."
     },
     {
       "id": "CPU-01",
       "milestone": "M7",
       "requirement": "preserve all existing exhaustive arithmetic/CB/stack/control-flow regressions and pinned external vectors; inventory all base/CB encodings and expand missing families. Report actual cases, undefined opcodes, masks and exclusions, not \u201c100% CPU accuracy\u201d from an opcode count.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m5-evidence.json",
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Existing static CPU/vector evidence retained; explicit final source/artifact reuse and original coverage inventory still require reconciliation."
     },
     {
       "id": "HW-03",
       "milestone": "M7",
       "requirement": "applicable hardware ROM suites exercise timers, interrupts/EI delay, HALT/STOP, bus restrictions, boot unmapping, CGB speed switching and DMA/HDMA behavior. A correct engine result does not prove the debugger's event attribution is correct; check those separately.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m7-accuracy-notes.md",
+        "docs/integration/m7-cgb-device-notes.md",
+        "docs/integration/sameboy-wake-notes.md"
+      ],
+      "note": "Published Mooneye expectations and authored native-CGB STOP/DMA/wake probes pass their declared scope; audit required matrix/exclusions."
     },
     {
       "id": "ACCURACY-01",
       "milestone": "M7",
       "requirement": "a debug-instrumented run matches a pristine-core run for comparable defined state/output; nondestructive inspection leaves engine state unchanged; instrumentation patches cannot validate themselves solely through their own event output.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/sameboy-wake-notes.md",
+        "docs/integration/m7-accuracy-notes.md"
+      ],
+      "note": "55 rows/165 variants/3986 nonmutating inspections plus speed fixture pass. Preserve bounded scope and audit final support claims."
     },
     {
       "id": "ACCURACY-02",
       "milestone": "M7",
       "requirement": "cross-backend fixtures normalize model/boot/clock/input and compare defined registers/memory at explicit synchronization boundaries. Differences produce minimal reproducers and classified explanations, never majority-vote correctness or blanket suppression.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m8-cross-backend-evidence.json",
+        "docs/integration/m8-cross-backend-notes.md"
+      ],
+      "note": "Defined states match12 boundaries; source-classified speed-switch timing disagreement retained, comparison exit2, verifier tests PASS. Exact hardware/model/boot equivalence is not claimed."
     },
     {
       "id": "HW-04",
       "milestone": "M7",
       "requirement": "distinguish collected physical-hardware evidence from published test expectations and emulator results. Unavailable hardware stays unverified, with model/revision and retrieval provenance recorded for external evidence.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m7-accuracy-notes.md",
+        "docs/integration/m7-cgb-device-notes.md",
+        "docs/integration/m8-cross-backend-notes.md"
+      ],
+      "note": "Published expectations, emulator observations and unavailable local physical-hardware evidence are explicitly distinguished with provenance."
     },
     {
       "id": "MGBA-01",
       "milestone": "M8",
       "requirement": "all Basic Debugging conformance tests pass on its declared DMG/CGB modes and mapper set, including identical CPU PCs in different banks and clean detach/close behavior.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m8-adapter-notes.md",
+        "docs/integration/final-linux-1518f02-evidence.json",
+        "docs/integration/final-macos-1518f02-evidence.json"
+      ],
+      "note": "Experimental declared CGB/MBC5 tier and shared RMI pass; full tier/resource/final GUI review remains."
     },
     {
       "id": "MGBA-02",
       "milestone": "M8",
       "requirement": "physical watches, edits, checkpoint/restore and over/out are either independently tested with declared precision or rejected as unsupported. Backend capabilities and actual UI/API behavior agree.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m8-review-notes.md",
+        "docs/integration/m9-reproduction-notes.md"
+      ],
+      "note": "Unsupported capabilities are rejected and unnegotiated; direct and RMI tests pass. Final physical UI capability checks remain."
     },
     {
       "id": "MGBA-03",
       "milestone": "M8",
       "requirement": "common static mapping, selected-capture, save/reopen and synthetic-profile tests run unchanged against both real backends. Tests parameterize capabilities; a blanket skip cannot pass a required tier.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/final-macos-1518f02-evidence.json",
+        "docs/integration/final-linux-1518f02-evidence.json"
+      ],
+      "note": "Common RMI/static mapping/reopen executes both engines; verify full original selected-capture/profile matrix in final audit."
     },
     {
       "id": "MGBA-04",
       "milestone": "M8",
       "requirement": "install only mGBA with SameBoy absent and vice versa; neither selected backend relies on the other's shared library, boot asset or metadata. Recorded traces remain readable after removing either runtime.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/final-macos-1518f02-evidence.json",
+        "docs/integration/final-linux-1518f02-evidence.json"
+      ],
+      "note": "Independent selected-backend installation without the other library/boot payload and generic observation reopening pass for both platform scopes."
     },
     {
       "id": "MGBA-05",
       "milestone": "M8",
       "requirement": "mismatch fixtures compare the two cores without demanding identical undefined startup memory, wall-clock RTC or backend-private state formats. At least one disagreement fixture proves the diagnostic path works.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        "docs/integration/m8-cross-backend-evidence.json",
+        "docs/integration/m8-cross-backend-notes.md"
+      ],
+      "note": "Defined-state comparison and intentional data mismatch diagnostic pass; actual timing difference is preserved/classified, not suppressed or hardware-adjudicated."
     },
     {
       "id": "MGBA-06",
       "milestone": "M8",
       "requirement": "both backends run from extracted platform packages and pass resource, failure and cleanup gates. Mark experimental until its required tier passes on the named platform.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+        "docs/integration/handoff-state.json",
+        "dist/integration-final-1518f02/soak-mgba.log"
+      ],
+      "note": "mGBA measurement/budget assessment and terminal marker completed, but repeated uncaught ClosedException in register rendering violates lifecycle/error qualification. Recorded primary PIDs exited; independent exit status unavailable. Cause/error accounting unresolved."
     },
     {
       "id": "TOOL-01",
       "milestone": "M9",
       "requirement": "from a fresh installation, import a banked fixture, launch either supported backend, set a physical breakpoint from the listing and navigate the resulting capture back to the correct static bank. No manual address conversion or developer-only command is required; ambiguity uses the supported view selector.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m6-measurements-evidence.json",
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Historical physical bank/navigation sequence passed; final both-backend GUI import/launch/navigation still needs acceptance."
     },
     {
       "id": "TOOL-02",
       "milestone": "M9",
       "requirement": "register/memory inspection, watch setup, history filtering, capture comparison and checkpoint/edit operations have executable checks plus real GUI acceptance. Actions operate on the selected session/capture, and unavailable capabilities fail with a specific reason.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m9-research-notes.md",
+        "docs/integration/m9-reproduction-notes.md"
+      ],
+      "note": "Filtering/comparison/export and control operations have executable evidence; final physical UI operations remain."
     },
     {
       "id": "TOOL-03",
       "milestone": "M9",
       "requirement": "listing, decompiler, memory and history views retain coherent selection and useful state through stepping, Program/session switching, reconnect and reopen. Long operations remain cancellable; malformed inputs and backend failures leave usable controls and diagnostics.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/handoff-state.json",
+        "docs/integration/m9-research-notes.md"
+      ],
+      "note": "Final switching/reconnect/error/cancellation UI qualification remains, including investigation of closed-trace register-view errors."
     },
     {
       "id": "RESEARCH-01",
       "milestone": "M9",
       "requirement": "a synthetic experiment can be exported, reopened without the emulator, and traced from a conclusion to exact observed bytes and source locations. Invalid/stale Program bindings remain visible.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/final-macos-1518f02-evidence.json",
+        "docs/integration/final-linux-1518f02-evidence.json",
+        "docs/integration/m9-reproduction-notes.md"
+      ],
+      "note": "Packaged observed-byte/source/recipe export and independent reopening pass. Reconcile full original workflow and final UI evidence."
     },
     {
       "id": "RESEARCH-02",
       "milestone": "M9",
       "requirement": "restore/repeat under controlled conditions reproduces declared results; divergent settings and missing replay capabilities are detected. A bookmark naming a writer never becomes proof of a caller or damage formula.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m9-reproduction-notes.md",
+        "docs/integration/final-macos-1518f02-evidence.json",
+        "docs/integration/final-linux-1518f02-evidence.json"
+      ],
+      "note": "Controlled SameBoy repeat, divergent settings and unavailable mGBA checkpoint cases pass85 assertions; bounded recipe scope retained pending final gate audit."
     },
     {
       "id": "UI-01",
       "milestone": "M9",
       "requirement": "keyboard navigation, readable labels/statuses, cancellation, capability-disabled actions, display scaling and historical/live selection are checked on claimed platforms. Routine operation requires no knowledge of internal ABI/schema names.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/m9-research-notes.md",
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Final physical keyboard/scaling/selection/cancellation/error and capability-disabled UI checks remain."
     },
     {
       "id": "B-RELEASE",
       "milestone": "M10",
       "requirement": "M7\u2013M9 and the refreshed Release A gates pass for every claimed release configuration. Backend-specific research differences are published; universal parity is not implied.",
       "status": "NOT_RUN",
-      "evidence": []
+      "evidence": [],
+      "note": "Not qualified: final resource/lifecycle failure, physical GUI, consumer and full gate reconciliation remain; physical Deck explicitly deferred."
     },
     {
       "id": "DEVICE-01",
       "milestone": "M10",
       "requirement": "actual Steam Deck installation, input/focus, pause/close, readable UI, real Trace RMI, save/reopen and performance pass before advertising Deck acceptance. A virtual display/container cannot substitute. Windows is a separate future platform gate, not inherited from an emulator's platform support.",
       "status": "NOT_RUN",
-      "evidence": []
+      "evidence": [],
+      "note": "Explicitly deferred by user until all other work is solid. NOT_RUN is retained; no device acceptance claim."
     },
     {
       "id": "CUTOVER-01",
       "milestone": "M10",
       "requirement": "a fresh contributor needs only GhidraBoy for generic builds and only the additional GhiBW3 checkout for game-specific work; no generic ledger, fixture or release operation depends on the old GhiGBC checkout.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/migration.md",
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Generic single-checkout builds/selected packages work; final consumer refresh did not execute due agent usage limit. Finish dependency audit."
     },
     {
       "id": "CUTOVER-02",
       "milestone": "M10",
       "requirement": "update old-repository documentation/redirects and preserve history/releases. Archival/publication are explicit execution actions after qualification, not part of preparing this plan. Do not delete old tags, artifacts, checkpoints or rollback distributions.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/migration.md",
+        "docs/integration/agent-handoff.md"
+      ],
+      "note": "Intentional old GhiGBC README redirect and GhiBW3 documentation edits are uncommitted. History/releases retained; no remote archival/publication."
     },
     {
       "id": "CUTOVER-03",
       "milestone": "M10",
       "requirement": "compatibility delegates stay for at least two supported release cycles and until known GhiBW3/guide callers migrate; remove them only through a documented incompatible change with reader/migration tests. Do not grow permanent duplicate implementations.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "IN_PROGRESS",
+      "evidence": [
+        "docs/integration/migration.md"
+      ],
+      "note": "Compatibility delegates retained with minimum two-supported-cycle policy; verify final caller inventory and commit documentation."
     }
   ]
 }

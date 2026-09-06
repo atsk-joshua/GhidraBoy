@@ -2,9 +2,47 @@
 
 Status: implementation in progress; executed checks and remaining gates are tracked in the [execution ledger](integration/progress.md) and [gate status](integration/status.json). Prepared 2026-09-05 against the local checkouts below. Requirements below do not themselves establish completion. Milestone IDs in this document are independent of the earlier GhiBW3 suite integration milestones.
 
+### Execution checkpoint — 2026-09-06 handoff
+
+Implementation is committed through GhidraBoy `1518f02` on `integrate-ghigbc`.
+[Current handoff](integration/agent-handoff.md), [state snapshot](integration/handoff-state.json),
+and [active-work plan](integration/active-work.md) supersede old checkpoints.
+GhiBW3 remains at `c8a858f`; original GhiGBC history remains preserved at `c1cfeef`
+with intentional uncommitted documentation redirects. Final physical Steam Deck
+verification is explicitly deferred by the user. Neither release is fully qualified.
+
+| Milestone | Current state | Evidence / remaining work |
+| --- | --- | --- |
+| M0 | Baseline retained; final paired latency PASS | Three matched baseline/candidate runs pass all four unchanged budgets. Review dependency-matched reuse of static/preservation evidence. |
+| M1 | Implemented feasibility decisions and production conformance | mGBA's bounded native execution/ownership is implemented and tested; external Emulicious coherence remains explicitly unavailable. Finish formal gate reconciliation. |
+| M2 | Complete at retained snapshot | Unsquashed source/history import and exclusions preserved. |
+| M3 | Final package component suites PASS | Six reproducible selected-backend archives; Mac/Linux installation, recovery and offline/runtime checks recorded. |
+| M4 | Shared ownership and failure tests implemented | Physical controls passed historically; final mGBA soak exposes a closed-trace AWT lifecycle failure needing triage/fix. |
+| M5 | Historical compatibility PASS; final consumer refresh pending | Real old checkpoints reread after new native patch. Final GhiBW3 worker never ran (usage limit); audit source/artifact-matched preservation reuse. |
+| M6 | Final latency PASS; final soaks outstanding | Mac/Linux component suites pass. Both final 30-minute measurement/budget checks pass; SameBoy final cleanup assertions/marker pass; recorded PIDs are absent (independent exits unavailable). mGBA exceptions prohibit accepting its terminal marker as a clean pass. Final GUI and release synthesis remain. |
+| M7 | Models/MBC2/device/pristine checks implemented and passing within scope | True DMG/CGB modes, bounds, MBC2, STOP/DMA/wake and legacy-state tests; 55-row pristine matrix plus speed fixture. Audit each original hardware/static exit condition; no blanket accuracy claim. |
+| M8 | Experimental native CGB/MBC5 mGBA integrated and independently packaged | Common RMI/unsupported-action/reopen and both-platform installation pass. Retired opcode count unavailable; CPU lockouts/IO unknown. Soak lifecycle failure and final GUI/resource tier remain. |
+| M9 | Research/history implementation and packaged reproducibility tests PASS | Filter/pin/compare/export/reopen and 85 controlled-repeat assertions. Final physical UI/selection/cancellation/error workflows still need acceptance. |
+| M10 | Final audit/cutover pending; physical Deck deferred | Final consumer, gate/support report, documentation commits and any affected retests remain. No remote publication/archival. |
+
+Read the live-job section before launching validation. The new mGBA
+`ClosedException` in register rendering is distinct from retained terminal-close
+and intentionally induced socket-close diagnostics. `BackendTraceTest.main` lacks
+the parent's uncaught-error collector; correct accounting and actual lifecycle
+behavior must be established before promotion. Exact paths and observed PIDs are
+in the handoff/state files. Final component receipts name code/artifacts `1518f02`;
+older receipts remain historical and are reused only by explicit dependency matching.
+
+The implementation uses `debugger/python/ghigbc/{backend,session,agent}.py`, private
+`backends/{sameboy,mgba}.py` and native directories, one generic Java extension,
+and the existing static provider. Preserve those boundaries and all requirements
+below. Finish non-Deck work; do not expand optional engine scope or weaken gates.
+
 ## 1. Outcome and release boundaries
 
 Make GhidraBoy a first-class environment for Game Boy and Game Boy Color analysis, debugging and research: import and preserve a ROM, analyze code and data, inspect hardware state, control execution precisely, conduct repeatable experiments, and retain evidence that another researcher can inspect.
+
+Teaching workflows, lessons, curricula and guided educational exercises are outside the product scope. Hardware understanding comes from accurate inspection, integrated analysis and reproducible evidence. Documentation supports installation, operation, API contracts and troubleshooting; synthetic ROMs are regression fixtures. Prioritize correctness, debugger capability, usability and reliability when evaluating milestones.
 
 Integrate GhiGBC into the maintained GhidraBoy repository as an optional debugger module. Keep one static SM83 provider, one generic debugger implementation, and small emulator adapters. Keep GhiBW3 as an external, optional example of game-specific research tooling. Reuse Ghidra's debugger, listing, decompiler, navigation and persistence rather than building a second IDE.
 
@@ -122,7 +160,7 @@ Retain selected-capture validation and profile budgets: currently 64 declared ra
 
 ## 4. Milestones and exit gates
 
-Every gate below starts **NOT RUN**. A milestone completes only when all its required gates pass for the named candidate. `BLOCKED`, `FAIL`, `NOT RUN`, and documented `NOT APPLICABLE` are distinct; skips do not count as passes. Each implementation changeset should address one boundary and be independently reviewable/revertible.
+Gates were initialized as **NOT RUN**; current results are recorded in the execution checkpoint and linked gate status. A milestone completes only when all its required gates pass for the named candidate. `BLOCKED`, `FAIL`, `NOT RUN`, and documented `NOT APPLICABLE` are distinct; skips do not count as passes. Each implementation changeset should address one boundary and be independently reviewable/revertible.
 
 | Milestone | Depends on | Deliverable |
 | --- | --- | --- |

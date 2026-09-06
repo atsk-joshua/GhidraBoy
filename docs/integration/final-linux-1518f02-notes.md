@@ -1,0 +1,23 @@
+# Corrected final Linux qualification
+
+Evidence date: 2026-09-06. Revision `1518f02f88921def373bf09aa67d4c499517b377` passes Linux qualification with fresh installation/integrity/display/doctor/research execution and explicit reuse of prior tests whose executable payloads are unchanged. The earlier `93b7130` combined research packaging failure remains recorded in [final-linux-notes.md](final-linux-notes.md) and [final-linux-evidence.json](final-linux-evidence.json); its exact JSON receipt is also retained under `dist/integration-final-93b7130/linux/evidence/qualification-evidence.json`.
+
+| Package | Archive SHA-256 | New manifest SHA-256 | Fresh runtime |
+| --- | --- | --- | --- |
+| SameBoy | `6b7bde80f06cee97aa2346aa7a5ecef7d2cea6365a689b20d135a73ebdabcc1d` | `1980fdd851d16c4995de9923e632dbac674adc2ded479b92c011cf1af2887f60` | PASS, 21.01 s |
+| mGBA | `9d49f548e0359443b8463c1d8892375915b3b93c9d621511edfd56ac02e91f3a` | `6e0bbac010f99e253313e474f8e81b28044325457a0340677a3939129352dad2` | PASS, 21.50 s |
+| Combined | `04f77b4807ec6efc4ef43ef689b2bb7f5610ff5713e84b9fcacd719330eac15a` | `10a49aa2ad2aad41d0fe20b97ef445b08948fc7d48fb9419a1d69959123dfffa` | PASS, 49.06 s |
+
+Each archive was built twice serially with byte-identical output. Archives, per-package manifests, raw logs, JSON reports and the payload comparison are retained under `dist/integration-final-1518f02/linux/`. [final-linux-1518f02-evidence.json](final-linux-1518f02-evidence.json) records the exact source, Java/native artifact, archive, manifest, runner and log hashes, runtime commands, fresh results and reused receipt links.
+
+The old/new manifest comparison found exactly two new payload files: `tests/fixtures/banks.asm` (SHA-256 `3485ec6b78f9232aba899527aad387da9aaef50fd0c24ec40f18720ddc0cce18`) and `tests/ghidra/ResearchExperimentTest.java` (`e309117de1b24be7588da98b1977fb81c764daf1c9a24630b835f9b8bd84e172`). All 83/74/95 existing SameBoy/mGBA/combined payload file hashes are identical; none changed or disappeared. Only the manifest's files/source metadata changed. The precompiled acceptance harness remains `ec23a495036968b33530febb204f9cfd245cbdf91b710f5d87b3965b6fd6b2ae`, and the Java artifact manifest remains `fa84c769065339233f441888b3201b2d7e8c72d808e85097baff0260cac72c05`.
+
+Freshly executed for every variant: extraction into a new directory; offline Python environment preparation and selected native-adapter probe; `Setup.sh` installation into a fresh home; verification of every package payload hash and both provenance files against tracked-source hashes; all installer crash/recovery/upgrade/rollback/refusal checks (11/12/11 respectively); bundled SDL window creation, event pumping and cleanup; and doctor readiness. Combined display testing exercised both backends. All passed.
+
+Freshly executed in combined: the full controlled research experiment, saved recipe generation, checkpoint restore/repeat comparisons, incompatible-config rejection, independent Java-only observation reopening, and direct mGBA unsupported-checkpoint rejection without mutation or a created payload. Recipe ROM, assembly and Java-source hashes exactly matched packaged files. All passed. This research test requires both backends and is explicitly `NOT_APPLICABLE` in single-backend variants.
+
+Reused from `93b7130`, with existing payload hashes and original log digests verified: the native/package suites (91/17/105 tests), real Trace RMI contracts including saved backend-neutral observation reopen, portable report capture/invalid-data checks and separate-process reopening, and SameBoy's 250-capture growth probe with zero dropped events. These were not re-executed for the addition of two source data files. SDL and doctor were inexpensive enough to execute afresh. The earlier research failure is not reused as successful evidence; the corrected combined run supersedes that specific failed check.
+
+All fresh runtime runs used retained image `sha256:1955ff1e743d7b182f5b991d3d192e05604fb7497fcdc8a2772d56dd072418ca`, Linux x86-64 emulation on macOS arm64, Xvfb, UID 501, `--init --network none` and a read-only Ghidra distribution. No compiler/build tools or system SDL were available. Runtime versions remain Linux `6.12.76-linuxkit`, glibc 2.41, Python 3.13.15, Java 21.0.12.1 and bundled SDL 2.32.4. Doctor matched locked decompiler `12.1.3+ghidraboy.switch-recovery.2` and reported generic/desktop readiness.
+
+No production source was changed by this qualification lane, and Mac dylibs retained their hashes. Physical Steam Deck checks remain deferred by the user; container/Xvfb execution does not establish physical controller/focus/compositor behavior or every downstream Linux ABI.

@@ -6,6 +6,8 @@ Plan: [debugger-integration-plan.md](../debugger-integration-plan.md). This ledg
 
 M0's fixture inventory is complete; remaining baseline performance sampling and M1 conformance remain open. M2/M3 and M5 are complete at their recorded source snapshots. M4's implementation and process-failure checks pass, with physical display/focus acceptance still blocked by the locked desktop. The earlier sequencing adjustment did not waive any gate; the legacy/profile fixture catalog has now been verified. No supported second-backend claim has been made.
 
+The 2026-09-06 [next-agent handoff](agent-handoff.md) and [state snapshot](handoff-state.json) record the uncommitted M6 measurement harness and M7 model work. The frozen macOS soak has now completed successfully as a harness run; budget assessment and matched comparisons remain open. Existing native/Python regression tests pass after the draft model changes, without establishing true-DMG acceptance. No release gate was promoted to PASS.
+
 The `integrate-ghigbc` branch preserves the prior `suite-offdevice-candidate` ref. Unrelated untracked reports and GhiGBC output remain untouched. No remote writes or publication occurred.
 
 ## Retained baseline
@@ -138,6 +140,81 @@ M4 remains open only for physical keyboard/focus/minimize/close acceptance. CUA 
 
 `tools/prepare_profile_fixture.py` reproduces the synthetic/failing provider composition using the actual lowercase public `provider` entry point; the initial fixture's incorrect uppercase entry point was rejected by installation and corrected. `tools/reopen_trace_fixture.py` copies projects and runs the standalone reader; its optional legacy transformation is confined to the copied project and checked in a separate JVM.
 
+## M6/M7 handoff checkpoint — 2026-09-06
+
+GhidraBoy remains at `d78da47`, with the Java metrics/soak harness already staged and the model changes unstaged. GhiBW3's consumer migration remains at `c8a858f`. The handoff records exact source/log hashes, paths, known integration hazards and the resume order; unrelated files and the index were preserved.
+
+The compiled M6 acceptance harness ran from a frozen macOS runtime archive (SHA256 `b2c8dac88ba6fe327c8af7bb6b67d96d9dbfe1e1f777a1a8358e3c2e9fdfce69`). `m6-soak.log` ends in `REAL_TRACE_TEST_PASSED`; the original process returned exit 0. It completed 109 checkpoint/restore cycles in 1,802.203868 seconds, with maximum measured soak pause 65.041667 ms and zero reported dropped events. The three previously observed shell/JVM/primary-agent PIDs were absent after completion. This is bounded execution/cleanup evidence, not a complete leak audit or `A-PERF` PASS. Intermittent stale static-binding warnings and the known terminal-close diagnostic remain in the retained log for review.
+
+`tools/performance_limits.json` was declared before the soak; its assessment helper is untracked and not yet validated. One new 20-sample metrics report exists; three comparable baseline and three candidate runs for all four metrics remain outstanding. Full resource trend/storage/cleanup assessment and physical GUI qualification are also outstanding. `A-PERF` is now IN_PROGRESS.
+
+The draft M7 native/Python work adds explicit CGB-E/DMG-B selection, observed hardware mode/memory sizes and model-specific boot coverage while retaining legacy CGB creation/checkpoint behavior. `m7-model-baseline-tests.log` reports 69 tests passing. Dedicated true-DMG and CGB-mode tests, launcher/package boot integration, MBC2 and independent accuracy coverage remain undone; `HW-01` is now IN_PROGRESS. The soak's frozen package does not contain these hardware edits.
+
 ## Next gates
 
 Complete the remaining baseline/performance and M1 conformance details, and resume physical window acceptance when the Mac is unlocked. Proceed through M6 release/resource qualification, hardware/model expansion and mGBA implementation. Final release/device gates remain open; completed component checks do not imply the full migration is finished.
+
+## Resumed implementation and qualification — 2026-09-06
+
+The user resumed milestone implementation and explicitly requested parallel agents. Work ownership is recorded in [active work](active-work.md). Final physical Steam Deck verification is deferred by the user until all other work is solid; it remains an unexecuted device gate.
+
+M6 now has three alternating baseline and candidate runs with identical external harnesses and isolated homes. All four raw-sample latency comparisons pass unchanged budgets. The retained 109-cycle soak passes its predeclared bounded budgets; positive Ghidra RSS trend requires separate idle/cleanup assessment. [Measurements and physical evidence](m6-measurements-evidence.json) records real keyboard, focus, minimize/restore and close acceptance plus the real Ghidra breakpoint/watch/history/bookmark sequence. A temporary uniquely identified macOS launcher avoided selecting the other running Ghidra. JDK accessibility-menu diagnostics remain in the passing action log and are not suppressed.
+
+M7 implements true DMG/CGB observations, stable checkpoint identities, atomic native hardware snapshots, MBC2 nibble RAM, mirrors and physical bounds. Real imported MBC2 Program/trace mapping tests pass, including both boot topologies and invalid metadata rejection. Explicit launcher model selection and both redistributable boot assets are wired.
+
+Independent pristine comparison exposed a pre-existing defect: CPU inspection through SameBoy safe reads flushes lazy device state during CGB boot. The corrected adapter resolves CPU bytes on an owned private inspection engine restored from the stopped engine state, preserving the live engine and output. Twelve focused model/mapper/observer tests pass; the independent matrix passes 55 rows/165 variants and 3,986 unchanged serialized-state observations. See [accuracy evidence](m7-accuracy-notes.md). The frozen M6 candidate predates this fix and is not a releasable artifact; final source/artifact/platform checks must use corrected bytes.
+
+M1 expanded probes prove explicit ordinary-execution deadlines and record external DAP limitations. A HALT stall was reproduced and resolved in an isolated additive mGBA tick experiment, with 998 state differential cases and dedicated HALT/IRQ/STOP checks. Production adapter integration is underway, with actual CGB identity and capability-specific rejections. No Release A/B qualification or remote publication is claimed.
+
+## Current handoff — source 1518f02
+
+This checkpoint supersedes stale remaining-work statements above; earlier entries
+remain historical evidence. Runtime/history/packaging source is committed through
+1518f02. The changeset sequence includes 9c2ea42 (pause/teardown lifetime guard), 93b7130
+(shared failure and checkpointless soak), and 1518f02 (missing packaged provenance).
+
+All six corrected archives reproduce. Final Mac component acceptance reran all16
+commands: 213 native/Python tests across compositions,34 installer checks,102
+observation assertions,four SDL smokes and85 research assertions. Linux executed
+fresh integrity/installation/display/doctor/research checks and explicitly reused
+unchanged 91/17/105 native/RMI/report/growth receipts. Earlier93 packaging failures
+are retained. See final-macos-1518f02 and final-linux-1518f02 receipts/notes.
+
+Final paired latency passes all four predeclared budgets (3+3 runs); candidate
+step capture median-of-run-p95 31.019ms and pause capture38.396959ms. Executables
+are identical between measured93 and corrected1518 packages. Cross-backend data
+agrees at12 synchronization points, but speed-switch timing differs (131096 vs20
+ticks); the comparison reports differences, and verifier tests pass without
+claiming hardware/timing parity.
+
+Both final soaks remain in flight at the documentation handoff. The mGBA log has
+repeated uncaught AWT ClosedException/File-is-closed errors during replacement,
+through register rendering. This is a real qualification failure to investigate,
+not the known socket/terminal diagnostic. Its harness also lacks reliable
+uncaught-error collection. Original tool handles are lost; live OS processes were
+confirmed, with immutable report/log snapshots retained. See agent-handoff.md and
+handoff-state.json before resuming or rerunning anything.
+
+Remaining: collect/assess jobs and fix lifecycle/error-accounting failure; final
+physical GUI workflows; final GhiBW3 consumer refresh (agent quota prevented any
+execution); full gate/source-artifact audit, support/release report and cutover
+documentation commits. User deferred physical Deck verification. Neither release
+is fully qualified. No new validation or agent was started for this handoff turn.
+
+### Soak measurement completion during handoff
+
+Both measurement reports subsequently reached COMPLETED_MEASUREMENTS: SameBoy
+110 cycles/1802.36s, mGBA113 cycles/1810.64s. Both assessors returned exit0/PASS
+against the original limits; maximum pauses75.78/83.86ms, zero reported drops.
+SameBoy was still completing its final idle samples at the OS recheck; mGBA
+printed BACKEND_TRACE_CONTRACT_PASSED and its recorded JVM/sidecar were absent.
+Independent harness exit statuses remain unavailable after lost tool handles.
+The mGBA uncaught closed-trace AWT errors remain a failed qualification condition.
+See fresh state/report/log copies and budget-assessment.json files; do not infer
+full cleanup/lifecycle success from completed counters or budget PASS.
+
+Final handoff recheck: SameBoy completed its post-soak idle/cleanup, reported
+all inventoried descendants absent and no uncaught asynchronous errors, and
+printed REAL_TRACE_TEST_PASSED. All four recorded JVM/primary-sidecar PIDs were
+absent. Independent harness exit codes remain unavailable. The mGBA AWT failure
+remains unresolved despite its completed measurements, budgets and marker.

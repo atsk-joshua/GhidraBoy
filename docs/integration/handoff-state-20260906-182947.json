@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "observed_at_utc": "2026-09-06T18:29:47.788582+00:00",
+  "scope": "Documentation handoff observation, not release qualification; source files are uncommitted and hashes must be rechecked after edits",
+  "repositories": {
+    "GhidraBoy": {
+      "path": "/Users/joshuahansen/dev/GhidraBoy",
+      "head": "d78da4725fff3d255623c7bdaacb41ab0698402c",
+      "branch": "integrate-ghigbc"
+    },
+    "GhiBW3": {
+      "path": "/Users/joshuahansen/dev/GhiBW3",
+      "head": "c8a858f7ac684d9d6e1133297d26a803cf942dc0",
+      "branch": "integrated-debugger-consumer"
+    },
+    "GhiGBC": {
+      "path": "/Users/joshuahansen/dev/GhiGBC",
+      "head": "c1cfeef2140a48302f4bcccffd4464df5349d98c",
+      "branch": "suite-offdevice-candidate"
+    }
+  },
+  "uncommitted_implementation": [
+    {
+      "path": "debugger/tests/ghidra/RealTraceTest.java",
+      "sha256": "062892ad83a3e2322fc81bd860bb1ae18b641174caff9749b927756fa88d6eff",
+      "index_state": "staged"
+    },
+    {
+      "path": "tools/assess_performance.py",
+      "sha256": "1019a157f4528c4c3626690f2112d939d3b78721ea8286f3aeca78ad58a6e2f4",
+      "index_state": "untracked"
+    },
+    {
+      "path": "tools/performance_limits.json",
+      "sha256": "4b0f2aced9b7d8f5bdc3e5a3a257779f29349d3c3a1f4d9532f3458593f554c9",
+      "index_state": "untracked"
+    },
+    {
+      "path": "debugger/backends/sameboy/native/ghigbc.c",
+      "sha256": "912551cc629caa3987ab7b2e4149b6e804f39d0cd7c35eed7d203c25f903be7f",
+      "index_state": "unstaged"
+    },
+    {
+      "path": "debugger/backends/sameboy/native/ghigbc.h",
+      "sha256": "c3108ff7611aa485ae83cfbaabbb19b1fe52197f928d138114d84856b6e8cdea",
+      "index_state": "unstaged"
+    },
+    {
+      "path": "debugger/python/ghigbc/agent.py",
+      "sha256": "a72db2257b0fd9f128cd7c2fb340cd0948eb43710cb8732037a2a2889e29f0fe",
+      "index_state": "unstaged"
+    },
+    {
+      "path": "debugger/python/ghigbc/backend.py",
+      "sha256": "0cdfdad00d5f2bd43e401c66f71468123e724f6d42549078c336c9c983564362",
+      "index_state": "unstaged"
+    },
+    {
+      "path": "debugger/python/ghigbc/backends/sameboy.py",
+      "sha256": "84882dd090f476c9c7b1375381e2df97c3b8ad8195390ec672c44ababb91bd48",
+      "index_state": "unstaged"
+    },
+    {
+      "path": "debugger/tests/test_backend.py",
+      "sha256": "e6dc32263ac7b8f0cbff7f577a3d2191cca1f9ffb1ee38582f3d9785418e5e44",
+      "index_state": "unstaged"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "dist/integration-baseline-20260906/m6-harness-build.log",
+      "sha256": "6776a6edfcad8c07b82416a3ada1d6d06585b61e7d7d5caf7292eb5d6f429bed"
+    },
+    {
+      "path": "dist/integration-baseline-20260906/m6-soak.log",
+      "sha256": "88e4734a223ece4a32a2cde4d90af56ece247b184582be0e5048c507424165ab"
+    },
+    {
+      "path": "dist/integration-baseline-20260906/m6-soak/declared-limits.json",
+      "sha256": "4b0f2aced9b7d8f5bdc3e5a3a257779f29349d3c3a1f4d9532f3458593f554c9"
+    },
+    {
+      "path": "dist/integration-baseline-20260906/m6-soak/session-performance.json",
+      "sha256": "41add2e1191356eac4ed4b2653c2829071093d7af7fd22dd24aa11ee38887f7b"
+    },
+    {
+      "path": "dist/integration-baseline-20260906/m6-soak/session-soak.json",
+      "sha256": "7924bead4f3c1355d17067935b351e5bd183e2ee6a3817e9d194e05e4fbdc34d"
+    },
+    {
+      "path": "dist/integration-baseline-20260906/m7-model-native-build.log",
+      "sha256": "b5eb736b9bbd655c0fa9996490b89fed7657c33295e46a8c3ace1ee78e937153"
+    },
+    {
+      "path": "dist/integration-baseline-20260906/m7-model-baseline-tests.log",
+      "sha256": "8ca38d791fd98589b698d489369401046fc60e7272ec645f8c9d731590314cac"
+    }
+  ],
+  "soak": {
+    "status": "COMPLETED_MEASUREMENTS",
+    "cycles": 109,
+    "elapsed_seconds": 1802.203868208,
+    "maximum_pause_ms": 65.041667,
+    "maximum_reported_dropped": 0,
+    "harness_exit_code": 0,
+    "terminal_marker": "REAL_TRACE_TEST_PASSED",
+    "previously_observed_pids": [
+      77376,
+      77400,
+      77503
+    ],
+    "process_recheck": "All three absent from post-completion ps query; not a full descendant/resource leak audit",
+    "assessment": "NOT_RUN",
+    "matched_baseline_candidate_comparison": "NOT_RUN",
+    "candidate_archive_sha256": "b2c8dac88ba6fe327c8af7bb6b67d96d9dbfe1e1f777a1a8358e3c2e9fdfce69",
+    "candidate_scope": "Frozen pre-M7 macOS package; does not validate current hardware changes"
+  },
+  "native_regression": {
+    "tests": 69,
+    "result": "OK in retained unittest log",
+    "scope": "Existing suite; dedicated true-DMG/model acceptance not run",
+    "independent_build_exit_code": "not retained"
+  }
+}
