@@ -1,0 +1,28 @@
+{
+  "schema": "ghigbc-static-semantics-oracles-v1",
+  "historicalNibbleOracle": {
+    "cases": 256,
+    "receipt": {
+      "path": "/tmp/gbw3-nibble-c-oracle-guarded-final/result.json",
+      "sha256": "0239f3e7fc31ec8e600274758ecb2e1924865602878da62f01fd73c41de020b8"
+    }
+  },
+  "ownership": "SameBoy execution and hardware captures are maintained in GhiGBC; static C and range validation are maintained in GhidraBoy.",
+  "sourceMigration": "Prior frozen artifacts retain their original paths/hashes; current drivers are tests/nibble_switch_oracle.py and tests/verify_direct_bus_native.py.",
+  "relocatedValidation": {
+    "nibble": {
+      "status": "PASS",
+      "receipt": "/tmp/gbw3-boundary-split-nibble/native/result.json",
+      "sha256": "c53be51d95617ca60568d252e29e4f9a2f94c1920f6f0d2a0ca38cc0678865b1"
+    },
+    "directBus": {
+      "status": "PASS",
+      "receipt": "/tmp/gbw3-boundary-split-bus/results.json",
+      "sha256": "e3cb98c994396399544328a7990997459ed1c4f8f51cb449f24f6ce01a5d0dc6"
+    }
+  },
+  "driverSources": {
+    "nibble_switch_oracle.py": "2ba07276d3cd73bb847873d0e67423c56359792e9dca37449a1733f3569c6db1",
+    "verify_direct_bus_native.py": "98a3a4b4711f117c670a7d5b2c92f393989d9e6bdadc8e2eb73dc067dab24d6b"
+  }
+}
