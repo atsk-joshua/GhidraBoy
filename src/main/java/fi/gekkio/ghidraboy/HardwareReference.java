@@ -43,8 +43,23 @@ public final class HardwareReference {
         if (register.masks().isEmpty()) continue;
         var type =
             new EnumDataType(new CategoryPath("/GhidraBoy/Hardware"), register.name() + "Bits", 1);
-        for (var mask : register.masks().entrySet())
-          type.add(mask.getKey(), mask.getValue().value(), mask.getValue().description());
+        // hardware.inc includes several names for a single register value (button/direction
+        // aliases, zero-valued field choices, and SGB signaling). Ghidra's decompiler cannot
+        // encode duplicate enum values unambiguously. Use a stable representative while
+        // retaining every source name and description in the member's reference comment.
+        // KEEP_HANDLER below deliberately leaves previously installed or user-edited types alone.
+        var aliases = new java.util.TreeMap<Long, java.util.List<Map.Entry<String, Mask>>>();
+        for (var mask : new java.util.TreeMap<>(register.masks()).entrySet())
+          aliases.computeIfAbsent(mask.getValue().value(), ignored -> new java.util.ArrayList<>())
+              .add(mask);
+        for (var group : aliases.entrySet()) {
+          var comment = new StringBuilder("hardware.inc names for value ")
+              .append(String.format("0x%02x", group.getKey())).append(":");
+          for (var alias : group.getValue())
+            comment.append("\n").append(alias.getKey()).append(": ")
+                .append(alias.getValue().description());
+          type.add(group.getValue().get(0).getKey(), group.getKey(), comment.toString());
+        }
         var installed =
             p.getDataTypeManager().addDataType(type, DataTypeConflictHandler.KEEP_HANDLER);
         var data = p.getListing().getDataAt(address);

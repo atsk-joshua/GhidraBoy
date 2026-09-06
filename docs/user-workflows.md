@@ -104,6 +104,14 @@ explicit aggregate storage and limitations. Hardware descriptions and mask enums
 are supplied on new import; existing user types/comments are preserved. Ghidra's
 processor manual action opens the bundled self-authored SM83 reference index.
 
+New hardware mask enums use one stable name for each numeric value. Every alias
+and description from the pinned hardware.inc definitions remains in that member's
+comment and the packaged source JSON. This avoids ambiguous enum-value warnings
+in the decompiler without changing register values. Existing enum definitions are
+retained exactly by the conflict handler, including aliases and student edits;
+updating those saved types requires a separate previewed migration and is not
+performed automatically by reapplying hardware reference information.
+
 # Export, migration and rollback
 
 `export-original`, `export-current` and `export-repair` require a **new** output
