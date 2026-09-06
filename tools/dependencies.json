@@ -86,6 +86,14 @@
       "archive_sha256": "39f3dc5e79c22088ce878edc821dedb4ca5a1cd9f5ef915e9b3cc3053e8faefa",
       "target": "x86_64-linux-gnu.2.28",
       "url": "https://ziglang.org/download/0.14.1/zig-aarch64-macos-0.14.1.tar.xz"
+    },
+    "sdl2": {
+      "version": "2.32.4+dfsg-1",
+      "platform": "linux-x86_64",
+      "source_image": "sha256:a07a699db5eb0600a89c4755cafe2dcc59d810f1de502b91d94964422bc184d1",
+      "sha256": "ee3ccdd9b5fead3ea6b55622df02b962ef7f0afd6dc193139e5b9c088f56a43f",
+      "notice_sha256": "a7cfc1e6aa0cfba5121b3faead3e2d351028ec153bba6059065f670ad5944ad6",
+      "source_package": "Debian libsdl2-2.0-0:amd64"
     }
   }
 }

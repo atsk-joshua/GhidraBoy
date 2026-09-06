@@ -61,6 +61,9 @@ def main(default_platform=None):
     for src,relative in [(native,'build/'+native.name),(ROOT/'.deps/SameBoy/build/bin/BootROMs/cgb_boot.bin','.deps/SameBoy/build/bin/BootROMs/cgb_boot.bin')]:
         copy(src,relative);runtime_files.append(relative)
     if a.platform=='linux-x86_64':
+        sdl=lock['sdl2']
+        if sha(ROOT/'build/sdl-linux/libSDL2-2.0.so.0')!=sdl['sha256'] or sha(ROOT/'build/sdl-linux/SDL2-copyright.txt')!=sdl['notice_sha256']:
+            raise ValueError('Linux SDL runtime or notice does not match the canonical dependency lock')
         for src,relative in [(ROOT/'build/sdl-linux/libSDL2-2.0.so.0','build/runtime-libs/libSDL2-2.0.so.0'),(ROOT/'build/sdl-linux/SDL2-copyright.txt','LICENSES/SDL2-copyright.txt')]:
             copy(src,relative);runtime_files.append(relative)
     for relative in ('native/patches/0001-cpu-bus-provenance.patch','build/teaching.gbc','build/teaching-dmg.gb','build/teaching.sym','LICENSE','scripts/install.py','scripts/runtime_python.py','scripts/install_legacy_v2.py','scripts/doctor.py','scripts/test_display_runtime.py','scripts/build_inputs.py'):

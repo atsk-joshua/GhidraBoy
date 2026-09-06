@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "status": "PASS",
+  "scope": "M3 Linux x86-64 runtime package under Docker emulation on macOS; not physical Steam Deck acceptance",
+  "builderImage": "sha256:7b73cdbae90f39b5d39295fb977d8e45d0d69eaecf2f787ea9eefe1fee1a5233",
+  "runtimeImage": "sha256:1955ff1e743d7b182f5b991d3d192e05604fb7497fcdc8a2772d56dd072418ca",
+  "packageSha256": "8cd9ee34ee072e5834d27d990fd2751469afafead1f12dec487a1c3540b71e0e",
+  "manifestSha256": "94c72acc0c03c9679c98f5e78072018c0df3893cfa2a6b7a0c7157136c8cf87c",
+  "native": {
+    "format": "ELF64 little-endian shared object",
+    "architecture": "x86-64",
+    "target": "linux-x86_64",
+    "compiler": "GCC 11.4.0, Ubuntu 22.04 cached builder",
+    "sha256": "2b009e75aaa524df8d6cae49e5ee23fc1ba497cfbe7d01e02ed098a5ca0c880d",
+    "required_libraries": [
+      "libm.so.6",
+      "libmvec.so.1",
+      "libc.so.6",
+      "ld-linux-x86-64.so.2"
+    ],
+    "symbol_versions": [
+      "GLIBC_2.14",
+      "GLIBC_2.2.5",
+      "GLIBC_2.22",
+      "GLIBC_2.29",
+      "GLIBC_2.3",
+      "GLIBC_2.3.4",
+      "GLIBC_2.4",
+      "GLIBC_2.7",
+      "GLIBC_2.8"
+    ],
+    "abi_exports_verified": [
+      "gc_breakpoint",
+      "gc_copy_frame",
+      "gc_create",
+      "gc_create_buffers",
+      "gc_destroy",
+      "gc_edit_memory",
+      "gc_edit_register",
+      "gc_edit_wram",
+      "gc_key",
+      "gc_key_mask",
+      "gc_prepare_run",
+      "gc_prepare_step",
+      "gc_remove_breakpoint",
+      "gc_request_pause",
+      "gc_run",
+      "gc_snapshot",
+      "gc_state_load",
+      "gc_state_save",
+      "gc_ticks"
+    ],
+    "linux_execution_verified": false,
+    "steam_deck_desktop_verified": false
+  },
+  "tests": 46,
+  "installerChecks": 11,
+  "network": "none",
+  "user": "501:20",
+  "buildToolsAbsent": [
+    "cc",
+    "gcc",
+    "clang",
+    "make",
+    "javac",
+    "gradle",
+    "rgbasm"
+  ],
+  "systemSDLAbsent": true,
+  "evidence": "dist/integration-baseline-20260906/m3-linux-results",
+  "environmentRepairs": [
+    "Use --init so Xvfb readiness reaches its parent instead of a PID-1 shell wait",
+    "Map the chosen hostname to loopback for offline Ghidra performance metadata"
+  ],
+  "buildNote": "Compiler and linker succeeded; the original trailing file utility was absent. The retained binary passed the Python ELF/ABI inspector and real runtime tests."
+}
