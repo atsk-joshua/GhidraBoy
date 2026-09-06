@@ -1,0 +1,53 @@
+<context>
+  <schema name="Session" elementResync="NEVER" attributeResync="NEVER">
+    <interface name="EventScope"/><interface name="FocusScope"/><interface name="Aggregate"/>
+    <attribute name="Machine" schema="Process" required="yes" fixed="yes"/>
+    <attribute name="_event_thread" schema="OBJECT" hidden="yes"/>
+    <attribute name="_focus" schema="OBJECT" hidden="yes"/>
+    <attribute schema="ANY"/>
+  </schema>
+  <schema name="Process" elementResync="NEVER" attributeResync="NEVER">
+    <interface name="Process"/><interface name="ExecutionStateful"/><interface name="Aggregate"/>
+    <attribute name="Threads" schema="Threads" required="yes" fixed="yes"/>
+    <attribute name="Memory" schema="Memory" required="yes" fixed="yes"/>
+    <attribute name="Breakpoints" schema="Breakpoints" required="yes" fixed="yes"/>
+    <attribute name="Events" schema="Events" required="yes" fixed="yes"/>
+    <attribute name="Edits" schema="Edits" required="yes" fixed="yes"/>
+    <attribute name="ProfileFields" schema="ProfileFields" required="yes" fixed="yes"/>
+    <attribute name="UnitsData" schema="BYTE_ARR" hidden="yes"/>
+    <attribute name="CombatData" schema="BYTE_ARR" hidden="yes"/>
+    <attribute name="_state" schema="EXECUTION_STATE" required="yes"/>
+    <attribute name="_pid" schema="LONG"/><attribute schema="ANY"/>
+  </schema>
+  <schema name="Threads" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="Thread"/></schema>
+  <schema name="Thread" elementResync="NEVER" attributeResync="NEVER">
+    <interface name="Thread"/><interface name="ExecutionStateful"/><interface name="Aggregate"/><interface name="Activatable"/>
+    <attribute name="Stack" schema="Stack" required="yes" fixed="yes"/>
+    <attribute name="_state" schema="EXECUTION_STATE" required="yes"/>
+    <attribute name="_tid" schema="LONG"/><attribute schema="ANY"/>
+  </schema>
+  <schema name="Stack" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><interface name="Stack"/><element schema="Frame"/></schema>
+  <schema name="Frame" elementResync="NEVER" attributeResync="NEVER">
+    <interface name="StackFrame"/><interface name="Aggregate"/><interface name="Activatable"/>
+    <attribute name="Registers" schema="Registers" required="yes" fixed="yes"/>
+    <attribute name="_pc" schema="ADDRESS" required="yes"/><attribute schema="ANY"/>
+  </schema>
+  <schema name="Registers" attributeResync="NEVER"><interface name="RegisterContainer"/><attribute schema="ANY"/></schema>
+  <schema name="Memory" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><interface name="Memory"/><element schema="Region"/></schema>
+  <schema name="Region" elementResync="NEVER" attributeResync="NEVER">
+    <interface name="MemoryRegion"/><attribute name="_range" schema="RANGE"/>
+    <attribute name="_readable" schema="BOOL"/><attribute name="_writable" schema="BOOL"/><attribute name="_executable" schema="BOOL"/><attribute schema="ANY"/>
+  </schema>
+  <schema name="Breakpoints" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="Breakpoint"/></schema>
+  <schema name="Breakpoint" elementResync="NEVER" attributeResync="NEVER">
+    <interface name="BreakpointSpec"/><interface name="BreakpointLocation"/><interface name="Togglable"/>
+    <attribute name="_range" schema="RANGE"/><attribute name="_enabled" schema="BOOL"/>
+    <attribute name="_kinds" schema="STRING"/><attribute name="_expression" schema="STRING"/><attribute schema="ANY"/>
+  </schema>
+  <schema name="Events" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="Event"/></schema>
+  <schema name="Event" elementResync="NEVER" attributeResync="NEVER"><attribute schema="ANY"/></schema>
+  <schema name="Edits" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="Edit"/></schema>
+  <schema name="Edit" elementResync="NEVER" attributeResync="NEVER"><attribute schema="ANY"/></schema>
+  <schema name="ProfileFields" canonical="yes" elementResync="NEVER" attributeResync="NEVER"><element schema="ProfileField"/></schema>
+  <schema name="ProfileField" elementResync="NEVER" attributeResync="NEVER"><attribute name="Data" schema="BYTE_ARR"/><attribute schema="ANY"/></schema>
+</context>
