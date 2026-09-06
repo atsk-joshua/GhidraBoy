@@ -338,7 +338,30 @@ public class RealTraceTest {
         if(component instanceof java.awt.Container container)
             for(var child:container.getComponents())renderRegisterTables(child,counts);
     }
-    static void verifyRegistersVisible(GhidraTool tool,String phase) {
+    static int registerCellCount(java.awt.Component component) {
+        int count=component instanceof javax.swing.JTable table?table.getRowCount()*table.getColumnCount():0;
+        if(component instanceof java.awt.Container container)
+            for(var child:container.getComponents())count+=registerCellCount(child);
+        return count;
+    }
+    static void verifyRegistersVisible(GhidraTool tool,Trace expectedTrace,String phase)throws Exception {
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(10);
+        boolean[] ready={false};
+        // Capture publication precedes asynchronous coordinate and table-model updates.
+        // Inspect readiness on the EDT, but never retry or suppress a renderer failure.
+        while(!ready[0]&&System.nanoTime()<deadline) {
+            Swing.runNow(()->{
+                var provider=(ghidra.app.plugin.core.debug.gui.register.DebuggerRegistersProvider)tool.getComponentProvider("Registers");
+                if(provider==null||!provider.isVisible())return;
+                var current=provider.getCurrent();
+                var expected=tool.getService(DebuggerTraceManagerService.class).getCurrent();
+                ready[0]=expected.getTrace()==expectedTrace&&current.getTrace()==expectedTrace
+                    &&current.getSnap()==expected.getSnap()&&Objects.equals(current.getThread(),expected.getThread())
+                    &&current.getFrame()==expected.getFrame()&&registerCellCount(provider.getComponent())>0;
+            });
+            if(!ready[0])Thread.sleep(20);
+        }
+        require(ready[0],phase+" register coordinates and populated table become ready within 10s");
         Swing.runNow(()->{
             var provider=(ghidra.app.plugin.core.debug.gui.register.DebuggerRegistersProvider)tool.getComponentProvider("Registers");
             require(provider!=null&&provider.isVisible(),phase+" keeps the register provider visible");
@@ -373,7 +396,7 @@ public class RealTraceTest {
                 try {
                     connection=acceptor.accept();trace=connection.waitForTrace(15000);waitCapture(0);
                     if(activeCleanup!=null)activeCleanup.rememberOwned();
-                    verifyRegistersVisible(tool,backend+" "+mode+" active");
+                    verifyRegistersVisible(tool,trace,backend+" "+mode+" active");
                     String session=String.valueOf(attr("Machine","Session"));
                     long savedSnap=snap();
                     connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
@@ -402,7 +425,7 @@ public class RealTraceTest {
                     awaitClosed(connection);
                     require(process.waitFor(5,TimeUnit.SECONDS),mode+" leaves no owned agent process running");
                     awaitTraceClosed(trace);
-                    verifyRegistersVisible(tool,backend+" "+mode+" after automatic trace close");
+                    verifyRegistersVisible(tool,previous,backend+" "+mode+" after automatic trace close");
                     var reopened=(Trace)file.getReadOnlyDomainObject(RealTraceTest.class,-1,TaskMonitor.DUMMY);
                     try {
                         ByteBuffer value=ByteBuffer.allocate(1);
