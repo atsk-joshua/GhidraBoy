@@ -54,7 +54,7 @@
       "patch_sha256": "a352600754f52b4b4d9118b1e17c00396374f0581e6f225508d8056691f27f6d",
       "build": "make lib CONF=release; make bootroms CONF=release",
       "repository": "https://github.com/LIJI32/SameBoy.git",
-      "patch": "native/patches/0001-cpu-bus-provenance.patch"
+      "patch": "backends/sameboy/native/patches/0001-cpu-bus-provenance.patch"
     },
     "rgbds": {
       "version": "1.0.1",

@@ -85,6 +85,7 @@ class VideoFrame:
 
 
 class Snapshot(Protocol):
+    """Frozen dataclass observation; Session stamps identity without copying buffers."""
     descriptor: BackendDescriptor
     state: Mapping
     events: tuple
@@ -108,10 +109,12 @@ class Backend(Protocol):
     rom: Path
     rom_bytes: bytes
     boot_bytes: bytes
+    boot_hash: str
     session: str
     rom_hash: str
     running: bool
     experiment: bool
+    error: str
     breakpoints: Mapping
 
     def close(self) -> None: ...

@@ -1,6 +1,6 @@
 # Native contract (ABI 1)
 
-`gc_machine` is opaque outside C. It uses the exact pinned SameBoy headers in C; Python never reproduces SameBoy's private structure layout. Fixed-width exported records are declared in `native/ghigbc.h` and checked by real capture tests. Create returns an owned handle or null; destroy frees it. Negative return codes are argument/capacity errors; run returns a named safe-boundary stop reason. Caller-owned buffers are copied while holding one native mutex.
+`gc_machine` is opaque outside C. It uses the exact pinned SameBoy headers in C; Python never reproduces SameBoy's private structure layout. Fixed-width exported records are declared in `backends/sameboy/native/ghigbc.h` and checked by real capture tests. Create returns an owned handle or null; destroy frees it. Negative return codes are argument/capacity errors; run returns a named safe-boundary stop reason. Caller-owned buffers are copied while holding one native mutex.
 
 The agent reads the ROM and the 2304-byte CGB boot image once. The additive ABI-1 `gc_create_buffers` entry point copies those exact bytes into SameBoy before returning; it does not reopen their paths. ROM trace content, ROM eligibility and boot checkpoint fingerprints derive from these immutable input copies. Later replacement or removal of an input file cannot change an already loaded machine or its metadata. The file-path `gc_create` entry point remains for legacy native callers.
 

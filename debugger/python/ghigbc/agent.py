@@ -1,12 +1,10 @@
 """One machine owner and trace writer. Remote dispatch never blocks pause behind run."""
 import argparse
 from contextlib import contextmanager
-from concurrent.futures import Future, ThreadPoolExecutor, TimeoutError
 import json
 import inspect
 import os
 from pathlib import Path
-from queue import Queue, Empty
 import socket
 import threading
 import time
@@ -14,6 +12,7 @@ from ghidratrace.client import Client, MethodRegistry, Address, AddressRange, Re
 from ghidratrace import sch
 from .backend import Backend, REGIONS, ROOT, available_backends, create_backend
 from .dispatch import OrderedExecutor
+from .session import CommandQueue
 
 def object_schema(name):
     return type(name,(TraceObject,),{}) if 'extra' in inspect.signature(Client.create_trace).parameters else sch.Schema(name)
@@ -39,8 +38,14 @@ class Agent:
         from .profile import ProfileSession, installed_providers
         providers,errors=installed_providers(ROOT)
         self.profile=ProfileSession(machine.rom_bytes,providers,errors,capabilities=machine.descriptor.profile_capabilities)
-        self.machine=machine;self.queue=Queue(maxsize=64);self.executor=OrderedExecutor(self.command_overflow)
-        self.registry=MethodRegistry(self.executor);self.trace=None;self.client=None;self.quit=threading.Event();self.last=None;self.exit_at=None;self.static_binding=None;self.last_event_sequence=0;self.objects={};self.remotes()
+        self.machine=machine;self.executor=OrderedExecutor(self.command_overflow)
+        self.registry=MethodRegistry(self.executor);self.trace=None;self.client=None;self.quit=threading.Event();self.last=None;self.exit_at=None;self.static_binding=None;self.last_event_sequence=0;self.objects={}
+        self.owner=CommandQueue(lambda:self.last,self.terminating)
+        self.queue=self.owner.queue  # Compatibility for existing owner-queue consumers.
+        self.remotes()
+    def terminating(self):
+        return (self.exit_at is not None or self.quit.is_set()
+                or self.client is not None and not self.client.receiver.is_alive())
     def command_overflow(self):
         print('Trace RMI command backlog exceeded; closing this session',flush=True)
         self.quit.set();self.machine.pause()
@@ -102,13 +107,13 @@ class Agent:
             self.submit(lambda:self.machine.checkpoint(path))
         @registry.method(display='Restore checkpoint')
         def restore(process:object_schema('Process'),path:str):
-            self.submit(lambda:self.publish(self.machine.restore(path)))
+            self.submit(lambda:self.mutate(lambda:self.machine.restore(path)))
         @registry.method(display='Experiment: edit register')
         def experiment_register(process:object_schema('Process'),register:str,value:int,recovery:str):
-            self.submit(lambda:self.publish(self.machine.edit(register=register,value=value,recovery=recovery)))
+            self.submit(lambda:self.mutate(lambda:self.machine.edit(register=register,value=value,recovery=recovery)))
         @registry.method(display='Experiment: edit WRAM byte')
         def experiment_memory(process:object_schema('Process'),address:int,value:int,recovery:str):
-            self.submit(lambda:self.publish(self.machine.edit(address=address,value=value,recovery=recovery)))
+            self.submit(lambda:self.mutate(lambda:self.machine.edit(address=address,value=value,recovery=recovery)))
         @registry.method(display='Save trace')
         def save_trace(process:object_schema('Process')):
             self.submit(self.save_trace)
@@ -135,19 +140,18 @@ class Agent:
             def work():self.machine.breakpoint(region,bank,offset,kinds);self.publish(self.machine.capture())
             self.submit(work,context,context is not None)
     def submit(self,fn,expected=None,selected=False):
-        from .profile import ActionContext
-        if self.exit_at is not None or self.quit.is_set():raise RuntimeError('Session is terminating/disconnected')
-        context=expected or (ActionContext.of(self.last) if self.last else None)
-        def checked():
-            if self.quit.is_set():raise RuntimeError('Session disconnected')
-            if context:context.validate(self.last,selected)
-            return fn()
-        future=Future();self.queue.put_nowait((checked,future))
-        try:return future.result(timeout=30)
-        except TimeoutError:
-            future.cancel()
+        return self.owner.submit(fn,expected,selected)
+    def mutate(self,operation):
+        try:
+            self.publish(operation())
+        except Exception:
+            if self.machine.error:
+                try:self.publish(self.machine.capture())
+                except Exception:
+                    with self.transaction('Backend recovery required'):
+                        self.trace.snapshot('Backend recovery required; capture unavailable')
+                        self.obj('Machine',SessionError=self.machine.error)
             raise
-
     def obj(self,path,**attrs):
         if path.startswith(('Machine.Events[','Machine.Edits[')):
             # Persistent event history belongs to Ghidra; don't retain unbounded Python proxies.
@@ -168,7 +172,7 @@ class Agent:
             snap=t.snapshot(f'{description} epoch {s["epoch"]} capture {s["capture_id"]}')
             for removed in removals:removed.remove()
             self.state(self.machine.running)
-            self.obj('Machine',ROMHash=c.rom_hash,Session=c.session,Core=descriptor.core,Config=descriptor.config,CorePatch=descriptor.patch,Schema=1,Backend=descriptor.id,BackendAPI=1,Model=descriptor.model,HardwareMode=descriptor.mode,Capabilities=json.dumps(sorted(descriptor.features)),TimingUnits=f'ticks at {descriptor.ticks_per_second} Hz' if descriptor.ticks_per_second else 'unavailable',TicksPerSecond=descriptor.ticks_per_second,Ticks=s['ticks'],Profile=self.profile.id,ProfileAPI=1,ProfileVersion=self.profile.provider.version if self.profile.provider else "",Ticks8MHz=s['ticks'] if descriptor.ticks_per_second==8388608 else None,Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage=descriptor.observation_coverage,MemorySemantics=descriptor.memory_semantics,Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
+            self.obj('Machine',SessionError=s.get('session_error',''),ROMHash=c.rom_hash,Session=c.session,Core=descriptor.core,Config=descriptor.config,CorePatch=descriptor.patch,Schema=1,Backend=descriptor.id,BackendAPI=1,Model=descriptor.model,HardwareMode=descriptor.mode,Capabilities=json.dumps(sorted(descriptor.features)),TimingUnits=f'ticks at {descriptor.ticks_per_second} Hz' if descriptor.ticks_per_second else 'unavailable',TicksPerSecond=descriptor.ticks_per_second,Ticks=s['ticks'],Profile=self.profile.id,ProfileAPI=1,ProfileVersion=self.profile.provider.version if self.profile.provider else "",Ticks8MHz=s['ticks'] if descriptor.ticks_per_second==8388608 else None,Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage=descriptor.observation_coverage,MemorySemantics=descriptor.memory_semantics,Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
             if self.static_binding:
                 generation,envelope=self.static_binding
                 self.obj('Machine',BoundStaticGeneration=generation)
@@ -281,13 +285,13 @@ class Agent:
         with self.transaction('Step over/out'):self.state(True)
     def request_terminate(self):
         self.machine.pause()
-        future=Future()
+        future=self.owner.enqueue(self.terminate,bind_context=False)
         def failed(result):
+            if result.cancelled():return
             if result.exception() is not None:
                 print('Session close could not save all evidence:',result.exception(),flush=True)
                 self.quit.set()
         future.add_done_callback(failed)
-        self.queue.put_nowait((self.terminate,future))
     def save_trace(self):
         # The Java mapping service may briefly hold a transaction after capture publication.
         # Retry only that structured server error, with a finite deadline.
@@ -308,7 +312,9 @@ class Agent:
                 if not any(message in str(error) for message in ('Unable to lock due to active transaction', "Can't save during transaction")) or time.monotonic()>=deadline:raise
                 time.sleep(.025)
     def terminate(self):
-        self.machine.pause();self.machine.run_slice();self.machine.running=False
+        self.machine.pause()
+        if self.machine.running:self.machine.run_slice()
+        self.machine.running=False
         self.publish(self.machine.capture())
         with self.transaction('Terminate GBC session'):
             self.trace.snapshot('Session terminated')
@@ -347,13 +353,7 @@ class Agent:
             self.connect(address)
             while not self.quit.is_set() and self.client.receiver.is_alive():
                 if self.exit_at is not None and time.monotonic()>=self.exit_at:break
-                try:
-                    fn,future=self.queue.get(timeout=0 if self.machine.running else .02)
-                except Empty:pass
-                else:
-                    if future.set_running_or_notify_cancel():
-                        try:future.set_result(fn())
-                        except BaseException as e:future.set_exception(e)
+                self.owner.run_one(timeout=0 if self.machine.running else .02)
                 if self.machine.running:
                     reason=self.machine.run_slice()
                     # Optional pacing uses the selected backend timebase, with bounded pause checks.
@@ -372,17 +372,15 @@ class Agent:
                 try:self.client.s.shutdown(socket.SHUT_RDWR)
                 except OSError:pass
                 self.client.close()
-            while True:
-                try:_,pending=self.queue.get_nowait()
-                except Empty:break
-                pending.cancel()
+            self.owner.close()
             self.executor.shutdown(wait=False,cancel_futures=True)
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--connect',default=os.environ.get('GHIDRA_TRACE_RMI_ADDR'));parser.add_argument('--rom',required=True);parser.add_argument('--display',action='store_true');parser.add_argument('--fixture-ready',action='store_true');parser.add_argument('--experiment',action='store_true')
     parser.add_argument('--backend',choices=available_backends(),default='sameboy')
+    parser.add_argument('--model',help='Explicit hardware model supported by the selected backend')
     args=parser.parse_args()
-    with create_backend(args.backend,args.rom,experiment=args.experiment) as m:
+    with create_backend(args.backend,args.rom,experiment=args.experiment,model=args.model) as m:
         if args.fixture_ready:
             m.breakpoint('rom',1,0x29);m.prepare()
             for _ in range(5000):

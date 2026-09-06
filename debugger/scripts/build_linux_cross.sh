@@ -12,5 +12,5 @@ make -C .deps/SameBoy -j "${JOBS:-4}" "${objects[@]}" PLATFORM=Linux CONF=releas
 # Zig does not support the upstream relocatable-link (-r) convenience target.
 # Link the objects produced by the upstream rules directly into our shared ABI.
 mkdir -p build
-"$ZIG" cc -target "$target" -shared -fPIC -std=gnu11 -O2 -I.deps/SameBoy -Inative native/ghigbc.c .deps/SameBoy/build-linux/obj/Core/*.o -o build/libghigbc.so -lm -lpthread
+"$ZIG" cc -target "$target" -shared -fPIC -std=gnu11 -O2 -I.deps/SameBoy -Ibackends/sameboy/native backends/sameboy/native/ghigbc.c .deps/SameBoy/build-linux/obj/Core/*.o -o build/libghigbc.so -lm -lpthread
 file build/libghigbc.so

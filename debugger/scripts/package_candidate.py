@@ -66,7 +66,7 @@ def main(default_platform=None):
             raise ValueError('Linux SDL runtime or notice does not match the canonical dependency lock')
         for src,relative in [(ROOT/'build/sdl-linux/libSDL2-2.0.so.0','build/runtime-libs/libSDL2-2.0.so.0'),(ROOT/'build/sdl-linux/SDL2-copyright.txt','LICENSES/SDL2-copyright.txt')]:
             copy(src,relative);runtime_files.append(relative)
-    for relative in ('native/patches/0001-cpu-bus-provenance.patch','build/teaching.gbc','build/teaching-dmg.gb','build/teaching.sym','LICENSE','scripts/install.py','scripts/runtime_python.py','scripts/install_legacy_v2.py','scripts/doctor.py','scripts/test_display_runtime.py','scripts/build_inputs.py'):
+    for relative in ('backends/sameboy/native/patches/0001-cpu-bus-provenance.patch','build/teaching.gbc','build/teaching-dmg.gb','build/teaching.sym','LICENSE','scripts/install.py','scripts/runtime_python.py','scripts/install_legacy_v2.py','scripts/doctor.py','scripts/test_display_runtime.py','scripts/build_inputs.py'):
         copy(ROOT/relative,relative);runtime_files.append(relative)
     (stage/'dependencies.lock.json').write_text(json.dumps(lock,indent=2,sort_keys=True)+'\n')
     runtime_files.append('dependencies.lock.json')

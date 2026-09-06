@@ -21,6 +21,8 @@ class BackendTests(unittest.TestCase):
     def test_unknown_backend_is_rejected_before_reading_inputs(self):
         with self.assertRaises(UnsupportedFeature):
             create_backend('not-installed', Path('/no-such-rom'))
+        with self.assertRaisesRegex(UnsupportedFeature,'CGB-E only'):
+            create_backend('sameboy',Path('/no-such-rom'),model='unsupported-model')
 
     def test_normalized_capture_matches_legacy_bytes_and_keeps_its_descriptor(self):
         with create_backend('sameboy', ROOT/'build/teaching.gbc') as machine:

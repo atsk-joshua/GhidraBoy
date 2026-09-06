@@ -13,13 +13,14 @@ import threading
 import time
 
 from ghigbc.display import run
-from ghigbc.native import Machine, ROOT
+from ghigbc.backend import Button, ROOT, create_backend
 
 
 def main():
     if os.environ.get('SDL_VIDEODRIVER') in ('dummy', 'offscreen'):
         raise RuntimeError('This probe requires a real desktop video driver')
-    output = ROOT / 'docs/evidence/paused-display.json'
+    output = Path(os.environ.get('GBC_EVIDENCE_DIR', str(ROOT/'build/reports'))) / 'paused-display.json'
+    output.parent.mkdir(parents=True, exist_ok=True)
     stop = threading.Event()
     commands = queue.Queue()
     observations = []
@@ -28,7 +29,7 @@ def main():
         for line in sys.stdin:
             commands.put(line.strip())
 
-    with Machine(ROOT / 'build/teaching.gbc') as machine:
+    with create_backend('sameboy', ROOT / 'build/teaching.gbc') as machine:
         machine.breakpoint('rom', 1, 0x29)
         machine.prepare()
         for _ in range(5000):
@@ -36,12 +37,12 @@ def main():
                 break
         before = machine.capture()
         assert before.state['reason'] == 3 and before.state['pc'] == 0x4029
-        ticks = machine.lib.gc_ticks(machine.handle)
+        ticks = machine.ticks()
         started = time.monotonic()
 
         def record(kind, **extra):
             row = dict(kind=kind, seconds=time.monotonic()-started,
-                       key_mask=machine.key_mask(), ticks=machine.lib.gc_ticks(machine.handle), **extra)
+                       key_mask=machine.key_mask(), ticks=machine.ticks(), **extra)
             observations.append(row)
             print(json.dumps(row), flush=True)
 
@@ -54,7 +55,7 @@ def main():
                 except queue.Empty:
                     command = None
                 if command == 'hold':
-                    machine.lib.gc_key(machine.handle, 4, 1)
+                    machine.key(Button.A, True)
                     record('held_guest_a_seeded')
                 elif command == 'snapshot':
                     record('snapshot')

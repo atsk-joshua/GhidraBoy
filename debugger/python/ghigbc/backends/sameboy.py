@@ -1,19 +1,16 @@
 """Fixed-width ABI only; no SameBoy structure layouts cross into Python."""
 import ctypes as C
 import hashlib
-import json
 import os
 import sys
 from pathlib import Path
-import threading
-import uuid
-from dataclasses import dataclass, replace
-from types import MappingProxyType
+from dataclasses import dataclass
 
-from ..backend import BackendDescriptor, Button, MemoryBank, VideoFrame, REGIONS, ROOT
+from ..backend import BackendDescriptor, Button, MemoryBank, VideoFrame, UnsupportedFeature, REGIONS, ROOT
+from ..session import Session, REGISTERS, freeze
 CORE = '208ba4afabffab9edde416f2dbb8ae459e34adb8'
 CONFIG = 'ghigbc-abi1-cpu-bus-v1:CGB-E:accurate-rtc:copied-stop'
-PATCH = hashlib.sha256((ROOT/'native/patches/0001-cpu-bus-provenance.patch').read_bytes()).hexdigest()
+PATCH = hashlib.sha256((ROOT/'backends/sameboy/native/patches/0001-cpu-bus-provenance.patch').read_bytes()).hexdigest()
 REASONS = ('slice','step','pause','breakpoint','watchpoint','halt-wait','stop-wait','interrupt','error')
 MEMORY_SIZE = 245760
 class Address(C.Structure):
@@ -24,8 +21,6 @@ class State(C.Structure):
     _fields_ = [(n,C.c_uint64) for n in ('capture_id','epoch','instructions','ticks','mapping_generation','dropped')] + [(n,C.c_uint32) for n in ('abi','reason','hit_id','event_count')] + [(n,C.c_uint16) for n in ('af','bc','de','hl','sp','pc','rom0','romx','wram','vram','cart')] + [(n,C.c_uint8) for n in ('ime','halted','stopped','double_speed','boot','cart_enabled','rtc_selected','reserved')] + [(n,C.c_uint32) for n in ('rom_size','cart_size')]
 def as_dict(value):
     return {n:as_dict(getattr(value,n)) if isinstance(getattr(value,n),C.Structure) else getattr(value,n) for n,_ in value._fields_}
-def freeze(value):
-    return MappingProxyType({key:freeze(item) for key,item in value.items()}) if isinstance(value,dict) else value
 @dataclass(frozen=True)
 class Capture:
     state: object
@@ -60,8 +55,11 @@ class Capture:
         if not 0<=bank<count: raise ValueError('Bank unavailable')
         return self.memory[start+size*bank:start+size*(bank+1)]
 
-class Machine:
-    def __init__(self,rom,boot=None,library=None,experiment=False):
+class Machine(Session):
+    state_filename = 'state.sbs'
+    def __init__(self,rom,boot=None,library=None,experiment=False,model=None):
+        if model not in (None,'CGB-E'):
+            raise UnsupportedFeature('SameBoy adapter currently supports model CGB-E only')
         self.rom=Path(rom).resolve();self.rom_bytes=self.rom.read_bytes()
         self.rom_hash=hashlib.sha256(self.rom_bytes).hexdigest()
         if not 32768<=len(self.rom_bytes)<=0x800000 or len(self.rom_bytes)%16384: raise ValueError('Invalid ROM size')
@@ -78,8 +76,8 @@ class Machine:
             models=('CGB-E',),mappers=('ROM-only','MBC1','MBC3','MBC5'),
             observation_coverage='CPU-origin accesses; DMA/HDMA watches excluded',
             memory_semantics='CPU safe inspection; raw physical RAM banks')
-        self.session=str(uuid.uuid4());self.experiment=experiment;self.parent_checkpoint=None
-        self.lock=threading.RLock();self.running=False;self.breakpoints={};self.next_breakpoint_id=1
+        super().__init__(experiment=experiment)
+        self.breakpoints={};self.next_breakpoint_id=1
         self.lib=C.CDLL(str(library or ROOT/('build/libghigbc.dylib' if sys.platform=='darwin' else 'build/libghigbc.so')))
         ptr=C.c_void_p;u=C.c_uint32;b=C.c_char_p
         signatures={
@@ -93,27 +91,17 @@ class Machine:
             fn=getattr(self.lib,'gc_'+n);fn.argtypes=args;fn.restype=result
         self.handle=self.lib.gc_create_buffers(self.rom_bytes,len(self.rom_bytes),self.boot_bytes,len(self.boot_bytes))
         if not self.handle: raise RuntimeError('Native ROM/boot load failed or mapper unsupported')
-    def close(self):
-        with self.lock:
-            if self.handle:self.lib.gc_destroy(self.handle);self.handle=None
-    def __enter__(self):return self
-    def __exit__(self,*args):self.close()
-    def _require_open(self):
-        if not self.handle:raise RuntimeError('Backend is closed')
-    def pause(self):
-        if self.handle:self.lib.gc_request_pause(self.handle)
+    def _close(self):
+        if self.handle:self.lib.gc_destroy(self.handle);self.handle=None
+    def _request_pause(self):
+        self.lib.gc_request_pause(self.handle)
     def ticks(self):
         with self.lock:
             self._require_open()
             return self.lib.gc_ticks(self.handle)
-    def prepare_step(self,mode):
-        if mode not in (2,3):raise ValueError('Expected ordinary step-over or step-out')
-        self.descriptor.require('step-over' if mode==2 else 'step-out')
-        with self.lock:
-            self._require_open()
-            if self.running:raise RuntimeError('Pause before stepping')
-            if self.lib.gc_prepare_step(self.handle,mode):
-                raise RuntimeError('No observed ordinary call frame; Step Out unavailable after restore')
+    def _prepare_step(self,mode):
+        if self.lib.gc_prepare_step(self.handle,mode):
+            raise RuntimeError('No observed ordinary call frame; Step Out unavailable after restore')
     def key(self,key,pressed):
         self.descriptor.require('input')
         if (type(key) is not int and not isinstance(key,Button)) or not 0<=key<8:raise ValueError('Invalid Game Boy key')
@@ -131,20 +119,11 @@ class Machine:
         with self.lock:
             self._require_open()
             return self.lib.gc_key_mask(self.handle)
-    def prepare(self):
-        self.descriptor.require('run')
-        with self.lock:
-            self._require_open()
-            self.lib.gc_prepare_run(self.handle)
-    def run_slice(self,step=False):
-        with self.lock:
-            self._require_open()
-            return self.lib.gc_run(self.handle,1 if step else 10000,32768,int(step))
-    def step(self):
-        self.descriptor.require('step')
-        with self.lock:
-            self.prepare();self.run_slice(True);return self.capture()
-    def capture(self):
+    def _prepare(self):
+        self.lib.gc_prepare_run(self.handle)
+    def _run_slice(self,step=False):
+        return self.lib.gc_run(self.handle,1 if step else 10000,32768,int(step))
+    def _capture(self):
         with self.lock:
             self._require_open()
             state=State();mem=(C.c_uint8*MEMORY_SIZE)();events=(Event*64)()
@@ -165,65 +144,19 @@ class Machine:
         with self.lock:
             self._require_open()
             self.lib.gc_remove_breakpoint(self.handle,id);self.breakpoints.pop(id,None)
-    def checkpoint(self,path):
-        self.descriptor.require('checkpoint')
-        with self.lock:
-            self._require_open()
-            if self.running:raise RuntimeError('Pause before saving a checkpoint')
-            path=Path(path);path.mkdir(parents=True,exist_ok=False)
-            if self.lib.gc_state_save(self.handle,os.fsencode(path/'state.sbs')):raise RuntimeError('Checkpoint failed')
-            c=self.capture()
-            meta=dict(schema=2,core=CORE,config=CONFIG,patch=PATCH,rom_hash=self.rom_hash,boot_hash=self.boot_hash,model='CGB-E',clock='accurate-emulated',input='release-on-restore',session=self.session,epoch=c.state['epoch'],ticks=c.state['ticks'],state_sha256=hashlib.sha256((path/'state.sbs').read_bytes()).hexdigest())
-            meta['parent_checkpoint']=dict(self.parent_checkpoint) if self.parent_checkpoint else None
-            (path/'metadata.json').write_text(json.dumps(meta,indent=2));return path
-    def restore(self,path):
-        self.descriptor.require('checkpoint')
-        with self.lock:
-            self._require_open()
-            if self.running:raise RuntimeError('Pause before restoring')
-            path=Path(path).resolve();meta=json.loads((path/'metadata.json').read_text())
-            required={'schema':2,'config':CONFIG,'patch':PATCH,'core':CORE,'rom_hash':self.rom_hash,'model':'CGB-E','clock':'accurate-emulated','boot_hash':self.boot_hash}
-            if any(meta.get(k)!=v for k,v in required.items()):raise ValueError('Checkpoint metadata mismatch')
-            if hashlib.sha256((path/'state.sbs').read_bytes()).hexdigest()!=meta['state_sha256']:raise ValueError('Checkpoint corrupted')
-            if self.lib.gc_state_load(self.handle,os.fsencode(path/'state.sbs')):raise RuntimeError('Restore failed')
-            self.parent_checkpoint=freeze(dict(path=str(path),state_sha256=meta['state_sha256'],source_session=meta.get('session'),source_epoch=meta.get('epoch'),source_ticks=meta.get('ticks')))
-            for key in range(8):self.lib.gc_key(self.handle,key,0)
-            return self.capture()
-    def edit(self,*,register=None,address=None,value,recovery):
-        self.descriptor.require('register-edit' if register is not None else 'wram-edit','checkpoint')
-        with self.lock:
-            if not self.experiment or self.running:raise RuntimeError('Edits require paused experiment mode')
-            if (register is None)==(address is None):raise ValueError('Choose one register or WRAM address')
-            if type(value) is not int:raise ValueError('Edit value must be an integer')
-            if register is not None:
-                register=register.strip().upper()
-                if register not in ('AF','BC','DE','HL','SP','PC'):raise ValueError('Register must be AF, BC, DE, HL, SP or PC')
-                index=('AF','BC','DE','HL','SP','PC').index(register)
-                if not 0<=value<=65535:raise ValueError('Invalid register value')
-            else:
-                if type(address) is not int or not 0xc000<=address<0xfe00 or not 0<=value<=255:raise ValueError('Only WRAM edits are supported')
-            before=self.capture()
-            target=None
-            if register is not None:
-                old=before.state[register.lower()]
-            else:
-                canonical=address-0x2000 if address>=0xe000 else address
-                bank=0 if canonical<0xd000 else before.state['wram']
-                offset=canonical&0xfff
-                target=dict(region='wram',bank=bank,offset=offset,cpu_address=address)
-                old=before.bank_bytes('wram',bank)[offset]
-            recovery=self.checkpoint(Path(recovery).resolve())
-            metadata=json.loads((recovery/'metadata.json').read_text())
-            record=dict(schema=1,id=str(uuid.uuid4()),origin='debugger',kind='register' if register else 'memory',
-                        register=register,target=target,before=old,requested=value,recovery=str(recovery),
-                        recovery_sha256=metadata['state_sha256'],session=self.session,epoch=before.state['epoch'],status='prepared')
-            # Persist intent and recovery before touching emulator state.
-            audit=recovery/'edit.json';audit.write_text(json.dumps(record,indent=2))
-            result=self.lib.gc_edit_register(self.handle,index,value) if register else self.lib.gc_edit_wram(self.handle,bank,offset,value)
-            if result:
-                record['status']='failed';audit.write_text(json.dumps(record,indent=2));raise RuntimeError('Edit failed; recovery checkpoint retained')
-            after=self.capture()
-            record['after']=after.state[register.lower()] if register else after.bank_bytes('wram',bank)[offset]
-            record['capture_id']=after.state['capture_id'];record['status']='applied'
-            audit.write_text(json.dumps(record,indent=2))
-            return replace(after,edit=freeze(record))
+    def _checkpoint_identity(self):
+        # Continue reading/writing the existing SameBoy envelope. Generic sessions
+        # add identity fields, which historical schema-2 readers safely ignore.
+        return dict(schema=2,core=CORE,config=CONFIG,patch=PATCH,model='CGB-E',clock='accurate-emulated')
+    def _save_state(self,path):
+        if self.lib.gc_state_save(self.handle,os.fsencode(path)):
+            raise RuntimeError('Checkpoint failed')
+    def _load_state(self,path):
+        if self.lib.gc_state_load(self.handle,os.fsencode(path)):
+            raise RuntimeError('Restore failed')
+    def _write_register(self,register,value):
+        if self.lib.gc_edit_register(self.handle,REGISTERS.index(register),value):
+            raise RuntimeError('Native register edit failed')
+    def _write_wram(self,bank,offset,value):
+        if self.lib.gc_edit_wram(self.handle,bank,offset,value):
+            raise RuntimeError('Native WRAM edit failed')
