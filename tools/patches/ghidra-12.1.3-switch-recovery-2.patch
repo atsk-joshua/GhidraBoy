@@ -1,0 +1,65 @@
+--- a/Ghidra/Features/Decompiler/src/decompile/cpp/jumptable.cc
++++ b/Ghidra/Features/Decompiler/src/decompile/cpp/jumptable.cc
+@@ -505,10 +505,11 @@
+   return output;
+ }
+ 
+-/// If the Varnode has a restricted range due to masking via INT_AND, the maximum value of this range is returned.
+-/// Otherwise, 0 is returned, indicating that the Varnode can take all possible values.
++/// Return an exclusive upper bound established by direct masking, a merge of masks,
++/// or an immediate logical right shift. These bounds do not require branch guards.
++/// Otherwise, 0 is returned as the full-domain endpoint after unsigned wrapping.
+ /// \param vn is the given Varnode
+-/// \return the maximum value or 0
++/// \return the exclusive upper bound, or 0 for the full domain
+ uintb JumpBasic::getMaxValue(Varnode *vn)
+ 
+ {
+@@ -521,6 +522,17 @@
+     if (constvn->isConstant()) {
+       maxValue = coveringmask( constvn->getOffset() );
+       maxValue = (maxValue + 1) & calc_mask(vn->getSize());
++    }
++  }
++  else if (op->code() == CPUI_INT_RIGHT) {
++    Varnode *shiftvn = op->getIn(1);
++    int4 size = vn->getSize();
++    if (shiftvn->isConstant() && size > 0 && size <= sizeof(uintb)
++        && op->getIn(0)->getSize() == size) {
++      uintb shift = shiftvn->getOffset();
++      // This bound follows from the logical shift itself, independently of guards or NZMask.
++      // Avoid undefined host shifts; a p-code overshift always produces zero.
++      maxValue = (shift >= 8 * size) ? 1 : ((calc_mask(size) >> shift) + 1) & calc_mask(size);
+     }
+   }
+   else if (op->code() == CPUI_MULTIEQUAL) {	// Its possible the AND is duplicated across multiple blocks
+@@ -1144,6 +1156,10 @@
+   else {			// Should we go ahead and use nzmask in all cases?
+     uintb maxValue = getMaxValue(vn);
+     stride = getStride(vn);
++    // Finite upper bounds here are powers of two. Keep the exclusive end aligned
++    // with the stride, including zero-only values whose NZMask reports stride 32.
++    if (maxValue != 0 && maxValue < (uintb)stride)
++      stride = (int4)maxValue;
+     rng = CircleRange(0,maxValue,vn->getSize(),stride);
+   }
+ 
+@@ -1984,9 +2000,15 @@
+     if (trialvn != (Varnode *)0) {
+       int4 opi = trialNorm(fd,trialvn,10);
+       if (opi >= 0) {
+-	varnodeIndex = opi;
+-	normalvn = trialvn;
+-	return true;
++	// trialNorm returns an operation index, not an index into commonVn.
++	// findUnnormalized consumes varnodeIndex as a commonVn index.
++	for (int4 vni=0;vni<pathMeld.numCommonVarnode();++vni) {
++	  if (pathMeld.getVarnode(vni) == trialvn) {
++	    varnodeIndex = vni;
++	    normalvn = trialvn;
++	    return true;
++	  }
++	}
+       }
+     }
+   }

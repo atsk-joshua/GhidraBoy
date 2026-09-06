@@ -1,0 +1,21 @@
+--- a/Ghidra/Features/Decompiler/src/decompile/cpp/jumptable.cc
++++ b/Ghidra/Features/Decompiler/src/decompile/cpp/jumptable.cc
+@@ -1984,9 +1984,15 @@
+     if (trialvn != (Varnode *)0) {
+       int4 opi = trialNorm(fd,trialvn,10);
+       if (opi >= 0) {
+-	varnodeIndex = opi;
+-	normalvn = trialvn;
+-	return true;
++	// trialNorm returns an operation index, not an index into commonVn.
++	// findUnnormalized consumes varnodeIndex as a commonVn index.
++	for (int4 vni=0;vni<pathMeld.numCommonVarnode();++vni) {
++	  if (pathMeld.getVarnode(vni) == trialvn) {
++	    varnodeIndex = vni;
++	    normalvn = trialvn;
++	    return true;
++	  }
++	}
+       }
+     }
+   }
