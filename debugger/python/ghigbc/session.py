@@ -156,11 +156,16 @@ class Session:
 
     def _checkpoint_identity(self):
         d = self.descriptor
+        # Mode is observed execution state (it can change during boot), not a
+        # configuration constraint on restoring that state.
         return dict(schema=3, backend=d.id, core=d.core, config=d.config, patch=d.patch,
-                    model=d.model, mode=d.mode, ticks_per_second=d.ticks_per_second)
+                    model=d.model, ticks_per_second=d.ticks_per_second)
 
     def _identity(self):
         return dict(self._checkpoint_identity(), rom_hash=self.rom_hash, boot_hash=self.boot_hash)
+
+    def _checkpoint_identity_matches(self, metadata):
+        return all(metadata.get(key) == value for key, value in self._identity().items())
 
     def checkpoint(self, path):
         self.descriptor.require('checkpoint')
@@ -198,7 +203,7 @@ class Session:
             state_hash = meta.get('state_sha256')
             if not isinstance(state_hash, str) or len(state_hash) != 64 or any(c not in '0123456789abcdef' for c in state_hash):
                 raise ValueError('Checkpoint metadata lacks a valid state fingerprint')
-            if any(meta.get(key) != value for key, value in self._identity().items()):
+            if not self._checkpoint_identity_matches(meta):
                 raise ValueError('Checkpoint metadata mismatch')
             if (meta.get('backend', self.descriptor.id) != self.descriptor.id
                     or meta.get('state_file', self.state_filename) != self.state_filename

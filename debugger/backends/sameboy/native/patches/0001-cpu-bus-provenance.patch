@@ -1,19 +1,66 @@
+diff --git a/Core/gb.c b/Core/gb.c
+index 33771eb..953324d 100644
+--- a/Core/gb.c
++++ b/Core/gb.c
+@@ -1190,7 +1190,7 @@ exit:
+ unsigned GB_run(GB_gameboy_t *gb)
+ {
+     GB_ASSERT_NOT_RUNNING(gb)
+-    gb->vblank_just_occured = false;
++    gb->vblank_just_occured = (gb->ghigbc_opcode_pending & 2) != 0;
+ 
+     if (unlikely(gb->sgb && gb->sgb->intro_animation < 96)) {
+         /* On the SGB, the GB is halted after finishing the boot ROM.
+@@ -1212,6 +1212,8 @@ unsigned GB_run(GB_gameboy_t *gb)
+     GB_set_running_thread(gb);
+     GB_cpu_run(gb);
+     GB_clear_running_thread(gb);
++    /* Complete the run's post-CPU bookkeeping after the paused fetch resumes. */
++    if (gb->ghigbc_opcode_pending) return gb->cycles_since_run;
+     if (unlikely(gb->vblank_just_occured)) {
+         GB_update_faux_analog(gb);
+         GB_debugger_handle_async_commands(gb);
 diff --git a/Core/gb.h b/Core/gb.h
-index da163c7..2cf2423 100644
+index da163c7..307f578 100644
 --- a/Core/gb.h
 +++ b/Core/gb.h
-@@ -733,6 +733,9 @@ struct GB_gameboy_internal_s {
+@@ -395,6 +395,10 @@ struct GB_gameboy_internal_s {
+         uint16_t address_bus;
+         uint8_t data_bus; // cart data bus (MAIN)
+         uint32_t data_bus_decay_countdown;
++        /* GhiGBC: bit 0 resumes a paused fetch without repeating wake/IME arbitration;
++         * bit 1 retains deferred vblank bookkeeping across checkpoint restore.
++         * uint64_t appends at the prior aligned section boundary, not old padding. */
++        uint64_t ghigbc_opcode_pending;
+     )
+ 
+     /* DMA and HDMA */
+@@ -733,6 +737,10 @@ struct GB_gameboy_internal_s {
          GB_printer_done_callback_t printer_done_callback;
          GB_workboy_set_time_callback_t workboy_set_time_callback;
          GB_workboy_get_time_callback_t workboy_get_time_callback;
 +        /* GhiGBC v1: unsaved instrumentation, CPU accesses only; 1=CPU, 2=interrupt. */
 +        void (*ghigbc_bus_callback)(GB_gameboy_t *, uint16_t, uint8_t, bool, uint8_t);
 +        uint8_t ghigbc_origin;
++        bool (*ghigbc_instruction_callback)(GB_gameboy_t *, uint16_t);
          GB_execution_callback_t execution_callback;
          GB_lcd_line_callback_t lcd_line_callback;
          GB_lcd_status_callback_t lcd_status_callback;
+diff --git a/Core/save_state.c b/Core/save_state.c
+index c56231b..ebaa76a 100644
+--- a/Core/save_state.c
++++ b/Core/save_state.c
+@@ -1297,6 +1297,8 @@ static int load_state_internal(GB_gameboy_t *gb, virtual_file_t *file)
+     memcpy(&save, gb, sizeof(save));
+     /* ...Except ram size, we use it to detect old saves with incorrect ram sizes */
+     save.ram_size = 0;
++    /* Older core_state sections have no paused-fetch continuation. */
++    save.ghigbc_opcode_pending = 0;
+     
+     
+     if (file->read(file, GB_GET_SECTION(&save, header), GB_SECTION_SIZE(header)) != GB_SECTION_SIZE(header)) return errno;
 diff --git a/Core/sm83_cpu.c b/Core/sm83_cpu.c
-index 77bc992..cb6a567 100644
+index 77bc992..c32b0c5 100644
 --- a/Core/sm83_cpu.c
 +++ b/Core/sm83_cpu.c
 @@ -4,6 +4,21 @@
@@ -264,15 +311,16 @@ index 77bc992..cb6a567 100644
      if ((gb->io_registers[GB_IO_JOYP] & 0x30) != 0x30) {
          gb->joyp_accessed = true;
      }
-@@ -1605,6 +1620,7 @@ static opcode_t *opcodes[256] = {
+@@ -1605,6 +1620,8 @@ static opcode_t *opcodes[256] = {
  };
  void GB_cpu_run(GB_gameboy_t *gb)
  {
 +    gb->ghigbc_origin = 0;
++    if (unlikely(gb->ghigbc_opcode_pending)) goto run_opcode;
      if (unlikely(gb->stopped)) {
          GB_timing_sync(gb);
          GB_advance_cycles(gb, 4);
-@@ -1652,6 +1668,7 @@ void GB_cpu_run(GB_gameboy_t *gb)
+@@ -1652,6 +1669,7 @@ void GB_cpu_run(GB_gameboy_t *gb)
      
      /* Call interrupt */
      else if (unlikely(effective_ime && interrupt_queue)) {
@@ -280,10 +328,16 @@ index 77bc992..cb6a567 100644
          gb->halted = false;
          if (gb->hdma_on_hblank && (gb->io_registers[GB_IO_STAT] & 3) == 0 && gb->allow_hdma_on_wake) {
              gb->hdma_on = true;
-@@ -1701,6 +1718,7 @@ void GB_cpu_run(GB_gameboy_t *gb)
+@@ -1701,6 +1719,13 @@ void GB_cpu_run(GB_gameboy_t *gb)
      }
      /* Run mode */
      else if (!gb->halted) {
++run_opcode:
++        if (gb->ghigbc_instruction_callback && gb->ghigbc_instruction_callback(gb, gb->pc)) {
++            gb->ghigbc_opcode_pending = 1 | (gb->vblank_just_occured ? 2 : 0);
++            return;
++        }
++        gb->ghigbc_opcode_pending = 0;
 +        gb->ghigbc_origin = 1;
          uint8_t opcode = cycle_read(gb, gb->pc++);
          if (unlikely(gb->hdma_on)) {

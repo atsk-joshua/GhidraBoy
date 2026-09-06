@@ -10,7 +10,7 @@ import threading
 import time
 from ghidratrace.client import Client, MethodRegistry, Address, AddressRange, RegVal, TraceObject
 from ghidratrace import sch
-from .backend import Backend, REGIONS, ROOT, available_backends, create_backend
+from .backend import Backend, REGIONS, ROOT, available_backends, default_backend, create_backend
 from .dispatch import OrderedExecutor
 from .session import CommandQueue
 
@@ -55,6 +55,10 @@ class Agent:
 
     def remotes(self):
         registry=self.registry
+        def supported(feature,**metadata):
+            # Negotiate only implemented actions, so Ghidra disables unsupported
+            # native controls before users invoke them. Direct APIs still enforce caps.
+            return registry.method(**metadata) if feature in self.machine.descriptor.features else lambda fn:fn
         @registry.method()
         def resume(process:object_schema('Process')):
             self.submit(self.resume)
@@ -64,22 +68,22 @@ class Agent:
         @registry.method()
         def step_into(thread:object_schema('Thread')):
             self.submit(self.step)
-        @registry.method()
+        @supported('step-over')
         def step_over(thread:object_schema('Thread')):
             self.submit(lambda:self.begin_step(2))
-        @registry.method()
+        @supported('step-out')
         def step_out(thread:object_schema('Thread')):
             self.submit(lambda:self.begin_step(3))
         @registry.method(action='break_sw_execute')
         def break_execute(process:object_schema('Process'),address:Address):
             self.submit(lambda:self.add_break(address,1,1))
-        @registry.method(action='break_write')
+        @supported('physical-watch-v1',action='break_write')
         def break_write(process:object_schema('Process'),range:AddressRange):
             self.submit(lambda:self.add_break(Address(range.space,range.min),4,range.length()))
-        @registry.method(action='break_read')
+        @supported('physical-watch-v1',action='break_read')
         def break_read(process:object_schema('Process'),range:AddressRange):
             self.submit(lambda:self.add_break(Address(range.space,range.min),2,range.length()))
-        @registry.method(action='break_access')
+        @supported('physical-watch-v1',action='break_access')
         def break_access(process:object_schema('Process'),range:AddressRange):
             self.submit(lambda:self.add_break(Address(range.space,range.min),6,range.length()))
         @registry.method(action='delete')
@@ -102,22 +106,22 @@ class Agent:
         @registry.method()
         def kill(process:object_schema('Process')):
             self.submit(self.terminate)
-        @registry.method(display='Save checkpoint')
+        @supported('checkpoint',display='Save checkpoint')
         def checkpoint(process:object_schema('Process'),path:str):
             self.submit(lambda:self.machine.checkpoint(path))
-        @registry.method(display='Restore checkpoint')
+        @supported('checkpoint',display='Restore checkpoint')
         def restore(process:object_schema('Process'),path:str):
             self.submit(lambda:self.mutate(lambda:self.machine.restore(path)))
-        @registry.method(display='Experiment: edit register')
+        @supported('register-edit',display='Experiment: edit register')
         def experiment_register(process:object_schema('Process'),register:str,value:int,recovery:str):
             self.submit(lambda:self.mutate(lambda:self.machine.edit(register=register,value=value,recovery=recovery)))
-        @registry.method(display='Experiment: edit WRAM byte')
+        @supported('wram-edit',display='Experiment: edit WRAM byte')
         def experiment_memory(process:object_schema('Process'),address:int,value:int,recovery:str):
             self.submit(lambda:self.mutate(lambda:self.machine.edit(address=address,value=value,recovery=recovery)))
         @registry.method(display='Save trace')
         def save_trace(process:object_schema('Process')):
             self.submit(self.save_trace)
-        @registry.method(display='Validated physical watch from selected capture')
+        @supported('physical-watch-v1',display='Validated physical watch from selected capture')
         def profile_watch(process:object_schema('Process'),region:str,bank:int,offset:int,length:int,expected_session:str,expected_epoch:int,expected_capture:int):
             from .profile import ActionContext
             context=ActionContext(expected_session,expected_epoch,expected_capture)
@@ -173,6 +177,10 @@ class Agent:
             for removed in removals:removed.remove()
             self.state(self.machine.running)
             self.obj('Machine',SessionError=s.get('session_error',''),ROMHash=c.rom_hash,Session=c.session,Core=descriptor.core,Config=descriptor.config,CorePatch=descriptor.patch,Schema=1,Backend=descriptor.id,BackendAPI=1,Model=descriptor.model,HardwareMode=descriptor.mode,Capabilities=json.dumps(sorted(descriptor.features)),TimingUnits=f'ticks at {descriptor.ticks_per_second} Hz' if descriptor.ticks_per_second else 'unavailable',TicksPerSecond=descriptor.ticks_per_second,Ticks=s['ticks'],Profile=self.profile.id,ProfileAPI=1,ProfileVersion=self.profile.provider.version if self.profile.provider else "",Ticks8MHz=s['ticks'] if descriptor.ticks_per_second==8388608 else None,Instructions=s['instructions'],Epoch=s['epoch'],Capture=s['capture_id'],MappingGeneration=s['mapping_generation'],ROM0=s['rom0'],ROMX=s['romx'],WRAM=s['wram'],VRAM=s['vram'],CartBank=s['cart'],CartEnabled=bool(s['cart_enabled']),RTCSelected=bool(s['rtc_selected']),Coverage=descriptor.observation_coverage,MemorySemantics=descriptor.memory_semantics,Boot=bool(s['boot']),IME=bool(s['ime']),HALT=bool(s['halted']),Speed=2 if s['double_speed'] else 1,StopReason=description,ExperimentMode=self.machine.experiment,ObservationState='RUNNING' if self.machine.running else 'STOPPED',Dropped=s['dropped'])
+            self.obj('Machine',ExecutionBoundaries=s.get('execution_boundaries'))
+            self.obj('Machine',BootHash=getattr(c,'boot_hash',None) or None,BootPolicy=descriptor.boot_policy)
+            self.obj('Machine',Mapper=s.get('mapper','unknown'),BootRanges=json.dumps(c.boot_ranges),
+                WRAMSize=s.get('wram_size'),VRAMSize=s.get('vram_size'),CartSize=s['cart_size'])
             if self.static_binding:
                 generation,envelope=self.static_binding
                 self.obj('Machine',BoundStaticGeneration=generation)
@@ -270,7 +278,7 @@ class Agent:
             self.trace.create_overlay_space('register',REGISTERS)
             self.obj('Machine.Memory[cpu]',_range=Address('ram',0).extend(65536),_readable=True,_writable=True,_executable=True)
             for b in range(len(self.machine.rom_bytes)//16384):self.put_bank('rom',b,self.machine.rom_bytes[b*16384:(b+1)*16384])
-            self.put_bank('boot',0,self.machine.boot_bytes)
+            if self.machine.boot_bytes:self.put_bank('boot',0,self.machine.boot_bytes)
         self.publish(self.machine.capture())
     def resume(self):
         if self.machine.running:return
@@ -330,13 +338,14 @@ class Agent:
         if address.space=='ram':
             s=self.last.state;a=address.offset
             if a<0x8000:
-                if s['boot'] and (a<0x100 or 0x200<=a<0x900):return 'boot',0,a
+                if any(start<=a<end for start,end in self.last.boot_ranges):return 'boot',0,a
                 return 'rom',s['rom0'] if a<0x4000 else s['romx'],a%16384
             if 0xc000<=a<0xfe00:
                 if a>=0xe000:a-=0x2000
                 return 'wram',0 if a<0xd000 else s['wram'],a%4096
             if 0x8000<=a<0xa000:return 'vram',s['vram'],a-0x8000
-            if 0xa000<=a<0xc000 and not s['rtc_selected']:return 'cart',s['cart'],a-0xa000
+            if 0xa000<=a<0xc000 and not s['rtc_selected'] and s['cart_size']:
+                return 'cart',s['cart'],(a-0xa000)%min(8192,s['cart_size'])
             raise ValueError('Use explicit physical breakpoint for this region')
         for region in ('rom','wram','vram','cart','boot'):
             if address.space.startswith(region):
@@ -377,7 +386,7 @@ class Agent:
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--connect',default=os.environ.get('GHIDRA_TRACE_RMI_ADDR'));parser.add_argument('--rom',required=True);parser.add_argument('--display',action='store_true');parser.add_argument('--fixture-ready',action='store_true');parser.add_argument('--experiment',action='store_true')
-    parser.add_argument('--backend',choices=available_backends(),default='sameboy')
+    parser.add_argument('--backend',choices=available_backends(),default=default_backend())
     parser.add_argument('--model',help='Explicit hardware model supported by the selected backend')
     args=parser.parse_args()
     with create_backend(args.backend,args.rom,experiment=args.experiment,model=args.model) as m:

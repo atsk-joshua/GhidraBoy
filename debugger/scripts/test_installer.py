@@ -21,6 +21,15 @@ def run(name,command,expected=0,env=None):
  results.append({'name':name,'command':command,'exit_code':result.returncode,'status':'PASS','log':str(log)})
  return json.loads(result.stdout) if expected==0 else None
 first=run('install',base);active=installer.hashes(settings/'Extensions')
+selected=json.loads(a.manifest.read_text()).get('backends',['sameboy'])
+for backend in ('sameboy','mgba'):
+    assert (settings/('Extensions/GhiGBC/data/debugger-launchers/'+backend+'.sh')).exists()==(backend in selected)
+if selected==['mgba']:
+    runtime=Path(first['runtime'])
+    assert not (runtime/'.deps/SameBoy').exists()
+    assert not any((runtime/'build').glob('libghigbc.*'))
+    run('independent-mgba-runtime',[str(runtime/'.venv12/bin/python'),str(runtime/'scripts/runtime_probe.py')])
+
 # Fail after moving one prior extension, then recover using the durable journal.
 run('crash-after-backup',base,86,{'GBC_INSTALL_FAIL_AFTER':'backup:GhidraBoy'})
 interrupted=sorted((settings/'GhiGBC-rollback').glob('*/manifest.json'))[-1]

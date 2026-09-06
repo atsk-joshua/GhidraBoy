@@ -19,7 +19,8 @@ target_include_directories(mgba-probe PRIVATE
 # mCore layout depends on the exact library build flags. The generated flags.h
 # alone omits late-configured flags (e.g. ENABLE_DIRECTORIES in this revision).
 target_compile_definitions(mgba-probe PRIVATE $<TARGET_PROPERTY:mgba,COMPILE_DEFINITIONS>)
-target_link_libraries(mgba-probe PRIVATE mgba)
+find_package(Threads REQUIRED)
+target_link_libraries(mgba-probe PRIVATE mgba Threads::Threads)
 if(NOT MSVC)
     target_compile_options(mgba-probe PRIVATE -Wall -Wextra -Werror)
 endif()

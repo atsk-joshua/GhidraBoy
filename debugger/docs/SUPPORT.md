@@ -1,11 +1,44 @@
 # Candidate support and limits
 
-Candidate: Ghidra12.1.3, maintained GhidraBoy mapping schema2, GhiGBC mapping adapter1/native ABI1/checkpoint2/profile API1, optional GBW3 profile1.0.0. Exact source manifests, dependency hashes and archive checksums accompany the packages.
+The integration candidate uses Ghidra 12.1.3, Java 21 and existing Python 3.9+.
+Packages identify exact source, dependency and binary hashes. The static SM83
+provider remains usable without Python, SDL or an emulator. Generic trace history
+and portable observation reports can be reopened without the original backend.
 
-Runtime requirement: existing Python3.9+ on macOS arm64 or Linux x86-64, with Java21. Setup checks capabilities and the installed runtime, not a version allowlist. Historical validation used Python3.14.7 on Mac and Python3.13.15 on Linux; those observations are not prerequisites. Linux execution is in a Debian13 runtime-only container; virtual-display results establish a narrower claim than physical GUI/Steam Deck acceptance. No glibc minimum is advertised solely from symbols or the Zig cross-build target. Actual Deck acceptance is M5 and remains pending.
+| Capability | SameBoy reference backend | mGBA experimental backend |
+| --- | --- | --- |
+| Hardware | DMG-B; CGB-E in native or DMG compatibility mode | Native CGB; no silicon revision claim |
+| Boot | Matching redistributable DMG/CGB image, exact hash recorded | Engine post-boot initialization; no BIOS, explicitly recorded |
+| Mappers | ROM-only, MBC1, MBC2, MBC3, MBC5 verified geometries | CGB MBC5 types 19–1B; no rumble |
+| Execution | Step, pause/resume, bank-qualified breakpoints, ordinary over/out | Step/pause/resume and CPU/ROM execution breakpoints |
+| Observation | Private stopped-state CPU inspection, copied physical banks | Copied physical banks; PPU/DMA CPU lockouts and IO/IE remain unknown |
+| Research operations | CPU-origin watches, checkpoints, recoverable paused experiment edits | Physical capture, input/video; watches, checkpoints, edits and over/out rejected |
+| Saved work | Legacy CGB schema-2 readers plus current engine-specific states | Backend-neutral recorded observations; no checkpoint resume capability |
 
-Runtime mapper scope: ROM-only/MBC1/MBC3/MBC5; not MBC2 merely because static tools model it. Unknown mapper state, RTC-selected/device bytes and uncovered static ranges remain explicit. CPU-origin access watches cover attempted accesses plus final instruction-boundary bytes; DMA/HDMA watches and exact per-internal-access commit timing are unclaimed.
+SameBoy MBC2 exposes 512 low-nibble storage cells; mirrored CPU reads retain their
+high nibble. RTC/device selections and unsupported geometries remain explicit.
+Watches distinguish attempted CPU accesses from final instruction-boundary bytes;
+DMA/HDMA writer attribution and per-access commit timing are not claimed.
 
-No audio, reverse execution, battery-save import, full reconstructed stack, new commercial revisions, or verified GBW3 far-call over/out. Known HP writer attribution is an observed store, not proof of damage computation or caller. Profile code is trusted installed code, not a sandbox; ROM detection never downloads code.
+Timing is engine-reported. Cross-backend defined CPU/RAM fixtures agree, but
+speed-switch intervals differ and must not be treated as interchangeable hardware
+measurements. SameBoy counts retired opcodes; mGBA reports execution boundaries,
+including interrupt dispatch, and leaves retired instruction count unavailable.
+Report comparison retains differing model/boot/configuration and unknown values.
 
-Publication is pending explicit authorization. The existing 12.1.2 student bundle remains rollback; its historical results do not validate this candidate, and this candidate does not claim a Deck installation is complete.
+Both runtimes can be installed independently or together. macOS arm64 and Linux
+x86-64 have separate qualification receipts. Linux container/Xvfb checks are
+emulated/virtual-display evidence. The user deferred physical Steam Deck
+verification until other work is solid; no Deck or Windows acceptance is claimed.
+See the repository integration ledger for the actual qualified artifact tuple.
+
+No audio-output workflow, reverse execution, portable emulator-state conversion,
+battery-save import, complete reconstructed stack or inferred game-specific far
+calls are included. Observation reports preserve evidence and hypotheses separately;
+they do not make an access event proof of a caller or formula. Controlled repeat
+uses a compatible engine checkpoint and an explicit experiment recipe.
+
+Compatible old SameBoy CGB checkpoints remain readable. New checkpoints stopped
+at the pending pre-fetch boundary require the new reader; do not downgrade them
+to an older runtime. Keep original state files and distributions for rollback.
+Publication and repository archival remain separate explicit actions.

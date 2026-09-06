@@ -1,2 +1,8 @@
 # A blank context line in a unified diff must retain its single prefix space.
 tools/patches/*.patch whitespace=-blank-at-eol
+
+# Unified-diff context records intentionally include a leading space on blank
+# lines and before upstream tabs. Validate these against their pinned sources
+# with git apply --check; keep ordinary source whitespace checks enabled.
+debugger/backends/sameboy/native/patches/*.patch -whitespace
+debugger/backends/mgba/native/patches/*.patch -whitespace

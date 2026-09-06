@@ -35,8 +35,8 @@ public final class BankMappings {
         var coverage=new BitSet(Math.toIntExact(snapshot.originalLength()));
         for(var r:snapshot.ranges()) {
             if(r.fileOffset()!=null&&r.region().equals("ROM"))coverage.set(Math.toIntExact(r.fileOffset()),Math.toIntExact(r.fileOffset()+r.length()));
-            if(!Set.of("ROM","WRAM","VRAM","SRAM","BOOT").contains(r.region()))continue;
-            String region=r.region().equals("SRAM")?"cart":r.region().toLowerCase(Locale.ROOT);
+            if(!Set.of("ROM","WRAM","VRAM","SRAM","MBC2_RAM","BOOT").contains(r.region()))continue;
+            String region=liveRegion(r.region());
             banks.add(new Bank(region,r.bank(),program.getAddressFactory().getAddressSpace(r.space()).getAddress(r.start()),Math.toIntExact(r.length()),r.offset()));
         }
         String currentHash="",exportError="";
@@ -60,10 +60,18 @@ public final class BankMappings {
     public Physical reverse(Address address) throws Exception {
         var values=ProgramMapping.staticToPhysical(program,address).stream().distinct().toList();
         if(values.size()!=1)throw new IllegalArgumentException("Unresolved/ambiguous physical identity at "+address);
-        var p=values.get(0);return new Physical(p.region().equals("SRAM")?"cart":p.region().toLowerCase(Locale.ROOT),p.bank(),p.offset());
+        var p=values.get(0);return new Physical(liveRegion(p.region()),p.bank(),p.offset());
+    }
+    private static String liveRegion(String region) {
+        return Set.of("SRAM","MBC2_RAM").contains(region)?"cart":region.toLowerCase(Locale.ROOT);
     }
     public List<Address> candidates(String region,int bank,long offset)throws Exception {
-        return ProgramMapping.physicalToStatic(program,new MapperState.Physical(region.equals("cart")?"SRAM":region.toUpperCase(Locale.ROOT),bank,Math.toIntExact(offset)));
+        // The live protocol keeps cart region 4. Static SRAM and MBC2_RAM are distinct
+        // provider identities; preserve all candidates instead of guessing a mapper.
+        var result=new ArrayList<Address>();
+        for(String source:region.equals("cart")?List.of("SRAM","MBC2_RAM"):List.of(region.toUpperCase(Locale.ROOT)))
+            result.addAll(ProgramMapping.physicalToStatic(program,new MapperState.Physical(source,bank,Math.toIntExact(offset))));
+        return result.stream().distinct().toList();
     }
     private Object value(TraceObject m,long snap,String key){var v=m.getValue(snap,key);return v==null?null:v.getValue();}
     public static boolean isReady(TraceObject machine,long snap){
@@ -109,6 +117,27 @@ public final class BankMappings {
             if(found.isPresent())map(t,snap,space.getAddress(base+off),found.get(),off,Math.toIntExact(edge-off),space.isOverlaySpace()?null:base+(int)off,issues,owned);
         }prior=edge;}
     }
+    private List<int[]> bootRanges(TraceObject machine,long snap,List<String> issues) {
+        Object metadata=value(machine,snap,"BootRanges");
+        // Old captures did not identify hardware. Reserve both CGB windows rather
+        // than falsely mapping potentially overlaid ROM bytes.
+        if(metadata==null)return List.of(new int[]{0,0x100},new int[]{0x200,0x900});
+        try {
+            String json=metadata instanceof byte[] bytes?new String(bytes,StandardCharsets.UTF_8):(String)metadata;
+            var ranges=ProgramMapping.JSON.fromJson(json,int[][].class);
+            if(ranges==null||ranges.length==0)throw new IllegalArgumentException("active boot overlay requires ranges");
+            int end=0;
+            for(var range:ranges) {
+                if(range==null||range.length!=2||range[0]<end||range[1]<=range[0]||range[1]>0x4000)
+                    throw new IllegalArgumentException("invalid boot interval");
+                end=range[1];
+            }
+            return Arrays.asList(ranges);
+        }catch(RuntimeException malformed) {
+            issues.add("Invalid BootRanges; CPU ROM0 mapping withheld: "+malformed.getMessage());
+            return List.of(new int[]{0,0x4000});
+        }
+    }
     public synchronized void apply(Trace trace,long snap)throws Exception {
         var machine=trace.getObjectManager().getObjectByCanonicalPath(KeyPath.parse("Machine"));if(machine==null)return;
         Object completed=value(machine,snap,"CaptureSnapshot");if(!(completed instanceof Number n)||n.longValue()!=snap||isReady(machine,snap))return;
@@ -123,12 +152,27 @@ public final class BankMappings {
                 Object selected=value(machine,snap,entry.getKey());if(!(selected instanceof Number number)||number.intValue()<0)continue;
                 String r=entry.getKey().startsWith("ROM")?"rom":entry.getKey().equals("WRAM")?"wram":"vram";
                 int size=r.equals("rom")?0x4000:r.equals("wram")?0x1000:0x2000;
-                if(entry.getKey().equals("ROM0")&&boot){window(trace,snap,ram,r,number.intValue(),0,0x100,0x200,issues,owned);window(trace,snap,ram,r,number.intValue(),0,0x900,0x4000,issues,owned);}
+                if(entry.getKey().equals("ROM0")&&boot){
+                    int start=0;
+                    for(var range:bootRanges(machine,snap,issues)) {
+                        window(trace,snap,ram,r,number.intValue(),0,start,range[0],issues,owned);
+                        start=range[1];
+                    }
+                    window(trace,snap,ram,r,number.intValue(),0,start,0x4000,issues,owned);
+                }
                 else window(trace,snap,ram,r,number.intValue(),entry.getValue(),0,size,issues,owned);
             }
             Object cart=value(machine,snap,"CartBank");
-            if(Boolean.TRUE.equals(value(machine,snap,"CartEnabled"))&&!Boolean.TRUE.equals(value(machine,snap,"RTCSelected"))&&cart instanceof Number c&&c.intValue()>=0)
-                window(trace,snap,ram,"cart",c.intValue(),0xa000,0,0x2000,issues,owned);
+            if(Boolean.TRUE.equals(value(machine,snap,"CartEnabled"))&&!Boolean.TRUE.equals(value(machine,snap,"RTCSelected"))&&cart instanceof Number c&&c.intValue()>=0) {
+                boolean mbc2="MBC2".equals(value(machine,snap,"Mapper"));
+                // Legacy traces can recover MBC2 identity from the authoritative Program.
+                if(value(machine,snap,"Mapper")==null)mbc2=ProgramMapping.inspect(program).ranges().stream().anyMatch(r->r.region().equals("MBC2_RAM"));
+                int span=mbc2?0x200:0x2000;
+                // A static mapping identifies storage coordinates, not byte equality:
+                // MBC2 cart0 stores a low nibble, CPU reads present that nibble | 0xf0.
+                for(int base=0xa000;base<0xc000;base+=span)
+                    window(trace,snap,ram,"cart",c.intValue(),base,0,span,issues,owned);
+            }
             window(trace,snap,ram,"wram",0,0xc000,0,0x1000,issues,owned);window(trace,snap,ram,"wram",0,0xe000,0,0x1000,issues,owned);
             Object selected=value(machine,snap,"WRAM");if(selected instanceof Number number)window(trace,snap,ram,"wram",number.intValue(),0xf000,0,0xe00,issues,owned);
             machine.setValue(Lifespan.at(snap),"StaticMappingGeneration",generation);

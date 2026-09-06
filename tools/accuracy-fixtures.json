@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "mooneye": {
+    "repository": "https://github.com/Gekkio/mooneye-test-suite.git",
+    "revision": "31510e12eea6286d36eea060a6adde755e1067aa",
+    "license": "MIT",
+    "retrieved": "2026-09-06",
+    "expectation": "Unmodified upstream pass protocol: LD B,B with BC=0305 DE=080d HL=1522; failure signature 4242/4242/4242.",
+    "provenance": "Published source expectations, not locally collected physical-device evidence. Preserve acceptance, misc, and emulator-only classifications. Boot-specific tests excluded because redistributable SameBoy boot code is not original hardware boot firmware."
+  },
+  "assembler": {
+    "repository": "https://github.com/vhelin/wla-dx.git",
+    "revision": "89a90a56be5c2b8cf19a9afa3e1b32384ddb1a97",
+    "origin": "Pinned .github/workflows/ci.yml in the selected Mooneye revision"
+  },
+  "bothModels": [
+    "acceptance/ei_sequence", "acceptance/ei_timing", "acceptance/rapid_di_ei",
+    "acceptance/interrupts/ie_push", "acceptance/halt_ime0_ei",
+    "acceptance/halt_ime0_nointr_timing", "acceptance/halt_ime1_timing",
+    "acceptance/timer/tima_reload", "acceptance/timer/tima_write_reloading",
+    "acceptance/timer/tma_write_reloading", "acceptance/timer/div_write",
+    "acceptance/timer/rapid_toggle", "acceptance/oam_dma/basic",
+    "acceptance/oam_dma/reg_read", "acceptance/oam_dma_start",
+    "acceptance/oam_dma_restart", "acceptance/oam_dma_timing",
+    "emulator-only/mbc2/bits_ramg", "emulator-only/mbc2/bits_romb",
+    "emulator-only/mbc2/bits_unused", "emulator-only/mbc2/ram",
+    "emulator-only/mbc2/rom_512kb", "emulator-only/mbc2/rom_1Mb",
+    "emulator-only/mbc2/rom_2Mb"
+  ],
+  "DMG-B": ["acceptance/oam_dma/sources-GS", "acceptance/halt_ime1_timing2-GS"],
+  "CGB-E": ["misc/ppu/vblank_stat_intr-C", "misc/bits/unused_hwio-C"],
+  "excluded": [
+    "Original boot register/divider/hardware IO tests: SameBoy redistributable boot policy differs",
+    "Manual-only tests and local physical-device evidence",
+    "STOP, CGB speed switching, HDMA and complete PPU/APU/bus matrix",
+    "Native CGB independent suite coverage; current upstream selected ROM headers use DMG compatibility",
+    "Cross-backend ACCURACY-02 and exhaustive CPU-01 are separate gates"
+  ]
+}

@@ -1,17 +1,32 @@
 import dataclasses
 import hashlib
+import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from ghigbc.backend import ROOT, MemoryBank, VideoFrame, UnsupportedFeature, create_backend
 from ghigbc.profile import ProfileSession
 
 
 class BackendTests(unittest.TestCase):
+    def test_installed_backend_selection_is_validated_before_loading(self):
+        from ghigbc.backend import available_backends,default_backend
+        with tempfile.TemporaryDirectory() as directory,patch('ghigbc.backend.ROOT',Path(directory)):
+            manifest=Path(directory)/'runtime-backends.json'
+            selected=dict(schema=1,backends=['mgba'],default_backend='mgba')
+            manifest.write_text(json.dumps(selected))
+            self.assertEqual(available_backends(),('mgba',))
+            self.assertEqual(default_backend(),'mgba')
+            with self.assertRaises(UnsupportedFeature):create_backend('sameboy',Path('/missing-rom'))
+            for invalid in ([],dict(selected,schema=True),dict(selected,backends=[]),dict(selected,backends=['mgba','mgba']),dict(selected,default_backend='sameboy'),dict(selected,backends=['unknown'])):
+                manifest.write_text(json.dumps(invalid))
+                with self.assertRaises(UnsupportedFeature):available_backends()
+
     def test_generic_imports_do_not_load_an_emulator_adapter(self):
         subprocess.run([sys.executable, '-c',
             'import sys; import ghigbc.backend, ghigbc.profile, ghigbc.agent, ghigbc.display; '
@@ -21,7 +36,7 @@ class BackendTests(unittest.TestCase):
     def test_unknown_backend_is_rejected_before_reading_inputs(self):
         with self.assertRaises(UnsupportedFeature):
             create_backend('not-installed', Path('/no-such-rom'))
-        with self.assertRaisesRegex(UnsupportedFeature,'CGB-E only'):
+        with self.assertRaisesRegex(UnsupportedFeature,'Unsupported hardware model'):
             create_backend('sameboy',Path('/no-such-rom'),model='unsupported-model')
 
     def test_unsupported_mapper_fails_before_a_session_can_be_used(self):

@@ -19,10 +19,11 @@ import ghidra.app.context.ProgramLocationActionContext;
 import ghidra.program.model.address.Address;
 import ghidra.program.util.ProgramLocation;
 
-@PluginInfo(status=PluginStatus.RELEASED,packageName="Debugger",category=PluginCategoryNames.DEBUGGER,shortDescription="GBC bank mapping",description="Maps captured SameBoy physical banks into verified static GhidraBoy program blocks.",servicesRequired={DebuggerTraceManagerService.class,DebuggerControlService.class,ProgramManager.class,GoToService.class,TraceRmiService.class},servicesProvided={GbcActionService.class},eventsConsumed={ProgramActivatedPluginEvent.class,TraceActivatedPluginEvent.class,TraceClosedPluginEvent.class})
+@PluginInfo(status=PluginStatus.RELEASED,packageName="Debugger",category=PluginCategoryNames.DEBUGGER,shortDescription="GBC bank mapping",description="Maps captured GB/GBC physical banks into verified static GhidraBoy program blocks.",servicesRequired={DebuggerTraceManagerService.class,DebuggerControlService.class,ProgramManager.class,GoToService.class,TraceRmiService.class},servicesProvided={GbcActionService.class},eventsConsumed={ProgramActivatedPluginEvent.class,TraceActivatedPluginEvent.class,TraceClosedPluginEvent.class})
 public class GbcPlugin extends Plugin implements GbcActionService {
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
-    private final Map<Trace,String> sentBindings=new ConcurrentHashMap<>();
+    private record BindingAttempt(String identity,int count,boolean failed) {}
+    private final Map<Trace,BindingAttempt> sentBindings=new ConcurrentHashMap<>();
     private final Set<Trace> traces=ConcurrentHashMap.newKeySet();
     private volatile Program program;
     private volatile BankMappings mappings;
@@ -70,7 +71,9 @@ public class GbcPlugin extends Plugin implements GbcActionService {
         worker.submit(()->{try{
             if(trace.isClosed()||trace!=currentTrace()||selected!=trace.getTimeManager().getMaxSnap())throw new IllegalStateException("Historical selections are observational; select the current stopped capture");
             for(var connection:tool.getService(TraceRmiService.class).getAllConnections())if(connection.isTarget(trace)){
-                connection.getMethods().get("profile_watch").invokeAsync(Map.of("process",m,"region",region,"bank",(long)bank,"offset",offset,"length",(long)length,"expected_session",session,"expected_epoch",((Number)epoch).longValue(),"expected_capture",((Number)capture).longValue())).get(15,TimeUnit.SECONDS);return;
+                var action=connection.getMethods().get("profile_watch");
+                if(action==null)throw new IllegalStateException("Selected backend does not support physical watches");
+                action.invokeAsync(Map.of("process",m,"region",region,"bank",(long)bank,"offset",offset,"length",(long)length,"expected_session",session,"expected_epoch",((Number)epoch).longValue(),"expected_capture",((Number)capture).longValue())).get(15,TimeUnit.SECONDS);return;
             }
             throw new IllegalStateException("Trace is disconnected");
         }catch(Exception error){Msg.showError(this,tool.getToolFrame(),"GBC physical watch",error.getMessage());}});
@@ -128,16 +131,26 @@ public class GbcPlugin extends Plugin implements GbcActionService {
                 if(barrier instanceof Number b&&b.longValue()>0&&ready instanceof Number r&&r.longValue()==b.longValue())continue;
                 var session=StudyProvider.value(machine,latest,"Session");var epoch=StudyProvider.value(machine,latest,"Epoch");
                 String binding=active.generation()+":"+session+":"+epoch;
-                if(active.fullCoverage()&&active.hash().equals(StudyProvider.value(machine,latest,"ROMHash"))&&!binding.equals(sentBindings.get(t))) {
+                var prior=sentBindings.get(t);
+                boolean same=prior!=null&&binding.equals(prior.identity());
+                boolean needsTransfer=!same||(prior.failed()&&prior.count()<3);
+                if(active.fullCoverage()&&active.hash().equals(StudyProvider.value(machine,latest,"ROMHash"))&&needsTransfer) {
                     for(var connection:tool.getService(TraceRmiService.class).getAllConnections())if(connection.isTarget(t)&&connection.getMethods().get("static_mapping")!=null&&session instanceof String&&epoch instanceof Number) {
+                        var attempt=new BindingAttempt(binding,same?prior.count()+1:1,false);
+                        sentBindings.put(t,attempt);
                         String envelope=active.envelope(),generation=active.generation();int count=(envelope.length()+15999)/16000;
                         CompletionStage<Object> transfer=CompletableFuture.completedFuture(null);
                         for(int index=0;index<count;index++) {
                             int chunk=index;
                             transfer=transfer.thenCompose(ignored->connection.getMethods().get("static_mapping").invokeAsync(Map.of("process",machine,"generation",generation,"index",(long)chunk,"count",(long)count,"part",envelope.substring(chunk*16000,Math.min(envelope.length(),(chunk+1)*16000)),"expected_session",session,"expected_epoch",((Number)epoch).longValue())));
                         }
-                        sentBindings.put(t,binding);
-                        transfer.whenComplete((ignored,error)->{if(error!=null&&!disposed)Msg.warn(this,"Static snapshot transfer incomplete; a newer session/epoch can retry: "+error.getMessage());});
+                        transfer.whenComplete((ignored,error)->{
+                            if(error!=null&&!disposed&&sentBindings.replace(t,attempt,new BindingAttempt(binding,attempt.count(),true))) {
+                                Msg.warn(this,"Static snapshot transfer incomplete (attempt "+attempt.count()+"/3): "+error.getMessage());
+                                if(attempt.count()<3)schedule();
+                            }
+                        });
+                        break;
                     }
                 }
                 for(var snapshot:t.getTimeManager().getAllSnapshots()) {

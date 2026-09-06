@@ -11,9 +11,10 @@ import time
 
 
 class Dap:
-    def __init__(self, connection):
+    def __init__(self, connection, timeout=15):
         self.connection = connection
-        self.stream = connection.makefile("rb")
+        self.timeout = timeout
+        self.buffer = bytearray()
         self.sequence = 0
         self.messages = []
 
@@ -25,34 +26,56 @@ class Dap:
         self.messages.append(dict(direction="sent", message=request))
         return self.sequence
 
-    def read(self):
-        length = None
-        while True:
-            line = self.stream.readline(4096)
-            if not line:
-                raise EOFError("DAP connection closed")
-            if line in (b"\r\n", b"\n"):
-                break
-            key, value = line.decode().split(":", 1)
-            if key.lower() == "content-length":
-                length = int(value)
+    def _receive(self, deadline):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("DAP request deadline exceeded")
+        self.connection.settimeout(remaining)
+        try:
+            chunk = self.connection.recv(4096)
+        except socket.timeout as error:
+            raise TimeoutError("DAP request deadline exceeded") from error
+        if not chunk:
+            raise EOFError("DAP connection closed or frame truncated")
+        self.buffer.extend(chunk)
+
+    def read(self, deadline=None):
+        deadline = deadline if deadline is not None else time.monotonic() + self.timeout
+        while b"\r\n\r\n" not in self.buffer:
+            if len(self.buffer) >= 4096:
+                raise ValueError("Excessive DAP header length")
+            self._receive(deadline)
+        header_end = self.buffer.index(b"\r\n\r\n")
+        if header_end > 4096:
+            raise ValueError("Excessive DAP header length")
+        header = bytes(self.buffer[:header_end])
+        del self.buffer[:header_end + 4]
+        lengths = []
+        for line in header.split(b"\r\n"):
+            key, value = line.split(b":", 1)
+            if key.lower() == b"content-length":
+                lengths.append(int(value))
+        length = lengths[0] if len(lengths) == 1 else None
         if length is None or not 0 <= length <= 1024 * 1024:
             raise ValueError("Missing or excessive DAP body length")
-        raw = self.stream.read(length)
-        if len(raw) != length:
-            raise EOFError("Truncated DAP body")
+        while len(self.buffer) < length:
+            self._receive(deadline)
+        raw = bytes(self.buffer[:length])
+        del self.buffer[:length]
         message = json.loads(raw)
+        if not isinstance(message, dict):
+            raise ValueError("DAP body must be an object")
         self.messages.append(dict(direction="received", message=message))
         return message
 
     def response(self, sequence):
-        deadline = time.monotonic() + 15
+        deadline = time.monotonic() + self.timeout
         while time.monotonic() < deadline:
             for item in self.messages:
                 message = item["message"]
-                if message.get("type") == "response" and message.get("request_seq") == sequence:
+                if item["direction"] == "received" and message.get("type") == "response" and message.get("request_seq") == sequence:
                     return message
-            self.read()
+            self.read(deadline)
         raise TimeoutError("No DAP response")
 
     def request(self, command, arguments):
@@ -62,13 +85,13 @@ class Dap:
         return response.get("body", {})
 
     def event(self, name, after=0):
-        deadline = time.monotonic() + 15
+        deadline = time.monotonic() + self.timeout
         while time.monotonic() < deadline:
             for item in self.messages[after:]:
                 message = item["message"]
-                if message.get("type") == "event" and message.get("event") == name:
+                if item["direction"] == "received" and message.get("type") == "event" and message.get("event") == name:
                     return message.get("body", {})
-            self.read()
+            self.read(deadline)
         raise TimeoutError("No DAP event " + name)
 
 
@@ -168,7 +191,6 @@ def main():
         finally:
             if dap:
                 (work / "dap.json").write_text(json.dumps(dap.messages, indent=2) + "\n")
-                dap.stream.close()
             if connection:
                 connection.close()
             # This probe created the emulator. Detach above is deliberately separate

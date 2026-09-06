@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 from pathlib import Path
+import json
 from typing import Mapping, Protocol, Iterable, Optional
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,6 +40,7 @@ class BackendDescriptor:
     mappers: tuple
     observation_coverage: str
     memory_semantics: str
+    boot_policy: str = 'unknown'
 
     def __post_init__(self):
         object.__setattr__(self, 'features', frozenset(self.features))
@@ -88,6 +90,7 @@ class Snapshot(Protocol):
     """Frozen dataclass observation; Session stamps identity without copying buffers."""
     descriptor: BackendDescriptor
     state: Mapping
+    boot_hash: str
     events: tuple
     session: str
     rom_hash: str
@@ -100,6 +103,8 @@ class Snapshot(Protocol):
     def stop_reason(self) -> str: ...
     @property
     def unknown_cpu_ranges(self) -> tuple: ...
+    @property
+    def boot_ranges(self) -> tuple: ...
     def bank_bytes(self, region: str, bank: int) -> bytes: ...
     def mutable_banks(self) -> Iterable[MemoryBank]: ...
 
@@ -135,12 +140,37 @@ class Backend(Protocol):
     def frame(self) -> VideoFrame: ...
 
 
+def _backend_configuration():
+    manifest=ROOT/'runtime-backends.json'
+    if manifest.exists():
+        if manifest.stat().st_size>4096:raise UnsupportedFeature('Invalid installed backend manifest')
+        try:data=json.loads(manifest.read_text())
+        except (OSError,ValueError) as error:raise UnsupportedFeature('Invalid installed backend manifest') from error
+        if not isinstance(data,dict):raise UnsupportedFeature('Invalid installed backend manifest')
+        selected=data.get('backends')
+        if (type(data.get('schema')) is not int or data['schema']!=1 or not isinstance(selected,list) or not selected
+                or any(name not in ('sameboy','mgba') for name in selected)
+                or len(selected)!=len(set(selected)) or data.get('default_backend') not in selected):
+            raise UnsupportedFeature('Invalid installed backend manifest')
+        return tuple(selected),data['default_backend']
+    return ('sameboy', 'mgba'),'sameboy'
+
+
 def available_backends():
-    return ('sameboy',)
+    return _backend_configuration()[0]
+
+
+def default_backend():
+    return _backend_configuration()[1]
 
 
 def create_backend(name, rom, **options) -> Backend:
-    if name != 'sameboy':
+    if name not in available_backends():
         raise UnsupportedFeature('Unknown or uninstalled backend: ' + name)
-    from .backends.sameboy import Machine
+    if name == 'sameboy':
+        from .backends.sameboy import Machine
+    elif name == 'mgba':
+        from .backends.mgba import Machine
+    else:
+        raise UnsupportedFeature('Unknown or uninstalled backend: ' + name)
     return Machine(rom, **options)

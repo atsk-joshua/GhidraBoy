@@ -13,9 +13,11 @@ if a.ghidra:
   props=dict(line.split('=',1) for line in f.read_text().splitlines() if '=' in line and not line.startswith('#'))
   report['ghidra']=props.get('application.version');report['ghidra_revision']=props.get('application.revision.ghidra')
   report['trace_wheels']=[x.name for x in (a.ghidra/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist').glob('ghidratrace-*.whl')]
-lib=root/'build'/('libghigbc.dylib' if platform.system()=='Darwin' else 'libghigbc.so')
-try:ctypes.CDLL(str(lib));report['native']=True
-except OSError as e:report['native_error']=str(e)
+try:
+ from runtime_probe import probe, selected_backends
+ report['backends']=probe(selected_backends())
+ report['native']=True
+except Exception as e:report['native_error']=str(e)
 try:
  import sys
  sys.path.insert(0,str(root/'python'))

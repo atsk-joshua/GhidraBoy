@@ -1,0 +1,50 @@
+--- a/include/mgba/internal/sm83/sm83.h
++++ b/include/mgba/internal/sm83/sm83.h
+@@ -167,6 +167,9 @@
+ void SM83RaiseIRQ(struct SM83Core* cpu);
+ 
+ void SM83Tick(struct SM83Core* cpu);
++// Adapter-only bounded execution: never drain events while halted.
++// Caller must service halted devices separately and normalize the boundary.
++void SM83TickNoIdle(struct SM83Core* cpu);
+ void SM83Run(struct SM83Core* cpu);
+ 
+ CXX_GUARD_END
+--- a/src/sm83/sm83.c
++++ b/src/sm83/sm83.c
+@@ -176,14 +176,28 @@
+ 	return running;
+ }
+ 
++static void _SM83Tick(struct SM83Core* cpu, bool noIdle) {
++	if (noIdle && cpu->halted) {
++		return;
++	}
++	while (cpu->cycles >= cpu->nextEvent && !(noIdle && cpu->halted)) {
++		cpu->irqh.processEvents(cpu);
++	}
++	if (noIdle && cpu->halted) {
++		return;
++	}
++	_SM83TickInternal(cpu);
++	while (cpu->cycles >= cpu->nextEvent && !(noIdle && cpu->halted)) {
++		cpu->irqh.processEvents(cpu);
++	}
++}
++
+ void SM83Tick(struct SM83Core* cpu) {
+-	while (cpu->cycles >= cpu->nextEvent) {
+-		cpu->irqh.processEvents(cpu);
+-	}
+-	_SM83TickInternal(cpu);
+-	while (cpu->cycles >= cpu->nextEvent) {
+-		cpu->irqh.processEvents(cpu);
+-	}
++	_SM83Tick(cpu, false);
++}
++
++void SM83TickNoIdle(struct SM83Core* cpu) {
++	_SM83Tick(cpu, true);
+ }
+ 
+ void SM83Run(struct SM83Core* cpu) {

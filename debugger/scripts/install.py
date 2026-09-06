@@ -58,6 +58,17 @@ def verify_package(path,kind):
     for name,expected in data['files'].items():
         file=safe(root,name)
         if not file.is_file() or file.is_symlink() or digest(file)!=expected:raise ValueError('Package hash mismatch: '+name)
+    if kind=='generic':
+        names=data.get('backends',['sameboy'])
+        if (not isinstance(names,list) or not names or len(set(names))!=len(names) or
+                set(names)-{'sameboy','mgba'}):raise ValueError('Invalid package backend selection')
+        if 'backends' in data:
+            selection=json.loads(safe(root,'runtime-backends.json').read_text())
+            if (selection.get('schema')!=1 or selection.get('backends')!=names or
+                    selection.get('default_backend')!=data.get('default_backend') or
+                    data.get('default_backend') not in names):raise ValueError('Runtime/backend manifest mismatch')
+        if any(name not in data['files'] for name in data['runtime_files']):
+            raise ValueError('Unverified runtime payload')
     return data,root
 
 
@@ -192,7 +203,7 @@ def main():
                 src=safe(root,relative);dest=safe(runtime,relative);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dest)
         python=prepare_environment(args.python,runtime/'.venv12',args.ghidra.resolve()/'Ghidra/Debug/Debugger-rmi-trace/pypkg/dist')
         env=dict(os.environ,PYTHONPATH=str(runtime/'python'),PYTHONDONTWRITEBYTECODE='1')
-        subprocess.run([str(python),'-c','from ghigbc.native import Machine,ROOT; from ghigbc.profile import installed_providers; m=Machine(ROOT/"build/teaching.gbc"); assert m.capture().state["abi"]==1; m.close(); assert not installed_providers(ROOT)[1]; from ghigbc.display import load_sdl; load_sdl()'],env=env,check=True,stdout=subprocess.DEVNULL)
+        subprocess.run([str(python),str(runtime/'scripts/runtime_probe.py')],env=env,check=True,stdout=subprocess.DEVNULL)
         runtime_entry['installed']=hashes(runtime);save(journal,data);failpoint('runtime')
         extensions.mkdir(exist_ok=True)
         plans=[]
@@ -201,8 +212,11 @@ def main():
                 name=item['name']
                 if name not in MANAGED:raise ValueError('Unknown extension')
                 staged=unpack(safe(root,item['path']),staging,name)
-                launcher=staged/'data/debugger-launchers/sameboy.sh'
-                if launcher.exists():
+                for backend in ('sameboy','mgba'):
+                    launcher=staged/('data/debugger-launchers/'+backend+'.sh')
+                    if not launcher.exists():continue
+                    if backend not in manifest.get('backends',['sameboy']):
+                        launcher.unlink();continue
                     if any(c in str(runtime) for c in ('"','\n','`','$')):raise ValueError('Unsupported shell metacharacter in selected install path')
                     launcher.write_text(launcher.read_text().replace('OPT_GBC_HOME:dir=""','OPT_GBC_HOME:dir="'+str(runtime)+'"'));launcher.chmod(0o755)
                 plans.append((name,staged))

@@ -41,7 +41,7 @@ def main():
     def record():
         (work / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
 
-    def run(name, command, timeout):
+    def run(name, command, timeout, allow_timeout=False):
         started = time.monotonic()
         entry = {"name": name, "command": [str(arg) for arg in command]}
         receipt["commands"].append(entry)
@@ -55,27 +55,44 @@ def main():
                 entry["timeoutSeconds"] = timeout
                 entry["exitCode"] = None
         entry["durationSeconds"] = time.monotonic() - started
+        entry["logSha256"] = sha(work / (name + ".log"))
         record()
-        if entry["exitCode"] != 0:
+        if entry["exitCode"] != 0 and not (allow_timeout and "timeoutSeconds" in entry):
             raise RuntimeError(name + " failed; inspect " + str(work / (name + ".log")))
+        return entry
 
     try:
         run("configure", ["cmake", "-S", probe_dir, "-B", work / "build",
                           "-DMGBA_SOURCE=" + str(source), "-DCMAKE_BUILD_TYPE=Release"], 120)
         run("build", ["cmake", "--build", work / "build", "--parallel", str(min(4, os.cpu_count() or 1))], 300)
         executable = work / "build/mgba-probe"
+        receipt["executableSha256"] = sha(executable)
+        receipt["abiBuildFiles"] = {}
+        for name in ("flags.make", "link.txt"):
+            path = work / "build/CMakeFiles/mgba-probe.dir" / name
+            if path.exists():
+                receipt["abiBuildFiles"][name] = dict(sha256=sha(path), content=path.read_text())
         run("probe", [executable, rom], 30)
         lines = (work / "probe.log").read_text().splitlines()
         results = [json.loads(line) for line in lines if line.startswith('{"schema":')]
         if len(results) != 1 or results[0].get("status") != "PASS":
             raise RuntimeError("Missing or ambiguous probe result")
-        receipt.update(status="PASS", result=results[0], executableSha256=sha(executable))
+        receipt["haltCases"] = {}
+        for case in ("halt-step", "halt-run-loop"):
+            entry = run(case, [executable, rom, "--" + case], 2, allow_timeout=True)
+            receipt["haltCases"][case] = "TIMED_OUT" if entry["exitCode"] is None else "RETURNED"
+        receipt.update(status="PASS", result=results[0])
+        if "TIMED_OUT" in receipt["haltCases"].values():
+            receipt["limitations"] = ["Public core calls stalled at HALT; watchdog cleanup passed. "
+                                      "Instruction-level atomic pause alone is insufficient. "
+                                      "A bounded native implementation is required before Basic Debugging qualification."]
     except Exception as error:
         receipt.update(status="FAIL", error=str(error))
         raise
     finally:
         record()
-    print(json.dumps(receipt["result"], indent=2))
+    print(json.dumps({key: receipt[key] for key in ("status", "result", "haltCases", "limitations")
+                      if key in receipt}, indent=2))
 
 
 if __name__ == "__main__":
