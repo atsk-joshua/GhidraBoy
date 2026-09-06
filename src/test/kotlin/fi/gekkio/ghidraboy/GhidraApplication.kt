@@ -34,11 +34,9 @@ class GhidraApplication : Extension {
                 val layout =
                     object : GhidraApplicationLayout() {
                         override fun findGhidraModules(): MutableMap<String, GModule> =
-                            mutableMapOf(
-                                "GhidraBoy" to
-                                    GModule(applicationRootDirs, ResourceFile("./")),
-                            ).apply {
-                                putAll(super.findGhidraModules())
+                            super.findGhidraModules().toMutableMap().apply {
+                                // The checkout under test must override an installed release.
+                                this["GhidraBoy"] = GModule(applicationRootDirs, ResourceFile("./"))
                             }
                     }
                 val configuration = HeadlessGhidraApplicationConfiguration()
