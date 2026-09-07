@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SalvageTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:38:12.206Z" hostname="MacBookPro.localdomain" time="0.33">
+  <properties/>
+  <testcase name="rumble RAM geometry is not advertised as ordinary sixteen bank SRAM()" classname="fi.gekkio.ghidraboy.SalvageTest" time="0.0"/>
+  <testcase name="salvage preserves short headers partial banks and unknown size codes without invented geometry()" classname="fi.gekkio.ghidraboy.SalvageTest" time="0.325"/>
+  <testcase name="legacy hardware remains unknown or preserves an explicit historical choice()" classname="fi.gekkio.ghidraboy.SalvageTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

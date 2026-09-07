@@ -1,0 +1,200 @@
+{
+  "assumptions": {
+    "roots": [
+      "0150",
+      "0180"
+    ],
+    "interrupts": "not modeled by bounded engine",
+    "imageLifetime": "immutable self-authored file; annotated listing uses same bytes",
+    "mapper": {
+      "romLow": 1,
+      "romHigh": 0,
+      "mode": 0,
+      "ramSelect": 0,
+      "ramEnabled": false,
+      "vbk": 0,
+      "svbk": 1,
+      "latch": 0
+    },
+    "RAM_save_RTC": "unknown; SP established by code",
+    "rootOrigin": "self-authored fixture declarations; no whole-ROM reachability claim"
+  },
+  "compiler": "default",
+  "coverage": {
+    "overlappingCodeDataBytes": 0,
+    "unresolvedBytes": 65446,
+    "definedDataBytes": 76,
+    "dataFileRanges": [
+      "000104-00014f"
+    ],
+    "physicalFileBytes": 65536,
+    "meaning": "listing classification, not proven execution or semantic coverage",
+    "unresolvedFileRanges": [
+      "000000-000103",
+      "00015c-00017f",
+      "000181-007fff",
+      "008001-00ffff"
+    ],
+    "definedCodeBytes": 14,
+    "codeFileRanges": [
+      "000150-00015b",
+      "000180-000180",
+      "008000-008000"
+    ]
+  },
+  "engine": "20260907-sa00",
+  "fingerprintComponents": {
+    "callfixups": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data": "b6725580e0996447c9c33ebeb8accef040f3025f1a6a360cef6e6bc49b11ce53",
+    "flowReferences": "4d53dc9f2cc29eb7784e7dc69d0bd813d79b94ee1eb0cfb13671ef094d4b5c9f",
+    "instructions": "304e74b091999cb77195047ae97a5255c508ac96536484923ac84d0bfde68f83",
+    "mapping": "6b8103f8f21fc219e8c365d6e47c282effa044812693a2e0d8d612b6c967c0b1",
+    "memory": "92a707bfaf65a98b68c4c70bc62c5866eea17b61e41044b0442a7b2d0522069d"
+  },
+  "fixture": "sa00-generic-mbc3-v1",
+  "fixtureSha256": "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944",
+  "functions": [
+    {
+      "source": "USER_DEFINED",
+      "body": [
+        "[0150, 015b]"
+      ],
+      "name": "user_entry",
+      "entry": "0150"
+    }
+  ],
+  "instructions": [
+    "0150:3:LD SP,0xc100",
+    "0153:2:LD A,0x2",
+    "0155:3:LD (0x2000),A",
+    "0158:3:CALL 0x4000",
+    "015b:1:RET",
+    "0180:1:JP HL",
+    "rom2::4000:1:RET"
+  ],
+  "language": "SM83:LE:16:default",
+  "languageVersion": 1,
+  "phase": "edited-program",
+  "programEntryPoints": [
+    "0100"
+  ],
+  "results": [
+    {
+      "schemaVersion": 2,
+      "engineVersion": "20260907-sa00",
+      "starts": [
+        "0150"
+      ],
+      "assumption": {
+        "romLow": 1,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "configuration": {
+        "stateLimit": 4096,
+        "reverseBranches": false
+      },
+      "completion": "COMPLETE",
+      "exploredStates": 4,
+      "pendingStates": 0,
+      "fingerprint": "b9fce001c9564dba69eb19c4072ae10e02664c58fb8e02c658ca7c4bec422d7b",
+      "findings": [
+        {
+          "source": "0155",
+          "access": "write",
+          "targets": [],
+          "reason": "device: ROM is read-only; mapper control write",
+          "confidence": "UNKNOWN",
+          "operation": 0,
+          "operand": -1,
+          "byteIndex": 0
+        },
+        {
+          "source": "0158",
+          "access": "flow",
+          "targets": [],
+          "reason": "Unsupported instruction interpretation: stored flow annotation differs from decoded flow",
+          "confidence": "UNKNOWN",
+          "operation": -1,
+          "operand": -1,
+          "byteIndex": -1
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "schemaVersion": 2,
+      "engineVersion": "20260907-sa00",
+      "starts": [
+        "0180"
+      ],
+      "assumption": {
+        "romLow": 1,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "configuration": {
+        "stateLimit": 4096,
+        "reverseBranches": false
+      },
+      "completion": "COMPLETE",
+      "exploredStates": 1,
+      "pendingStates": 0,
+      "fingerprint": "b9fce001c9564dba69eb19c4072ae10e02664c58fb8e02c658ca7c4bec422d7b",
+      "findings": [
+        {
+          "source": "0180",
+          "access": "flow",
+          "targets": [],
+          "reason": "Indirect flow requires a validated per-program convention",
+          "confidence": "UNKNOWN",
+          "operation": -1,
+          "operand": -1,
+          "byteIndex": -1
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "schema": 1,
+  "semanticChecks": [],
+  "semanticFailures": [],
+  "semanticScope": "Only named checks executed; all other bytes and whole-ROM behavior unqualified",
+  "unresolvedEdges": [
+    {
+      "source": "0158",
+      "access": "flow",
+      "targets": [],
+      "reason": "Unsupported instruction interpretation: stored flow annotation differs from decoded flow",
+      "confidence": "UNKNOWN",
+      "operation": -1,
+      "operand": -1,
+      "byteIndex": -1
+    },
+    {
+      "source": "0180",
+      "access": "flow",
+      "targets": [],
+      "reason": "Indirect flow requires a validated per-program convention",
+      "confidence": "UNKNOWN",
+      "operation": -1,
+      "operand": -1,
+      "byteIndex": -1
+    }
+  ],
+  "warningCategories": {
+    "flow:Indirect flow requires a validated per-program convention": 1,
+    "flow:Unsupported instruction interpretation: stored flow annotation differs from decoded flow": 1,
+    "write:device: ROM is read-only; mapper control write": 1
+  }
+}

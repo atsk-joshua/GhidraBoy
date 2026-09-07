@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.BankAnalysisTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:57:39.252Z" hostname="MacBookPro.localdomain" time="0.045">
+  <properties/>
+  <testcase name="branch merge retains two candidate banks and preserves user references()" classname="fi.gekkio.ghidraboy.BankAnalysisTest" time="0.02"/>
+  <testcase name="overlay execution context resolves same window without guessing other banks()" classname="fi.gekkio.ghidraboy.BankAnalysisTest" time="0.01"/>
+  <testcase name="constant mapper writes resolve bank two while unknown state stays explicit()" classname="fi.gekkio.ghidraboy.BankAnalysisTest" time="0.015"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

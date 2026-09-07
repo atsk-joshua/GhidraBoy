@@ -1,0 +1,12 @@
+{
+  "preparedAnnotationOnlyFunction": "rom2::4600",
+  "allConsumedInstructionsAbsent": true,
+  "originalName": "shared_state_callee",
+  "originalComment": "Original shared callee note",
+  "fullyFreshFunctions": [
+    "rom1::4500",
+    "0150",
+    "0180",
+    "0190"
+  ]
+}

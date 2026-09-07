@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SymbolBoundaryTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:11:38.451Z" hostname="MacBookPro.localdomain" time="0.027">
+  <properties/>
+  <testcase name="explicit end markers retain overlay space through rename reload and export()" classname="fi.gekkio.ghidraboy.SymbolBoundaryTest" time="0.027"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

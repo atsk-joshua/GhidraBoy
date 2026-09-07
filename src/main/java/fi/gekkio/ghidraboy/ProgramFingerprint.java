@@ -20,6 +20,12 @@ public final class ProgramFingerprint {
   }
 
   public static Map<String, String> components(Program p, TaskMonitor monitor) throws Exception {
+    var parts = new TreeMap<>(coreComponents(p, monitor));
+    parts.put("softwareCallDependencies", SoftwareCallRegistry.semanticDependencies(p, monitor));
+    return Collections.unmodifiableMap(parts);
+  }
+
+  static Map<String, String> coreComponents(Program p, TaskMonitor monitor) throws Exception {
     var parts = new TreeMap<String, String>();
     parts.put(
         "mapping",
@@ -61,6 +67,8 @@ public final class ProgramFingerprint {
     parts.put(
         "data", Sha256.of(String.join("\n", data).getBytes(StandardCharsets.UTF_8)).toString());
     var instructions = new ArrayList<String>();
+    var references = new ArrayList<String>();
+    instructions.add(p.getLanguageID() + ":" + p.getCompilerSpec().getCompilerSpecID());
     for (var ins : p.getListing().getInstructions(true)) {
       monitor.checkCancelled();
       instructions.add(
@@ -72,12 +80,47 @@ public final class ProgramFingerprint {
               + ":"
               + ins.isFallThroughOverridden()
               + ":"
-              + address(ins.getFallThrough()));
+              + address(ins.getFallThrough())
+              + ":"
+              + ins.isLengthOverridden()
+              + ":"
+              + Arrays.toString(ins.getPcode(false)));
+      // Hash every reference consulted by interpretation, including primary/source changes.
+      // Application's DATA/READ/WRITE annotations are neither consulted nor hashed.
+      for (var ref : ins.getReferencesFrom())
+        if (InstructionInterpretation.relevant(ref))
+          references.add(
+              address(ref.getFromAddress())
+                  + ":"
+                  + address(ref.getToAddress())
+                  + ":"
+                  + ref.getReferenceType().getValue()
+                  + ":"
+                  + ref.getOperandIndex()
+                  + ":"
+                  + ref.isPrimary()
+                  + ":"
+                  + ref.getSource());
     }
     Collections.sort(instructions);
     parts.put(
         "instructions",
         Sha256.of(String.join("\n", instructions).getBytes(StandardCharsets.UTF_8)).toString());
+    Collections.sort(references);
+    parts.put(
+        "flowReferences",
+        Sha256.of(String.join("\n", references).getBytes(StandardCharsets.UTF_8)).toString());
+    var fixups = new ArrayList<String>();
+    for (var function : p.getFunctionManager().getFunctions(true)) {
+      monitor.checkCancelled();
+      if (function.getCallFixup() != null)
+        fixups.add(address(function.getEntryPoint()) + ":" + function.getCallFixup());
+    }
+    Collections.sort(fixups);
+    parts.put(
+        "callfixups",
+        Sha256.of(String.join("\n", fixups).getBytes(StandardCharsets.UTF_8)).toString());
+    parts.put("softwareCalls", SoftwareCallRegistry.configurationIdentity(p));
     return Collections.unmodifiableMap(parts);
   }
 
@@ -90,6 +133,7 @@ public final class ProgramFingerprint {
   public static void requireCurrent(Program p, AnalysisResult result, TaskMonitor monitor)
       throws Exception {
     if (result == null
+        || result.completion() == AnalysisResult.Completion.INPUT_CHANGED
         || result.schemaVersion() != 2
         || !AnalysisResult.ENGINE_VERSION.equals(result.engineVersion())
         || !capture(p, monitor).equals(result.fingerprint()))

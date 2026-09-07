@@ -1,0 +1,19 @@
+{
+  "archiveSha256": "a18bc013d93c2815d4e929e814e9ec18248eb357c7c185f060ac1ffbed5cdd98",
+  "guiPid": 60837,
+  "nativePid": 60873,
+  "install": "/private/tmp/ghidraboy-sa01-resume-install-7/ghidra_12.1.3_PUBLIC",
+  "wrapper": "/private/tmp/ghidraboy-sa01-window-20260907/app/GhidraBoySA01.app",
+  "bundleId": "fi.gekkio.ghidraboy.sa01.window",
+  "main": "ghidra.Ghidra ghidra.GhidraRun",
+  "profile": "/private/tmp/ghidraboy-sa01-window-20260907/profile",
+  "jdkRelease": "21.0.12.1",
+  "runtimeNote": "Jpackage copies/re-signs native libraries. Exact hashes recorded. Java modules/release match original. libjava/libjli match after stripping signatures on diagnostic copies. libjvm sections all match; remaining stripped-file difference is __LINKEDIT vmsize at bytes1801-1802.",
+  "files": {
+    "/private/tmp/ghidraboy-sa01-window-20260907/app/GhidraBoySA01.app/Contents/MacOS/GhidraBoySA01": "a52b0960082c40d38b12137102a933bb73d5702c15941a2a3088e5c231a34fc7",
+    "/private/tmp/ghidraboy-sa01-window-20260907/app/GhidraBoySA01.app/Contents/Info.plist": "3c4e92757a2feb5a464675f25759b41ad71f585878d1db383e620654377bc90a",
+    "/private/tmp/ghidraboy-sa01-window-20260907/app/GhidraBoySA01.app/Contents/app/GhidraBoySA01.cfg": "cfe31ca12ee4c014ee7b478c99ce8130b3b16d7ea208611c3652c8337d09c3fd",
+    "/private/tmp/ghidraboy-sa01-resume-install-7/ghidra_12.1.3_PUBLIC/Ghidra/Features/Decompiler/os/mac_arm_64/decompile": "5b736c3e9236667d35a732f226c99f0014736b9fe506147886a7f15ccb94939a",
+    "/private/tmp/ghidraboy-sa01-resume-install-7/ghidra_12.1.3_PUBLIC/Ghidra/Extensions/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar": "f7502b8a0c7d80c0e171b5f77ca51f08e9f4f190e680217c1c99e40923c8f9f7"
+  }
+}

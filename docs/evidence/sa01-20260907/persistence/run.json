@@ -1,0 +1,69 @@
+{
+  "fixtureSha256": "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944",
+  "extensionSha256": "01fe1f53f3e3e59a2a950f8aa10876762630459cc03c81dff6b4eb5031ae194a",
+  "processes": [
+    {
+      "mode": "prepare",
+      "command": [
+        "/private/tmp/ghidraboy-sa01/persistence-ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01/persistence-run/projects",
+        "sa01",
+        "-import",
+        "/private/tmp/ghidraboy-sa01/persistence-run/sa01-generic-mbc3-v1.gb",
+        "-noanalysis",
+        "-scriptPath",
+        "/Users/joshuahansen/dev/GhidraBoy/src/test/scripts",
+        "-postScript",
+        "GhidraBoySa01.java",
+        "prepare",
+        "/private/tmp/ghidraboy-sa01/persistence-run",
+        "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944"
+      ],
+      "exitCode": 0,
+      "status": "PASS",
+      "marker": "SA01_PREPARE_PASS"
+    },
+    {
+      "mode": "reopen",
+      "command": [
+        "/private/tmp/ghidraboy-sa01/persistence-ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01/persistence-run/projects",
+        "sa01",
+        "-process",
+        "sa01-generic-mbc3-v1.gb",
+        "-noanalysis",
+        "-scriptPath",
+        "/Users/joshuahansen/dev/GhidraBoy/src/test/scripts",
+        "-postScript",
+        "GhidraBoySa01.java",
+        "reopen",
+        "/private/tmp/ghidraboy-sa01/persistence-run",
+        "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944"
+      ],
+      "exitCode": 0,
+      "status": "PASS",
+      "marker": "SA01_REOPEN_REAPPLY_PASS"
+    },
+    {
+      "mode": "edited",
+      "command": [
+        "/private/tmp/ghidraboy-sa01/persistence-ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01/persistence-run/projects",
+        "sa01",
+        "-process",
+        "sa01-generic-mbc3-v1.gb",
+        "-noanalysis",
+        "-scriptPath",
+        "/Users/joshuahansen/dev/GhidraBoy/src/test/scripts",
+        "-postScript",
+        "GhidraBoySa01.java",
+        "edited",
+        "/private/tmp/ghidraboy-sa01/persistence-run",
+        "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944"
+      ],
+      "exitCode": 1,
+      "status": "FAIL",
+      "marker": "SA01_EDITED_REOPEN_PASS"
+    }
+  ]
+}

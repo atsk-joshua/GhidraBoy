@@ -1,0 +1,17 @@
+{
+  "source_commit": "16752093dce0147afd28762a2f8918144ec571c2",
+  "legacy_override_files": {
+    "src/main/java/fi/gekkio/ghidraboy/BankAnalysis.java": "1b590915c41b4edd3779b4e5961e9675da111f6ed09aeb2823af582aaa84ce99",
+    "src/main/java/fi/gekkio/ghidraboy/ProgramFingerprint.java": "e73efe4c8b07c27132d3ead6e11d9e5c3ec4357d9ac1118c238d737f27be07cf",
+    "src/main/java/fi/gekkio/ghidraboy/AnalysisResult.java": "bd5777498eac25b4616c9a5c35fffc338a17fe93d28be9f8cdeb50a75f3b9be2",
+    "src/main/java/fi/gekkio/ghidraboy/PcodeConstants.java": "2265aceb8a01718d310ddd36e649a7b0cd94e5aea711a947d7d669e82dbb8c8a",
+    "src/main/java/fi/gekkio/ghidraboy/AnalysisApplication.java": "f1c12f2a19f17bf00d5bd642b7369545b4da70fc99d23551aca79e48ee76499d",
+    "src/main/java/fi/gekkio/ghidraboy/AnalysisOwnership.java": "1475c7686e7225f302eac990fe93c7b85a11d9fa7ffcef51650912f37386d5ce",
+    "src/main/java/fi/gekkio/ghidraboy/FunctionDiscovery.java": "de86f33051ee282e1c730c64c25a4722cb82364a2e3727e470e454baabe84528"
+  },
+  "legacy_test_sha256": "a5d49558b667fb24f9cc827bbb040a8124f8d45b821680c641ceea3e0f1087fb",
+  "legacy_command": "JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home GHIDRA_INSTALL_DIR=/private/tmp/ghidraboy-sa00/ghidra_12.1.3_PUBLIC ./gradlew test --tests '*LegacyFlowDependencyTest'",
+  "native_decompiler": "Ghidra12.1.3 with patched switch-recovery.2 mac_arm_64 companion; no decompiler invoked by legacy test",
+  "result": "PASS: all 5 mutations keep fingerprint accepted by apply/discovery; primary changes leave getFlows unchanged, other changes change old traversal",
+  "first_attempt": "BLOCKED sandbox cache lock, retained flow-legacy-reproduction.log; authorized escalated retry passed"
+}

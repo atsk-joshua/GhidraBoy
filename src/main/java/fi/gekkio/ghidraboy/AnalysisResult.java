@@ -15,7 +15,7 @@ public record AnalysisResult(
     String fingerprint,
     List<BankAnalysis.Finding> findings,
     List<String> diagnostics) {
-  public static final String ENGINE_VERSION = "20260905-decomp3";
+  public static final String ENGINE_VERSION = "20260907-sa01-state-contexts";
 
   public static AnalysisResult read(String json) {
     var root = com.google.gson.JsonParser.parseString(json);

@@ -1,0 +1,2 @@
+ERROR os/mac_arm_64/decompile does not exist (see GettingStarted.md, 'Building Native Components') (DecompileProcessFactory)  
+IWARN  More than 100 address segments have been created! (AddressMapDB)  

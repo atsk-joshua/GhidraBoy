@@ -1,0 +1,529 @@
+{
+  "nestedRepairs": [
+    {
+      "site": "rom3::4300",
+      "target": "0360",
+      "originalFlow": "CALL_RETURN",
+      "appliedFlow": "NONE",
+      "originalNoReturn": true,
+      "appliedFixup": "ghidraboy_may_return_v1",
+      "witness": "MATCHED_ARCHITECTURAL_RET; CPU continuation and restored SP agree with this call"
+    }
+  ],
+  "sites": [
+    {
+      "site": "0150",
+      "helper": "0200",
+      "originalFlow": "CALL_RETURN",
+      "originalContinuation": "null",
+      "helperNoReturn": true,
+      "payload": [
+        {
+          "address": "0153",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        },
+        {
+          "address": "0154",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        },
+        {
+          "address": "0155",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        }
+      ],
+      "physicalPayload": [
+        {
+          "address": "0153",
+          "length": 3,
+          "logicalOffset": 0,
+          "readLength": 3
+        }
+      ],
+      "target": "rom1::4100",
+      "targetNoReturn": true,
+      "originalBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 336
+          },
+          "max": {
+            "space": 401,
+            "offset": 338
+          }
+        },
+        {
+          "min": {
+            "space": 401,
+            "offset": 342
+          },
+          "max": {
+            "space": 401,
+            "offset": 345
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 336
+          },
+          "max": {
+            "space": 401,
+            "offset": 338
+          }
+        },
+        {
+          "min": {
+            "space": 401,
+            "offset": 342
+          },
+          "max": {
+            "space": 401,
+            "offset": 345
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "NONE",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=0156; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "0160",
+      "helper": "0200",
+      "originalFlow": "NONE",
+      "originalContinuation": "0163",
+      "helperNoReturn": true,
+      "payload": [
+        {
+          "address": "0163",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        },
+        {
+          "address": "0164",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        },
+        {
+          "address": "0165",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        }
+      ],
+      "physicalPayload": [
+        {
+          "address": "0163",
+          "length": 3,
+          "logicalOffset": 0,
+          "readLength": 3
+        }
+      ],
+      "target": "rom2::4100",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 352
+          },
+          "max": {
+            "space": 401,
+            "offset": 354
+          }
+        },
+        {
+          "min": {
+            "space": 401,
+            "offset": 358
+          },
+          "max": {
+            "space": 401,
+            "offset": 361
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 352
+          },
+          "max": {
+            "space": 401,
+            "offset": 354
+          }
+        },
+        {
+          "min": {
+            "space": 401,
+            "offset": 358
+          },
+          "max": {
+            "space": 401,
+            "offset": 361
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "NONE",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=0166; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "rom1::4200",
+      "helper": "0028",
+      "originalFlow": "NONE",
+      "originalContinuation": "rom1::4201",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom2::4300",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 16896
+          },
+          "max": {
+            "space": 657,
+            "offset": 16896
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 16896
+          },
+          "max": {
+            "space": 657,
+            "offset": 16896
+          }
+        }
+      ],
+      "canonicalTransport": "TERMINAL_CONTINUATION_EXPANSION",
+      "appliedCanonicalFlow": "CALL_RETURN",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=rom2::4201; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "rom1::4500",
+      "helper": "0200",
+      "originalFlow": "NONE",
+      "originalContinuation": "rom1::4503",
+      "helperNoReturn": true,
+      "payload": [
+        {
+          "address": "rom1::4503",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        },
+        {
+          "address": "rom2::4504",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        },
+        {
+          "address": "rom2::4505",
+          "length": 1,
+          "disposition": "CREATE_BYTE",
+          "type": "byte"
+        }
+      ],
+      "physicalPayload": [
+        {
+          "address": "rom1::4503",
+          "length": 1,
+          "logicalOffset": 0,
+          "readLength": 1
+        },
+        {
+          "address": "rom2::4504",
+          "length": 2,
+          "logicalOffset": 1,
+          "readLength": 2
+        }
+      ],
+      "target": "rom2::4300",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 17664
+          },
+          "max": {
+            "space": 657,
+            "offset": 17666
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 17664
+          },
+          "max": {
+            "space": 657,
+            "offset": 17666
+          }
+        }
+      ],
+      "canonicalTransport": "TERMINAL_CONTINUATION_EXPANSION",
+      "appliedCanonicalFlow": "CALL_RETURN",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=rom2::4506; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "0170",
+      "helper": "0300",
+      "originalFlow": "NONE",
+      "originalContinuation": "0173",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom2::4600",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 368
+          },
+          "max": {
+            "space": 401,
+            "offset": 371
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 368
+          },
+          "max": {
+            "space": 401,
+            "offset": 371
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "NONE",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=0173; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "rom2::4608",
+      "helper": "0320",
+      "originalFlow": "NONE",
+      "originalContinuation": "rom2::460b",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom3::4300",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 785,
+            "offset": 17920
+          },
+          "max": {
+            "space": 785,
+            "offset": 17931
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 785,
+            "offset": 17920
+          },
+          "max": {
+            "space": 785,
+            "offset": 17931
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "NONE",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=rom2::460b; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "rom1::4700",
+      "helper": "0320",
+      "originalFlow": "NONE",
+      "originalContinuation": "rom1::4703",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom2::4400",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 18176
+          },
+          "max": {
+            "space": 657,
+            "offset": 18182
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 18176
+          },
+          "max": {
+            "space": 657,
+            "offset": 18182
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "NONE",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=rom1::4703; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "rom1::4800",
+      "helper": "0340",
+      "originalFlow": "NONE",
+      "originalContinuation": "rom1::4803",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom2::4400",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 18432
+          },
+          "max": {
+            "space": 657,
+            "offset": 18434
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 657,
+            "offset": 18432
+          },
+          "max": {
+            "space": 657,
+            "offset": 18434
+          }
+        }
+      ],
+      "canonicalTransport": "TERMINAL_CONTINUATION_EXPANSION",
+      "appliedCanonicalFlow": "CALL_RETURN",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=MAY_RETURN; continuation=rom3::4803; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "0180",
+      "helper": "0340",
+      "originalFlow": "NONE",
+      "originalContinuation": "0183",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom2::4900",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 384
+          },
+          "max": {
+            "space": 401,
+            "offset": 390
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 384
+          },
+          "max": {
+            "space": 401,
+            "offset": 390
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "CALL_RETURN",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=NONRETURNING; continuation=null; repair thunk=false; subtract exact payload from caller body"
+    },
+    {
+      "site": "0190",
+      "helper": "0300",
+      "originalFlow": "NONE",
+      "originalContinuation": "0193",
+      "helperNoReturn": false,
+      "payload": [],
+      "physicalPayload": [],
+      "target": "rom2::4a00",
+      "targetNoReturn": false,
+      "originalBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 400
+          },
+          "max": {
+            "space": 401,
+            "offset": 405
+          }
+        }
+      ],
+      "repairedBody": [
+        {
+          "min": {
+            "space": 401,
+            "offset": 400
+          },
+          "max": {
+            "space": 401,
+            "offset": 405
+          }
+        },
+        {
+          "min": {
+            "space": 401,
+            "offset": 432
+          },
+          "max": {
+            "space": 401,
+            "offset": 434
+          }
+        }
+      ],
+      "canonicalTransport": "ORDINARY_SITE",
+      "appliedCanonicalFlow": "NONE",
+      "disposition": "INSTALL_VALIDATED_CALL; exit=NONLOCAL; continuation=01b0; repair thunk=false; subtract exact payload from caller body"
+    }
+  ]
+}

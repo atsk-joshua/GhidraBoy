@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:38:23.285Z" hostname="MacBookPro.localdomain" time="3.903">
+  <properties/>
+  <testcase name="fresh missing callee helper and continuation instructions become reviewed native state entries()" classname="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" time="0.511"/>
+  <testcase name="native public callee revisits one CPU PC in two physical banks()" classname="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" time="0.449"/>
+  <testcase name="conditional selector premises reach same CPU PC in different banks through normal native entries()" classname="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" time="0.841"/>
+  <testcase name="native callee banked data identities remain distinct at identical CPU address()" classname="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" time="0.435"/>
+  <testcase name="same Program retains both flag contexts and public canonical selection changes native physical path()" classname="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" time="1.084"/>
+  <testcase name="native nested ordinary calls restore prior bank before consuming live frames()" classname="fi.gekkio.ghidraboy.SoftwareCallStateCalleeApplicationTest" time="0.583"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

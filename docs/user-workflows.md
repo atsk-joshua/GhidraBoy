@@ -1,11 +1,8 @@
 # Install and first use
 
-Target **Ghidra 12.1.3, JDK 21**, using the checked-in Gradle 9.0.0 wrapper and
-Kotlin 2.2.10. Development version: **20260905-dev3**. Set `JAVA_HOME` and
-`GHIDRA_INSTALL_DIR`, then run `./gradlew clean build`. `SOURCE_DATE_EPOCH` is a
-tracked metadata input, defaulting to 1788566400; use identical inputs when
-comparing clean ZIPs. Do not compare hashes from different platforms as an
-unqualified reproducibility result.
+Use **Ghidra 12.1.3 / JDK 21** and select an exact static extension ZIP from
+its build or release receipt. A filename or old validation count alone does not
+qualify an artifact. The static extension works without an emulator or Python.
 
 In the project window choose File → Install Extensions, add the ZIP from
 `build/distributions`, and restart. Remove the previous GhidraBoy extension
@@ -133,4 +130,34 @@ original Ghidra version, and open the untouched backup. An upgraded database is
 not guaranteed to reopen in the old version.
 
 See [GUI checklist](gui-validation.md) for the interactive acceptance still to run
-and [evidence](modernization-evidence.md) for exact gates and limitations.
+for supported behavior. Exact historical qualification receipts remain in the
+source checkout under `docs/modernization-evidence.md`; they are not current
+acceptance of a newly built package.
+
+### Reviewed execution contexts (candidate)
+
+State-sensitive software calls can produce several execution contexts at the
+same CPU address. `software-call-preview` includes their physical instruction
+ranges, state and discovery inventories. `software-call-apply` commits the
+reviewed changes transactionally. Canonical storage and existing user work are
+preserved; discovered canonical instructions remain after removal.
+
+When a callee requires the optional state-entry native companion, proved callers
+use their matching execution aliases. In GhidraBoy Tools, `software-call-contexts`
+lists the contexts for a canonical physical function; `software-call-select-context`
+selects the context shown by its normal Decompiler window. The Function comment
+records the selected register, mapper, stack and memory premises. A conditional
+model header remains visible in the Decompiler. Selecting a display context
+does not change another caller's context and does not prove unspecified inputs.
+Modified dependencies or owned context metadata require a new review.
+
+The optional companion is installed into a new distribution copy with
+`tools/state_entry_native.py` from the source checkout. It is separate from the
+static extension and from the preceding switch-only native companion. Consult
+the current source qualification receipt before using an artifact; implementation
+and build success alone are not installed or GUI qualification.
+
+This state-sensitive candidate is not yet qualified for fresh ordinary analysis.
+The current source handoff records an automatic thunk/fixup drift failure and
+pending installed/GUI verification. Use disposable Programs for this candidate;
+the preceding finite workflow qualification does not establish this wider path.

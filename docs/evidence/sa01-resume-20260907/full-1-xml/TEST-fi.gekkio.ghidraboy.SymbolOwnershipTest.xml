@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SymbolOwnershipTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:11:38.478Z" hostname="MacBookPro.localdomain" time="0.026">
+  <properties/>
+  <testcase name="cancelled import rolls back claims and newly created labels()" classname="fi.gekkio.ghidraboy.SymbolOwnershipTest" time="0.005"/>
+  <testcase name="both source removal orders and changed reloads retain shared membership()" classname="fi.gekkio.ghidraboy.SymbolOwnershipTest" time="0.008"/>
+  <testcase name="preexisting edited moved and promoted labels survive last source removal()" classname="fi.gekkio.ghidraboy.SymbolOwnershipTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

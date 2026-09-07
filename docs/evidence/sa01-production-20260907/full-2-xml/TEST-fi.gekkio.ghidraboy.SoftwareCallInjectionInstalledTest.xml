@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-07T06:09:11.185Z" hostname="MacBookPro.localdomain" time="1.565">
+  <properties/>
+  <testcase name="banked inline reads target after selector change in native and actual injection()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.276"/>
+  <testcase name="production register helpers preserve restoring constant and manual frame effects()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.731"/>
+  <testcase name="installed compiler provides dynamic payload and refuses an unvalidated caller()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.016"/>
+  <testcase name="reviewed production workflow separates two sites sharing a helper across banks()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.307"/>
+  <testcase name="proven nonreturn uses reviewed terminal call without a fabricated wrapper return()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.235"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

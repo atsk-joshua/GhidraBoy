@@ -1,0 +1,77 @@
+{
+  "fixtureSha256": "2f5799c1655d7b51acbef16154006b8a0aa7b34bc3151807e2721c2f313473a1",
+  "extensionSha256": "e9a0a616137570ba85d5803b2bc0da53b6082945ed0fc6e8200c5679c6c234d0",
+  "scriptSha256": "891583842e8fd50b860cd99246fa371ba4f841b0c93e0026920b798b3d355b8e",
+  "processes": [
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-vbek7w9v/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run4/projects",
+        "sa01-production",
+        "-import",
+        "/private/tmp/ghidraboy-sa01-production-run4/production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run4/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "prepare",
+        "/private/tmp/ghidraboy-sa01-production-run4",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run4"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_PREPARE_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-vbek7w9v/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run4/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run4/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run4"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-vbek7w9v/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run4/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run4/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "reapply",
+        "/private/tmp/ghidraboy-sa01-production-run4",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run4"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_REAPPLY_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": false
+    }
+  ]
+}

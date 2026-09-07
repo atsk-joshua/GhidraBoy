@@ -1,0 +1,36 @@
+[
+  {
+    "file": "release",
+    "sourceSha256": "7b6f4e84249287203d8e1857254307a6b2dc0643b1efdeef5fa2aeaf791866f0",
+    "guiSha256": "7b6f4e84249287203d8e1857254307a6b2dc0643b1efdeef5fa2aeaf791866f0"
+  },
+  {
+    "file": "lib/modules",
+    "sourceSha256": "f1053d4959235d6f3faaa28b74812b45a7a72463ba7edf29f1c7fb1a216c74e4",
+    "guiSha256": "f1053d4959235d6f3faaa28b74812b45a7a72463ba7edf29f1c7fb1a216c74e4"
+  },
+  {
+    "file": "lib/server/libjvm.dylib",
+    "sourceSha256": "1fdf8c0ddf96ad4d644100d0177ec206975e410ba575a421204eb5865c559cb2",
+    "guiSha256": "574818dc954e324fa779d0ce7192db79b38dcbc50426f6271bbe5e1a54c32cff",
+    "unsignedSourceSha256": "8bd347abe87edd048ca6ebccf682886e18294e9f0460d56f8f018af6723a58d1",
+    "unsignedGuiSha256": "e17180774aa86f25704d6904d651ac5f9f887690ef29b3b8e4a439ca981aad2e",
+    "signatureOnlyDifference": false
+  },
+  {
+    "file": "lib/libjava.dylib",
+    "sourceSha256": "0a68a7a245e9ffef1c1d06be20148bc55fb2ce360fdee47b0d55ce544b73b0cc",
+    "guiSha256": "44ba295e0a8bccc47b21906eef97a5a5f9c3b18b21edbaca2a6aecc3666f2c94",
+    "unsignedSourceSha256": "a343ca5d249322670e8c5c9b3a421a46c608d47fe5d62ad4dd4d0838df6380df",
+    "unsignedGuiSha256": "a343ca5d249322670e8c5c9b3a421a46c608d47fe5d62ad4dd4d0838df6380df",
+    "signatureOnlyDifference": true
+  },
+  {
+    "file": "lib/libjli.dylib",
+    "sourceSha256": "349d622ff33d1ca0b66cf017ccddab3b744591fff7bdbe7b1f41440189c66e5a",
+    "guiSha256": "d117eed6a6709805d84a68a71770b6faa024c3b9461962df6d1f01af62ac3e34",
+    "unsignedSourceSha256": "2f43018b929318017402c27c592f0c9936ca17be09c62b0989df93b47d47f176",
+    "unsignedGuiSha256": "2f43018b929318017402c27c592f0c9936ca17be09c62b0989df93b47d47f176",
+    "signatureOnlyDifference": true
+  }
+]

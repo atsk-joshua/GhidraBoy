@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallInjectionTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-09-07T04:49:05.293Z" hostname="MacBookPro.localdomain" time="1.06">
+  <properties/>
+  <testcase name="physical overlay call override exposes ordinary native transport limitation()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionTest" time="0.012">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;rom2::4000&gt; but was: &lt;4000&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;rom2::4000&gt; but was: &lt;4000&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//fi.gekkio.ghidraboy.SoftwareCallInjectionTest.physical overlay call override exposes ordinary native transport limitation(SoftwareCallInjectionTest.kt:212)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="callfixup retains hardware frame and adjusted continuation through repeated analysis()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionTest" time="1.047"/>
+  <system-out><![CDATA[INFO  Packed database cache: /var/tmp/joshuahansen-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

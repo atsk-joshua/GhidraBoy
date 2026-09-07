@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallMayReturnInjectionTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:32:43.554Z" hostname="MacBookPro.localdomain" time="1.756">
+  <properties/>
+  <testcase name="code-derived returning target survives three suspicious ordinary callers without recurring repair()" classname="fi.gekkio.ghidraboy.SoftwareCallMayReturnInjectionTest" time="1.756"/>
+  <system-out><![CDATA[WARN  Decompiling rom2::4210, pcode error at rom2::4213: Unable to resolve constructor at rom2::4213 (DecompileCallback)  
+WARN  Decompiling rom2::4200, pcode error at rom2::4203: Unable to resolve constructor at rom2::4203 (DecompileCallback)  
+WARN  Decompiling rom2::4220, pcode error at rom2::4223: Unable to resolve constructor at rom2::4223 (DecompileCallback)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+WARN  Decompiling rom2::4220, pcode error at rom2::4223: Unable to resolve constructor at rom2::4223 (DecompileCallback)  
+WARN  Decompiling rom2::4210, pcode error at rom2::4213: Unable to resolve constructor at rom2::4213 (DecompileCallback)  
+WARN  Decompiling rom2::4200, pcode error at rom2::4203: Unable to resolve constructor at rom2::4203 (DecompileCallback)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

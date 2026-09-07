@@ -49,4 +49,4 @@ make -j8 ghidra_opt ARCH_TYPE='-arch arm64' ADDITIONAL_FLAGS='-mmacosx-version-m
 
 The research used a fresh `/tmp` copy of the complete distribution and replaced only that copy's `Ghidra/Features/Decompiler/os/mac_arm_64/decompile`. The active/default installation and original distributions remain unchanged. Linux/native suite validation, dependency update packaging and a supported deployment/rollback workflow remain necessary before shipping this patch.
 
-Private build logs, stock/diagnostic/patched/bounds-checked executables, fixture results, generated C and SHA256 identities are retained under `/tmp/gbw3-normalized-native/`. The related real-ROM experiment and annotation-preservation evidence are recorded in GhiBW3 `docs/decompilation/NORMALIZED_SWITCH_EXPERIMENT.md`.
+Private build logs, stock/diagnostic/patched/bounds-checked executables, fixture results, generated C and SHA256 identities are retained under `/tmp/gbw3-normalized-native/`. Game-specific observations are outside the generic regression scope.

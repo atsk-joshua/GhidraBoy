@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.MapperTopologyTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T05:03:09.569Z" hostname="MacBookPro.localdomain" time="29.468">
+  <properties/>
+  <testcase name="every supported reachable ROM window has shared physical backing()" classname="fi.gekkio.ghidraboy.MapperTopologyTest" time="29.468"/>
+  <system-out><![CDATA[WARN  More than 100 address segments have been created! (AddressMapDB)  
+WARN  More than 100 address segments have been created! (AddressMapDB)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

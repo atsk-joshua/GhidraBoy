@@ -1,0 +1,239 @@
+{
+  "assumptions": {
+    "RAM_save_RTC": "unknown; SP established by code",
+    "mapper": {
+      "romLow": 1,
+      "romHigh": 0,
+      "mode": 0,
+      "ramSelect": 0,
+      "ramEnabled": false,
+      "vbk": 0,
+      "svbk": 1,
+      "latch": 0
+    },
+    "imageLifetime": "immutable self-authored file; annotated listing uses same bytes",
+    "interrupts": "not modeled by bounded engine",
+    "roots": [
+      "0150",
+      "0180"
+    ],
+    "rootOrigin": "self-authored fixture declarations; no whole-ROM reachability claim"
+  },
+  "compiler": "default",
+  "coverage": {
+    "meaning": "listing classification, not proven execution or semantic coverage",
+    "physicalFileBytes": 65536,
+    "dataFileRanges": [
+      "000104-00014f"
+    ],
+    "definedDataBytes": 76,
+    "unresolvedBytes": 65446,
+    "overlappingCodeDataBytes": 0,
+    "codeFileRanges": [
+      "000150-00015b",
+      "000180-000180",
+      "008000-008000"
+    ],
+    "definedCodeBytes": 14,
+    "unresolvedFileRanges": [
+      "000000-000103",
+      "00015c-00017f",
+      "000181-007fff",
+      "008001-00ffff"
+    ]
+  },
+  "engine": "20260907-sa00",
+  "fingerprintComponents": {
+    "callfixups": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data": "b6725580e0996447c9c33ebeb8accef040f3025f1a6a360cef6e6bc49b11ce53",
+    "flowReferences": "759ea8aa5f823f310028f169ed69f99d65f292a9d90a39ec1d2c39e6607167b0",
+    "instructions": "304e74b091999cb77195047ae97a5255c508ac96536484923ac84d0bfde68f83",
+    "mapping": "6b8103f8f21fc219e8c365d6e47c282effa044812693a2e0d8d612b6c967c0b1",
+    "memory": "92a707bfaf65a98b68c4c70bc62c5866eea17b61e41044b0442a7b2d0522069d"
+  },
+  "fixture": "sa00-generic-mbc3-v1",
+  "fixtureSha256": "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944",
+  "functions": [
+    {
+      "entry": "0150",
+      "name": "user_entry",
+      "body": [
+        "[0150, 015b]"
+      ],
+      "source": "USER_DEFINED"
+    }
+  ],
+  "instructions": [
+    "0150:3:LD SP,0xc100",
+    "0153:2:LD A,0x2",
+    "0155:3:LD (0x2000),A",
+    "0158:3:CALL 0x4000",
+    "015b:1:RET",
+    "0180:1:JP HL",
+    "rom2::4000:1:RET"
+  ],
+  "language": "SM83:LE:16:default",
+  "languageVersion": 1,
+  "phase": "annotated-program",
+  "programEntryPoints": [
+    "0100"
+  ],
+  "results": [
+    {
+      "schemaVersion": 2,
+      "engineVersion": "20260907-sa00",
+      "starts": [
+        "0150"
+      ],
+      "assumption": {
+        "romLow": 1,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "configuration": {
+        "stateLimit": 4096,
+        "reverseBranches": false
+      },
+      "completion": "COMPLETE",
+      "exploredStates": 5,
+      "pendingStates": 0,
+      "fingerprint": "f9c6e14de9486736c5064a839b746d801ef3bc2612654c9339e0d6b989e6a553",
+      "findings": [
+        {
+          "source": "0155",
+          "access": "write",
+          "targets": [],
+          "reason": "device: ROM is read-only; mapper control write",
+          "confidence": "UNKNOWN",
+          "operation": 0,
+          "operand": -1,
+          "byteIndex": 0
+        },
+        {
+          "source": "0158",
+          "access": "write",
+          "targets": [
+            "c0ff"
+          ],
+          "reason": "Explicit state, execution context, or constant p-code evidence",
+          "confidence": "PROVEN",
+          "operation": 2,
+          "operand": -1,
+          "byteIndex": 0
+        },
+        {
+          "source": "0158",
+          "access": "write",
+          "targets": [
+            "c0fe"
+          ],
+          "reason": "Explicit state, execution context, or constant p-code evidence",
+          "confidence": "PROVEN",
+          "operation": 4,
+          "operand": -1,
+          "byteIndex": 0
+        },
+        {
+          "source": "0158",
+          "access": "call",
+          "targets": [
+            "rom2::4000"
+          ],
+          "reason": "Explicit state, execution context, or constant p-code evidence",
+          "confidence": "PROVEN",
+          "operation": -1,
+          "operand": -1,
+          "byteIndex": -1
+        },
+        {
+          "source": "015b",
+          "access": "read",
+          "targets": [],
+          "reason": "Unknown load address",
+          "confidence": "UNKNOWN",
+          "operation": 1,
+          "operand": -1,
+          "byteIndex": 0
+        },
+        {
+          "source": "015b",
+          "access": "read",
+          "targets": [],
+          "reason": "Unknown load address",
+          "confidence": "UNKNOWN",
+          "operation": 2,
+          "operand": -1,
+          "byteIndex": 0
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "schemaVersion": 2,
+      "engineVersion": "20260907-sa00",
+      "starts": [
+        "0180"
+      ],
+      "assumption": {
+        "romLow": 1,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "configuration": {
+        "stateLimit": 4096,
+        "reverseBranches": false
+      },
+      "completion": "COMPLETE",
+      "exploredStates": 1,
+      "pendingStates": 0,
+      "fingerprint": "f9c6e14de9486736c5064a839b746d801ef3bc2612654c9339e0d6b989e6a553",
+      "findings": [
+        {
+          "source": "0180",
+          "access": "flow",
+          "targets": [],
+          "reason": "Indirect flow requires a validated per-program convention",
+          "confidence": "UNKNOWN",
+          "operation": -1,
+          "operand": -1,
+          "byteIndex": -1
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "schema": 1,
+  "semanticChecks": [
+    "bank-2 call destination",
+    "JP HL unresolved"
+  ],
+  "semanticFailures": [],
+  "semanticScope": "Only named checks executed; all other bytes and whole-ROM behavior unqualified",
+  "unresolvedEdges": [
+    {
+      "source": "0180",
+      "access": "flow",
+      "targets": [],
+      "reason": "Indirect flow requires a validated per-program convention",
+      "confidence": "UNKNOWN",
+      "operation": -1,
+      "operand": -1,
+      "byteIndex": -1
+    }
+  ],
+  "warningCategories": {
+    "flow:Indirect flow requires a validated per-program convention": 1,
+    "read:Unknown load address": 2,
+    "write:device: ROM is read-only; mapper control write": 1
+  }
+}

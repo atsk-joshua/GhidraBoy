@@ -1,0 +1,43 @@
+ M .github/workflows/ci.yml
+ M README.markdown
+ M debugger/LICENSES/NOTICE.md
+ M debugger/README.md
+ M debugger/docs/INSTALL.md
+ M debugger/docs/PACKAGE.md
+ M debugger/docs/UI_ACTION_VALIDATION.md
+ D debugger/legacy/README.md
+ D debugger/legacy/gbw3-live-lab/gbw3_core.py
+ D debugger/legacy/gbw3-live-lab/gbw3_lab.py
+ D debugger/legacy/gbw3-live-lab/test_lab.py
+D  debugger/scripts/ExportGbcKnowledge.java
+ M debugger/scripts/package_candidate.py
+ M debugger/scripts/test_ui_actions.sh
+ M debugger/tests/build_tools/test_inputs.py
+ D debugger/tests/drive_game.py
+AM docs/README.md
+ M docs/analysis.md
+A  docs/building.md
+ M docs/compiler-support.md
+AM docs/debugger-identities.md
+ M docs/debugger-integration-plan.md
+ M docs/direct-bus-semantics.md
+ M docs/input-policy.md
+ M docs/instruction-compatibility.md
+AM docs/integration/README.md
+ M docs/integration/final-qualification.md
+ M docs/integration/progress.md
+ M docs/native-decompiler/logical-shift-range.md
+ M docs/native-decompiler/normalized-switch-index.md
+ M docs/references.md
+ M docs/static-contract.md
+ M docs/user-workflows.md
+AM docs/validation.md
+ M packaging/README.markdown
+ M packaging/static-docs.txt
+A  tools/check.py
+?? docs/changes-since-official-release-report.md
+?? docs/repository-ownership.md
+?? docs/roadmap.md
+?? docs/static-analysis-implementation.md
+?? docs/static-analysis-research.md
+?? docs/static-analysis-spec.md

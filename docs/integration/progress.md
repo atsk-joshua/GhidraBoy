@@ -1,3 +1,5 @@
+> Repository layout is now governed by [repository ownership](../repository-ownership.md). Old checkout, backup and retention statements below record earlier work and are superseded.
+
 # Debugger integration execution ledger
 
 Plan: [debugger-integration-plan.md](../debugger-integration-plan.md). This ledger tracks implementation of that plan; earlier GhiBW3 milestone numbers do not apply.

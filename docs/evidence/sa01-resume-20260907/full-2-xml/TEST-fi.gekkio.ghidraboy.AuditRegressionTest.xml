@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.AuditRegressionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:33:31.693Z" hostname="MacBookPro.localdomain" time="2.385">
+  <properties/>
+  <testcase name="R1 incomplete exploration cannot apply a singleton()" classname="fi.gekkio.ghidraboy.AuditRegressionTest" time="2.308"/>
+  <testcase name="R6 BOOT symbols never leak into echo RAM()" classname="fi.gekkio.ghidraboy.AuditRegressionTest" time="0.017"/>
+  <testcase name="R5 shared symbol remains until the last source is removed()" classname="fi.gekkio.ghidraboy.AuditRegressionTest" time="0.016"/>
+  <testcase name="R2 word store writes both mapper registers()" classname="fi.gekkio.ghidraboy.AuditRegressionTest" time="0.016"/>
+  <testcase name="R4 fixed to switchable window fallthrough resolves the new view()" classname="fi.gekkio.ghidraboy.AuditRegressionTest" time="0.015"/>
+  <testcase name="R3 masked MBC1 bank zero has an upper window view()" classname="fi.gekkio.ghidraboy.AuditRegressionTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

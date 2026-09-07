@@ -1,0 +1,21 @@
+{
+  "identity": {
+    "baseDependencyVersion": "12.1.3+ghidraboy.switch-recovery.2",
+    "baseGhidraVersion": "12.1.3",
+    "binarySha256": "d60be1dd82b660b4123adbe2a8c7c3353a7974e856d4298208f8dc68490db871",
+    "callingConvention": "__ghidraboy_state_entry_v1",
+    "nativeDependencyVersion": "12.1.3+ghidraboy.switch-recovery.2.state-entry.1",
+    "officialNative": false,
+    "patchedSourcesSha256": "65d8538a24aca9b2e328875aba59821476a6ecaa85a7dbf9cf77bad74a16b216",
+    "platform": "mac_arm_64",
+    "protocol": "__ghidraboy_state_entry_v1",
+    "schema": "ghidraboy-state-entry-native-v1",
+    "sourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9",
+    "statePatchSha256": "91d8d2bfe6b2478cfb98f2c609d975036eb523a3c481c6f05d7516c87d503388",
+    "switchPatchSha256": "1974f640681d2299ddc6825571a1c3ae35b24d0625dc7d996301ab8a5c1f0baf"
+  },
+  "package": "/private/tmp/ghidraboy-sa01-representation/tool-native-build-context-header/state-entry-native-mac_arm_64.zip",
+  "packageSha256": "d6041e4fe0115ba709a070fe23675fcf55a93d6c9da7fe4728d76534f2190ab9",
+  "semanticQualification": "UNRUN",
+  "status": "BUILT_UNQUALIFIED_STATE_ENTRY_PROTOCOL"
+}

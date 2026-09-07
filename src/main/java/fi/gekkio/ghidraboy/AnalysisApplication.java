@@ -11,8 +11,6 @@ import java.util.*;
 final class AnalysisApplication {
   private AnalysisApplication() {}
 
-  private record OwnedReference(String from, String to, String type) {}
-
   public static void apply(Program p, AnalysisResult result, TaskMonitor monitor) throws Exception {
     ProgramFingerprint.requireCurrent(p, result, monitor);
     if (result.completion() == AnalysisResult.Completion.CANCELLED)
@@ -21,6 +19,7 @@ final class AnalysisApplication {
     int tx = p.startTransaction("GhidraBoy bank analysis");
     boolean success = false;
     try {
+      ProgramFingerprint.requireCurrent(p, result, monitor);
       var options = p.getOptions(ProgramMapping.OPTIONS);
       var prior =
           com.google.gson.JsonParser.parseString(options.getString("analysis.latest", "null"));
@@ -45,22 +44,10 @@ final class AnalysisApplication {
             p.getBookmarkManager().removeBookmark(bookmark);
         }
       }
-      var old =
-          ProgramMapping.JSON.fromJson(
-              options.getString("analysis.ownedReferences", "[]"), OwnedReference[].class);
-      for (var owned : old) {
-        var from = p.getAddressFactory().getAddress(owned.from);
-        if (from == null) continue;
-        for (var ref : p.getReferenceManager().getReferencesFrom(from))
-          if (ref.getOperandIndex() == -1
-              && ref.getSource() == SourceType.ANALYSIS
-              && ref.getToAddress().toString().equals(owned.to)
-              && ref.getReferenceType().toString().equals(owned.type))
-            p.getReferenceManager().delete(ref);
-      }
+      // Historical receipts omit primary status and cannot establish that a
+      // reference is unchanged. Retain both references and their original receipt.
       AnalysisOwnership.remove(p, "bank-analysis", monitor);
       var owned = new AnalysisOwnership.Group();
-      var introduced = new ArrayList<OwnedReference>();
       for (var f : findings) {
         monitor.checkCancelled();
         var source = p.getAddressFactory().getAddress(f.source());
@@ -118,9 +105,9 @@ final class AnalysisApplication {
             p.getReferenceManager()
                 .addMemoryReference(key.from(), key.to(), type, SourceType.ANALYSIS, -1));
       }
-      options.removeOption("analysis.ownedReferences");
       AnalysisOwnership.save(p, "bank-analysis", owned);
       options.setString("analysis.latest", ProgramMapping.JSON.toJson(result));
+      monitor.checkCancelled();
       success = true;
     } finally {
       p.endTransaction(tx, success);

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" tests="7" skipped="0" failures="2" errors="0" timestamp="2026-09-07T20:09:34.557Z" hostname="MacBookPro.localdomain" time="1.64">
+  <properties/>
+  <testcase name="later nonlocal exit across two native frames preserves actual destination and adds no second pop()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.014">
+    <failure message="java.lang.IllegalArgumentException: Collection contains more than one matching element." type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Collection contains more than one matching element.
+	at fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.later_nonlocal_exit_across_two_native_frames_preserves_actual_destination_and_adds_no_second_pop$physical$28(SoftwareCallStateEntryIntegrityTest.kt:444)
+	at fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.access$later_nonlocal_exit_across_two_native_frames_preserves_actual_destination_and_adds_no_second_pop$physical$28(SoftwareCallStateEntryIntegrityTest.kt:27)
+	at fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.later nonlocal exit across two native frames preserves actual destination and adds no second pop(SoftwareCallStateEntryIntegrityTest.kt:241)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="nested custom storage is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.063"/>
+  <testcase name="consumed byte drift rejects cached context selection without rebaselining dependencies()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.355"/>
+  <testcase name="renaming and commenting canonical entry does not strand owned protocol after removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.324"/>
+  <testcase name="selection restores original comment and convention after clean removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.415"/>
+  <testcase name="cancelled selection after comment mutation rolls back registry ownership and visible context()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.437"/>
+  <testcase name="nested explicit return contract is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.032">
+    <failure message="org.opentest4j.AssertionFailedError: expected: ghidra.program.model.data.ByteDataType@12a0d249&lt;byte&gt; but was: ghidra.program.model.data.ByteDataType@3c62be3c&lt;byte&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: ghidra.program.model.data.ByteDataType@12a0d249&lt;byte&gt; but was: ghidra.program.model.data.ByteDataType@3c62be3c&lt;byte&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.nested_explicit_return_contract_is_rejected_before_any_reviewed_mutation$lambda$14(SoftwareCallStateEntryIntegrityTest.kt:151)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.fixture(SoftwareCallStateEntryIntegrityTest.kt:91)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.nested explicit return contract is rejected before any reviewed mutation(SoftwareCallStateEntryIntegrityTest.kt:143)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

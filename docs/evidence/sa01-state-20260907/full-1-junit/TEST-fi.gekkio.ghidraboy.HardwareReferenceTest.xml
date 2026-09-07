@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.HardwareReferenceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:27:52.268Z" hostname="MacBookPro.localdomain" time="0.237">
+  <properties/>
+  <testcase name="all numeric masks and source aliases remain documented uniquely()" classname="fi.gekkio.ghidraboy.HardwareReferenceTest" time="0.009"/>
+  <testcase name="existing aliases and student comments are preserved on reapplication()" classname="fi.gekkio.ghidraboy.HardwareReferenceTest" time="0.005"/>
+  <testcase name="hardware register stores decompile without duplicate enum diagnostics()" classname="fi.gekkio.ghidraboy.HardwareReferenceTest" time="0.223"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

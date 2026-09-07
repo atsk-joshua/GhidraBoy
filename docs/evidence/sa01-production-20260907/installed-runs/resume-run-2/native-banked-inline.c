@@ -1,0 +1,12 @@
+
+/* WARNING: Function: FUN_0200 replaced with injection: ghidraboy_software_call_v1 */
+/* WARNING: Function: banked_destination replaced with injection: ghidraboy_may_return_v1 */
+
+undefined2 banked_inline_source_software_call(void)
+
+{
+  gb_cartridge_write8(0x2000,2);
+  banked_destination(2);
+  return 0x4506;
+}
+

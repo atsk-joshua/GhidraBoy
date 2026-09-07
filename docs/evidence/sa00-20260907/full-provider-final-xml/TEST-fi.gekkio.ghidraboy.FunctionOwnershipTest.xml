@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.FunctionOwnershipTest" tests="29" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:13:13.016Z" hostname="MacBookPro.localdomain" time="0.174">
+  <properties/>
+  <testcase name="in place referenced type mutation never certifies unchanged ownership()" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.003"/>
+  <testcase name="unchanged functions remove but preexisting user functions survive()" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.004"/>
+  <testcase name="[1] local" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.009"/>
+  <testcase name="[2] inline" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[3] noreturn" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[4] varargs" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[5] cleanup" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[6] namespace" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[7] body" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[8] comment" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[9] repeatable" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[10] tag" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[11] fixup" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.007"/>
+  <testcase name="[12] return" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[13] storage" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[14] signature" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[15] parameter" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.007"/>
+  <testcase name="[16] local-label" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[17] thunk" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.006"/>
+  <testcase name="[18] pinned" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[19] entry" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[20] convention" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="cancelled removal restores function and receipts including relinquished edits()" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.003"/>
+  <testcase name="[1] unchanged" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.004"/>
+  <testcase name="[2] local" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.003"/>
+  <testcase name="[3] inline" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.002"/>
+  <testcase name="[1] local" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[2] parameter" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.005"/>
+  <testcase name="[3] return" classname="fi.gekkio.ghidraboy.FunctionOwnershipTest" time="0.003"/>
+  <system-out><![CDATA[WARN  Undefined CallFixup set at 0300: user_fixup (FunctionDB)  
+WARN  Undefined CallFixup set at 0300: user_fixup (FunctionDB)  
+WARN  Undefined CallFixup set at 0300: user_fixup (FunctionDB)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

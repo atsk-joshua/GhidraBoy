@@ -17,7 +17,7 @@ print(os.pathsep.join(str(p.resolve()) for base in (Path(sys.argv[1]), settings)
 PY
 )"
 ui_test=UiActionTest
-if [[ "${1:-}" == "--hp" ]]; then echo "Use the optional GhiBW3 study guide for the current HP UI check." >&2; exit 2; fi
+if [[ $# -gt 0 ]]; then echo "This observer accepts no game-specific options." >&2; exit 2; fi
 if [[ -f build/GhiGBC-acceptance.jar ]]; then
   ui_classes="$PWD/build/GhiGBC-acceptance.jar"
 else

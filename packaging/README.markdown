@@ -2,7 +2,7 @@
 
 Game Boy/Game Boy Color static analysis for Ghidra 12.1.3 and Java 21. This development extension provides SM83 instruction semantics, cartridge/boot import, bank-aware mapping, symbols, conservative analysis and per-function compiler conventions.
 
-Install this ZIP through Ghidra's extension manager and restart Ghidra. Static analysis does not require an emulator, Python runtime or SDL. The optional GhidraBoy Debugger runtime is distributed separately.
+Install this ZIP through Ghidra's extension manager and restart Ghidra. Static analysis does not require an emulator, Python runtime or SDL. The optional GhidraBoy debugger runtime is distributed separately.
 
 - [Import, navigation, symbols and export](docs/user-workflows.md)
 - [Supported inputs and mappers](docs/input-policy.md)
@@ -10,6 +10,7 @@ Install this ZIP through Ghidra's extension manager and restart Ghidra. Static a
 - [Compiler conventions](docs/compiler-support.md)
 - [Instruction semantics and validation limits](docs/cpu-validation.md)
 - [Static mapping contract](docs/static-contract.md)
+- [Development roadmap and planned static accuracy](docs/roadmap.md)
 - [Native decompiler dependency and reversible installation](docs/native-decompiler/install-and-rollback.md)
 
 The current decompiler fixes use the separately versioned native dependency `12.1.3+ghidraboy.switch-recovery.2`. Its platform archive and copy-only updater preserve the original Ghidra installation. The extension ZIP alone does not install that native update. Observe the documented hardware, mapper and analysis limits; this candidate does not claim every feature or platform is qualified.

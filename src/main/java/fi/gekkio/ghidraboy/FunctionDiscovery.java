@@ -85,6 +85,7 @@ public final class FunctionDiscovery {
         }
       }
       AnalysisOwnership.save(p, "functions", owned);
+      monitor.checkCancelled();
       success = true;
     } finally {
       p.endTransaction(tx, success);

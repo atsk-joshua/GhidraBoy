@@ -1,0 +1,14 @@
+{
+  "fresh-import": {
+    "equal": true,
+    "canonicalSha256": "c31573db7bac3b5a8c97931a83b97e2a33d17da2b5d55c6c58f277e192af8ab6"
+  },
+  "annotated-program": {
+    "equal": true,
+    "canonicalSha256": "8021b87c4459538081ba50f95444956da1de45f0526bd5e5d8eb60794d96d067"
+  },
+  "edited-program": {
+    "equal": true,
+    "canonicalSha256": "6f241d8d3ac65eb615dabf38ced1e3c8d80ad9248a9c3b9f1473b4dbf391ab1f"
+  }
+}

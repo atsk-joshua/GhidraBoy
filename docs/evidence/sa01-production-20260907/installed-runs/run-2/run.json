@@ -1,0 +1,31 @@
+{
+  "fixtureSha256": "0b62957f88e40aab52c172c00da40f22adf8100936a024ad7c04c4c29c27a772",
+  "extensionSha256": "42e14e29123637fef6e4c4eac20b4b5c8701c1b8065154e97f9170bfe2a4cfb2",
+  "processes": [
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-cb24qg0t/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run2/projects",
+        "sa01-production",
+        "-import",
+        "/private/tmp/ghidraboy-sa01-production-run2/production-mbc3-v1.gb",
+        "-scriptPath",
+        "/Users/joshuahansen/dev/GhidraBoy/src/test/scripts;/Users/joshuahansen/dev/GhidraBoy/ghidra_scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "prepare",
+        "/private/tmp/ghidraboy-sa01-production-run2",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run2"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_PREPARE_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": false
+    }
+  ]
+}

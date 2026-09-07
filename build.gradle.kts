@@ -181,6 +181,12 @@ tasks.named("assemble") {
     dependsOn("zip")
 }
 
+tasks.register("buildExtension") {
+    group = "distribution"
+    description = "Build the static GhidraBoy extension archive."
+    dependsOn(zip)
+}
+
 tasks.named<Test>("test") {
     dependsOn("compileSleigh")
     useJUnitPlatform()

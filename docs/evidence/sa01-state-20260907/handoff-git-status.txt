@@ -1,0 +1,124 @@
+ M .github/workflows/ci.yml
+ M README.markdown
+ M build.gradle.kts
+ M data/languages/sdcc451-call0.cspec
+ M data/languages/sdcc451-call1-first16.cspec
+ M data/languages/sdcc451-call1-first32.cspec
+ M data/languages/sdcc451-call1-first8.cspec
+ M data/languages/sm83.cspec
+ M debugger/LICENSES/NOTICE.md
+ M debugger/README.md
+ M debugger/docs/INSTALL.md
+ M debugger/docs/PACKAGE.md
+ M debugger/docs/UI_ACTION_VALIDATION.md
+ D debugger/legacy/README.md
+ D debugger/legacy/gbw3-live-lab/gbw3_core.py
+ D debugger/legacy/gbw3-live-lab/gbw3_lab.py
+ D debugger/legacy/gbw3-live-lab/test_lab.py
+D  debugger/scripts/ExportGbcKnowledge.java
+ M debugger/scripts/package_candidate.py
+ M debugger/scripts/test_ui_actions.sh
+ M debugger/tests/build_tools/test_inputs.py
+ D debugger/tests/drive_game.py
+AM docs/README.md
+ M docs/analysis.md
+A  docs/building.md
+ M docs/compiler-support.md
+AM docs/debugger-identities.md
+ M docs/debugger-integration-plan.md
+ M docs/direct-bus-semantics.md
+ M docs/input-policy.md
+ M docs/instruction-compatibility.md
+AM docs/integration/README.md
+ M docs/integration/final-qualification.md
+ M docs/integration/progress.md
+ M docs/native-decompiler/logical-shift-range.md
+ M docs/native-decompiler/normalized-switch-index.md
+ M docs/references.md
+ M docs/static-contract.md
+ M docs/user-workflows.md
+AM docs/validation.md
+ M ghidra_scripts/GhidraBoyTools.java
+ M packaging/README.markdown
+ M packaging/static-docs.txt
+ M src/main/java/fi/gekkio/ghidraboy/AnalysisApplication.java
+ M src/main/java/fi/gekkio/ghidraboy/AnalysisOwnership.java
+ M src/main/java/fi/gekkio/ghidraboy/AnalysisResult.java
+ M src/main/java/fi/gekkio/ghidraboy/BankAnalysis.java
+ M src/main/java/fi/gekkio/ghidraboy/CartridgeBusInjectLibrary.java
+ M src/main/java/fi/gekkio/ghidraboy/FarCallConvention.java
+ M src/main/java/fi/gekkio/ghidraboy/FunctionDiscovery.java
+ M src/main/java/fi/gekkio/ghidraboy/PcodeConstants.java
+ M src/main/java/fi/gekkio/ghidraboy/ProgramFingerprint.java
+A  tools/check.py
+ M tools/dependencies.json
+?? AGENTS.md
+?? data/languages/AGENTS.md
+?? debugger/AGENTS.md
+?? docs/changes-since-official-release-report.md
+?? docs/decisions/
+?? docs/evidence/sa00-20260907/
+?? docs/evidence/sa01-20260907/
+?? docs/evidence/sa01-production-20260907/
+?? docs/evidence/sa01-resume-20260907/
+?? docs/evidence/sa01-state-20260907/
+?? docs/repository-ownership.md
+?? docs/roadmap.md
+?? docs/static-analysis-implementation.md
+?? docs/static-analysis-research.md
+?? docs/static-analysis-spec.md
+?? src/main/java/fi/gekkio/ghidraboy/FarCallEvidence.java
+?? src/main/java/fi/gekkio/ghidraboy/InstructionInterpretation.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallApplication.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallConfiguration.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallContinuationView.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallEffects.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallExecutionView.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallInjection.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallInstructionDiscovery.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallMayReturnInjection.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallModel.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallRegistry.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallStateEntryInjection.java
+?? src/main/java/fi/gekkio/ghidraboy/SoftwareCallValidation.java
+?? src/test/kotlin/fi/gekkio/ghidraboy/ApplicationIntegrityTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/FarCallReviewTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/FlowIntegrityTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/InstructionInterpretationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/PcodeConstantsSleighTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/PcodeConstantsTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/ReferenceOwnershipTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallAdversarialTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallAnalysisTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallApplicationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallAutomaticAnalysisTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallBankedApplicationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallConfigurationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallContinuationPreservationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallContinuationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallEffectsTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallExecutionTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallExecutionViewTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallInjectionInstalledTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallInjectionTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallInstructionDiscoveryTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallMayReturnInjectionTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallModelTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStateCalleeApplicationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStateContinuationApplicationTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStateEntryIntegrityTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStatePathsTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallTypeDependencyTest.kt
+?? src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallValidationTest.kt
+?? src/test/scripts/GhidraBoySa00.java
+?? src/test/scripts/GhidraBoySa01.java
+?? src/test/scripts/GhidraBoySa01Production.java
+?? src/test/scripts/GhidraBoySa01State.java
+?? src/test/scripts/GhidraBoySa01StateMigration.java
+?? tools/patches/ghidra-12.1.3-state-entry-1.patch
+?? tools/sa00_baseline.py
+?? tools/sa01_persistence.py
+?? tools/sa01_production_persistence.py
+?? tools/sa01_state_persistence.py
+?? tools/state_entry_native.py
+?? tools/test_state_entry_native.py

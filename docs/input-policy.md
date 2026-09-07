@@ -1,5 +1,12 @@
 # Cartridge and boot policy
 
+This page defines current import support. The
+[cartridge research matrix](static-analysis-research.md#cartridge-requirements)
+and [roadmap](roadmap.md) plan broader wiring/device support; they do not enable
+additional mapper types in this implementation. In particular, independent
+ROM/RAM maxima are not proof that their combination matches an ordinary board.
+Coupled geometry and source conflicts remain explicit qualification obligations.
+
 Automatic recognition remains strong: standard logo digest or known boot hashes.
 It does not claim arbitrary binaries. The loader and `GhidraBoyImport.java` provide
 explicit manual selection. CARTRIDGE uses strict validation; SALVAGE is a deliberate

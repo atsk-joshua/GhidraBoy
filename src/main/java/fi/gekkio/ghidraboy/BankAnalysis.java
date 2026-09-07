@@ -43,11 +43,26 @@ public final class BankAnalysis {
       AnalysisResult.Configuration configuration,
       TaskMonitor monitor)
       throws Exception {
+    // Content hashes alone cannot detect an edit that is restored during exploration.
+    long modification = p.getModificationNumber();
     String fingerprint = ProgramFingerprint.capture(p, monitor);
     var cartridge = ProgramMapping.cartridge(p);
     if (cartridge == null) throw new IllegalArgumentException("Cartridge descriptor required");
     var queue = new ArrayDeque<Work>();
-    queue.add(new Work(start, MapperKnowledge.from(assumption), Map.of()));
+    var entryRegisters = new HashMap<Long, Integer>();
+    // Executable contracts consume explicitly recorded context as premises. Unknown/partial
+    // values are not filled from a template or architectural guess.
+    if (!SoftwareCallRegistry.configurationIdentity(p).equals("absent")) {
+      for (String name : List.of("A", "F", "BC", "DE", "HL", "SP")) {
+        var register = p.getRegister(name);
+        var contextual = p.getProgramContext().getRegisterValue(register, start);
+        var value = contextual == null ? null : contextual.getUnsignedValue();
+        if (value != null)
+          put(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
+              value.longValue(), entryRegisters, new HashMap<>());
+      }
+    }
+    queue.add(new Work(start, MapperKnowledge.from(assumption), Map.copyOf(entryRegisters)));
     var seen = new HashSet<Work>();
     var candidates = new AnalysisCandidates();
     var targets = candidates.targets;
@@ -80,19 +95,77 @@ public final class BankAnalysis {
               "Instruction fetch crosses an unestablished physical execution view");
           continue;
         }
+        String interpretation = InstructionInterpretation.unresolved(ins);
+        if (interpretation != null) {
+          reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), interpretation);
+          continue;
+        }
+        var softwareCall = InstructionInterpretation.softwareCall(ins);
+        if (softwareCall != null) {
+          var premises = softwareCall.configuration();
+          var input = premises.registers();
+          int expectedSp = premises.callerSp() -
+              (premises.transfer() == SoftwareCallModel.EntryTransfer.PUSHED_CONTINUATION ? 2 : 0);
+          var expectedRegisters = Map.of("A", input.a(), "F", input.f(), "BC", input.bc(),
+              "DE", input.de(), "HL", input.hl(), "SP", expectedSp & 65535);
+          boolean established = w.state.equals(MapperKnowledge.from(premises.mapper()));
+          for (var expected : expectedRegisters.entrySet()) {
+            var register = p.getRegister(expected.getKey());
+            Long actual = value(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
+                w.registers, Map.of());
+            established &= actual != null && actual.intValue() == expected.getValue();
+          }
+          if (!established) {
+            reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+                "Software-call entry premises are unknown or contradict this incoming path");
+            continue;
+          }
+          var summary = SoftwareCallRegistry.effects(p, softwareCall, monitor);
+          if (!summary.complete()) {
+            reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+                "Unresolved callee effects: " + String.join("; ", summary.unresolved()));
+            continue;
+          }
+          var frame = softwareCall.frame();
+          var callKey = AnalysisCandidates.Site.control(w.address, "call");
+          for (var target : ProgramMapping.physicalToStatic(p, frame.target()))
+            if (target.getOffset() == frame.targetCpu() && SoftwareCallExecutionView.canonical(p, target))
+              targets.computeIfAbsent(callKey, k -> new TreeSet<>()).add(target);
+          for (var path : summary.paths()) {
+            var returned = path.returned();
+            if (returned.exit() != SoftwareCallModel.Exit.MAY_RETURN) {
+              reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+                  "Validated callee exit: " + returned.exit());
+              continue;
+            }
+            var outputRegisters = new HashMap<Long, Integer>();
+            var r = returned.registers();
+            var values = Map.of("A", r.a(), "F", r.f(), "BC", r.bc(), "DE", r.de(),
+                "HL", r.hl(), "SP", returned.sp());
+            for (var value : values.entrySet()) {
+              var register = p.getRegister(value.getKey());
+              put(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
+                  (long) value.getValue(), outputRegisters, new HashMap<>());
+            }
+            for (var continuation : ProgramMapping.physicalToStatic(p, returned.physical()))
+              if (continuation.getOffset() == returned.cpu() && executionCandidate(p, continuation))
+                queue.addLast(new Work(continuation, MapperKnowledge.from(returned.mapper()), Map.copyOf(outputRegisters)));
+          }
+          continue;
+        }
         var state = w.state;
         var regs = new HashMap<>(w.registers);
         var unique = new HashMap<Long, Integer>();
         boolean changedMapper = false;
         // Internal p-code branches are not path interpreted by this finite evaluator.
         boolean internal =
-            Arrays.stream(ins.getPcode())
+            Arrays.stream(ins.getPcode(false))
                 .anyMatch(
                     op ->
                         op.getOpcode() == PcodeOp.CBRANCH
                             || (op.getOpcode() == PcodeOp.BRANCH && op.getInput(0).isConstant()));
         int operation = 0;
-        for (var op : ins.getPcode()) {
+        for (var op : ins.getPcode(false)) {
           int operationIndex = operation++;
           if (op.getOpcode() != PcodeOp.BRANCH
               && op.getOpcode() != PcodeOp.CBRANCH
@@ -190,7 +263,7 @@ public final class BankAnalysis {
         }
         var successors = new ArrayList<Work>();
         var flow = ins.getFlowType();
-        for (var dest : ins.getFlows()) {
+        for (var dest : ins.getDefaultFlows()) {
           var resolved =
               resolveWithContext(
                   p, cartridge, state, (int) dest.getOffset(), changedMapper ? null : w.address);
@@ -242,7 +315,8 @@ public final class BankAnalysis {
     if (completion == AnalysisResult.Completion.CANCELLED)
       reasons.put(AnalysisCandidates.Site.control(start, "cancelled"), "Exploration cancelled");
     if (completion != AnalysisResult.Completion.CANCELLED
-        && !fingerprint.equals(ProgramFingerprint.capture(p, monitor)))
+        && (!fingerprint.equals(ProgramFingerprint.capture(p, monitor))
+            || modification != p.getModificationNumber()))
       completion = AnalysisResult.Completion.INPUT_CHANGED;
     var findings = candidates.finish(completion);
     return new AnalysisResult(
@@ -268,6 +342,7 @@ public final class BankAnalysis {
   private static boolean fetchEstablished(
       Program p, Cartridge c, MapperKnowledge state, ghidra.program.model.listing.Instruction ins)
       throws Exception {
+    if (!executionCandidate(p, ins.getAddress())) return false;
     // Ordinary same-window instructions are already supplied by the listing. A
     // boundary-spanning decode must have physical backing for every fetched byte.
     long start = ins.getAddress().getOffset(), end = start + ins.getLength() - 1;
@@ -362,6 +437,12 @@ public final class BankAnalysis {
           p, c, state, (address + i) & 65535, false, from, operation, operand, i, targets, reasons);
   }
 
+  private static boolean executionCandidate(Program p, Address address) {
+    if (!address.getAddressSpace().getName().startsWith(SoftwareCallExecutionView.PREFIX)) return true;
+    var block = p.getMemory().getBlock(address);
+    return block != null && block.isExecute();
+  }
+
   private static List<Address> resolveWithContext(
       Program p, Cartridge c, MapperKnowledge s, int cpu, Address context) throws Exception {
     var result = resolve(p, c, s, cpu);
@@ -377,7 +458,7 @@ public final class BankAnalysis {
         || !s.allowsExecution(c, cpu, identities.get(0).bank())) return result;
     var physical = new MapperState.Physical("ROM", identities.get(0).bank(), cpu % 0x4000);
     return ProgramMapping.physicalToStatic(p, physical).stream()
-        .filter(a -> a.getOffset() == cpu)
+        .filter(a -> a.getOffset() == cpu && executionCandidate(p, a))
         .toList();
   }
 
@@ -386,7 +467,7 @@ public final class BankAnalysis {
     var physical = s.translate(c, cpu, false).physical();
     if (physical == null) return List.of();
     return ProgramMapping.physicalToStatic(p, physical).stream()
-        .filter(a -> a.getOffset() == cpu)
+        .filter(a -> a.getOffset() == cpu && executionCandidate(p, a))
         .toList();
   }
 
@@ -417,7 +498,7 @@ public final class BankAnalysis {
     }
     var addresses =
         ProgramMapping.physicalToStatic(p, result.physical()).stream()
-            .filter(a -> a.getOffset() == cpu)
+            .filter(a -> a.getOffset() == cpu && executionCandidate(p, a))
             .toList();
     if (addresses.isEmpty()) reasons.put(key, "Physical destination has no static mapping");
     for (var a : addresses) targets.computeIfAbsent(key, k -> new TreeSet<>()).add(a);

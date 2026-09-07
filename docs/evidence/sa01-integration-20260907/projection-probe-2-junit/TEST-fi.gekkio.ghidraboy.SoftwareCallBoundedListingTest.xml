@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallBoundedListingTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-07T22:45:54.027Z" hostname="MacBookPro.localdomain" time="0.828">
+  <properties/>
+  <testcase name="harmful boundary and helper endpoint edits still reject both entry paths()" classname="fi.gekkio.ghidraboy.SoftwareCallBoundedListingTest" time="0.299"/>
+  <testcase name="bounded manual JP preserves its prelude push without creating another frame()" classname="fi.gekkio.ghidraboy.SoftwareCallBoundedListingTest" time="0.161"/>
+  <testcase name="old terminal RST boundary demonstrably inherits helper contract during stock repair()" classname="fi.gekkio.ghidraboy.SoftwareCallBoundedListingTest" time="0.154"/>
+  <testcase name="bounded RST preserves raw push and default contract through stock function repair()" classname="fi.gekkio.ghidraboy.SoftwareCallBoundedListingTest" time="0.213"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

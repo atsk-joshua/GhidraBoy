@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.emu.AluInstructionTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:11:41.233Z" hostname="MacBookPro.localdomain" time="1.643">
+  <properties/>
+  <testcase name="eight bit arithmetic and logic execute all input pairs()" classname="fi.gekkio.ghidraboy.emu.AluInstructionTest" time="1.409"/>
+  <testcase name="ADD HL HL executes all inputs with preserved zero flag()" classname="fi.gekkio.ghidraboy.emu.AluInstructionTest" time="0.228"/>
+  <testcase name="increment decrement preserve carry and compute other flags()" classname="fi.gekkio.ghidraboy.emu.AluInstructionTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

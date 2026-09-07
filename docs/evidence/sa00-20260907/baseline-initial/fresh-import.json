@@ -1,0 +1,165 @@
+{
+  "assumptions": {
+    "rootOrigin": "self-authored fixture declarations; no whole-ROM reachability claim",
+    "RAM_save_RTC": "unknown; SP established by code",
+    "mapper": {
+      "romLow": 1,
+      "romHigh": 0,
+      "mode": 0,
+      "ramSelect": 0,
+      "ramEnabled": false,
+      "vbk": 0,
+      "svbk": 1,
+      "latch": 0
+    },
+    "imageLifetime": "immutable self-authored file; annotated listing uses same bytes",
+    "interrupts": "not modeled by bounded engine",
+    "roots": [
+      "0150",
+      "0180"
+    ]
+  },
+  "compiler": "default",
+  "coverage": {
+    "definedCodeBytes": 0,
+    "unresolvedFileRanges": [
+      "000000-000103",
+      "000150-00ffff"
+    ],
+    "meaning": "listing classification, not proven execution or semantic coverage",
+    "physicalFileBytes": 65536,
+    "dataFileRanges": [
+      "000104-00014f"
+    ],
+    "definedDataBytes": 76,
+    "unresolvedBytes": 65460,
+    "overlappingCodeDataBytes": 0,
+    "codeFileRanges": []
+  },
+  "engine": "20260907-sa00",
+  "fingerprintComponents": {
+    "callfixups": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data": "b6725580e0996447c9c33ebeb8accef040f3025f1a6a360cef6e6bc49b11ce53",
+    "flowReferences": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "instructions": "ce82ac525dfffc20adc3d13dd70d41b103409bc67434ac0bb5c7c7d4ed4899da",
+    "mapping": "6b8103f8f21fc219e8c365d6e47c282effa044812693a2e0d8d612b6c967c0b1",
+    "memory": "92a707bfaf65a98b68c4c70bc62c5866eea17b61e41044b0442a7b2d0522069d"
+  },
+  "fixture": "sa00-generic-mbc3-v1",
+  "fixtureSha256": "d3b4ea5cc10546443573323d8b284c97429a29c7c53f748f38f94cbd3cc52944",
+  "functions": [],
+  "instructions": [],
+  "language": "SM83:LE:16:default",
+  "languageVersion": 1,
+  "phase": "fresh-import",
+  "programEntryPoints": [
+    "0100"
+  ],
+  "results": [
+    {
+      "schemaVersion": 2,
+      "engineVersion": "20260907-sa00",
+      "starts": [
+        "0150"
+      ],
+      "assumption": {
+        "romLow": 1,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "configuration": {
+        "stateLimit": 4096,
+        "reverseBranches": false
+      },
+      "completion": "COMPLETE",
+      "exploredStates": 1,
+      "pendingStates": 0,
+      "fingerprint": "bff69dd5ce8b7f6541e6fad4c342b77722d3165543b1e6be4347b29843ad3190",
+      "findings": [
+        {
+          "source": "0150",
+          "access": "flow",
+          "targets": [],
+          "reason": "No defined instruction; data/undefined bytes left intact",
+          "confidence": "UNKNOWN",
+          "operation": -1,
+          "operand": -1,
+          "byteIndex": -1
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "schemaVersion": 2,
+      "engineVersion": "20260907-sa00",
+      "starts": [
+        "0180"
+      ],
+      "assumption": {
+        "romLow": 1,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "configuration": {
+        "stateLimit": 4096,
+        "reverseBranches": false
+      },
+      "completion": "COMPLETE",
+      "exploredStates": 1,
+      "pendingStates": 0,
+      "fingerprint": "bff69dd5ce8b7f6541e6fad4c342b77722d3165543b1e6be4347b29843ad3190",
+      "findings": [
+        {
+          "source": "0180",
+          "access": "flow",
+          "targets": [],
+          "reason": "No defined instruction; data/undefined bytes left intact",
+          "confidence": "UNKNOWN",
+          "operation": -1,
+          "operand": -1,
+          "byteIndex": -1
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "schema": 1,
+  "semanticChecks": [],
+  "semanticFailures": [],
+  "semanticScope": "Only named checks executed; all other bytes and whole-ROM behavior unqualified",
+  "unresolvedEdges": [
+    {
+      "source": "0150",
+      "access": "flow",
+      "targets": [],
+      "reason": "No defined instruction; data/undefined bytes left intact",
+      "confidence": "UNKNOWN",
+      "operation": -1,
+      "operand": -1,
+      "byteIndex": -1
+    },
+    {
+      "source": "0180",
+      "access": "flow",
+      "targets": [],
+      "reason": "No defined instruction; data/undefined bytes left intact",
+      "confidence": "UNKNOWN",
+      "operation": -1,
+      "operand": -1,
+      "byteIndex": -1
+    }
+  ],
+  "warningCategories": {
+    "flow:No defined instruction; data/undefined bytes left intact": 2
+  }
+}

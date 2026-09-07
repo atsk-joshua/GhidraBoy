@@ -1,9 +1,15 @@
 # Static contract v2
 
-This is GhidraBoy's Java/JSON contract, consumed by the GhiGBC adapter v1 in the
-local 12.1.3 integration candidate. GhidraBoy provides no debugger, execution engine,
-telemetry or live bank selection. GhiGBC owns runtime translation, ambiguity policy,
-trace lifespans and versioned static snapshot transport.
+This is the static provider's Java/JSON contract, consumed by the optional
+GhidraBoy debugger's retained GhiGBC adapter v1. The static provider supplies no
+execution engine, telemetry or live bank selection. The debugger module owns
+runtime translation, ambiguity policy, trace lifespans and versioned static
+snapshot transport. This module boundary is distinct from repository ownership.
+
+The [static accuracy specification](static-analysis-spec.md) describes planned
+extensions and decision gates. This documentation update does not change mapping
+schema v2, Java records, language identity or compiler IDs. Any representation or
+schema migration must be qualified before changing this implemented contract.
 
 `ProgramMapping.inspect(Program)` returns a deterministic, sorted snapshot.
 `mapping-schema.json` describes the exported envelope. The schema is validated against actual exported snapshots using jsonschema 4.25.1.
@@ -72,3 +78,99 @@ conflicting or detached sources produce explicit rejection rather than being
 mistaken for a known-unmapped interval. Mapping schema versioning is independent
 of SLEIGH language versioning; language 1.0 remains appropriate for p-code-only
 changes with unchanged decode/register/context definitions.
+
+
+Software-call model, preview, executable registry and ownership identities are
+versioned independently from mapping and language compatibility. The earlier
+preview-only receipt remains historical; the production identities follow.
+
+The production software-call candidate adds registry, injection, effect and
+execution-view version identities without changing the physical mapping schema,
+SLEIGH constructors, CPU pointer widths or compiler IDs. Template/preview version
+3 admits validated bus-ordered banked inline payloads; the bounded engine identity advances to
+`20260907-sa01-canonical` so old previews require recomputation. Ownership
+envelope 4 reads earlier envelopes conservatively and adds explicit payload,
+helper/target, body, site and execution-view receipts. Old receipts do not acquire
+new destructive ownership merely by being loaded.
+
+Generated executable annotations are checked as vetoes and are not callee proof.
+Raw source, mapper metadata, context, relevant native contracts and registry
+configuration participate in invalidation. Unrelated discoveries must not make
+an otherwise unchanged executable contract stale. Shared execution views retain
+canonical byte backing and require reviewed application/removal; edits prevent
+unsafe removal. The new source receipt tracks separate-process qualification.
+
+Registry version 4 includes the complete discovered native-function dependency
+set, and effect version 4 separates raw completion from native compatibility.
+Clean execution-view removal retires real shared mappings as non-executable
+rather than deleting their address spaces beneath queued analysis tasks. This
+retention is explicit Program metadata, not duplicate initialized storage.
+
+
+Current software-call qualification is incomplete. Canonical root decompilation now
+uses installed callfixup continuation lowering; alias decompilation uses the shared
+mapped listing. Registry v4 records canonical and execution identities together,
+and either path requires both live receipts. Injection v3 lowers the validated
+finite tail using local p-code edges and architectural RET stack operations.
+Execution-view v2 validates every fetched byte's immutable physical source.
+The current registry7 integration replaces that historical CALL_RETURN boundary
+with an owned self-fallthrough and ordinary CALL flow. The complete injected graph
+exits before this bounded decoding edge; the edge describes native transport, not
+an architectural loop. A terminal one-instruction CALL otherwise triggers stock
+thunk recognition and incorrectly inherits the helper contract. No signature or
+parameter lock is invented. No cross-space canonical fallthrough is installed. Native p-code locations for
+the lowered tail identify the canonical software-call site; the reviewed physical
+segment inventory and execution alias retain original instruction locations.
+
+Registry v3 and earlier executable records are rejected. Remove their owned
+software-call annotations with the public removal action, preview again, and
+reapply under the new provider; do not reinterpret an old saved digest as v4.
+Ownership envelope 4 remains readable with conservative edit-preserving removal.
+The public preview JSON is an object containing `sites`, `nestedRepairs`, and
+`executionViews`; the saved review inventory contains sites and nested repairs.
+Matched ordinary RET witnesses authorize only the exact nested CALL_RETURN and
+noReturn repair, with original/applied metadata exposed before mutation.
+
+The current source evidence is `docs/evidence/sa01-resume-20260907/`. General
+same-CPU multiple-bank paths, later calls/mapper-changing continuations and full
+original SA-01/SA-02 qualification remain open. Earlier failed receipts remain
+historical evidence for their exact artifacts.
+
+Normal parallel analysis may change the Program during a callback. Both installed
+payloads now retry the entire proof at most sixteen times only after a modification
+number change; stable stale inputs and exhausted retries still fail. Neutral
+may-return implementation token advances to 2. No partial proof is reused.
+
+View ownership stamp policy 3 treats an unedited decoder DEFAULT DATA reference
+to its actual operand as equivalent to its automatic READ/WRITE refinement.
+Arbitrary DEFAULT references and user/imported annotations remain protected.
+Older view-stamp receipts do not gain new cleanup authority: unmatched old views
+are retained conservatively during removal and can require a reviewed migration.
+
+Canonical continuation instruction entries have stable scratch COPY anchors.
+Local branches therefore survive nested native CALLOTHER replacement, which can
+delete the original target sequence number. Injection v3 and explicit public
+`canonicalTransport`/`appliedCanonicalFlow` fields identify this representation.
+Architectural return classification, original raw pushes, and function bodies
+remain separate from the canonical expansion's terminal listing override.
+
+### State-sensitive execution contexts
+
+The state-qualified software-call path keeps language `SM83:LE:16:default` 1.0,
+all decoder constructors and register widths, existing compiler IDs and mapping
+schema unchanged. It adds the optional explicit `__ghidraboy_state_entry_v1`
+prototype; default calling conventions retain their prior storage rules.
+The built candidate uses registry/effects 5. Current source advances registry to
+6 for caller-body/prototype dependency coverage; it is not yet fully qualified.
+Ownership envelope 5 adds independently stamped
+context convention/comment receipts. Prior ownership records retain conservative
+removal policy. Executable older registries require public remove/review/reapply.
+
+Multiple callee contexts retain separate shared-byte aliases. Proved calls use
+the matching alias; canonical Decompiler selection is a visible, persisted
+conditional analysis view, not a universal prototype or a mapper reset. The
+optional pre-flow native companion is fingerprinted separately from the preceding
+switch companion. Rooted discovery and terminal/nonlocal graph behavior remain
+subject to the exact input assumptions and qualification scope in the current
+source evidence receipt. Wider mapper, RAM-image, interrupt and all-input claims
+are not implied by these interfaces.

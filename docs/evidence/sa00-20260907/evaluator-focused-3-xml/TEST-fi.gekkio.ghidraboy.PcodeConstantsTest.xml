@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.PcodeConstantsTest" tests="4" skipped="0" failures="4" errors="0" timestamp="2026-09-07T04:04:51.392Z" hostname="MacBookPro.localdomain" time="0.015">
+  <properties/>
+  <testcase name="integer flags logic and unsigned arithmetic follow pcode contract()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.013">
+    <failure message="ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!" type="ghidra.program.model.address.AddressOutOfBoundsException">ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!
+	at app//ghidra.program.model.address.AbstractAddressSpace.makeValidOffset(AbstractAddressSpace.java:610)
+	at app//ghidra.program.model.address.GenericAddressSpace.makeValidOffset(GenericAddressSpace.java:21)
+	at app//ghidra.program.model.address.GenericAddress.&lt;init&gt;(GenericAddress.java:58)
+	at app//ghidra.program.model.address.GenericAddressSpace.getAddress(GenericAddressSpace.java:98)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:17)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:20)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.integer flags logic and unsigned arithmetic follow pcode contract(PcodeConstantsTest.kt:84)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="overlapping writes preserve independent bytes and unknowns kill dependencies()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.001">
+    <failure message="ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!" type="ghidra.program.model.address.AddressOutOfBoundsException">ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!
+	at app//ghidra.program.model.address.AbstractAddressSpace.makeValidOffset(AbstractAddressSpace.java:610)
+	at app//ghidra.program.model.address.GenericAddressSpace.makeValidOffset(GenericAddressSpace.java:21)
+	at app//ghidra.program.model.address.GenericAddress.&lt;init&gt;(GenericAddress.java:58)
+	at app//ghidra.program.model.address.GenericAddressSpace.getAddress(GenericAddressSpace.java:98)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:17)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:20)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.overlapping writes preserve independent bytes and unknowns kill dependencies(PcodeConstantsTest.kt:109)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="extension truncation concatenation and wrap have explicit widths()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.001">
+    <failure message="ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!" type="ghidra.program.model.address.AddressOutOfBoundsException">ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!
+	at app//ghidra.program.model.address.AbstractAddressSpace.makeValidOffset(AbstractAddressSpace.java:610)
+	at app//ghidra.program.model.address.GenericAddressSpace.makeValidOffset(GenericAddressSpace.java:21)
+	at app//ghidra.program.model.address.GenericAddress.&lt;init&gt;(GenericAddress.java:58)
+	at app//ghidra.program.model.address.GenericAddressSpace.getAddress(GenericAddressSpace.java:98)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:17)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:20)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.extension truncation concatenation and wrap have explicit widths(PcodeConstantsTest.kt:43)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="shifts respect operand width and unsigned counts without host modulo()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.0">
+    <failure message="ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!" type="ghidra.program.model.address.AddressOutOfBoundsException">ghidra.program.model.address.AddressOutOfBoundsException: Offset must be between 0x0 and 0xff, got 0x100 instead!
+	at app//ghidra.program.model.address.AbstractAddressSpace.makeValidOffset(AbstractAddressSpace.java:610)
+	at app//ghidra.program.model.address.GenericAddressSpace.makeValidOffset(GenericAddressSpace.java:21)
+	at app//ghidra.program.model.address.GenericAddress.&lt;init&gt;(GenericAddress.java:58)
+	at app//ghidra.program.model.address.GenericAddressSpace.getAddress(GenericAddressSpace.java:98)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:17)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:20)
+	at app//fi.gekkio.ghidraboy.PcodeConstantsTest.shifts respect operand width and unsigned counts without host modulo(PcodeConstantsTest.kt:32)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

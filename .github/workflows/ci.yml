@@ -30,6 +30,8 @@ jobs:
           distribution: 'temurin'
           java-version: '21.0.12'
           cache: 'gradle'
+      - name: Inexpensive Python and shell checks
+        run: python3 tools/check.py
       - name: Install Ghidra
         run: .github/scripts/install_ghidra.sh
       - name: Reproducible build, installed lifecycle and actual database migration

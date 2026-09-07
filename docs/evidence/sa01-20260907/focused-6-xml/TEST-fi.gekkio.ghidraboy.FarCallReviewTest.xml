@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.FarCallReviewTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:52:29.364Z" hostname="MacBookPro.localdomain" time="0.149">
+  <properties/>
+  <testcase name="payload data instruction label and function boundary conflicts are review failures()" classname="fi.gekkio.ghidraboy.FarCallReviewTest" time="0.05"/>
+  <testcase name="review rejects changed helper payload context reference and contract()" classname="fi.gekkio.ghidraboy.FarCallReviewTest" time="0.074"/>
+  <testcase name="review apply remove reapply preserves later continuation edit()" classname="fi.gekkio.ghidraboy.FarCallReviewTest" time="0.025"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

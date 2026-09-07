@@ -1,0 +1,1470 @@
+{
+  "registry": "{\n  \"version\": \"software-call-registry-4\",\n  \"executionConditions\": \"Synchronous SM83 model: results require no asynchronous interrupt/DMA interference or untracked memory changes, in addition to the supplied register, stack and mapper premises. These are explicit conditions, not an all-input ABI or whole-ROM proof.\",\n  \"sites\": [\n    {\n      \"address\": \"0150\",\n      \"canonicalAddress\": \"0150\",\n      \"target\": \"rom1::4100\",\n      \"configuration\": {\n        \"callCpu\": 336,\n        \"template\": {\n          \"family\": \"INLINE_RET\",\n          \"helperCpu\": 512,\n          \"payloadLength\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 0,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 0\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"0160\",\n      \"canonicalAddress\": \"0160\",\n      \"target\": \"rom2::4100\",\n      \"configuration\": {\n        \"callCpu\": 352,\n        \"template\": {\n          \"family\": \"INLINE_RET\",\n          \"helperCpu\": 512,\n          \"payloadLength\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 0,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 0\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"0170\",\n      \"canonicalAddress\": \"0170\",\n      \"target\": \"rom2::4600\",\n      \"configuration\": {\n        \"callCpu\": 368,\n        \"template\": {\n          \"family\": \"REGISTER_JP\",\n          \"helperCpu\": 768,\n          \"payloadLength\": 0\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 17920\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"0180\",\n      \"canonicalAddress\": \"0180\",\n      \"target\": \"rom2::4900\",\n      \"configuration\": {\n        \"callCpu\": 384,\n        \"template\": {\n          \"family\": \"CONSTANT_REGISTER_JP\",\n          \"helperCpu\": 832,\n          \"payloadLength\": 0,\n          \"constantRaw\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 18688\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"0190\",\n      \"canonicalAddress\": \"0190\",\n      \"target\": \"rom2::4a00\",\n      \"configuration\": {\n        \"callCpu\": 400,\n        \"template\": {\n          \"family\": \"REGISTER_JP\",\n          \"helperCpu\": 768,\n          \"payloadLength\": 0\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 18944\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"gb_call_view_291_4200_1::4200\",\n      \"canonicalAddress\": \"rom1::4200\",\n      \"target\": \"rom2::4300\",\n      \"executionAlias\": \"gb_call_view_291_4200_1::4200\",\n      \"configuration\": {\n        \"callCpu\": 16896,\n        \"template\": {\n          \"family\": \"REGISTER_JP\",\n          \"helperCpu\": 40,\n          \"payloadLength\": 0\n        },\n        \"transfer\": \"HARDWARE_RST\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 0,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 17152\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"gb_call_view_291_4500_1::4500\",\n      \"canonicalAddress\": \"rom1::4500\",\n      \"target\": \"rom2::4300\",\n      \"executionAlias\": \"gb_call_view_291_4500_1::4500\",\n      \"configuration\": {\n        \"callCpu\": 17664,\n        \"template\": {\n          \"family\": \"INLINE_RET\",\n          \"helperCpu\": 512,\n          \"payloadLength\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 0,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 0\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"gb_call_view_291_4800_1::4800\",\n      \"canonicalAddress\": \"rom1::4800\",\n      \"target\": \"rom2::4400\",\n      \"executionAlias\": \"gb_call_view_291_4800_1::4800\",\n      \"configuration\": {\n        \"callCpu\": 18432,\n        \"template\": {\n          \"family\": \"CONSTANT_REGISTER_JP\",\n          \"helperCpu\": 832,\n          \"payloadLength\": 0,\n          \"constantRaw\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 17408\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"rom1::4200\",\n      \"canonicalAddress\": \"rom1::4200\",\n      \"target\": \"rom2::4300\",\n      \"executionAlias\": \"gb_call_view_291_4200_1::4200\",\n      \"configuration\": {\n        \"callCpu\": 16896,\n        \"template\": {\n          \"family\": \"REGISTER_JP\",\n          \"helperCpu\": 40,\n          \"payloadLength\": 0\n        },\n        \"transfer\": \"HARDWARE_RST\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 0,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 17152\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"rom1::4500\",\n      \"canonicalAddress\": \"rom1::4500\",\n      \"target\": \"rom2::4300\",\n      \"executionAlias\": \"gb_call_view_291_4500_1::4500\",\n      \"configuration\": {\n        \"callCpu\": 17664,\n        \"template\": {\n          \"family\": \"INLINE_RET\",\n          \"helperCpu\": 512,\n          \"payloadLength\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 0,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 0\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"rom1::4700\",\n      \"canonicalAddress\": \"rom1::4700\",\n      \"target\": \"rom2::4400\",\n      \"configuration\": {\n        \"callCpu\": 18176,\n        \"template\": {\n          \"family\": \"RESTORING_REGISTER_JP\",\n          \"helperCpu\": 800,\n          \"payloadLength\": 0\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 1,\n          \"f\": 128,\n          \"bc\": 2,\n          \"de\": 0,\n          \"hl\": 17408\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"rom1::4800\",\n      \"canonicalAddress\": \"rom1::4800\",\n      \"target\": \"rom2::4400\",\n      \"executionAlias\": \"gb_call_view_291_4800_1::4800\",\n      \"configuration\": {\n        \"callCpu\": 18432,\n        \"template\": {\n          \"family\": \"CONSTANT_REGISTER_JP\",\n          \"helperCpu\": 832,\n          \"payloadLength\": 0,\n          \"constantRaw\": 3\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49408,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 128,\n          \"bc\": 0,\n          \"de\": 0,\n          \"hl\": 17408\n        },\n        \"mapper\": {\n          \"romLow\": 1,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    },\n    {\n      \"address\": \"rom2::4608\",\n      \"canonicalAddress\": \"rom2::4608\",\n      \"target\": \"rom3::4300\",\n      \"configuration\": {\n        \"callCpu\": 17928,\n        \"template\": {\n          \"family\": \"RESTORING_REGISTER_JP\",\n          \"helperCpu\": 800,\n          \"payloadLength\": 0\n        },\n        \"transfer\": \"HARDWARE_CALL\",\n        \"callerSp\": 49406,\n        \"registers\": {\n          \"a\": 2,\n          \"f\": 128,\n          \"bc\": 3,\n          \"de\": 0,\n          \"hl\": 17152\n        },\n        \"mapper\": {\n          \"romLow\": 2,\n          \"romHigh\": 0,\n          \"mode\": 0,\n          \"ramSelect\": 0,\n          \"ramEnabled\": false,\n          \"vbk\": 0,\n          \"svbk\": 1,\n          \"latch\": 0\n        }\n      }\n    }\n  ],\n  \"nativeFunctions\": [\n    \"01b0\",\n    \"0360\",\n    \"rom1::4100\",\n    \"rom2::4100\",\n    \"rom2::4300\",\n    \"rom2::4400\",\n    \"rom2::4600\",\n    \"rom2::4900\",\n    \"rom2::4a00\",\n    \"rom3::4300\"\n  ],\n  \"dependencies\": \"81ca36e902cd9e9f2e5eee6ad08ce8627491c56ddaf8dd6e682d4794484e707c\"\n}",
+  "ownership": "{\n  \"version\": 4,\n  \"groups\": {\n    \"software-call\": {\n      \"nativeFunctionInventories\": [],\n      \"redirects\": [\n        {\n          \"source\": {\n            \"space\": 657,\n            \"offset\": 16896\n          },\n          \"id\": 63,\n          \"target\": {\n            \"space\": 1553,\n            \"offset\": 16896\n          },\n          \"originalStamp\": \"2d9b078bd8dafe62af1eef96b3cc42236cf559448d3132a6935991c68231bdc8\",\n          \"appliedStamp\": \"9f048e128a67014fc14db62a8bd54e5be4437eb8084fa63a186265741a738d99\"\n        },\n        {\n          \"source\": {\n            \"space\": 657,\n            \"offset\": 17664\n          },\n          \"id\": 65,\n          \"target\": {\n            \"space\": 1809,\n            \"offset\": 17664\n          },\n          \"originalStamp\": \"b06efa81ba4e41f2b492e62ca80f83fab5f4666ab31d965197596304e6bfa5e9\",\n          \"appliedStamp\": \"b34ed5d30e9df76970b1677b3a014108adda088c9f58689005bb375da0ff9713\"\n        },\n        {\n          \"source\": {\n            \"space\": 657,\n            \"offset\": 18432\n          },\n          \"id\": 72,\n          \"target\": {\n            \"space\": 1681,\n            \"offset\": 18432\n          },\n          \"originalStamp\": \"7d04260d49e5df87399b303bb0c485496a5358d5a896d422aaf9ef6dc0d5e874\",\n          \"appliedStamp\": \"b018ad0220e3db7c96cadb8039ad5a7d120a7cb95bfd700ad83e5b055611a7ad\"\n        }\n      ],\n      \"views\": [\n        {\n          \"name\": \"gb_call_view_291_4800_1\",\n          \"stamp\": \"02c870d4dc6430cf4bc484073bea13fe0c6a247d40e5f4682ec0bcc43a019536\"\n        },\n        {\n          \"name\": \"gb_call_view_291_4500_1\",\n          \"stamp\": \"6f9a95a3f623c47818dfa719a9fee3241fae362017ce0ad380eae746af49536d\"\n        },\n        {\n          \"name\": \"gb_call_view_291_4200_1\",\n          \"stamp\": \"f19d50b7f06cc6e67db58811e33c2dc205b8fcaaee37f93e16697603b2841509\"\n        }\n      ],\n      \"siteReferences\": [\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 336\n          },\n          \"stamp\": \"df3f090a37bda2379fde1e39c9d7e995d32a6e21bfb17a051fa33f71a6812b94\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 352\n          },\n          \"stamp\": \"f501e241136faa6e02df2b1bc5349d2167713794c6236e4a05259218b0af4ce4\"\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 16896\n          },\n          \"stamp\": \"971b5c418d557732118308051f1b93f80bdce88447a5edb59a27e97f5fd1f22d\"\n        },\n        {\n          \"address\": {\n            \"space\": 1553,\n            \"offset\": 16896\n          },\n          \"stamp\": \"8fc0733483715222965d96fcbd80a1d8f4d51ea37982cfffaf7310acbc618f2e\"\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 17664\n          },\n          \"stamp\": \"280fe81e06226299b0bf14fe2357a04dc4aab555359219903b9b12c52e06453a\"\n        },\n        {\n          \"address\": {\n            \"space\": 1809,\n            \"offset\": 17664\n          },\n          \"stamp\": \"7c56ea066d87ebb9c107990d23e315552eb3243a3cbfcae23bb9ad3f41498d95\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 368\n          },\n          \"stamp\": \"adb3116786611e51eee4d5161079f93430fb970e6e5524f56fbe7798fc782baa\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17928\n          },\n          \"stamp\": \"658b152971b1c3bdf04a25ac81f7bc54b4eab0ffb5cd629d3b5794b3bf1562e7\"\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 18176\n          },\n          \"stamp\": \"658b152971b1c3bdf04a25ac81f7bc54b4eab0ffb5cd629d3b5794b3bf1562e7\"\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 18432\n          },\n          \"stamp\": \"ed0931c1e90a3631f506845505ae7a539ef727608b42a804cc51a305b5d75c2a\"\n        },\n        {\n          \"address\": {\n            \"space\": 1681,\n            \"offset\": 18432\n          },\n          \"stamp\": \"2aa8a067692ad97e6359c1e7803534a4f215ca9435873526a03364130abab9cd\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 384\n          },\n          \"stamp\": \"ed0931c1e90a3631f506845505ae7a539ef727608b42a804cc51a305b5d75c2a\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 400\n          },\n          \"stamp\": \"38a193334c4945dadb36224cd5fa7adcd9362bd79170e50d2c388494cdc30cc6\"\n        },\n        {\n          \"address\": {\n            \"space\": 913,\n            \"offset\": 17152\n          },\n          \"stamp\": \"5fe2d227d591e9b29678823d35bfaebdb71f48f079ae162218d7bdbd923763d0\"\n        }\n      ],\n      \"primaries\": [\n        {\n          \"from\": {\n            \"space\": 1553,\n            \"offset\": 16896\n          },\n          \"to\": {\n            \"space\": 401,\n            \"offset\": 40\n          },\n          \"operand\": 0,\n          \"type\": \"UNCONDITIONAL_CALL\",\n          \"source\": \"DEFAULT\",\n          \"original\": true,\n          \"applied\": false\n        },\n        {\n          \"from\": {\n            \"space\": 1809,\n            \"offset\": 17664\n          },\n          \"to\": {\n            \"space\": 401,\n            \"offset\": 512\n          },\n          \"operand\": 0,\n          \"type\": \"UNCONDITIONAL_CALL\",\n          \"source\": \"DEFAULT\",\n          \"original\": true,\n          \"applied\": false\n        },\n        {\n          \"from\": {\n            \"space\": 1681,\n            \"offset\": 18432\n          },\n          \"to\": {\n            \"space\": 401,\n            \"offset\": 832\n          },\n          \"operand\": 0,\n          \"type\": \"UNCONDITIONAL_CALL\",\n          \"source\": \"DEFAULT\",\n          \"original\": true,\n          \"applied\": false\n        }\n      ],\n      \"bodies\": [\n        {\n          \"entry\": {\n            \"space\": 401,\n            \"offset\": 400\n          },\n          \"id\": 76,\n          \"original\": [\n            {\n              \"min\": {\n                \"space\": 401,\n                \"offset\": 400\n              },\n              \"max\": {\n                \"space\": 401,\n                \"offset\": 405\n              }\n            }\n          ],\n          \"applied\": [\n            {\n              \"min\": {\n                \"space\": 401,\n                \"offset\": 400\n              },\n              \"max\": {\n                \"space\": 401,\n                \"offset\": 405\n              }\n            },\n            {\n              \"min\": {\n                \"space\": 401,\n                \"offset\": 432\n              },\n              \"max\": {\n                \"space\": 401,\n                \"offset\": 434\n              }\n            }\n          ]\n        }\n      ],\n      \"payloads\": [\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 339\n          },\n          \"stamp\": \"01\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 340\n          },\n          \"stamp\": \"00\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 341\n          },\n          \"stamp\": \"41\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 355\n          },\n          \"stamp\": \"02\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 356\n          },\n          \"stamp\": \"00\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 357\n          },\n          \"stamp\": \"41\"\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 17667\n          },\n          \"stamp\": \"02\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17668\n          },\n          \"stamp\": \"00\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17669\n          },\n          \"stamp\": \"43\"\n        },\n        {\n          \"address\": {\n            \"space\": 1809,\n            \"offset\": 17667\n          },\n          \"stamp\": \"02\"\n        },\n        {\n          \"address\": {\n            \"space\": 1809,\n            \"offset\": 17668\n          },\n          \"stamp\": \"00\"\n        },\n        {\n          \"address\": {\n            \"space\": 1809,\n            \"offset\": 17669\n          },\n          \"stamp\": \"43\"\n        }\n      ],\n      \"repairs\": [\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 336\n          },\n          \"originalFlow\": \"CALL_RETURN\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"appliedNext\": {\n            \"space\": 401,\n            \"offset\": 342\n          },\n          \"bytes\": \"cd0002\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 352\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 401,\n            \"offset\": 355\n          },\n          \"appliedNext\": {\n            \"space\": 401,\n            \"offset\": 358\n          },\n          \"bytes\": \"cd0002\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 16896\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"CALL_RETURN\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 657,\n            \"offset\": 16897\n          },\n          \"bytes\": \"ef\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 1553,\n            \"offset\": 16896\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 1553,\n            \"offset\": 16897\n          },\n          \"appliedNext\": {\n            \"space\": 1553,\n            \"offset\": 16897\n          },\n          \"bytes\": \"ef\",\n          \"appliedFallthrough\": false\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 17664\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"CALL_RETURN\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 657,\n            \"offset\": 17667\n          },\n          \"bytes\": \"cd0002\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 1809,\n            \"offset\": 17664\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 1809,\n            \"offset\": 17667\n          },\n          \"appliedNext\": {\n            \"space\": 1809,\n            \"offset\": 17670\n          },\n          \"bytes\": \"cd0002\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 368\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 401,\n            \"offset\": 371\n          },\n          \"appliedNext\": {\n            \"space\": 401,\n            \"offset\": 371\n          },\n          \"bytes\": \"cd0003\",\n          \"appliedFallthrough\": false\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17928\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 785,\n            \"offset\": 17931\n          },\n          \"appliedNext\": {\n            \"space\": 785,\n            \"offset\": 17931\n          },\n          \"bytes\": \"cd2003\",\n          \"appliedFallthrough\": false\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 18176\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 657,\n            \"offset\": 18179\n          },\n          \"appliedNext\": {\n            \"space\": 657,\n            \"offset\": 18179\n          },\n          \"bytes\": \"cd2003\",\n          \"appliedFallthrough\": false\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 18432\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"CALL_RETURN\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 657,\n            \"offset\": 18435\n          },\n          \"bytes\": \"cd4003\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 1681,\n            \"offset\": 18432\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 1681,\n            \"offset\": 18435\n          },\n          \"appliedNext\": {\n            \"space\": 1681,\n            \"offset\": 18435\n          },\n          \"bytes\": \"cd4003\",\n          \"appliedFallthrough\": false\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 384\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"CALL_RETURN\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 401,\n            \"offset\": 387\n          },\n          \"bytes\": \"cd4003\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 400\n          },\n          \"originalFlow\": \"NONE\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"originalNext\": {\n            \"space\": 401,\n            \"offset\": 403\n          },\n          \"appliedNext\": {\n            \"space\": 401,\n            \"offset\": 432\n          },\n          \"bytes\": \"cd0003\",\n          \"appliedFallthrough\": true\n        },\n        {\n          \"address\": {\n            \"space\": 913,\n            \"offset\": 17152\n          },\n          \"originalFlow\": \"CALL_RETURN\",\n          \"appliedFlow\": \"NONE\",\n          \"originalFallthrough\": false,\n          \"appliedNext\": {\n            \"space\": 913,\n            \"offset\": 17155\n          },\n          \"bytes\": \"cd6003\",\n          \"appliedFallthrough\": false\n        }\n      ],\n      \"helpers\": [\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 512\n          },\n          \"id\": 93,\n          \"originalNoReturn\": true,\n          \"appliedFixup\": \"ghidraboy_software_call_v1\",\n          \"appliedMetadata\": \"7587ca92fdbb888cc36d5ac66986428a0dc9cb88aaeeaba48f5300ffc9112ff5\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 40\n          },\n          \"id\": 94,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_software_call_v1\",\n          \"appliedMetadata\": \"1307a464c933a1829415b99819e7084f2158fde261db5cbca55fb4ffe55cfe47\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 768\n          },\n          \"id\": 97,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_software_call_v1\",\n          \"appliedMetadata\": \"a7bd53c533be696c300af9da6008aaab21fb86096a700f53bf6aa7991adb4c4b\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 800\n          },\n          \"id\": 98,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_software_call_v1\",\n          \"appliedMetadata\": \"62144ebf0d952b3299eb19537fbd81f397a8f260958027d991fc10c12a3e11df\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 832\n          },\n          \"id\": 99,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_software_call_v1\",\n          \"appliedMetadata\": \"53a70639dfecc1de8db7280dc55db91ac64568c46b689d4c1c1257315d1e9006\"\n        },\n        {\n          \"address\": {\n            \"space\": 401,\n            \"offset\": 864\n          },\n          \"id\": 70,\n          \"originalNoReturn\": true,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"205e7dd06e5e7231e64fe83ec369571dc946236e11f903ab144620d4554db51a\"\n        },\n        {\n          \"address\": {\n            \"space\": 657,\n            \"offset\": 16640\n          },\n          \"id\": 59,\n          \"originalNoReturn\": true,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"765ea9be00d1fd58feaf2909b09def8442302abdf9d1f939b0ca6402eb7495cf\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 16640\n          },\n          \"id\": 61,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"024773cfbd4ebe36298befaef3bdcb17f2f3a4a1085607d934069756efd10ce9\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17152\n          },\n          \"id\": 64,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"df90791262b5aad744e36189d9013356ef8bd00b55b713960950456b52a579da\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17408\n          },\n          \"id\": 73,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"50e9d9a054fc23e4b9c0f18301af0c239c11125dccbabc93fff5c8e644f924ad\"\n        },\n        {\n          \"address\": {\n            \"space\": 785,\n            \"offset\": 17920\n          },\n          \"id\": 68,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"8d9296d572541cc393613df36d51ed0175f093e55a6e54419626f56dc9e7ac66\"\n        },\n        {\n          \"address\": {\n            \"space\": 913,\n            \"offset\": 17152\n          },\n          \"id\": 69,\n          \"originalNoReturn\": false,\n          \"appliedFixup\": \"ghidraboy_may_return_v1\",\n          \"appliedMetadata\": \"65f4aefb62a6d616f4b828dd89a711642b931b9adfdc262bb13910a23b1306eb\"\n        }\n      ],\n      \"references\": [\n        {\n          \"from\": {\n            \"space\": 1553,\n            \"offset\": 16896\n          },\n          \"to\": {\n            \"space\": 401,\n            \"offset\": 40\n          },\n          \"operand\": -1,\n          \"type\": \"CALL_OVERRIDE_UNCONDITIONAL\",\n          \"symbol\": -1,\n          \"primary\": true\n        },\n        {\n          \"from\": {\n            \"space\": 1809,\n            \"offset\": 17664\n          },\n          \"to\": {\n            \"space\": 401,\n            \"offset\": 512\n          },\n          \"operand\": -1,\n          \"type\": \"CALL_OVERRIDE_UNCONDITIONAL\",\n          \"symbol\": -1,\n          \"primary\": false\n        },\n        {\n          \"from\": {\n            \"space\": 1681,\n            \"offset\": 18432\n          },\n          \"to\": {\n            \"space\": 401,\n            \"offset\": 832\n          },\n          \"operand\": -1,\n          \"type\": \"CALL_OVERRIDE_UNCONDITIONAL\",\n          \"symbol\": -1,\n          \"primary\": true\n        }\n      ],\n      \"bookmarks\": [],\n      \"functions\": [\n        {\n          \"id\": 94,\n          \"entry\": {\n            \"space\": 401,\n            \"offset\": 40\n          },\n          \"source\": \"IMPORTED\",\n          \"stamp\": \"6c9ee91b9c14765d2ea73f12910e12c9563178091e7e4ddc4d21f5fad5aebcf7\",\n          \"version\": 2\n        },\n        {\n          \"id\": 95,\n          \"entry\": {\n            \"space\": 1553,\n            \"offset\": 16896\n          },\n          \"source\": \"ANALYSIS\",\n          \"stamp\": \"56a23a032f9a5fbc0070123812c08fb938dcad3780ecc1a0e84481582a8afe88\",\n          \"version\": 2\n        },\n        {\n          \"id\": 96,\n          \"entry\": {\n            \"space\": 1809,\n            \"offset\": 17664\n          },\n          \"source\": \"ANALYSIS\",\n          \"stamp\": \"2a4ff92f0e15ea1ae52a3a4d17af3fc6b13f56ee1f626b3188db9a1c21ebfc1e\",\n          \"version\": 2\n        },\n        {\n          \"id\": 97,\n          \"entry\": {\n            \"space\": 401,\n            \"offset\": 768\n          },\n          \"source\": \"DEFAULT\",\n          \"stamp\": \"7357283abd18a975d1b3fcd8c62594fe5600bbb8578636523956360d1c587358\",\n          \"version\": 2\n        },\n        {\n          \"id\": 98,\n          \"entry\": {\n            \"space\": 401,\n            \"offset\": 800\n          },\n          \"source\": \"DEFAULT\",\n          \"stamp\": \"2dd1c822443c867cef0a32980efefaeb6e12cd69745ef90dbb86d27eb36521c6\",\n          \"version\": 2\n        },\n        {\n          \"id\": 99,\n          \"entry\": {\n            \"space\": 401,\n            \"offset\": 832\n          },\n          \"source\": \"DEFAULT\",\n          \"stamp\": \"dbf1f8719d86f6dd84f8feb506b942493ac3a8bcb06a9cc21ee23bd4d20f9bdd\",\n          \"version\": 2\n        },\n        {\n          \"id\": 100,\n          \"entry\": {\n            \"space\": 1681,\n            \"offset\": 18432\n          },\n          \"source\": \"ANALYSIS\",\n          \"stamp\": \"0e705214dd6d4c2788a57d0c97293a491c9349b34509c18b67d42925b56364c5\",\n          \"version\": 2\n        }\n      ],\n      \"flows\": []\n    }\n  }\n}",
+  "language": "SM83:LE:16:default",
+  "compiler": "default",
+  "originalSha256": "b7e0403c9c8c6cfb182be91bb771016b4c588f4793e8e271c330f57f988bd5b8",
+  "canonicalMemory": {
+    "0000:16384": "0b755e8bb5cda9e543f72893fe0659a082f502913d741fa03f132460b0f2b83e",
+    "rom1::4000:16384": "bb4058ad28a8f4a8a42497400d3ca161d05c526ab500c9a764a41c891a1e6a0e",
+    "rom2::4000:16384": "f550148cdca5c158235ca987bb0c6a1002d73b8cbd066b484f93cfcff0a7d161",
+    "rom3::4000:16384": "30296a0689b7bd43896862a39bfb1a84f2330aba8c0657bf40b64d426a5206f1"
+  },
+  "instructions": {
+    "0028": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 40\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 41\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 42\n  }\n]"
+      ]
+    },
+    "002b": {
+      "bytes": "e9",
+      "length": 1,
+      "mnemonic": "JP",
+      "rawPcode": [
+        " ---  BRANCHIND (register, 0x6, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 43\n  }\n]"
+      ]
+    },
+    "0100": {
+      "bytes": "00",
+      "length": 1,
+      "mnemonic": "NOP",
+      "rawPcode": [],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 256\n  }\n]"
+      ]
+    },
+    "0101": {
+      "bytes": "c35001",
+      "length": 3,
+      "mnemonic": "JP",
+      "rawPcode": [
+        " ---  BRANCH (ram, 0x150, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 257\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 258\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 259\n  }\n]"
+      ]
+    },
+    "0150": {
+      "bytes": "cd0002",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x153, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x200, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 336\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 337\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 338\n  }\n]"
+      ]
+    },
+    "0156": {
+      "bytes": "ea00c1",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0xc100, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 342\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 343\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 344\n  }\n]"
+      ]
+    },
+    "0159": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 345\n  }\n]"
+      ]
+    },
+    "0160": {
+      "bytes": "cd0002",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x163, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x200, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 352\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 353\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 354\n  }\n]"
+      ]
+    },
+    "0166": {
+      "bytes": "ea00c1",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0xc100, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 358\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 359\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 360\n  }\n]"
+      ]
+    },
+    "0169": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 361\n  }\n]"
+      ]
+    },
+    "0170": {
+      "bytes": "cd0003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x173, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x300, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 368\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 369\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 370\n  }\n]"
+      ]
+    },
+    "0173": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 371\n  }\n]"
+      ]
+    },
+    "0180": {
+      "bytes": "cd4003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x183, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x340, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 384\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 385\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 386\n  }\n]"
+      ]
+    },
+    "0183": {
+      "bytes": "ea04c1",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0xc104, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 387\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 388\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 389\n  }\n]"
+      ]
+    },
+    "0186": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 390\n  }\n]"
+      ]
+    },
+    "0190": {
+      "bytes": "cd0003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x193, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x300, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 400\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 401\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 402\n  }\n]"
+      ]
+    },
+    "0193": {
+      "bytes": "3e55",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x55, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 403\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 404\n  }\n]"
+      ]
+    },
+    "0195": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 405\n  }\n]"
+      ]
+    },
+    "01b0": {
+      "bytes": "3e66",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x66, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 432\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 433\n  }\n]"
+      ]
+    },
+    "01b2": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 434\n  }\n]"
+      ]
+    },
+    "0200": {
+      "bytes": "e1",
+      "length": 1,
+      "mnemonic": "POP",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x6, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        "(unique, 0x22700, 1) INT_EQUAL (const, 0x4, 1) , (const, 0x6, 1)",
+        "(unique, 0x22800, 1) INT_MULT (unique, 0x22700, 1) , (const, 0xf, 1)",
+        "(unique, 0x22a00, 1) INT_SUB (const, 0xff, 1) , (unique, 0x22800, 1)",
+        "(register, 0x0, 1) INT_AND (register, 0x0, 1) , (unique, 0x22a00, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 512\n  }\n]"
+      ]
+    },
+    "0201": {
+      "bytes": "2a",
+      "length": 1,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(unique, 0x1100, 2) COPY (register, 0x6, 2)",
+        "(register, 0x6, 2) INT_ADD (register, 0x6, 2) , (const, 0x1, 2)",
+        "(unique, 0x1300, 1) LOAD (const, 0x191, 4) , (unique, 0x1100, 2)",
+        "(register, 0x1, 1) COPY (unique, 0x1300, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 513\n  }\n]"
+      ]
+    },
+    "0202": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 514\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 515\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 516\n  }\n]"
+      ]
+    },
+    "0205": {
+      "bytes": "5e",
+      "length": 1,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x4, 1) LOAD (const, 0x191, 8) , (register, 0x6, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 517\n  }\n]"
+      ]
+    },
+    "0206": {
+      "bytes": "23",
+      "length": 1,
+      "mnemonic": "INC",
+      "rawPcode": [
+        "(register, 0x6, 2) INT_ADD (register, 0x6, 2) , (const, 0x1, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 518\n  }\n]"
+      ]
+    },
+    "0207": {
+      "bytes": "56",
+      "length": 1,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x5, 1) LOAD (const, 0x191, 8) , (register, 0x6, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 519\n  }\n]"
+      ]
+    },
+    "0208": {
+      "bytes": "23",
+      "length": 1,
+      "mnemonic": "INC",
+      "rawPcode": [
+        "(register, 0x6, 2) INT_ADD (register, 0x6, 2) , (const, 0x1, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 520\n  }\n]"
+      ]
+    },
+    "0209": {
+      "bytes": "e5",
+      "length": 1,
+      "mnemonic": "PUSH",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (register, 0x6, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 521\n  }\n]"
+      ]
+    },
+    "020a": {
+      "bytes": "d5",
+      "length": 1,
+      "mnemonic": "PUSH",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (register, 0x4, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 522\n  }\n]"
+      ]
+    },
+    "020b": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 523\n  }\n]"
+      ]
+    },
+    "0300": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 768\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 769\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 770\n  }\n]"
+      ]
+    },
+    "0303": {
+      "bytes": "e9",
+      "length": 1,
+      "mnemonic": "JP",
+      "rawPcode": [
+        " ---  BRANCHIND (register, 0x6, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 771\n  }\n]"
+      ]
+    },
+    "0320": {
+      "bytes": "f5",
+      "length": 1,
+      "mnemonic": "PUSH",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (register, 0x0, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 800\n  }\n]"
+      ]
+    },
+    "0321": {
+      "bytes": "79",
+      "length": 1,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (register, 0x2, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 801\n  }\n]"
+      ]
+    },
+    "0322": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 802\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 803\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 804\n  }\n]"
+      ]
+    },
+    "0325": {
+      "bytes": "012a03",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x2, 2) COPY (const, 0x32a, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 805\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 806\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 807\n  }\n]"
+      ]
+    },
+    "0328": {
+      "bytes": "c5",
+      "length": 1,
+      "mnemonic": "PUSH",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (register, 0x2, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 808\n  }\n]"
+      ]
+    },
+    "0329": {
+      "bytes": "e9",
+      "length": 1,
+      "mnemonic": "JP",
+      "rawPcode": [
+        " ---  BRANCHIND (register, 0x6, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 809\n  }\n]"
+      ]
+    },
+    "032a": {
+      "bytes": "c1",
+      "length": 1,
+      "mnemonic": "POP",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x2, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        "(unique, 0x22700, 1) INT_EQUAL (const, 0x0, 1) , (const, 0x6, 1)",
+        "(unique, 0x22800, 1) INT_MULT (unique, 0x22700, 1) , (const, 0xf, 1)",
+        "(unique, 0x22a00, 1) INT_SUB (const, 0xff, 1) , (unique, 0x22800, 1)",
+        "(register, 0x0, 1) INT_AND (register, 0x0, 1) , (unique, 0x22a00, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 810\n  }\n]"
+      ]
+    },
+    "032b": {
+      "bytes": "78",
+      "length": 1,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (register, 0x3, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 811\n  }\n]"
+      ]
+    },
+    "032c": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 812\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 813\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 814\n  }\n]"
+      ]
+    },
+    "032f": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 815\n  }\n]"
+      ]
+    },
+    "0340": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 832\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 833\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 834\n  }\n]"
+      ]
+    },
+    "0343": {
+      "bytes": "014803",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x2, 2) COPY (const, 0x348, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 835\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 836\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 837\n  }\n]"
+      ]
+    },
+    "0346": {
+      "bytes": "c5",
+      "length": 1,
+      "mnemonic": "PUSH",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (register, 0x2, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 838\n  }\n]"
+      ]
+    },
+    "0347": {
+      "bytes": "e9",
+      "length": 1,
+      "mnemonic": "JP",
+      "rawPcode": [
+        " ---  BRANCHIND (register, 0x6, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 839\n  }\n]"
+      ]
+    },
+    "0348": {
+      "bytes": "3e03",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x3, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 840\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 841\n  }\n]"
+      ]
+    },
+    "034a": {
+      "bytes": "ea0020",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0x2000, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 842\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 843\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 844\n  }\n]"
+      ]
+    },
+    "034d": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 845\n  }\n]"
+      ]
+    },
+    "0360": {
+      "bytes": "00",
+      "length": 1,
+      "mnemonic": "NOP",
+      "rawPcode": [],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 864\n  }\n]"
+      ]
+    },
+    "0361": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 0,\n    \"offset\": 865\n  }\n]"
+      ]
+    },
+    "rom1::4100": {
+      "bytes": "3e51",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x51, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 256\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 257\n  }\n]"
+      ]
+    },
+    "rom1::4102": {
+      "bytes": "37",
+      "length": 1,
+      "mnemonic": "SCF",
+      "rawPcode": [
+        "(unique, 0x1d500, 1) INT_AND (register, 0x0, 1) , (const, 0xbf, 1)",
+        "(unique, 0x1d600, 1) INT_LEFT (const, 0x0, 1) , (const, 0x6, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d500, 1) , (unique, 0x1d600, 1)",
+        "(unique, 0x1d700, 1) INT_AND (register, 0x0, 1) , (const, 0xdf, 1)",
+        "(unique, 0x1d800, 1) INT_LEFT (const, 0x0, 1) , (const, 0x5, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d700, 1) , (unique, 0x1d800, 1)",
+        "(unique, 0x1d900, 1) INT_AND (register, 0x0, 1) , (const, 0xef, 1)",
+        "(unique, 0x1da00, 1) INT_LEFT (const, 0x1, 1) , (const, 0x4, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d900, 1) , (unique, 0x1da00, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 258\n  }\n]"
+      ]
+    },
+    "rom1::4103": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 259\n  }\n]"
+      ]
+    },
+    "rom1::4200": {
+      "bytes": "ef",
+      "length": 1,
+      "mnemonic": "RST",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x4201, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x28, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 512\n  }\n]"
+      ]
+    },
+    "rom1::4500": {
+      "bytes": "cd0002",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x4503, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x200, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1280\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1281\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1282\n  }\n]"
+      ]
+    },
+    "rom1::4700": {
+      "bytes": "cd2003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x4703, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x320, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1792\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1793\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1794\n  }\n]"
+      ]
+    },
+    "rom1::4703": {
+      "bytes": "ea02c1",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0xc102, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1795\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1796\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1797\n  }\n]"
+      ]
+    },
+    "rom1::4706": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 1798\n  }\n]"
+      ]
+    },
+    "rom1::4800": {
+      "bytes": "cd4003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x4803, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x340, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 2048\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 2049\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 1,\n    \"offset\": 2050\n  }\n]"
+      ]
+    },
+    "rom2::4100": {
+      "bytes": "3e52",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x52, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 256\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 257\n  }\n]"
+      ]
+    },
+    "rom2::4102": {
+      "bytes": "37",
+      "length": 1,
+      "mnemonic": "SCF",
+      "rawPcode": [
+        "(unique, 0x1d500, 1) INT_AND (register, 0x0, 1) , (const, 0xbf, 1)",
+        "(unique, 0x1d600, 1) INT_LEFT (const, 0x0, 1) , (const, 0x6, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d500, 1) , (unique, 0x1d600, 1)",
+        "(unique, 0x1d700, 1) INT_AND (register, 0x0, 1) , (const, 0xdf, 1)",
+        "(unique, 0x1d800, 1) INT_LEFT (const, 0x0, 1) , (const, 0x5, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d700, 1) , (unique, 0x1d800, 1)",
+        "(unique, 0x1d900, 1) INT_AND (register, 0x0, 1) , (const, 0xef, 1)",
+        "(unique, 0x1da00, 1) INT_LEFT (const, 0x1, 1) , (const, 0x4, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d900, 1) , (unique, 0x1da00, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 258\n  }\n]"
+      ]
+    },
+    "rom2::4103": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 259\n  }\n]"
+      ]
+    },
+    "rom2::4201": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 513\n  }\n]"
+      ]
+    },
+    "rom2::4300": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 768\n  }\n]"
+      ]
+    },
+    "rom2::4400": {
+      "bytes": "3e5b",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x5b, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1024\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1025\n  }\n]"
+      ]
+    },
+    "rom2::4402": {
+      "bytes": "37",
+      "length": 1,
+      "mnemonic": "SCF",
+      "rawPcode": [
+        "(unique, 0x1d500, 1) INT_AND (register, 0x0, 1) , (const, 0xbf, 1)",
+        "(unique, 0x1d600, 1) INT_LEFT (const, 0x0, 1) , (const, 0x6, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d500, 1) , (unique, 0x1d600, 1)",
+        "(unique, 0x1d700, 1) INT_AND (register, 0x0, 1) , (const, 0xdf, 1)",
+        "(unique, 0x1d800, 1) INT_LEFT (const, 0x0, 1) , (const, 0x5, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d700, 1) , (unique, 0x1d800, 1)",
+        "(unique, 0x1d900, 1) INT_AND (register, 0x0, 1) , (const, 0xef, 1)",
+        "(unique, 0x1da00, 1) INT_LEFT (const, 0x1, 1) , (const, 0x4, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d900, 1) , (unique, 0x1da00, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1026\n  }\n]"
+      ]
+    },
+    "rom2::4403": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1027\n  }\n]"
+      ]
+    },
+    "rom2::4506": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1286\n  }\n]"
+      ]
+    },
+    "rom2::4600": {
+      "bytes": "3e02",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x2, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1536\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1537\n  }\n]"
+      ]
+    },
+    "rom2::4602": {
+      "bytes": "010300",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x2, 2) COPY (const, 0x3, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1538\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1539\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1540\n  }\n]"
+      ]
+    },
+    "rom2::4605": {
+      "bytes": "210043",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x6, 2) COPY (const, 0x4300, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1541\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1542\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1543\n  }\n]"
+      ]
+    },
+    "rom2::4608": {
+      "bytes": "cd2003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x460b, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x320, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1544\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1545\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1546\n  }\n]"
+      ]
+    },
+    "rom2::460b": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 1547\n  }\n]"
+      ]
+    },
+    "rom2::4900": {
+      "bytes": "18fe",
+      "length": 2,
+      "mnemonic": "JR",
+      "rawPcode": [
+        " ---  BRANCH (ram, 0x4900, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2304\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2305\n  }\n]"
+      ]
+    },
+    "rom2::4a00": {
+      "bytes": "f800",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(unique, 0x20600, 2) INT_ADD (register, 0xa, 2) , (const, 0x0, 2)",
+        "(unique, 0x20700, 1) INT_AND (register, 0x0, 1) , (const, 0x7f, 1)",
+        "(unique, 0x20800, 1) INT_LEFT (const, 0x0, 1) , (const, 0x7, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x20700, 1) , (unique, 0x20800, 1)",
+        "(unique, 0x20900, 1) INT_AND (register, 0x0, 1) , (const, 0xbf, 1)",
+        "(unique, 0x20a00, 1) INT_LEFT (const, 0x0, 1) , (const, 0x6, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x20900, 1) , (unique, 0x20a00, 1)",
+        "(unique, 0x21000, 1) INT_AND (register, 0x0, 1) , (const, 0xdf, 1)",
+        "(unique, 0x20b00, 1) INT_AND (register, 0xa, 1) , (const, 0xf, 1)",
+        "(unique, 0x20c00, 1) INT_AND (const, 0x0, 1) , (const, 0xf, 1)",
+        "(unique, 0x20d00, 1) INT_ADD (unique, 0x20b00, 1) , (unique, 0x20c00, 1)",
+        "(unique, 0x20e00, 1) INT_AND (unique, 0x20d00, 1) , (const, 0x10, 1)",
+        "(unique, 0x20f00, 1) INT_NOTEQUAL (unique, 0x20e00, 1) , (const, 0x0, 1)",
+        "(unique, 0x21100, 1) INT_LEFT (unique, 0x20f00, 1) , (const, 0x5, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x21000, 1) , (unique, 0x21100, 1)",
+        "(unique, 0x21300, 1) INT_AND (register, 0x0, 1) , (const, 0xef, 1)",
+        "(unique, 0x21200, 1) INT_CARRY (register, 0xa, 1) , (const, 0x0, 1)",
+        "(unique, 0x21400, 1) INT_LEFT (unique, 0x21200, 1) , (const, 0x4, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x21300, 1) , (unique, 0x21400, 1)",
+        "(register, 0x6, 2) COPY (unique, 0x20600, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2560\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2561\n  }\n]"
+      ]
+    },
+    "rom2::4a02": {
+      "bytes": "36b0",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  STORE (const, 0x191, 8) , (register, 0x6, 2) , (const, 0xb0, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2562\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2563\n  }\n]"
+      ]
+    },
+    "rom2::4a04": {
+      "bytes": "23",
+      "length": 1,
+      "mnemonic": "INC",
+      "rawPcode": [
+        "(register, 0x6, 2) INT_ADD (register, 0x6, 2) , (const, 0x1, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2564\n  }\n]"
+      ]
+    },
+    "rom2::4a05": {
+      "bytes": "3601",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  STORE (const, 0x191, 8) , (register, 0x6, 2) , (const, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2565\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2566\n  }\n]"
+      ]
+    },
+    "rom2::4a07": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 2,\n    \"offset\": 2567\n  }\n]"
+      ]
+    },
+    "rom3::4300": {
+      "bytes": "cd6003",
+      "length": 3,
+      "mnemonic": "CALL",
+      "rawPcode": [
+        "(unique, 0x2000, 2) COPY (const, 0x4303, 2)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2001, 1)",
+        "(register, 0xa, 2) INT_SUB (register, 0xa, 2) , (const, 0x1, 2)",
+        " ---  STORE (const, 0x191, 8) , (register, 0xa, 2) , (unique, 0x2000, 1)",
+        " ---  CALL (ram, 0x360, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 768\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 769\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 770\n  }\n]"
+      ]
+    },
+    "rom3::4303": {
+      "bytes": "3e5a",
+      "length": 2,
+      "mnemonic": "LD",
+      "rawPcode": [
+        "(register, 0x1, 1) COPY (const, 0x5a, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 771\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 772\n  }\n]"
+      ]
+    },
+    "rom3::4305": {
+      "bytes": "37",
+      "length": 1,
+      "mnemonic": "SCF",
+      "rawPcode": [
+        "(unique, 0x1d500, 1) INT_AND (register, 0x0, 1) , (const, 0xbf, 1)",
+        "(unique, 0x1d600, 1) INT_LEFT (const, 0x0, 1) , (const, 0x6, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d500, 1) , (unique, 0x1d600, 1)",
+        "(unique, 0x1d700, 1) INT_AND (register, 0x0, 1) , (const, 0xdf, 1)",
+        "(unique, 0x1d800, 1) INT_LEFT (const, 0x0, 1) , (const, 0x5, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d700, 1) , (unique, 0x1d800, 1)",
+        "(unique, 0x1d900, 1) INT_AND (register, 0x0, 1) , (const, 0xef, 1)",
+        "(unique, 0x1da00, 1) INT_LEFT (const, 0x1, 1) , (const, 0x4, 4)",
+        "(register, 0x0, 1) INT_OR (unique, 0x1d900, 1) , (unique, 0x1da00, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 773\n  }\n]"
+      ]
+    },
+    "rom3::4306": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 774\n  }\n]"
+      ]
+    },
+    "rom3::4803": {
+      "bytes": "ea03c1",
+      "length": 3,
+      "mnemonic": "LD",
+      "rawPcode": [
+        " ---  CALLOTHER (const, 0x4, 4) , (const, 0xc103, 2) , (register, 0x1, 1)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 2051\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 2052\n  }\n]",
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 2053\n  }\n]"
+      ]
+    },
+    "rom3::4806": {
+      "bytes": "c9",
+      "length": 1,
+      "mnemonic": "RET",
+      "rawPcode": [
+        "(unique, 0x2500, 2) INT_ADD (register, 0xa, 2) , (const, 0x1, 2)",
+        "(unique, 0x2700, 1) LOAD (const, 0x191, 8) , (register, 0xa, 2)",
+        "(unique, 0x2900, 1) LOAD (const, 0x191, 8) , (unique, 0x2500, 2)",
+        "(unique, 0x2a00, 2) INT_ZEXT (unique, 0x2700, 1)",
+        "(unique, 0x2b00, 2) INT_ZEXT (unique, 0x2900, 1)",
+        "(unique, 0x2c00, 2) INT_LEFT (unique, 0x2b00, 2) , (const, 0x8, 4)",
+        "(register, 0x8, 2) INT_OR (unique, 0x2a00, 2) , (unique, 0x2c00, 2)",
+        "(register, 0xa, 2) INT_ADD (register, 0xa, 2) , (const, 0x2, 2)",
+        " ---  RETURN (register, 0x8, 2)"
+      ],
+      "physicalBytes": [
+        "[\n  {\n    \"region\": \"ROM\",\n    \"bank\": 3,\n    \"offset\": 2054\n  }\n]"
+      ]
+    }
+  },
+  "knowledge": {
+    "symbols": [
+      "[\n  59,\n  \"rom1::4100\",\n  \"physical_target_0\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  60,\n  \"0150\",\n  \"production_caller_0\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  61,\n  \"rom2::4100\",\n  \"physical_target_1\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  62,\n  \"0160\",\n  \"production_caller_1\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  63,\n  \"rom1::4200\",\n  \"banked_source\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  64,\n  \"rom2::4300\",\n  \"banked_destination\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  65,\n  \"rom1::4500\",\n  \"banked_inline_source\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  66,\n  \"rom1::4504\",\n  \"unconsumed_old_bank_word\",\n  \"Label\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  67,\n  \"0170\",\n  \"nested_entry\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  68,\n  \"rom2::4600\",\n  \"nested_outer\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  69,\n  \"rom3::4300\",\n  \"nested_inner\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  70,\n  \"0360\",\n  \"nested_ordinary\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  71,\n  \"rom1::4700\",\n  \"restoring_banked_source\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  72,\n  \"rom1::4800\",\n  \"constant_banked_source\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  73,\n  \"rom2::4400\",\n  \"policy_target\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  74,\n  \"0180\",\n  \"terminal_source\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  75,\n  \"rom2::4900\",\n  \"endless_target\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  76,\n  \"0190\",\n  \"nonlocal_source\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]",
+      "[\n  77,\n  \"rom2::4a00\",\n  \"nonlocal_target\",\n  \"Function\",\n  \"USER_DEFINED\",\n  false\n]"
+    ],
+    "functions": [
+      "{\n  \"entry\": \"0150\",\n  \"name\": \"production_caller_0\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined production_caller_0()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[0150, 0152] [0156, 0159]]\"\n}",
+      "{\n  \"entry\": \"0160\",\n  \"name\": \"production_caller_1\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined production_caller_1()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[0160, 0162] [0166, 0169]]\"\n}",
+      "{\n  \"entry\": \"0170\",\n  \"name\": \"nested_entry\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined nested_entry()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[0170, 0173]]\"\n}",
+      "{\n  \"entry\": \"0180\",\n  \"name\": \"terminal_source\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined terminal_source()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[0180, 0186]]\"\n}",
+      "{\n  \"entry\": \"0190\",\n  \"name\": \"nonlocal_source\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined nonlocal_source()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[0190, 0195] [01b0, 01b2]]\"\n}",
+      "{\n  \"entry\": \"0360\",\n  \"name\": \"nested_ordinary\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined nested_ordinary()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[0360, 0361]]\"\n}",
+      "{\n  \"entry\": \"rom1::4100\",\n  \"name\": \"physical_target_0\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined physical_target_0()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom1::4100, rom1::4103]]\"\n}",
+      "{\n  \"entry\": \"rom1::4200\",\n  \"name\": \"banked_source\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined banked_source()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom1::4200, rom1::4200]]\"\n}",
+      "{\n  \"entry\": \"rom1::4500\",\n  \"name\": \"banked_inline_source\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined banked_inline_source()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom1::4500, rom1::4502]]\"\n}",
+      "{\n  \"entry\": \"rom1::4700\",\n  \"name\": \"restoring_banked_source\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined restoring_banked_source()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom1::4700, rom1::4706]]\"\n}",
+      "{\n  \"entry\": \"rom1::4800\",\n  \"name\": \"constant_banked_source\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined constant_banked_source()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom1::4800, rom1::4802]]\"\n}",
+      "{\n  \"entry\": \"rom2::4100\",\n  \"name\": \"physical_target_1\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined physical_target_1()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom2::4100, rom2::4103]]\"\n}",
+      "{\n  \"entry\": \"rom2::4300\",\n  \"name\": \"banked_destination\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined banked_destination()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom2::4300, rom2::4300]]\"\n}",
+      "{\n  \"entry\": \"rom2::4400\",\n  \"name\": \"policy_target\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined policy_target()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom2::4400, rom2::4403]]\"\n}",
+      "{\n  \"entry\": \"rom2::4600\",\n  \"name\": \"nested_outer\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined nested_outer()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom2::4600, rom2::460b]]\"\n}",
+      "{\n  \"entry\": \"rom2::4900\",\n  \"name\": \"endless_target\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined endless_target()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom2::4900, rom2::4901]]\"\n}",
+      "{\n  \"entry\": \"rom2::4a00\",\n  \"name\": \"nonlocal_target\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined nonlocal_target()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom2::4a00, rom2::4a07]]\"\n}",
+      "{\n  \"entry\": \"rom3::4300\",\n  \"name\": \"nested_inner\",\n  \"source\": \"USER_DEFINED\",\n  \"signatureSource\": \"DEFAULT\",\n  \"prototype\": \"undefined nested_inner()\",\n  \"inline\": false,\n  \"varargs\": false,\n  \"customStorage\": false,\n  \"body\": \"[[rom3::4300, rom3::4306]]\"\n}"
+    ],
+    "comments": [
+      "[\n  \"ff00\",\n  \"EOL\",\n  \"JOYP / P1 ($FF00) Joypad face buttons [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff01\",\n  \"EOL\",\n  \"SB ($FF01) Serial transfer data [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff02\",\n  \"EOL\",\n  \"SC ($FF02) Serial transfer control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff04\",\n  \"EOL\",\n  \"DIV ($FF04) Divider register [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff05\",\n  \"EOL\",\n  \"TIMA ($FF05) Timer counter [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff06\",\n  \"EOL\",\n  \"TMA ($FF06) Timer modulo [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff07\",\n  \"EOL\",\n  \"TAC ($FF07) Timer control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff0f\",\n  \"EOL\",\n  \"IF ($FF0F) Pending interrupts [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff10\",\n  \"EOL\",\n  \"AUD1SWEEP / NR10 ($FF10) Audio channel 1 sweep [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff11\",\n  \"EOL\",\n  \"AUD1LEN / NR11 ($FF11) Audio channel 1 length timer and duty cycle [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff12\",\n  \"EOL\",\n  \"AUD1ENV / NR12 ($FF12) Audio channel 1 volume and envelope [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff13\",\n  \"EOL\",\n  \"AUD1LOW / NR13 ($FF13) Audio channel 1 period (low 8 bits) [wo] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff14\",\n  \"EOL\",\n  \"AUD1HIGH / NR14 ($FF14) Audio channel 1 period (high 3 bits) and control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff16\",\n  \"EOL\",\n  \"AUD2LEN / NR21 ($FF16) Audio channel 2 length timer and duty cycle [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff17\",\n  \"EOL\",\n  \"AUD2ENV / NR22 ($FF17) Audio channel 2 volume and envelope [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff18\",\n  \"EOL\",\n  \"AUD2LOW / NR23 ($FF18) Audio channel 2 period (low 8 bits) [wo] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff19\",\n  \"EOL\",\n  \"AUD2HIGH / NR24 ($FF19) Audio channel 2 period (high 3 bits) and control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff1a\",\n  \"EOL\",\n  \"AUD3ENA / NR30 ($FF1A) Audio channel 3 enable [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff1b\",\n  \"EOL\",\n  \"AUD3LEN / NR31 ($FF1B) Audio channel 3 length timer [wo] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff1c\",\n  \"EOL\",\n  \"AUD3LEVEL / NR32 ($FF1C) Audio channel 3 volume [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff1d\",\n  \"EOL\",\n  \"AUD3LOW / NR33 ($FF1D) Audio channel 3 period (low 8 bits) [wo] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff1e\",\n  \"EOL\",\n  \"AUD3HIGH / NR34 ($FF1E) Audio channel 3 period (high 3 bits) and control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff20\",\n  \"EOL\",\n  \"AUD4LEN / NR41 ($FF20) Audio channel 4 length timer [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff21\",\n  \"EOL\",\n  \"AUD4ENV / NR42 ($FF21) Audio channel 4 volume and envelope [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff22\",\n  \"EOL\",\n  \"AUD4POLY / NR43 ($FF22) Audio channel 4 period and randomness [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff23\",\n  \"EOL\",\n  \"AUD4GO / NR44 ($FF23) Audio channel 4 control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff24\",\n  \"EOL\",\n  \"AUDVOL / NR50 ($FF24) Audio master volume and VIN mixer [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff25\",\n  \"EOL\",\n  \"AUDTERM / NR51 ($FF25) Audio channel mixer [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff26\",\n  \"EOL\",\n  \"AUDENA / NR52 ($FF26) Audio master enable [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff30\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff31\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff32\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff33\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff34\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff35\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff36\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff37\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff38\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff39\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff3a\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff3b\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff3c\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff3d\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff3e\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff3f\",\n  \"EOL\",\n  \"AUD3WAVE ($FF30-$FF3F) Audio channel 3 wave pattern RAM [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff40\",\n  \"EOL\",\n  \"LCDC ($FF40) PPU graphics control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff41\",\n  \"EOL\",\n  \"STAT ($FF41) Graphics status and interrupt control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff42\",\n  \"EOL\",\n  \"SCY ($FF42) Background Y scroll offset (in pixels) [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff43\",\n  \"EOL\",\n  \"SCX ($FF43) Background X scroll offset (in pixels) [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff44\",\n  \"EOL\",\n  \"LY ($FF44) Y coordinate of the line currently processed by the PPU (0-153) [ro] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff45\",\n  \"EOL\",\n  \"LYC ($FF45) Value that LY is constantly compared to [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff46\",\n  \"EOL\",\n  \"DMA ($FF46) OAM DMA start address (high 8 bits) and start [wo] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff47\",\n  \"EOL\",\n  \"BGP ($FF47) (DMG only) Background color mapping [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff48\",\n  \"EOL\",\n  \"OBP0 ($FF48) (DMG only) OBJ color mapping #0 [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff49\",\n  \"EOL\",\n  \"OBP1 ($FF49) (DMG only) OBJ color mapping #1 [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff4a\",\n  \"EOL\",\n  \"WY ($FF4A) Y coordinate of the Window's top-left pixel (0-143) [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff4b\",\n  \"EOL\",\n  \"WX ($FF4B) X coordinate of the Window's top-left pixel, plus 7 (7-166) [r/w] [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff50\",\n  \"EOL\",\n  \"BANK ($FF50) (boot ROM only) Boot ROM mapping control [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff76\",\n  \"EOL\",\n  \"PCM12 ($FF76) Audio channels 1 and 2 output [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ff77\",\n  \"EOL\",\n  \"PCM34 ($FF77) Audio channels 3 and 4 output [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]",
+      "[\n  \"ffff\",\n  \"EOL\",\n  \"IE ($FFFF) Interrupt enable [hardware.inc 189324b77f99cf287f4153e0001830e8738a4068]\"\n]"
+    ],
+    "references": [
+      "[\n  \"0150\",\n  \"0156\",\n  \"FALL_THROUGH\",\n  -1,\n  \"USER_DEFINED\",\n  true,\n  -1\n]",
+      "[\n  \"0160\",\n  \"0166\",\n  \"FALL_THROUGH\",\n  -1,\n  \"USER_DEFINED\",\n  true,\n  -1\n]",
+      "[\n  \"0190\",\n  \"01b0\",\n  \"FALL_THROUGH\",\n  -1,\n  \"USER_DEFINED\",\n  true,\n  -1\n]"
+    ]
+  },
+  "canonicalTargets": {
+    "rom1::4200": "rom2::4300",
+    "0150": "rom1::4100",
+    "0170": "rom2::4600",
+    "rom1::4500": "rom2::4300",
+    "0190": "rom2::4a00",
+    "rom1::4700": "rom2::4400",
+    "rom1::4800": "rom2::4400",
+    "0160": "rom2::4100",
+    "rom2::4608": "rom3::4300",
+    "0180": "rom2::4900"
+  },
+  "activeViews": [
+    "gb_call_view_291_4200_1",
+    "gb_call_view_291_4500_1",
+    "gb_call_view_291_4800_1"
+  ]
+}

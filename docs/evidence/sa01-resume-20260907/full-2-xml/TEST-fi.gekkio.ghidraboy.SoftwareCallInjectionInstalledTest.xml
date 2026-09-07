@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:34:39.702Z" hostname="MacBookPro.localdomain" time="2.73">
+  <properties/>
+  <testcase name="banked inline reads target after selector change in native and actual injection()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.262"/>
+  <testcase name="production register helpers preserve restoring constant and manual frame effects()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.745"/>
+  <testcase name="two reviewed sites integrate nested software frames through ordinary native calls()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.312"/>
+  <testcase name="installed compiler provides dynamic payload and refuses an unvalidated caller()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.001"/>
+  <testcase name="reviewed production workflow separates two sites sharing a helper across banks()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.384"/>
+  <testcase name="known nonlocal RET branches to proven destination without returning through ordinary continuation()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.785"/>
+  <testcase name="proven nonreturn uses reviewed terminal call without a fabricated wrapper return()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionInstalledTest" time="0.241"/>
+  <system-out><![CDATA[INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+SA01_NONLOCAL_NATIVE_DEBUG=/var/folders/2g/6n8r5w2n7z54m4y1m8vj9cjh0000gn/T/sa01-nonlocal-native-11164283202787331007.xml
+SA01_NONLOCAL_NATIVE_C=
+/* WARNING: Function: FUN_0200 replaced with injection: ghidraboy_software_call_v1 */
+/* WARNING: Removing unreachable block (ram,0x0150) */
+
+undefined2 nonlocal_caller(undefined1 param_1)
+
+{
+  gb_cartridge_write8(0x2000,param_1);
+  nonlocal_target();
+  return 0xc0ff;
+}
+
+
+SA01_NONLOCAL_HIGH (ram, 0x150, 18, 3)  ---  CALL (rom2, 0x4100, 8)
+SA01_NONLOCAL_HIGH (ram, 0x150, 22, 4) (register, 0x6, 2) COPY (const, 0xc0ff, 2)
+SA01_NONLOCAL_HIGH (ram, 0x150, 26, 0)  ---  CALLOTHER (const, 0x5, 4) , (const, 0x2000, 2) , (register, 0x1, 1)
+SA01_NONLOCAL_HIGH (ram, 0x150, 40, 1) (ram, 0xc100, 1) INDIRECT (ram, 0xc100, 1) , (const, 0x12, 4)
+SA01_NONLOCAL_HIGH (ram, 0x150, 42, 2) (ram, 0xc101, 1) INDIRECT (ram, 0xc101, 1) , (const, 0x12, 4)
+SA01_NONLOCAL_HIGH (ram, 0x182, 16, 7)  ---  RETURN (const, 0x0, 2) , (register, 0x6, 2)
+SA01_NONLOCAL_HIGH (ram, 0x182, 41, 5) (ram, 0xc100, 1) COPY (ram, 0xc100, 1)
+SA01_NONLOCAL_HIGH (ram, 0x182, 43, 6) (ram, 0xc101, 1) COPY (ram, 0xc101, 1)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

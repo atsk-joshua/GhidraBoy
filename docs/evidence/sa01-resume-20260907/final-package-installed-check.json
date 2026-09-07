@@ -1,0 +1,25 @@
+{
+  "archiveSha256": "a18bc013d93c2815d4e929e814e9ec18248eb357c7c185f060ac1ffbed5cdd98",
+  "installedRoot": "/private/tmp/ghidraboy-sa01-resume-install-7/ghidra_12.1.3_PUBLIC",
+  "memberCount": 55,
+  "allMembersMatch": true,
+  "packagedDocumentationMatchesCurrentSource": true,
+  "processes": 6,
+  "allPhasesPass": true,
+  "unexpectedErrors": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "expectedRejections": [
+    0,
+    0,
+    0,
+    0,
+    4,
+    0
+  ]
+}

@@ -1,0 +1,174 @@
+{
+  "fixtureSha256": "b7e0403c9c8c6cfb182be91bb771016b4c588f4793e8e271c330f57f988bd5b8",
+  "extensionSha256": "e43975bcc1340574cab9ee84e35026a6285cd52a9761137a98c3034962f7839b",
+  "scriptSha256": "73ef003bcec6aac715196c2c3ad8ce1ca562b3568773ada906e680e6b7435e39",
+  "driverSha256": "218314ba3d73c3e321f45584a7fa17e5a525b9f78e1f5d84f4aeeb2df1019426",
+  "ghidra": "/private/tmp/ghidraboy-sa01-state-production-install-1",
+  "jdk": "/opt/homebrew/Cellar/openjdk@21/21.0.12.1/libexec/openjdk.jdk/Contents/Home",
+  "extension": "/private/tmp/ghidraboy-sa01-state-production-install-1/Ghidra/Extensions/GhidraBoy",
+  "discovery": "prepared instruction fixtures; pre-prepare missing-instruction rejection recorded",
+  "nativeDecompilerSha256": "d60be1dd82b660b4123adbe2a8c7c3353a7974e856d4298208f8dc68490db871",
+  "ghidraApplicationPropertiesSha256": "fb9b6292c801e4a18b7c20829437d3b18b2241b273aea9b1cbdebdf3e5d0dc15",
+  "jdkReleaseSha256": "7b6f4e84249287203d8e1857254307a6b2dc0643b1efdeef5fa2aeaf791866f0",
+  "processes": [
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-state-production-install-1/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/projects",
+        "sa01-production",
+        "-import",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "prepare",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_PREPARE_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "expectedRejections": [],
+      "unexpectedErrors": [],
+      "nativeDiagnostics": [],
+      "otherWarnings": [],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-state-production-install-1/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "expectedRejections": [],
+      "unexpectedErrors": [],
+      "nativeDiagnostics": [],
+      "otherWarnings": [],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-state-production-install-1/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "reapply",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_REAPPLY_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "expectedRejections": [],
+      "unexpectedErrors": [],
+      "nativeDiagnostics": [],
+      "otherWarnings": [],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-state-production-install-1/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "edit",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_EDIT_PASS"
+      ],
+      "expectedRejections": [],
+      "unexpectedErrors": [],
+      "nativeDiagnostics": [],
+      "otherWarnings": [],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-state-production-install-1/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "edited-reopen",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_EDITED_REOPEN_PASS"
+      ],
+      "expectedRejections": [
+        "WARN  Unresolved software-call injection at 0150: Software-call annotations changed after review (SymbolicPropogator)  ",
+        "ERROR Unexpected Exception: Unresolved software-call injection at 0150: Software-call annotations changed after review (DecompileProcess) java.lang.IllegalArgumentException: Unresolved software-call injection at 0150: Software-call annotations changed after review",
+        "WARN  Unresolved software-call injection at 0150: Software-call annotations changed after review (SymbolicPropogator)  ",
+        "WARN  Unresolved software-call injection at 0150: Software-call annotations changed after review (SymbolicPropogator)  "
+      ],
+      "unexpectedErrors": [],
+      "nativeDiagnostics": [],
+      "otherWarnings": [],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-state-production-install-1/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "removed-reopen",
+        "/private/tmp/ghidraboy-sa01-state-production-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_REMOVED_REOPEN_PASS"
+      ],
+      "expectedRejections": [],
+      "unexpectedErrors": [],
+      "nativeDiagnostics": [],
+      "otherWarnings": [],
+      "passed": true
+    }
+  ]
+}

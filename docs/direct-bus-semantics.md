@@ -73,29 +73,19 @@ Maintained regressions exercise native C and recovered p-code, compiled SLEIGH
 execution, mapper state, immutable ROM/export bytes, ordinary RAM and flat/overlay
 behavior, RAW overrides, retained user WRITE references, diagnostic overflow,
 unsupported control-store rejection, and old-userop compatibility. The existing
-501-instruction old-provider save/new-provider reopen check passes. The copied
-annotated GBW3 Program also has zero saved/fresh decode or raw p-code mismatches
-across all 84,485 instructions.
-
-Private exact-ROM evidence under `/tmp/gbw3-bus-prototype/native` compares 12
-annotated functions and seven fresh-import functions. In the annotated sample,
-18 read-only-write warnings become zero while four unrelated jump-table warnings
-remain. All function, symbol, variable, comment, reference, instruction, data and
-block inventories are preserved. Only explicit GhidraBoy metadata options change.
-Save/reopen preserves the metadata and native output. Four read-time default
-option names initially disappear from enumeration after reopen; reading the same
-`ProgramMapping.inspect` API restores those defaults and gives exact inventory
-equality. This is recorded rather than silently ignored.
+501-instruction old-provider save/new-provider reopen check passes. Validation of an existing annotated Program is a separate copy-only gate;
+self-authored fixture results do not authorize changing user instructions,
+metadata, references or function bodies.
 
 Independent hardware checks are reproducible with
-`python3 ../GhiGBC/tests/verify_direct_bus_native.py --work <new-directory>`.
+`python3 debugger/tests/verify_direct_bus_native.py --work <new-directory>`.
 Four self-authored SameBoy MBC5 fixtures cover a byte selector write, the
 2FFFh/3000h low/high-selector boundary, 7FFFh/8000h ROM/VRAM, and FFFFh/0000h wrap.
 They execute instructions without register/memory state edits, using a documented
 minimal boot bypass. Selector state, flags/SP, full fixed and selected ROM
 windows, and input files are checked. The retained result is
-`/tmp/ghidraboy-direct-bus-native-independent-v2/results.json`. GhiGBC is a
-validation dependency for this oracle, not a runtime dependency of the provider.
+`/tmp/ghidraboy-direct-bus-native-independent-v2/results.json`. The GhidraBoy debugger supplies this optional hardware oracle; the static
+provider has no emulator runtime dependency.
 
 Native C reconstruction of an *unknown absolute entry SP* remains limited by
 Ghidra's abstract stack-base model: byte decomposition may display a low zero

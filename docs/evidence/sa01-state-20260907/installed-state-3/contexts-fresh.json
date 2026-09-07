@@ -1,0 +1,106 @@
+[
+  {
+    "canonical": "rom2::4600",
+    "entry": "gb_call_view_entry_191_180_callee_0_0::4600",
+    "site": "0180",
+    "graphEntry": 0,
+    "kind": "CALLEE",
+    "selected": false,
+    "entryState": {
+      "cpu": 17920,
+      "physical": {
+        "region": "ROM",
+        "bank": 2,
+        "offset": 1536
+      },
+      "mapper": {
+        "romLow": 2,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "sp": 49406,
+      "registers": {
+        "a": 2,
+        "f": 0,
+        "bc": 0,
+        "de": 0,
+        "hl": 17920
+      },
+      "memory": [
+        {
+          "physical": {
+            "region": "WRAM",
+            "bank": 0,
+            "offset": 254
+          },
+          "value": 129
+        },
+        {
+          "physical": {
+            "region": "WRAM",
+            "bank": 0,
+            "offset": 255
+          },
+          "value": 1
+        }
+      ]
+    }
+  },
+  {
+    "canonical": "rom2::4600",
+    "entry": "gb_call_view_entry_191_190_callee_0_0::4600",
+    "site": "0190",
+    "graphEntry": 0,
+    "kind": "CALLEE",
+    "selected": true,
+    "entryState": {
+      "cpu": 17920,
+      "physical": {
+        "region": "ROM",
+        "bank": 2,
+        "offset": 1536
+      },
+      "mapper": {
+        "romLow": 2,
+        "romHigh": 0,
+        "mode": 0,
+        "ramSelect": 0,
+        "ramEnabled": false,
+        "vbk": 0,
+        "svbk": 1,
+        "latch": 0
+      },
+      "sp": 49406,
+      "registers": {
+        "a": 2,
+        "f": 128,
+        "bc": 0,
+        "de": 0,
+        "hl": 17920
+      },
+      "memory": [
+        {
+          "physical": {
+            "region": "WRAM",
+            "bank": 0,
+            "offset": 254
+          },
+          "value": 145
+        },
+        {
+          "physical": {
+            "region": "WRAM",
+            "bank": 0,
+            "offset": 255
+          },
+          "value": 1
+        }
+      ]
+    }
+  }
+]

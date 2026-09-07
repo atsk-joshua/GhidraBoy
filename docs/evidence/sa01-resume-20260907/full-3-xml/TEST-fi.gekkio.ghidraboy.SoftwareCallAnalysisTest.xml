@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallAnalysisTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:41:46.535Z" hostname="MacBookPro.localdomain" time="0.031">
+  <properties/>
+  <testcase name="bounded analysis consumes effects only after caller instructions establish premises()" classname="fi.gekkio.ghidraboy.SoftwareCallAnalysisTest" time="0.031"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

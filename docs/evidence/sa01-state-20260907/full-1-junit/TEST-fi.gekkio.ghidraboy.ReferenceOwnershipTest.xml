@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.ReferenceOwnershipTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-09-07T20:28:21.393Z" hostname="MacBookPro.localdomain" time="0.007">
+  <properties/>
+  <testcase name="historical receipt lacking primary evidence is retained even after another group is saved()" classname="fi.gekkio.ghidraboy.ReferenceOwnershipTest" time="0.005">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;4&gt; but was: &lt;5&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;4&gt; but was: &lt;5&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+	at app//fi.gekkio.ghidraboy.ReferenceOwnershipTest.historical_receipt_lacking_primary_evidence_is_retained_even_after_another_group_is_saved$lambda$6(ReferenceOwnershipTest.kt:63)
+	at app//fi.gekkio.ghidraboy.ReferenceOwnershipTest.program(ReferenceOwnershipTest.kt:16)
+	at app//fi.gekkio.ghidraboy.ReferenceOwnershipTest.historical receipt lacking primary evidence is retained even after another group is saved(ReferenceOwnershipTest.kt:55)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="unchanged receipt removes reference but primary edit relinquishes ownership()" classname="fi.gekkio.ghidraboy.ReferenceOwnershipTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

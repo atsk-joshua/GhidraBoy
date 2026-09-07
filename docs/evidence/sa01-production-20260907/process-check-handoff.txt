@@ -1,0 +1,1 @@
+At handoff, ps -axo pid,ppid,etime,command filtered for ghidraboy-sa01-production, Gradle Test Executor, GhidraBoySa01Inspect and GhidraBoySa01Production returned only its own shell/search processes. No matching verification process was running. All three collaboration workers reported completed/frozen. No GUI was launched.

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-07T22:39:45.966Z" hostname="MacBookPro.localdomain" time="2.205">
+  <properties/>
+  <testcase name="later nonlocal exit across two native frames preserves actual destination and adds no second pop()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.823"/>
+  <testcase name="nested custom storage is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.035"/>
+  <testcase name="consumed byte drift rejects cached context selection without rebaselining dependencies()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.255"/>
+  <testcase name="renaming and commenting canonical entry does not strand owned protocol after removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.24"/>
+  <testcase name="selection restores original comment and convention after clean removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.315"/>
+  <testcase name="cancelled selection after comment mutation rolls back registry ownership and visible context()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.478"/>
+  <testcase name="nested explicit return contract is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.059"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

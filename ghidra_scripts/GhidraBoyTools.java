@@ -34,6 +34,11 @@ public class GhidraBoyTools extends GhidraScript {
                     "far-call-convention",
                     "far-call-preview",
                     "far-call-remove",
+                    "software-call-preview",
+                    "software-call-apply",
+                    "software-call-remove",
+                    "software-call-contexts",
+                    "software-call-select-context",
                     "analysis-preview",
                     "analysis-apply",
                     "analysis-remove",
@@ -60,12 +65,38 @@ public class GhidraBoyTools extends GhidraScript {
                 : Path.of(value);
         var convention =
             ProgramMapping.JSON.fromJson(Files.readString(file), FarCallConvention.class);
-        convention.preview(currentProgram, monitor).forEach(this::println);
+        var reviewed = convention.previewReviewed(currentProgram, monitor);
+        reviewed.findings().forEach(this::println);
         if (action.equals("far-call-convention")
             && (isRunningHeadless()
                 || askYesNo("Apply convention", "Apply the validated fixed-caller convention?")))
-          convention.apply(currentProgram, monitor);
+          convention.apply(currentProgram, reviewed, monitor);
       }
+      case "software-call-preview", "software-call-apply" -> {
+        Path file = value == null ? askFile("Software-call site configurations JSON", "Review").toPath() : Path.of(value);
+        var configurations = SoftwareCallConfiguration.read(Files.readString(file));
+        var reviewed = SoftwareCallApplication.preview(currentProgram, configurations, monitor);
+        println(SoftwareCallRegistry.EXECUTION_CONDITIONS);
+        println(ProgramMapping.JSON.toJson(java.util.Map.of("sites", reviewed.inventory(), "nestedRepairs", reviewed.nestedRepairs(), "executionViews", reviewed.executionViews(), "instructionDiscovery", reviewed.instructionDiscovery(), "stateContinuations", reviewed.stateContinuations(), "stateCallees", reviewed.stateCallees())));
+        if (action.equals("software-call-apply") && (isRunningHeadless()
+            || askYesNo("Apply software calls", "Apply exactly these reviewed payload and annotation changes?")))
+          SoftwareCallApplication.apply(currentProgram, reviewed, monitor);
+      }
+      case "software-call-contexts", "software-call-select-context" -> {
+        var canonical = currentProgram.getAddressFactory().getAddress(value == null
+            ? askString("Canonical entry", "Canonical physical function address") : value);
+        var contexts = SoftwareCallRegistry.stateContexts(currentProgram, canonical, monitor);
+        println(ProgramMapping.JSON.toJson(contexts));
+        if (action.equals("software-call-select-context")) {
+          String selected = args.length > 2 ? args[2]
+              : askChoice("Execution context", "Select the reviewed context displayed at the canonical entry",
+                  contexts.stream().map(SoftwareCallRegistry.StateContext::entry).toList(), contexts.get(0).entry());
+          SoftwareCallRegistry.selectStateContext(currentProgram, canonical,
+              currentProgram.getAddressFactory().getAddress(selected), monitor);
+        }
+      }
+      case "software-call-remove" ->
+          AnalysisOwnership.remove(currentProgram, SoftwareCallApplication.FEATURE, monitor).forEach(this::println);
       case "far-call-remove" ->
           AnalysisOwnership.remove(currentProgram, "far-call", monitor).forEach(this::println);
       case "analysis-remove" ->

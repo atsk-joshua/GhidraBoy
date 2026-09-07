@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallDerivedFlowIntegrityTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T22:45:41.891Z" hostname="MacBookPro.localdomain" time="8.725">
+  <properties/>
+  <testcase name="supplementary continuation can be independently decompiled without following its untaken unmapped edge()" classname="fi.gekkio.ghidraboy.SoftwareCallDerivedFlowIntegrityTest" time="1.135"/>
+  <testcase name="repeated ordinary analysis preserves all supplementary fragments and their independently opened continuation()" classname="fi.gekkio.ghidraboy.SoftwareCallDerivedFlowIntegrityTest" time="7.59"/>
+  <system-out><![CDATA[INFO  Packed database cache: /var/tmp/joshuahansen-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  -----------------------------------------------------
+    ASCII Strings                              0.156 secs
+    Apply Data Archives                        0.521 secs
+    Basic Constant Reference Analyzer          0.642 secs
+    Call Convention ID                         0.000 secs
+    Call-Fixup Installer                       0.001 secs
+    Create Function                            0.000 secs
+    Decompiler Switch Analysis                 1.620 secs
+    Demangler GNU                              0.044 secs
+    Disassemble Entry Points                   0.004 secs
+    Embedded Media                             0.010 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.023 secs
+    Non-Returning Functions - Discovered       0.005 secs
+    Shared Return Calls                        0.001 secs
+    Stack                                      0.323 secs
+    Subroutine References                      0.000 secs
+-----------------------------------------------------
+     Total Time   3 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  -----------------------------------------------------
+    ASCII Strings                              0.004 secs
+    Apply Data Archives                        0.006 secs
+    Basic Constant Reference Analyzer          0.426 secs
+    Call Convention ID                         0.001 secs
+    Call-Fixup Installer                       0.000 secs
+    Create Function                            0.000 secs
+    Decompiler Switch Analysis                 1.427 secs
+    Demangler GNU                              0.039 secs
+    Disassemble Entry Points                   0.001 secs
+    Embedded Media                             0.002 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.000 secs
+    Non-Returning Functions - Discovered       0.001 secs
+    Shared Return Calls                        0.000 secs
+    Stack                                      0.270 secs
+    Subroutine References                      0.000 secs
+-----------------------------------------------------
+     Total Time   2 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

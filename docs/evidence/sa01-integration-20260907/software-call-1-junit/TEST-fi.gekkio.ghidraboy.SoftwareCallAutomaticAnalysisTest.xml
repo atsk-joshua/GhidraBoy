@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallAutomaticAnalysisTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T22:46:22.521Z" hostname="MacBookPro.localdomain" time="3.558">
+  <properties/>
+  <testcase name="edited fresh canonical source survives removal while owned redirect clears and alias retires()" classname="fi.gekkio.ghidraboy.SoftwareCallAutomaticAnalysisTest" time="0.174"/>
+  <testcase name="fresh label-only caller remains paired and natively valid after full ordinary automatic analysis()" classname="fi.gekkio.ghidraboy.SoftwareCallAutomaticAnalysisTest" time="3.383"/>
+  <system-out><![CDATA[INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  -----------------------------------------------------
+    ASCII Strings                              0.009 secs
+    Apply Data Archives                        0.052 secs
+    Basic Constant Reference Analyzer          0.524 secs
+    Call Convention ID                         0.000 secs
+    Call-Fixup Installer                       0.000 secs
+    Create Function                            0.000 secs
+    Decompiler Switch Analysis                 1.471 secs
+    Demangler GNU                              0.043 secs
+    Disassemble Entry Points                   0.002 secs
+    Embedded Media                             0.005 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.000 secs
+    Non-Returning Functions - Discovered       0.002 secs
+    Shared Return Calls                        0.000 secs
+    Stack                                      0.291 secs
+    Subroutine References                      0.000 secs
+-----------------------------------------------------
+     Total Time   2 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,102 +1,49 @@
-# GhidraBoy modernization (development preview)
+# GhidraBoy
 
-Current target: **Ghidra 12.1.3, JDK 21**. The default build provides static CPU,
-cartridge, mapping and script tooling. The optional [debugger module](debugger/README.md)
-adds reference SameBoy and experimental mGBA execution, Trace RMI and portable
-captured observations; qualification of the integrated release is
-tracked in the [integration ledger](docs/integration/progress.md).
+Game Boy and Game Boy Color analysis for **Ghidra 12.1.3 / JDK 21**, with an
+optional [GhidraBoy debugger](debugger/README.md). This is a development preview;
+GUI and release acceptance remain incomplete.
 
-- [Install, import, navigation, symbols, export and rollback](docs/user-workflows.md)
-- [Input and mapper policy](docs/input-policy.md)
-- [Versioned Java/JSON static contract](docs/static-contract.md)
-- [CPU validation](docs/cpu-validation.md)
-- [Compiler support](docs/compiler-support.md)
-- [Conservative analysis](docs/analysis.md)
-- [Development release notes](docs/release-notes.md)
-- [Interactive acceptance checklist](docs/gui-validation.md)
-- [Acceptance evidence and remaining work](docs/modernization-evidence.md)
-- [Primary sources and attribution](docs/references.md)
-
-Build with `JAVA_HOME` pointing to JDK 21 and `GHIDRA_INSTALL_DIR` to 12.1.3:
-`./gradlew clean build`. ZIPs appear in `build/distributions`. The documentation
-records executed checks separately from incomplete requirements; this preview
-must not be treated as completion of the full modernization acceptance matrix.
-
----
-
-# GhidraBoy: Sharp SM83 / Game Boy extension for Ghidra
-
-**Very experimental! No compatibility guarantees!**
-
-Historical upstream releases (not production targets of this modernization branch):
-
-- 11.4.2
-- 11.4.1
-- 11.3.2
-- 11.3.1
-- 11.3
-- 11.2
-- 11.1.2
-- 11.1.1
-- 11.1
+The static extension provides SM83 instruction semantics, cartridge and boot-ROM
+loading, banked memory views, hardware registers and data types, symbol import,
+ROM export, conservative bank analysis and per-function compiler conventions.
+It works without an emulator, Python or SDL. The optional debugger adds live
+execution and captured history through SameBoy or the experimental mGBA backend.
 
 ![Tetris disassembly](screenshot.png)
 
-## Features
+Start with [installation and static workflows](docs/user-workflows.md), or the
+[debugger overview](debugger/README.md). For supported inputs, analysis assumptions
+and compiler conventions, use the [documentation map](docs/README.md).
 
-* Sharp SM83 (CPU core used in Game Boy) support for Sleigh
-* Game Boy ROM loader:
-  - Can load unbanked ROMs (&lt;= 32kB, e.g. Tetris)
-  - Can load banked ROMs (&gt; 32kB, e.g. Pokemon)
-  - Can load greyscale boot ROMs (DMG/DMG0/MGB/SGB/SGB2)
-  - Can load color boot ROMs (CGB/CGB0)
-* Memory blocks based on the hardware memory map
-  - Banked regions use overlays (TODO: figure out if there's a better way to
-    support them)
-  - GB vs GBC differences are handled (e.g. banked WRAM)
-- Symbols for hardware registers (0xFFxx range)
-  - GB vs GBC differences are handled (e.g. existence of KEY1 register)
-* Game Boy cartridge header data types
-  - Enumerated types for some things
+The [roadmap](docs/roadmap.md) prioritizes complete static analysis: software-call
+semantics, bank-dependent memory and flow, discovery, and verified compiler/data
+knowledge. The [planned specification](docs/static-analysis-spec.md) and
+[research record](docs/static-analysis-research.md) distinguish required work
+from current capabilities. Existing integration and release work remains on the
+roadmap with updated priorities.
 
-## How to install
+For implementation, start with the [agent handoff](docs/static-analysis-implementation.md):
+source targets, first regressions, commands and architecture decision gates.
 
-1. Download a [prebuilt GhidraBoy release](https://github.com/Gekkio/GhidraBoy/releases), or build it yourself.
-2. Start Ghidra
-3. File -> Install Extensions
-4. Press the plus icon ("Add extension")
-5. Choose the built or downloaded GhidraBoy zip file
-6. Restart Ghidra when prompted to load the extension properly
+Contributors and agents should read the [repository working rules](AGENTS.md).
+Contributors need this repository and the pinned build dependencies. Follow
+[building and packaging](docs/building.md); run `python3 tools/check.py` for the
+inexpensive checks. [Validation](docs/validation.md) distinguishes automated tests
+from installed, native and GUI qualification.
 
-## How to build
+Existing Program identities remain `SM83:LE:16:default`, language version 1.0,
+and compiler `default`; added compiler profiles remain available. Preserving
+saved Programs is distinct from running on older Ghidra versions: current builds
+require 12.1.3. See [instruction compatibility](docs/instruction-compatibility.md)
+and [changes since the upstream release](docs/changes-since-official-release-report.md).
+Historical upstream binaries remain available from the
+[upstream releases](https://github.com/Gekkio/GhidraBoy/releases); use the runtime
+required by the particular release.
 
-As a prerequisite, you need to have a Ghidra installation somewhere (an actual
-installation, not a copy of Ghidra source code!).
+General bank effects, inferred call signatures and complete semantic decompilation
+remain limited; absence of diagnostics is not proof of correct recovered code.
+See the [analysis contract](docs/analysis.md) and [debugger support matrix](debugger/docs/SUPPORT.md).
 
-```
-export GHIDRA_INSTALL_DIR=/path/to/ghidra
-./gradlew
-```
-
-or
-
-```
-./gradlew -Pghidra.dir=/path/to/ghidra
-```
-
-You can then find a built extension .zip in the `build/distributions` directory.
-
-## Open questions / problems
-
-- Decompiler output is difficult to read if certain instructions are used (e.g.
-  rotates, JP HL for jumptables)
-- Default "ASM calling convention" assumes all registers can be inputs and/or
-  outputs. Inputs/outputs are often guessed incorrectly, so manual tuning is
-  required for almost every function
-- Are overlays the only / the best solution for handling banked memory areas?
-  Right now in banked ROMs every function call to 0x4000-0x7fff needs to be
-  manually resolved to the correct bank(s)
-
-## License
-
-Licensed under the Apache License, Version 2.0.
+GhidraBoy retains Joonas Javanainen/Gekkio and contributor attribution and is
+licensed under Apache 2.0. See [LICENSE](LICENSE) and component notices in LICENSES.

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" tests="55" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:38:41.515Z" hostname="MacBookPro.localdomain" time="0.09">
+  <properties/>
+  <testcase name="[1] NC, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[2] NC, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[3] C, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[4] C, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[5] NZ, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[6] NZ, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[7] Z, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[8] Z, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[1] NC, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[2] NC, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[3] C, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[4] C, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[5] NZ, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[6] NZ, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[7] Z, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[8] Z, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="JR e (negative)()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[1] NC, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[2] NC, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[3] C, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[4] C, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[5] NZ, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[6] NZ, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[7] Z, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[8] Z, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="RET()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[1] Rst00" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[2] Rst08" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[3] Rst10" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[4] Rst18" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[5] Rst20" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[6] Rst28" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[7] Rst30" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[8] Rst38" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="RETI()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="JP HL()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="JP nn()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[1] NC, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[2] NC, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[3] C, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[4] C, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[5] NZ, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[6] NZ, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[7] Z, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[8] Z, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="CALL nn()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[1] NC, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[2] NC, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[3] C, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[4] C, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[5] NZ, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[6] NZ, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="[7] Z, false" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <testcase name="[8] Z, true" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.001"/>
+  <testcase name="JR e (positive)()" classname="fi.gekkio.ghidraboy.emu.ControlFlowInstructionTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

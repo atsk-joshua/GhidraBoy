@@ -12,4 +12,4 @@ Before interacting, positively identify the **GhiGBC UI Validation** window and 
 
 Each phase allows eight minutes. Read docs/evidence/ui-action-phase.txt for the next step. Only UI_ACTIONS_PASSED after cleanup is a pass; keep timeouts/partial logs as failures. Collect-results.sh includes these logs. Do not reinterpret this observer as a renderer, physical held-key/focus, or Deck performance test.
 
-For optional HP UI acceptance, install the matched GhiBW3 composition, use copied authorized exact-revision assets, and follow GhiBW3/docs/STUDY.md: current unit selection → HP watch → attack → historical writer → restore/repeat. Confirm historical/changed-session selections are rejected. The off-device battle harness verifies real execution and history, but does not claim those physical GUI clicks occurred.
+Game-specific UI acceptance instructions are maintained by the optional profile project.

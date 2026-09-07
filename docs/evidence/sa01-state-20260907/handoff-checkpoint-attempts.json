@@ -1,0 +1,17 @@
+{
+  "handoff-focused.log": {
+    "status": "compile failure",
+    "testsExecuted": false
+  },
+  "handoff-focused-2.log": {
+    "status": "same compile failure; incorrect initial edit did not change EOL argument order",
+    "testsExecuted": false
+  },
+  "handoff-focused-3.log": {
+    "status": "compiled and executed",
+    "tests": 9,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  }
+}

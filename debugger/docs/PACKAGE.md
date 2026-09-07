@@ -1,4 +1,4 @@
-# GhidraBoy Debugger
+# GhidraBoy debugger
 
 Integration candidate for Game Boy/Game Boy Color debugging with Ghidra 12.1.3, Java 21 and an existing Python 3.9+ interpreter. This package contains the static GhidraBoy extension, the compatible debugger extension, the selected prebuilt emulator runtime(s), and synthetic validation fixtures. `suite.json` records `sameboy`, experimental `mgba`, or both; the default build selects SameBoy.
 
@@ -22,7 +22,7 @@ Restart Ghidra, import a supported ROM, open its Debugger tool, and select the l
 The archive's `suite.json` records exact file identities, dependencies and required
 native decompiler and debugger Java metadata. Python dependencies are installed
 offline in an isolated environment. No compiler, Gradle, RGBDS or source checkout
-is required on the runtime host. Game-specific GhiBW3 profiles remain optional
-private household tooling and require a matched composition.
+is required on the runtime host. External profiles are optional and must declare a compatible API and matched
+package composition.
 
 Component attribution and licenses are retained under LICENSES. Packages including mGBA also carry complete pinned corresponding source and rebuild instructions in docs/MGBA_SOURCE.md. Private ROMs, Programs, saves and checkpoints are not distributed.

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" tests="6" skipped="0" failures="2" errors="0" timestamp="2026-09-07T19:57:33.724Z" hostname="MacBookPro.localdomain" time="1.364">
+  <properties/>
+  <testcase name="nested custom storage is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.041">
+    <failure message="org.opentest4j.AssertionFailedError: rejected=Nested state entry requires reviewed bare native contract at rom2::4200; digestAfterDiagnostic=20af8cf009b7d2ea3f65a930901b7a76e562fd6d04636535d0044a04fdee215e; removed=[analysis.ownership.v1:absent]; added=[analysis.ownership.v1:{&quot;version&quot;:1,&quot;groups&quot;:{}}];  ==&gt; expected: &lt;20af8cf009b7d2ea3f65a930901b7a76e562fd6d04636535d0044a04fdee215e&gt; but was: &lt;f2c2d0f1960b0958e5eac203328eceba4eed7f4da976118b0031d5d50a7cfbba&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: rejected=Nested state entry requires reviewed bare native contract at rom2::4200; digestAfterDiagnostic=20af8cf009b7d2ea3f65a930901b7a76e562fd6d04636535d0044a04fdee215e; removed=[analysis.ownership.v1:absent]; added=[analysis.ownership.v1:{&quot;version&quot;:1,&quot;groups&quot;:{}}];  ==&gt; expected: &lt;20af8cf009b7d2ea3f65a930901b7a76e562fd6d04636535d0044a04fdee215e&gt; but was: &lt;f2c2d0f1960b0958e5eac203328eceba4eed7f4da976118b0031d5d50a7cfbba&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.nested_custom_storage_is_rejected_before_any_reviewed_mutation$lambda$23(SoftwareCallStateEntryIntegrityTest.kt:216)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.fixture(SoftwareCallStateEntryIntegrityTest.kt:87)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.nested custom storage is rejected before any reviewed mutation(SoftwareCallStateEntryIntegrityTest.kt:207)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="consumed byte drift rejects cached context selection without rebaselining dependencies()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.256"/>
+  <testcase name="renaming and commenting canonical entry does not strand owned protocol after removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.255"/>
+  <testcase name="selection restores original comment and convention after clean removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.313"/>
+  <testcase name="cancelled selection after comment mutation rolls back registry ownership and visible context()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.442"/>
+  <testcase name="nested explicit return contract is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.057">
+    <failure message="org.opentest4j.AssertionFailedError: rejected=Nested state entry requires reviewed bare native contract at rom2::4200; digestAfterDiagnostic=818530a67092bdc963b512deca79e01102d97bbf541906102bec8807e5409b8a; removed=[analysis.ownership.v1:absent]; added=[analysis.ownership.v1:{&quot;version&quot;:1,&quot;groups&quot;:{}}];  ==&gt; expected: &lt;818530a67092bdc963b512deca79e01102d97bbf541906102bec8807e5409b8a&gt; but was: &lt;17c66e718253469e01412e632b7c3da93176b9b33c52feda20c649261c616d06&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: rejected=Nested state entry requires reviewed bare native contract at rom2::4200; digestAfterDiagnostic=818530a67092bdc963b512deca79e01102d97bbf541906102bec8807e5409b8a; removed=[analysis.ownership.v1:absent]; added=[analysis.ownership.v1:{&quot;version&quot;:1,&quot;groups&quot;:{}}];  ==&gt; expected: &lt;818530a67092bdc963b512deca79e01102d97bbf541906102bec8807e5409b8a&gt; but was: &lt;17c66e718253469e01412e632b7c3da93176b9b33c52feda20c649261c616d06&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.nested_explicit_return_contract_is_rejected_before_any_reviewed_mutation$lambda$20(SoftwareCallStateEntryIntegrityTest.kt:199)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.fixture(SoftwareCallStateEntryIntegrityTest.kt:87)
+	at app//fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.nested explicit return contract is rejected before any reviewed mutation(SoftwareCallStateEntryIntegrityTest.kt:190)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

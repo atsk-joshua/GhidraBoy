@@ -135,5 +135,18 @@
     "patchedSourceSha256": "4b561f12b9dccc2312aea7e7238de8991133dac6a5c5544c942ddb9c1cab5bb3",
     "baselineSourceArchiveSha256": "d42d79db2de15b28f1803e936eab4ac4db724ca5a1e373e8a59cdbb104b6d107",
     "officialJava": false
+  },
+  "stateEntryNativePatch": {
+    "baseGhidraVersion": "12.1.3",
+    "dependencyVersion": "12.1.3+ghidraboy.switch-recovery.2.state-entry.1",
+    "baseDependencyVersion": "12.1.3+ghidraboy.switch-recovery.2",
+    "patch": "tools/patches/ghidra-12.1.3-state-entry-1.patch",
+    "patchSha256": "91d8d2bfe6b2478cfb98f2c609d975036eb523a3c481c6f05d7516c87d503388",
+    "pristineSourceLock": "tools/patches/ghidra-12.1.3-decompiler-source.json",
+    "pristineSourceLockSha256": "e10ae49046cbec450ca62834c4ac5075fe6d9f6a12dc4513d6f73258f490caf9",
+    "protocol": "__ghidraboy_state_entry_v1",
+    "optional": true,
+    "qualifiedPlatforms": [],
+    "officialNative": false
   }
 }

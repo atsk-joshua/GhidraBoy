@@ -9,6 +9,12 @@ import java.util.*;
 /** Opt-in exact-byte validated inline bank:u8,target:u16 RST convention. */
 public record FarCallConvention(
     String trampoline, String expectedBodyHex, List<String> callSites, Integer stackPointer) {
+  public FarCallConvention {
+    callSites = List.copyOf(callSites);
+    if (new HashSet<>(callSites).size() != callSites.size())
+      throw new IllegalArgumentException("Duplicate call sites");
+  }
+
   public FarCallConvention(String trampoline, String expectedBodyHex, List<String> callSites) {
     this(trampoline, expectedBodyHex, callSites, null);
   }
@@ -42,9 +48,12 @@ public record FarCallConvention(
     if (!Arrays.equals(body, actual))
       throw new IllegalArgumentException("Trampoline bytes do not match reviewed convention");
     var results = new ArrayList<String>();
+    var sites = new HashSet<ghidra.program.model.address.Address>();
     for (String site : callSites) {
       monitor.checkCancelled();
       var a = p.getAddressFactory().getAddress(site);
+      if (a != null && !sites.add(a))
+        throw new IllegalArgumentException("Duplicate resolved call site: " + site);
       var ins = a == null ? null : p.getListing().getInstructionAt(a);
       if (ins == null || (p.getMemory().getByte(a) & 255) != (0xc7 | (int) t.getOffset()))
         throw new IllegalArgumentException("Call site is not the specified RST: " + site);
@@ -61,6 +70,22 @@ public record FarCallConvention(
         throw new IllegalArgumentException("Unexpected RST decode or user flow override");
       if (ins.isFallThroughOverridden() && !a.add(4).equals(ins.getFallThrough()))
         throw new IllegalArgumentException("Existing user fallthrough override at " + site);
+      for (int off = 1; off <= 3; off++) {
+        var payload = a.add(off);
+        if (p.getListing().getInstructionContaining(payload) != null
+            || p.getListing().getDefinedDataContaining(payload) != null
+            || p.getReferenceManager().getReferencesTo(payload).hasNext()
+            || p.getSymbolTable().getSymbols(payload).length != 0
+            || p.getFunctionManager().getFunctionContaining(payload) != null)
+          throw new IllegalArgumentException("Inline payload ownership/boundary conflict at " + payload);
+        if (payload.compareTo(t) >= 0 && payload.compareTo(t.add(body.length - 1)) <= 0)
+          throw new IllegalArgumentException("Inline payload overlaps helper implementation");
+      }
+      var continuation = a.add(4);
+      var containing = p.getListing().getInstructionContaining(continuation);
+      if ((containing != null && !containing.getAddress().equals(continuation))
+          || p.getListing().getDefinedDataContaining(continuation) != null)
+        throw new IllegalArgumentException("Continuation boundary conflict at " + continuation);
       for (int off = 1; off <= 4; off++) {
         var identity = ProgramMapping.staticToPhysical(p, a.add(off));
         if (identity.size() != 1
@@ -83,16 +108,62 @@ public record FarCallConvention(
               .toList();
       if (targets.size() != 1)
         throw new IllegalArgumentException("Ambiguous static far target at " + site);
-      results.add(site + " -> " + targets.get(0) + "; return " + a.add(4));
+      var targetInstruction = p.getListing().getInstructionContaining(targets.get(0));
+      if ((targetInstruction != null && !targetInstruction.getAddress().equals(targets.get(0)))
+          || p.getListing().getDefinedDataContaining(targets.get(0)) != null)
+        throw new IllegalArgumentException("Target boundary conflict at " + targets.get(0));
+      results.add(site + " -> " + targets.get(0) + "; may return " + a.add(4));
     }
     return List.copyOf(results);
   }
 
-  public List<String> apply(Program p, TaskMonitor monitor) throws Exception {
+  /** Immutable reviewed input; generated annotations do not establish executable semantics. */
+  public static final class Preview {
+    private final int version;
+    private final FarCallConvention convention;
+    private final String fingerprint;
+    private final List<String> findings;
+
+    private Preview(FarCallConvention convention, String fingerprint, List<String> findings) {
+      this.version = 1;
+      this.convention = convention;
+      this.fingerprint = fingerprint;
+      this.findings = List.copyOf(findings);
+    }
+
+    public List<String> findings() { return findings; }
+    public String fingerprint() { return fingerprint; }
+  }
+
+  public Preview previewReviewed(Program p, TaskMonitor monitor) throws Exception {
+    long modification = p.getModificationNumber();
+    String before = FarCallEvidence.capture(p, monitor);
     var findings = preview(p, monitor);
+    if (!before.equals(FarCallEvidence.capture(p, monitor))
+        || modification != p.getModificationNumber())
+      throw new IllegalStateException("Convention evidence changed during preview");
+    monitor.checkCancelled();
+    return new Preview(this, before, findings);
+  }
+
+  public List<String> apply(Program p, TaskMonitor monitor) throws Exception {
+    return apply(p, previewReviewed(p, monitor), monitor);
+  }
+
+  public List<String> apply(Program p, Preview reviewed, TaskMonitor monitor) throws Exception {
+    if (reviewed == null || reviewed.version != 1 || !equals(reviewed.convention))
+      throw new IllegalArgumentException("Preview belongs to a different convention");
+    var findings = reviewed.findings;
+    // Reject an already-stale review before opening a nested transaction: aborting a nested
+    // Ghidra transaction would also abort the caller's surrounding script transaction.
+    if (!reviewed.fingerprint.equals(FarCallEvidence.capture(p, monitor)))
+      throw new IllegalStateException("Stale convention evidence; preview again");
     int tx = p.startTransaction("Apply explicitly validated far-call convention");
     boolean success = false;
     try {
+      if (!reviewed.fingerprint.equals(FarCallEvidence.capture(p, monitor)))
+        throw new IllegalStateException("Stale convention evidence; preview again");
+      preview(p, monitor);
       AnalysisOwnership.remove(p, "far-call", monitor);
       var owned = new AnalysisOwnership.Group();
       for (String site : callSites) {
@@ -140,11 +211,12 @@ public record FarCallConvention(
                       "GhidraBoy Far Call",
                       "Fixed-bank caller; explicit SP="
                           + stackPointer
-                          + "; inline return +3; bank is not restored."));
+                          + "; continuation +3; bank is not restored; callee return is not proven."));
       }
       AnalysisOwnership.save(p, "far-call", owned);
       p.getOptions(ProgramMapping.OPTIONS)
           .setString("farCallConvention", ProgramMapping.JSON.toJson(this));
+      monitor.checkCancelled();
       success = true;
     } finally {
       p.endTransaction(tx, success);

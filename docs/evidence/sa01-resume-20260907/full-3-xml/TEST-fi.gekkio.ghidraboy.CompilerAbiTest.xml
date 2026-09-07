@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.CompilerAbiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:41:12.536Z" hostname="MacBookPro.localdomain" time="0.227">
+  <properties/>
+  <testcase name="native manual index resolves the bundled local reference()" classname="fi.gekkio.ghidraboy.CompilerAbiTest" time="0.001"/>
+  <testcase name="decompiler honors per function preserved BC across a call()" classname="fi.gekkio.ghidraboy.CompilerAbiTest" time="0.219"/>
+  <testcase name="per function profiles cover emitted ordinary variadic banked and explicit aggregate storage()" classname="fi.gekkio.ghidraboy.CompilerAbiTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

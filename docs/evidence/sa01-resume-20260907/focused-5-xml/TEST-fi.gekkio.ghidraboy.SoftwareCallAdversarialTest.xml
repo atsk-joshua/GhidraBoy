@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:09:18.444Z" hostname="MacBookPro.localdomain" time="2.34">
+  <properties/>
+  <testcase name="matched ordinary nested RET permits precise reversible false noReturn and CALL_RETURN repair()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.808"/>
+  <testcase name="nested returning witness never excuses an unrelated BRANCH override()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.023"/>
+  <testcase name="unprepared helper instructions remain explicit missing discovery evidence()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.014"/>
+  <testcase name="unprepared callee instructions remain explicit missing discovery evidence()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.014"/>
+  <testcase name="legacy far-call supplemental endpoint cannot silently become a helper endpoint()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.028"/>
+  <testcase name="same-space first continuation still needs banked view for later window crossing()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.385"/>
+  <testcase name="canonical local branches and conditional RET preserve raw flags registers and live return words()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="1.01"/>
+  <testcase name="continuation fetch permissions are proof premises rather than only later drift checks()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.011"/>
+  <testcase name="initial wrong primary ordinary CALL reference is rejected without silent normalization()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.01"/>
+  <testcase name="initial wrong CALL override is rejected before ownership can bless it()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.01"/>
+  <testcase name="later continuation fetches and instruction operand bytes also require immutable ROM()" classname="fi.gekkio.ghidraboy.SoftwareCallAdversarialTest" time="0.024"/>
+  <system-out><![CDATA[WARN  Decompiling 3ffd, pcode error at 4000: Could not follow disassembly flow into non-existing memory at 4000 (DecompileCallback)  
+WARN  Decompiling 3ffd, pcode error at 4000: Could not follow disassembly flow into non-existing memory at 4000 (DecompileCallback)  
+WARN  Decompiling 3ffd, pcode error at 4004: Could not follow disassembly flow into non-existing memory at 4004 (DecompileCallback)  
+WARN  Decompiling 3ffd, pcode error at 4000: Could not follow disassembly flow into non-existing memory at 4000 (DecompileCallback)  
+WARN  Decompiling 3ffd, pcode error at 4004: Could not follow disassembly flow into non-existing memory at 4004 (DecompileCallback)  
+WARN  Decompiling 3ffd, pcode error at 4000: Could not follow disassembly flow into non-existing memory at 4000 (DecompileCallback)  
+WARN  Decompiling 3ffd, pcode error at 4004: Could not follow disassembly flow into non-existing memory at 4004 (DecompileCallback)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

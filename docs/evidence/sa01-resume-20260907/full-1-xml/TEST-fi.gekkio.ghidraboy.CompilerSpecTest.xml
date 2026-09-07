@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.CompilerSpecTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:10:57.826Z" hostname="MacBookPro.localdomain" time="0.037">
+  <properties/>
+  <testcase name="compiler generated ordinary scalar storage matches explicit variants()" classname="fi.gekkio.ghidraboy.CompilerSpecTest" time="0.037"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

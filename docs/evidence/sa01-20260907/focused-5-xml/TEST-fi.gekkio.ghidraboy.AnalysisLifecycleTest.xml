@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.AnalysisLifecycleTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:49:03.592Z" hostname="MacBookPro.localdomain" time="1.094">
+  <properties/>
+  <testcase name="partial MBC3 ROM selection does not invent unrelated hardware state()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.378"/>
+  <testcase name="cancelled far application rolls back a previously changed site()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.167"/>
+  <testcase name="mapper control stores stay visible in decompiler and receive access annotations()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.324"/>
+  <testcase name="far convention rejects switchable callers and restores only owned overrides()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.064"/>
+  <testcase name="pre bus analysis snapshots reject without altering stored receipts()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.043"/>
+  <testcase name="cancellation after mutation rolls back apply discovery and removal()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.062"/>
+  <testcase name="apply reapply remove cleans unchanged additions and preserves edits()" classname="fi.gekkio.ghidraboy.AnalysisLifecycleTest" time="0.054"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

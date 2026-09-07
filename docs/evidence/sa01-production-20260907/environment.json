@@ -1,0 +1,16 @@
+{
+  "jdk": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+  "ghidra": "/private/tmp/ghidraboy-sa00/ghidra_12.1.3_PUBLIC",
+  "ghidraVersion": "12.1.3",
+  "officialArchiveSha256": "93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54",
+  "nativeIdentity": "12.1.3+ghidraboy.switch-recovery.2 mac_arm_64; no stock macOS native qualification",
+  "files": {
+    "Ghidra/Features/Decompiler/os/mac_arm_64/decompile": "5b736c3e9236667d35a732f226c99f0014736b9fe506147886a7f15ccb94939a",
+    "Ghidra/Features/Decompiler/lib/Decompiler.jar": "c3b5aa4b77ad19244fcc418b17e129a98a9bc23ebd876fa02b5f419145ec3132",
+    "Ghidra/Features/Decompiler/lib/Decompiler-src.zip": "c33a0ea114a425131c45ffc7ddd6172142c403813cc271ddece9b324fc78382b",
+    "Ghidra/Framework/SoftwareModeling/lib/SoftwareModeling.jar": "220c419c4d94d65faddecf77ba899213b66382c092a3753be56f3bb08112c96f",
+    "Ghidra/Framework/SoftwareModeling/lib/SoftwareModeling-src.zip": "fed5e47f0578b04597ead75fef77e2316a0458b9dbeeb1eb2cfa3d01472411b3",
+    "Ghidra/Features/Base/lib/Base.jar": "1b6b4063ed5c04c6137ecfc588e72ec7d795a57b07ab34324a8245e85d50a56c",
+    "Ghidra/Features/Base/lib/Base-src.zip": "a18a8650132670230cd12fdcfaa3e20605a1e1d24c07d033d20986fea2cff2d2"
+  }
+}

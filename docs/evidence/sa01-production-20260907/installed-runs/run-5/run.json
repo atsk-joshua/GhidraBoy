@@ -1,0 +1,117 @@
+{
+  "fixtureSha256": "2f5799c1655d7b51acbef16154006b8a0aa7b34bc3151807e2721c2f313473a1",
+  "extensionSha256": "83a802b010359be103f7f444c7db94bfa77750312211160c4e626c55780dbfc9",
+  "scriptSha256": "891583842e8fd50b860cd99246fa371ba4f841b0c93e0026920b798b3d355b8e",
+  "processes": [
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-k9411boh/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run5/projects",
+        "sa01-production",
+        "-import",
+        "/private/tmp/ghidraboy-sa01-production-run5/production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run5/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "prepare",
+        "/private/tmp/ghidraboy-sa01-production-run5",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run5"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_PREPARE_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-k9411boh/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run5/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run5/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run5"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-k9411boh/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run5/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run5/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "reapply",
+        "/private/tmp/ghidraboy-sa01-production-run5",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-production-run5"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_REAPPLY_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-k9411boh/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run5/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run5/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "edit",
+        "/private/tmp/ghidraboy-sa01-production-run5"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_EDIT_PASS"
+      ],
+      "passed": true
+    },
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-production-k9411boh/ghidra/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-production-run5/projects",
+        "sa01-production",
+        "-process",
+        "production-mbc3-v1.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-production-run5/scripts",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "edited-reopen",
+        "/private/tmp/ghidraboy-sa01-production-run5"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_EDITED_REOPEN_PASS"
+      ],
+      "passed": false
+    }
+  ]
+}

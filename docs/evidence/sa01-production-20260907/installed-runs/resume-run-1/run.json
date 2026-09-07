@@ -1,0 +1,45 @@
+{
+  "fixtureSha256": "b7e0403c9c8c6cfb182be91bb771016b4c588f4793e8e271c330f57f988bd5b8",
+  "extensionSha256": "e14553e37e280212c17406d78c5405624bc6eac0bc3b76189419dbbd35deee67",
+  "scriptSha256": "7ed3cc79a889bc4f52d5a122ace7c8c14c757793bfc3effe30414cb4d6a07ae6",
+  "driverSha256": "9eae668d805ee9b9a9d3fa1ccc5dfbcb7565ce62bbc0a364281c5782fa712fdf",
+  "ghidra": "/private/tmp/ghidraboy-sa01-resume-install-1/ghidra_12.1.3_PUBLIC",
+  "jdk": "/opt/homebrew/Cellar/openjdk@21/21.0.12.1/libexec/openjdk.jdk/Contents/Home",
+  "extension": "/private/tmp/ghidraboy-sa01-resume-install-1/ghidra_12.1.3_PUBLIC/Ghidra/Extensions/GhidraBoy",
+  "discovery": "prepared instruction fixtures; pre-prepare missing-instruction rejection recorded",
+  "nativeDecompilerSha256": "5b736c3e9236667d35a732f226c99f0014736b9fe506147886a7f15ccb94939a",
+  "ghidraApplicationPropertiesSha256": "fb9b6292c801e4a18b7c20829437d3b18b2241b273aea9b1cbdebdf3e5d0dc15",
+  "jdkReleaseSha256": "7b6f4e84249287203d8e1857254307a6b2dc0643b1efdeef5fa2aeaf791866f0",
+  "processes": [
+    {
+      "command": [
+        "/private/tmp/ghidraboy-sa01-resume-install-1/ghidra_12.1.3_PUBLIC/support/analyzeHeadless",
+        "/private/tmp/ghidraboy-sa01-resume-run-1/projects",
+        "sa01-production",
+        "-import",
+        "/private/tmp/ghidraboy-sa01-resume-run-1/production-mbc3-v2.gb",
+        "-scriptPath",
+        "/private/tmp/ghidraboy-sa01-resume-run-1/scripts",
+        "-preScript",
+        "GhidraBoySa01Production.java",
+        "prepare",
+        "/private/tmp/ghidraboy-sa01-resume-run-1",
+        "-postScript",
+        "GhidraBoySa01Production.java",
+        "verify",
+        "/private/tmp/ghidraboy-sa01-resume-run-1"
+      ],
+      "exitCode": 0,
+      "markers": [
+        "SA01_PRODUCTION_PREPARE_PASS",
+        "SA01_PRODUCTION_VERIFY_PASS"
+      ],
+      "expectedRejections": [],
+      "unexpectedErrors": [
+        "ERROR REPORT SCRIPT ERROR: GhidraBoySa01Production.java : The class could not be found. It must be the public class of the .java file: GhidraBoySa01Production not found by 343629a7 [1] (HeadlessAnalyzer) ghidra.app.script.GhidraScriptLoadException: The class could not be found. It must be the public class of the .java file: GhidraBoySa01Production not found by 343629a7 [1]",
+        "ERROR REPORT SCRIPT ERROR: GhidraBoySa01Production.java : The class could not be found. It must be the public class of the .java file: GhidraBoySa01Production not found by 343629a7 [1] (HeadlessAnalyzer) ghidra.app.script.GhidraScriptLoadException: The class could not be found. It must be the public class of the .java file: GhidraBoySa01Production not found by 343629a7 [1]"
+      ],
+      "passed": false
+    }
+  ]
+}

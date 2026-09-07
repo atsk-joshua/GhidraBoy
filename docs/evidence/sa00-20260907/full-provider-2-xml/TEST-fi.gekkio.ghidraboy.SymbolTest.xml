@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SymbolTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:09:58.184Z" hostname="MacBookPro.localdomain" time="0.004">
+  <properties/>
+  <testcase name="invalid names encoding and ranges are diagnosed()" classname="fi.gekkio.ghidraboy.SymbolTest" time="0.001"/>
+  <testcase name="UTF8 comments duplicates BOOT any bank wide bank and local attachment()" classname="fi.gekkio.ghidraboy.SymbolTest" time="0.001"/>
+  <testcase name="Unicode escapes identify the same character and all private metadata is ignored()" classname="fi.gekkio.ghidraboy.SymbolTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -53,13 +53,27 @@ class BuildInputTests(unittest.TestCase):
             lock = root / 'tools/dependencies.json'
             lock.write_text(json.dumps({'primaryGhidra': {'version': 'test', 'sha256': 'digest'},
                 'nativeDecompilerPatch': {'dependencyVersion': 'native-test', 'patchSha256': 'patch', 'pristineSourceLockSha256': 'sources'},
+                'debuggerJavaPatch': {'dependencyVersion': 'java-test', 'baseGhidraVersion': 'test',
+                    'jarSha256': 'jar', 'patchSha256': 'java-patch', 'patch': 'build-only.patch',
+                    'baselineSourceArchiveSha256': 'build-only-source'},
                 'debuggerRuntime': {'sameboy': {'commit': 'revision'}}}))
             view = runtime_dependencies(debugger)
             self.assertEqual(view['ghidra']['version'], 'test')
-            self.assertEqual(view['native_decompiler']['version'], 'native-test')
+            self.assertEqual(view['native_decompiler'], dict(version='native-test',
+                patchSha256='patch', sourceLockSha256='sources', baseGhidraVersion='test'))
+            self.assertEqual(view['ghidra']['archive_sha256'], 'digest')
+            self.assertEqual(view['debugger_java'], dict(dependencyVersion='java-test',
+                baseGhidraVersion='test', jarSha256='jar', patchSha256='java-patch'))
+            self.assertEqual(view['sameboy'], {'commit': 'revision'})
+            # A stale generated view must not override the canonical source lock.
+            (debugger / 'dependencies.lock.json').write_text('{}')
+            self.assertEqual(runtime_dependencies(debugger), view)
             (debugger / 'dependencies.lock.json').write_text(json.dumps(view))
             lock.unlink()
             self.assertEqual(runtime_dependencies(debugger), view)
+            (debugger / 'dependencies.lock.json').unlink()
+            with self.assertRaises(FileNotFoundError):
+                runtime_dependencies(debugger)
 
     def test_native_marker_cannot_hide_wrong_platform_or_changed_binary(self):
         with tempfile.TemporaryDirectory() as directory:

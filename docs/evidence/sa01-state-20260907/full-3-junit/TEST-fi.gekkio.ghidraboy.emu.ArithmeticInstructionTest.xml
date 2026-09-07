@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.emu.ArithmeticInstructionTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:38:39.624Z" hostname="MacBookPro.localdomain" time="1.574">
+  <properties/>
+  <testcase name="SBC exhaustive inputs and carry()" classname="fi.gekkio.ghidraboy.emu.ArithmeticInstructionTest" time="0.769"/>
+  <testcase name="DAA exhaustive including non BCD inputs()" classname="fi.gekkio.ghidraboy.emu.ArithmeticInstructionTest" time="0.017"/>
+  <testcase name="overlapping arithmetic operands()" classname="fi.gekkio.ghidraboy.emu.ArithmeticInstructionTest" time="0.008"/>
+  <testcase name="ADC exhaustive inputs and carry()" classname="fi.gekkio.ghidraboy.emu.ArithmeticInstructionTest" time="0.779"/>
+  <testcase name="POP AF normalizes flags()" classname="fi.gekkio.ghidraboy.emu.ArithmeticInstructionTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

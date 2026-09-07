@@ -1,3 +1,9 @@
+> Historical integration plan. The standalone-checkout retention requirement is superseded by [repository ownership](repository-ownership.md). Current development uses GhidraBoy and optional private GhiBW3 only.
+
+> Current priority is defined by the [roadmap](roadmap.md): static accuracy comes
+> first. M0–M10 and all original gates below remain retained; reprioritization
+> does not remove requirements or change historical qualification results.
+
 # GhiGBC → GhidraBoy integration plan
 
 Status: implementation in progress; executed checks and remaining gates are tracked in the [execution ledger](integration/progress.md) and [gate status](integration/status.json). Prepared 2026-09-05 against the local checkouts below. Requirements below do not themselves establish completion. Milestone IDs in this document are independent of the earlier GhiBW3 suite integration milestones.

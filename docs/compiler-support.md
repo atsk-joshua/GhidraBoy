@@ -1,5 +1,10 @@
 # Compiler support
 
+These are current bounded profiles. The [roadmap](roadmap.md) prioritizes broader
+software-call semantics and [planned ABI/data requirements](static-analysis-spec.md#compiler-cartridge-and-saved-work-contracts).
+Ghidra parameter model rules will be evaluated against emitted-code fixtures
+before expanding custom allocation; no replacement is qualified yet.
+
 Assembly `default` remains the import default. CPU pointers remain 16 bits;
 far pointers are separate data. No ABI is inferred from a ROM title or date.
 `CompilerAbi` and `GhidraBoyAbi.java` apply verified storage **per function**,
@@ -54,3 +59,33 @@ historical compiler releases, or general banked-call helpers. Inspect compiler
 output and use explicit storage for those cases. The banked-callee profile is not
 a far-call override. The separately supported MBC3 trampoline has narrower fixed
 caller requirements; see analysis.md.
+
+Future helper recognition must distinguish current register-target banked calls,
+legacy inline-payload calls, restoring/nonrestoring wrappers and their flag effects.
+GBDK 4.5.0's FAR_PTR container is 32 bits; a three-byte bank/address record is not
+a universal far-pointer ABI. Reconstructed game assembly illustrates additional
+conventions but does not identify the original toolchain. See
+[versioned implementations and metadata sources](references.md#game-construction-and-metadata).
+
+
+Finite `SoftwareCallModel` templates now distinguish inline/register target
+extraction and three return-bank policies, including restoration that preserves
+callee F while clobbering A/BC. These self-authored templates are explicit contracts, not recognized SDCC/GBDK
+ABIs. The production integration below does not change compiler profiles or
+default prototypes. Versioned compiler-helper qualification remains open under
+SA-05; SA-01 status is tracked by its completion audit.
+
+All existing compiler definitions now install `ghidraboy_software_call_v1` through
+the provider injection library. It is selected by reviewed Program configuration,
+not by choosing a compiler profile. The finite call templates still do not identify
+GBDK/SDCC binaries. Dynamic per-site effects preserve independently derived callee
+flags/registers and real frame operations under explicit premises; they do not
+replace the default ABI globally. Contradictory target fixups, thunks, inline
+contracts or stack cleanup require proof and review rather than guessed prototypes.
+
+
+The additional neutral `ghidraboy_may_return_v1` fixup is an identity CALL backed
+by a current code-derived return witness. It protects may-return facts without
+introducing an ABI. These new paths are still under qualification; in particular,
+canonical banked root decompilation and final installed/normal-window gates are
+not complete. Compiler helper/ABI breadth is not expanded by this checkpoint.

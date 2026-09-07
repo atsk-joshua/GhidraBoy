@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallValidationTest" tests="5" skipped="0" failures="1" errors="0" timestamp="2026-09-07T04:49:06.363Z" hostname="MacBookPro.localdomain" time="0.052">
+  <properties/>
+  <testcase name="forged preview configuration or frame does not validate()" classname="fi.gekkio.ghidraboy.SoftwareCallValidationTest" time="0.018"/>
+  <testcase name="entry premises cannot contradict known Program context()" classname="fi.gekkio.ghidraboy.SoftwareCallValidationTest" time="0.006"/>
+  <testcase name="Program preview consumes real payload and preserves listing()" classname="fi.gekkio.ghidraboy.SoftwareCallValidationTest" time="0.007"/>
+  <testcase name="reference only edits invalidate preview and payload references conflict()" classname="fi.gekkio.ghidraboy.SoftwareCallValidationTest" time="0.01"/>
+  <testcase name="helper byte mutation invalidates saved preview and new recognition()" classname="fi.gekkio.ghidraboy.SoftwareCallValidationTest" time="0.011">
+    <failure message="ghidra.program.model.mem.MemoryAccessException: Memory change conflicts with instruction at 0200" type="ghidra.program.model.mem.MemoryAccessException">ghidra.program.model.mem.MemoryAccessException: Memory change conflicts with instruction at 0200
+	at app//ghidra.program.database.mem.MemoryMapDB.checkRangeForInstructions(MemoryMapDB.java:2263)
+	at app//ghidra.program.database.mem.MemoryMapDB.checkMemoryWriteNonMappedBlock(MemoryMapDB.java:440)
+	at app//ghidra.program.database.mem.MemoryMapDB.checkMemoryWrite(MemoryMapDB.java:396)
+	at app//ghidra.program.database.mem.MemoryBlockDB.putByte(MemoryBlockDB.java:389)
+	at app//ghidra.program.database.mem.MemoryMapDB.setByte(MemoryMapDB.java:1645)
+	at app//fi.gekkio.ghidraboy.SoftwareCallValidationTest.helper_byte_mutation_invalidates_saved_preview_and_new_recognition$lambda$11(SoftwareCallValidationTest.kt:73)
+	at app//fi.gekkio.ghidraboy.SoftwareCallValidationTest.fixture(SoftwareCallValidationTest.kt:44)
+	at app//fi.gekkio.ghidraboy.SoftwareCallValidationTest.helper byte mutation invalidates saved preview and new recognition(SoftwareCallValidationTest.kt:71)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.CartridgeEntryTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:30:09.281Z" hostname="MacBookPro.localdomain" time="0.13">
+  <properties/>
+  <testcase name="salvage raw and boot inputs do not claim cartridge startup()" classname="fi.gekkio.ghidraboy.CartridgeEntryTest" time="0.011"/>
+  <testcase name="entry seed respects later marked data and existing user instructions()" classname="fi.gekkio.ghidraboy.CartridgeEntryTest" time="0.107"/>
+  <testcase name="cartridge startup gets code despite ordinary subroutine rejection()" classname="fi.gekkio.ghidraboy.CartridgeEntryTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

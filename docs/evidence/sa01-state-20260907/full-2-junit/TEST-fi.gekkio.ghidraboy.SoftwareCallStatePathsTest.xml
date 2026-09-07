@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStatePathsTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:31:31.165Z" hostname="MacBookPro.localdomain" time="0.028">
+  <properties/>
+  <testcase name="nested calls restore prior bank before consuming each live return word()" classname="fi.gekkio.ghidraboy.SoftwareCallStatePathsTest" time="0.006"/>
+  <testcase name="two banked data reads at the same CPU address retain separate storage identities()" classname="fi.gekkio.ghidraboy.SoftwareCallStatePathsTest" time="0.005"/>
+  <testcase name="conditional selector paths reach the same CPU PC with different physical results()" classname="fi.gekkio.ghidraboy.SoftwareCallStatePathsTest" time="0.011"/>
+  <testcase name="revisited CPU instruction has two physical sources and both architectural effects survive()" classname="fi.gekkio.ghidraboy.SoftwareCallStatePathsTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

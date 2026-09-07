@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" tests="7" skipped="0" failures="1" errors="0" timestamp="2026-09-07T20:18:54.508Z" hostname="MacBookPro.localdomain" time="1.594">
+  <properties/>
+  <testcase name="later nonlocal exit across two native frames preserves actual destination and adds no second pop()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.033">
+    <failure message="java.lang.IllegalArgumentException: Collection contains more than one matching element." type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Collection contains more than one matching element.
+	at fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.later_nonlocal_exit_across_two_native_frames_preserves_actual_destination_and_adds_no_second_pop$physical$28(SoftwareCallStateEntryIntegrityTest.kt:560)
+	at fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.access$later_nonlocal_exit_across_two_native_frames_preserves_actual_destination_and_adds_no_second_pop$physical$28(SoftwareCallStateEntryIntegrityTest.kt:27)
+	at fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest.later nonlocal exit across two native frames preserves actual destination and adds no second pop(SoftwareCallStateEntryIntegrityTest.kt:300)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="nested custom storage is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.061"/>
+  <testcase name="consumed byte drift rejects cached context selection without rebaselining dependencies()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.328"/>
+  <testcase name="renaming and commenting canonical entry does not strand owned protocol after removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.313"/>
+  <testcase name="selection restores original comment and convention after clean removal()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.368"/>
+  <testcase name="cancelled selection after comment mutation rolls back registry ownership and visible context()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.454"/>
+  <testcase name="nested explicit return contract is rejected before any reviewed mutation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateEntryIntegrityTest" time="0.034"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.emu.TransferRotateInstructionTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:58:53.086Z" hostname="MacBookPro.localdomain" time="0.014">
+  <properties/>
+  <testcase name="accumulator rotates clear zero and preserve unrelated registers()" classname="fi.gekkio.ghidraboy.emu.TransferRotateInstructionTest" time="0.011"/>
+  <testcase name="LD register matrix uses old HL for aliased memory and preserves unaffected state()" classname="fi.gekkio.ghidraboy.emu.TransferRotateInstructionTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,444 @@
+{
+  "version": "software-call-registry-4",
+  "executionConditions": "Synchronous SM83 model: results require no asynchronous interrupt/DMA interference or untracked memory changes, in addition to the supplied register, stack and mapper premises. These are explicit conditions, not an all-input ABI or whole-ROM proof.",
+  "sites": [
+    {
+      "address": "0150",
+      "canonicalAddress": "0150",
+      "target": "rom1::4100",
+      "configuration": {
+        "callCpu": 336,
+        "template": {
+          "family": "INLINE_RET",
+          "helperCpu": 512,
+          "payloadLength": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 0,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 0
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "0160",
+      "canonicalAddress": "0160",
+      "target": "rom2::4100",
+      "configuration": {
+        "callCpu": 352,
+        "template": {
+          "family": "INLINE_RET",
+          "helperCpu": 512,
+          "payloadLength": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 0,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 0
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "0170",
+      "canonicalAddress": "0170",
+      "target": "rom2::4600",
+      "configuration": {
+        "callCpu": 368,
+        "template": {
+          "family": "REGISTER_JP",
+          "helperCpu": 768,
+          "payloadLength": 0
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 17920
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "0180",
+      "canonicalAddress": "0180",
+      "target": "rom2::4900",
+      "configuration": {
+        "callCpu": 384,
+        "template": {
+          "family": "CONSTANT_REGISTER_JP",
+          "helperCpu": 832,
+          "payloadLength": 0,
+          "constantRaw": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 18688
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "0190",
+      "canonicalAddress": "0190",
+      "target": "rom2::4a00",
+      "configuration": {
+        "callCpu": 400,
+        "template": {
+          "family": "REGISTER_JP",
+          "helperCpu": 768,
+          "payloadLength": 0
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 18944
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "gb_call_view_291_4200_1::4200",
+      "canonicalAddress": "rom1::4200",
+      "target": "rom2::4300",
+      "executionAlias": "gb_call_view_291_4200_1::4200",
+      "configuration": {
+        "callCpu": 16896,
+        "template": {
+          "family": "REGISTER_JP",
+          "helperCpu": 40,
+          "payloadLength": 0
+        },
+        "transfer": "HARDWARE_RST",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 0,
+          "bc": 0,
+          "de": 0,
+          "hl": 17152
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "gb_call_view_291_4500_1::4500",
+      "canonicalAddress": "rom1::4500",
+      "target": "rom2::4300",
+      "executionAlias": "gb_call_view_291_4500_1::4500",
+      "configuration": {
+        "callCpu": 17664,
+        "template": {
+          "family": "INLINE_RET",
+          "helperCpu": 512,
+          "payloadLength": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 0,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 0
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "gb_call_view_291_4800_1::4800",
+      "canonicalAddress": "rom1::4800",
+      "target": "rom2::4400",
+      "executionAlias": "gb_call_view_291_4800_1::4800",
+      "configuration": {
+        "callCpu": 18432,
+        "template": {
+          "family": "CONSTANT_REGISTER_JP",
+          "helperCpu": 832,
+          "payloadLength": 0,
+          "constantRaw": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 17408
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "rom1::4200",
+      "canonicalAddress": "rom1::4200",
+      "target": "rom2::4300",
+      "executionAlias": "gb_call_view_291_4200_1::4200",
+      "configuration": {
+        "callCpu": 16896,
+        "template": {
+          "family": "REGISTER_JP",
+          "helperCpu": 40,
+          "payloadLength": 0
+        },
+        "transfer": "HARDWARE_RST",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 0,
+          "bc": 0,
+          "de": 0,
+          "hl": 17152
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "rom1::4500",
+      "canonicalAddress": "rom1::4500",
+      "target": "rom2::4300",
+      "executionAlias": "gb_call_view_291_4500_1::4500",
+      "configuration": {
+        "callCpu": 17664,
+        "template": {
+          "family": "INLINE_RET",
+          "helperCpu": 512,
+          "payloadLength": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 0,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 0
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "rom1::4700",
+      "canonicalAddress": "rom1::4700",
+      "target": "rom2::4400",
+      "configuration": {
+        "callCpu": 18176,
+        "template": {
+          "family": "RESTORING_REGISTER_JP",
+          "helperCpu": 800,
+          "payloadLength": 0
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 1,
+          "f": 128,
+          "bc": 2,
+          "de": 0,
+          "hl": 17408
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "rom1::4800",
+      "canonicalAddress": "rom1::4800",
+      "target": "rom2::4400",
+      "executionAlias": "gb_call_view_291_4800_1::4800",
+      "configuration": {
+        "callCpu": 18432,
+        "template": {
+          "family": "CONSTANT_REGISTER_JP",
+          "helperCpu": 832,
+          "payloadLength": 0,
+          "constantRaw": 3
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49408,
+        "registers": {
+          "a": 2,
+          "f": 128,
+          "bc": 0,
+          "de": 0,
+          "hl": 17408
+        },
+        "mapper": {
+          "romLow": 1,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    },
+    {
+      "address": "rom2::4608",
+      "canonicalAddress": "rom2::4608",
+      "target": "rom3::4300",
+      "configuration": {
+        "callCpu": 17928,
+        "template": {
+          "family": "RESTORING_REGISTER_JP",
+          "helperCpu": 800,
+          "payloadLength": 0
+        },
+        "transfer": "HARDWARE_CALL",
+        "callerSp": 49406,
+        "registers": {
+          "a": 2,
+          "f": 128,
+          "bc": 3,
+          "de": 0,
+          "hl": 17152
+        },
+        "mapper": {
+          "romLow": 2,
+          "romHigh": 0,
+          "mode": 0,
+          "ramSelect": 0,
+          "ramEnabled": false,
+          "vbk": 0,
+          "svbk": 1,
+          "latch": 0
+        }
+      }
+    }
+  ],
+  "nativeFunctions": [
+    "01b0",
+    "0360",
+    "rom1::4100",
+    "rom2::4100",
+    "rom2::4300",
+    "rom2::4400",
+    "rom2::4600",
+    "rom2::4900",
+    "rom2::4a00",
+    "rom3::4300"
+  ],
+  "dependencies": "81ca36e902cd9e9f2e5eee6ad08ce8627491c56ddaf8dd6e682d4794484e707c"
+}

@@ -20,11 +20,9 @@ C unchanged and checks all 256 byte inputs and exactly sixteen recovered targets
 Both native dependency builds require these checks alongside the earlier
 normalized-switch regression.
 
-Optional hardware execution belongs to GhiGBC's
-`tests/nibble_switch_oracle.py`. The static verifier's `--ghigbc` option invokes
-that separate driver and compares its result. Static C-only builds do not import
-GhiGBC or require an emulator.
-
-Game-specific addresses, saved-reference findings and corpus deltas are tracked
-in GhiBW3's `docs/decompilation/NIBBLE_SWITCH_RESEARCH.md` and `SWITCH2_REPORT.md`.
-They are not embedded in the generic recovery algorithm or its fixtures.
+Optional hardware execution uses `debugger/tests/nibble_switch_oracle.py`
+from the repository root. The static verifier's `--ghigbc` option retains its
+compatible name and selects the integrated `debugger/` directory. Static C-only
+builds do not import the debugger or require an emulator. These self-authored
+fixtures validate the generic recovery rule; they do not establish whole-ROM
+semantic acceptance for an arbitrary game.

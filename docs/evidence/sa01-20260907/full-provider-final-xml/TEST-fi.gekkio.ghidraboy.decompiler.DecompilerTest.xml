@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.decompiler.DecompilerTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-07T05:03:41.139Z" hostname="MacBookPro.localdomain" time="2.778">
+  <properties/>
+  <testcase name="memcpy()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.237"/>
+  <testcase name="memset()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.223"/>
+  <testcase name="sla8_to_16()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.226"/>
+  <testcase name="DAA decompilation with unconstrained flags has no warnings()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.239"/>
+  <testcase name="Github issue 10()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.241"/>
+  <testcase name="upper nibble popcount()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.234"/>
+  <testcase name="[1] true" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.226"/>
+  <testcase name="[2] false" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.224"/>
+  <testcase name="balanced register restores have no unreachable pcode blocks()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.218"/>
+  <testcase name="simple decompilation works()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.232"/>
+  <testcase name="read_joypad_state()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.242"/>
+  <testcase name="DAA decompilation()" classname="fi.gekkio.ghidraboy.decompiler.DecompilerTest" time="0.235"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

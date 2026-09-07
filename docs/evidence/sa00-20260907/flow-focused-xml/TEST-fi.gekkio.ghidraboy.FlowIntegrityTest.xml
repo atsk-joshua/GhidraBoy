@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.FlowIntegrityTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:07:18.780Z" hostname="MacBookPro.localdomain" time="0.164">
+  <properties/>
+  <testcase name="reference-only mutations reproduce omitted dependency and invalidate apply and discovery()" classname="fi.gekkio.ghidraboy.FlowIntegrityTest" time="0.121"/>
+  <testcase name="reference change during preview reports input changed with no proven candidates()" classname="fi.gekkio.ghidraboy.FlowIntegrityTest" time="0.013"/>
+  <testcase name="supplemental generated data never supplies flow proof or invalidates reapplication()" classname="fi.gekkio.ghidraboy.FlowIntegrityTest" time="0.03"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

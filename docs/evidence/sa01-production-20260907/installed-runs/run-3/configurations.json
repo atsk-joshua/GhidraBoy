@@ -1,0 +1,83 @@
+[
+  {
+    "callCpu": 336,
+    "template": {
+      "family": "INLINE_RET",
+      "helperCpu": 512,
+      "payloadLength": 3
+    },
+    "transfer": "HARDWARE_CALL",
+    "callerSp": 49408,
+    "registers": {
+      "a": 0,
+      "f": 128,
+      "bc": 0,
+      "de": 0,
+      "hl": 0
+    },
+    "mapper": {
+      "romLow": 1,
+      "romHigh": 0,
+      "mode": 0,
+      "ramSelect": 0,
+      "ramEnabled": false,
+      "vbk": 0,
+      "svbk": 1,
+      "latch": 0
+    }
+  },
+  {
+    "callCpu": 352,
+    "template": {
+      "family": "INLINE_RET",
+      "helperCpu": 512,
+      "payloadLength": 3
+    },
+    "transfer": "HARDWARE_CALL",
+    "callerSp": 49408,
+    "registers": {
+      "a": 0,
+      "f": 128,
+      "bc": 0,
+      "de": 0,
+      "hl": 0
+    },
+    "mapper": {
+      "romLow": 1,
+      "romHigh": 0,
+      "mode": 0,
+      "ramSelect": 0,
+      "ramEnabled": false,
+      "vbk": 0,
+      "svbk": 1,
+      "latch": 0
+    }
+  },
+  {
+    "callCpu": 16896,
+    "template": {
+      "family": "REGISTER_JP",
+      "helperCpu": 40,
+      "payloadLength": 0
+    },
+    "transfer": "HARDWARE_RST",
+    "callerSp": 49408,
+    "registers": {
+      "a": 2,
+      "f": 0,
+      "bc": 0,
+      "de": 0,
+      "hl": 17152
+    },
+    "mapper": {
+      "romLow": 1,
+      "romHigh": 0,
+      "mode": 0,
+      "ramSelect": 0,
+      "ramEnabled": false,
+      "vbk": 0,
+      "svbk": 1,
+      "latch": 0
+    }
+  }
+]

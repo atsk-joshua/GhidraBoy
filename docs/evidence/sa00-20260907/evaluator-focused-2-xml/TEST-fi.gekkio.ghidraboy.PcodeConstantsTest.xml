@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.PcodeConstantsTest" tests="4" skipped="0" failures="4" errors="0" timestamp="2026-09-07T04:04:19.507Z" hostname="MacBookPro.localdomain" time="0.004">
+  <properties/>
+  <testcase name="integer flags logic and unsigned arithmetic follow pcode contract()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.002">
+    <failure message="java.util.NoSuchElementException: Array contains no element matching the predicate." type="java.util.NoSuchElementException">java.util.NoSuchElementException: Array contains no element matching the predicate.
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:138)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:21)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.integer flags logic and unsigned arithmetic follow pcode contract(PcodeConstantsTest.kt:85)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="overlapping writes preserve independent bytes and unknowns kill dependencies()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.001">
+    <failure message="java.util.NoSuchElementException: Array contains no element matching the predicate." type="java.util.NoSuchElementException">java.util.NoSuchElementException: Array contains no element matching the predicate.
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:138)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.overlapping writes preserve independent bytes and unknowns kill dependencies(PcodeConstantsTest.kt:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="extension truncation concatenation and wrap have explicit widths()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.0">
+    <failure message="java.util.NoSuchElementException: Array contains no element matching the predicate." type="java.util.NoSuchElementException">java.util.NoSuchElementException: Array contains no element matching the predicate.
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:138)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:21)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.extension truncation concatenation and wrap have explicit widths(PcodeConstantsTest.kt:44)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="shifts respect operand width and unsigned counts without host modulo()" classname="fi.gekkio.ghidraboy.PcodeConstantsTest" time="0.001">
+    <failure message="java.util.NoSuchElementException: Array contains no element matching the predicate." type="java.util.NoSuchElementException">java.util.NoSuchElementException: Array contains no element matching the predicate.
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.reg(PcodeConstantsTest.kt:138)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.evaluate(PcodeConstantsTest.kt:21)
+	at fi.gekkio.ghidraboy.PcodeConstantsTest.shifts respect operand width and unsigned counts without host modulo(PcodeConstantsTest.kt:33)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

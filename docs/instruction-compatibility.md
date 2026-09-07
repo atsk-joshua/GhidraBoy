@@ -49,11 +49,11 @@ mismatches, and no script errors. A negative control using the withdrawn
 specialized-POP provider fails this test on persisted POP AF p-code; it must
 remain a failing diagnostic, never an accepted compatibility result.
 
-This compact corpus does not replace the existing annotated-Program gate. The
-GBW3 workflow additionally freezes and compares all 84,485 original instruction
-identities against its original-provider baseline, freshly decodes every saved
-instruction under the candidate, and validates save/reopen without changing
-user annotations. Unexpected old/new p-code differences need explanation;
-intended POP/DAA semantic improvements are distinct from saved/fresh decode
-mismatches, which must be zero. Do not delete or redisassemble existing student
-instructions merely to make the preservation comparison pass.
+This compact corpus does not replace validation of a user's annotated Program.
+For a migration, freeze the original instruction roster and compare saved
+instructions against fresh decoding under the candidate, then validate save/reopen
+on a copy. Unexpected old/new p-code differences need explanation; intended
+semantic improvements are distinct from saved/fresh decode mismatches, which
+must be zero. Do not delete or redisassemble existing instructions merely to
+make a preservation comparison pass. Retain the complete original Program/GZF;
+an instruction inventory is not a Program backup.

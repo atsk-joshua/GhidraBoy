@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-07T19:46:18.037Z" hostname="MacBookPro.localdomain" time="3.768">
+  <properties/>
+  <testcase name="later configured restoring call keeps physical target wrapper effects and canonical navigation()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.621"/>
+  <testcase name="later ordinary callee revisits CPU under another bank and preserves internal memory effect()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.758"/>
+  <testcase name="public canonical and derived roots retain repeated CPU fetches from competing banks()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.392"/>
+  <testcase name="later configured constant-bank return preserves flags and actual wrapper bank()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.531"/>
+  <testcase name="later manual software transfer preserves physical call and selected return bank()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.517"/>
+  <testcase name="later ordinary call retains physical native target register flag and memory results()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.411"/>
+  <testcase name="banked data mutation invalidates paired roots and same interface sees reviewed new values()" classname="fi.gekkio.ghidraboy.SoftwareCallStateContinuationApplicationTest" time="0.538"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

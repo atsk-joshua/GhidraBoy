@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallModelTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:19:04.800Z" hostname="MacBookPro.localdomain" time="0.004">
+  <properties/>
+  <testcase name="inline RET models caller push pop payload adjustment and target push pop()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.0"/>
+  <testcase name="payload and frame boundaries cannot be guessed()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.001"/>
+  <testcase name="return requires balanced SP and live frame contents()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.001"/>
+  <testcase name="nested software frames balance independently without consuming outer bytes()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.0"/>
+  <testcase name="return policies preserve callee flags and expose real wrapper register clobbers()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.001"/>
+  <testcase name="modified implementation unknown mapper and unproven selector fail validation()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.0"/>
+  <testcase name="nonlocal unknown and nonreturning exits never synthesize a return()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.001"/>
+  <testcase name="effect stream orders payload reads selector write and actual stack traffic()" classname="fi.gekkio.ghidraboy.SoftwareCallModelTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

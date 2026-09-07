@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallInjectionTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:09:44.587Z" hostname="MacBookPro.localdomain" time="0.745">
+  <properties/>
+  <testcase name="physical overlay call survives ordinary native transport after resolving reference precedence()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionTest" time="0.44"/>
+  <testcase name="callfixup retains hardware frame and adjusted continuation through repeated analysis()" classname="fi.gekkio.ghidraboy.SoftwareCallInjectionTest" time="0.305"/>
+  <system-out><![CDATA[SA01_DEFAULT_PRIMARY_NATIVE completed=true error= c=
+void physical_caller(void)
+
+{
+  func_0x4000();
+  return;
+}
+
+
+SA01_PHYSICAL_NATIVE_CALL target=rom2::4000 spaceId=785 expected=rom2::4000 expectedSpaceId=785
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

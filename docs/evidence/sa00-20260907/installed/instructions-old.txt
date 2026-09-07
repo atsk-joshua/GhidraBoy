@@ -1,0 +1,4 @@
+mode=seed
+instructions=501
+mismatches=0
+

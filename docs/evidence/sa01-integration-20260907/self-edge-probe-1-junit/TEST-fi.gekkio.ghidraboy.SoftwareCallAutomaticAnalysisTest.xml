@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="fi.gekkio.ghidraboy.SoftwareCallAutomaticAnalysisTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T22:39:39.274Z" hostname="MacBookPro.localdomain" time="4.236">
+  <properties/>
+  <testcase name="edited fresh canonical source survives removal while owned redirect clears and alias retires()" classname="fi.gekkio.ghidraboy.SoftwareCallAutomaticAnalysisTest" time="0.688"/>
+  <testcase name="fresh label-only caller remains paired and natively valid after full ordinary automatic analysis()" classname="fi.gekkio.ghidraboy.SoftwareCallAutomaticAnalysisTest" time="3.547"/>
+  <system-out><![CDATA[WARN  Decompiling gb_call_view_291_4500_state1::4501, pcode error at 4507: Could not follow disassembly flow into non-existing memory at 4507 (DecompileCallback)  
+INFO  Packed database cache: /var/tmp/joshuahansen-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Applied data type archive: generic_clib (ApplyDataArchiveAnalyzer)  
+INFO  -----------------------------------------------------
+    ASCII Strings                              0.159 secs
+    Apply Data Archives                        0.530 secs
+    Basic Constant Reference Analyzer          0.333 secs
+    Call Convention ID                         0.000 secs
+    Call-Fixup Installer                       0.001 secs
+    Create Function                            0.000 secs
+    Decompiler Switch Analysis                 1.268 secs
+    Demangler GNU                              0.048 secs
+    Disassemble Entry Points                   0.005 secs
+    Embedded Media                             0.010 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.022 secs
+    Non-Returning Functions - Discovered       0.004 secs
+    Shared Return Calls                        0.000 secs
+    Stack                                      0.171 secs
+    Subroutine References                      0.000 secs
+-----------------------------------------------------
+     Total Time   2 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

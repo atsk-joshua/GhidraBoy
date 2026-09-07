@@ -32,6 +32,8 @@ def archive(source,output):
 
 def main(default_platform=None):
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--output-dir',type=Path,default=REPOSITORY/'dist')
+    p.add_argument('--stage-root',type=Path,default=ROOT/'build/candidate')
     p.add_argument('--artifacts',type=Path,default=REPOSITORY/'build/integration/artifacts.json')
     p.add_argument('--backend',choices=['sameboy','mgba','both'],default='sameboy')
     p.add_argument('--native-dir',type=Path,default=ROOT/'build',help='Verified platform native outputs and source archive')
@@ -59,8 +61,9 @@ def main(default_platform=None):
     if a.provider and sha(a.provider)!=sha(provider):raise ValueError('Provider override does not match build outputs')
     tracked=set(subprocess.check_output(['git','ls-files','-z'],cwd=REPOSITORY).decode().split('\0'))
     package_name='GhidraBoy-Debugger-'+release+'-'+a.platform+('' if a.backend=='sameboy' else '-'+a.backend)
-    stage=ROOT/'build/candidate'/package_name
-    if stage.exists():shutil.rmtree(stage)
+    stage=a.stage_root/package_name
+    if stage.exists():raise FileExistsError('Preserve existing package stage; select a new --stage-root')
+    if (a.output_dir/(package_name+'.tar.gz')).exists():raise FileExistsError('Preserve existing package archive; select a new --output-dir')
     stage.mkdir(parents=True)
     def copy(src,relative):
         if src.is_symlink():raise ValueError('Refusing symlink payload: '+str(src))
@@ -132,6 +135,7 @@ def main(default_platform=None):
     runtime_files.append('dependencies.lock.json')
     for relative in ('scripts/test_ui_actions.sh','scripts/test_display_runtime.py','scripts/test_installer.py','scripts/test_native.sh','scripts/run_native_tests.py','scripts/test_ghidra.sh','scripts/test_backend_trace.sh','scripts/test_java_common.sh','scripts/test_observation_report.sh','scripts/test_research_experiment.sh','scripts/prepare_runtime.py','scripts/deck_handoff.py','scripts/collect_results.py'):
         copy(ROOT/relative,relative)
+    copy(REPOSITORY/'ghidra_scripts/ExportGbcKnowledge.java','scripts/ExportGbcKnowledge.java')
     copy(REPOSITORY/'tools/native_dependency_update.py','scripts/native_dependency_update.py')
     copy(REPOSITORY/'tools/debugger_dependency_update.py','scripts/debugger_dependency_update.py')
     runtime_files.append('scripts/debugger_dependency_update.py')
@@ -149,8 +153,7 @@ def main(default_platform=None):
         copy(ROOT/relative,relative)
     # Precompile the real RMI acceptance harness on the build host. Runtime checks need only java.
     debugger=inputs['GhiGBC']['archive']
-    classes=ROOT/'build/candidate-test-classes'
-    if classes.exists():shutil.rmtree(classes)
+    classes=a.stage_root/(package_name+'-test-classes')
     classes.mkdir()
     cp=[str(f) for f in a.ghidra.rglob('*.jar') if 'yajsw' not in str(f)]
     cp += [str(inputs[name]['jar']) for name in ('GhiGBC','GhidraBoy')]
@@ -184,7 +187,7 @@ def main(default_platform=None):
     for repo in (REPOSITORY,):
         source[repo.name]={'scope':'Tracked build/runtime sources; migration ledger and release evidence excluded','head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip(),'files':{}}
         tracked=subprocess.check_output(['git','ls-files','--cached'],cwd=repo,text=True).splitlines()
-        for name in sorted(set(tracked)):
+        for name in sorted(set(tracked) | {'tools/check.py', 'docs/repository-ownership.md', 'docs/validation.md', 'docs/debugger-identities.md'}):
             file=repo/name
             if file.is_file() and not name.startswith(('docs/evidence/','docs/integration/')) and name!='docs/debugger-integration-plan.md':
                 source[repo.name]['files'][name]=sha(file)
@@ -196,7 +199,7 @@ def main(default_platform=None):
     manifest['backends']=backends
     manifest['default_backend']=backends[0]
     (stage/'suite.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
-    out=REPOSITORY/'dist'/(package_name+'.tar.gz');out.parent.mkdir(exist_ok=True);archive(stage,out)
+    out=a.output_dir/(package_name+'.tar.gz');out.parent.mkdir(parents=True,exist_ok=True);archive(stage,out)
     out.with_suffix(out.suffix+'.sha256').write_text(sha(out)+'  '+out.name+'\n')
     print(json.dumps({'stage':str(stage),'archive':str(out),'sha256':sha(out),'manifest_sha256':sha(stage/'suite.json')}))
 
