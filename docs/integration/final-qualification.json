@@ -1,6 +1,113 @@
 {
   "schema": 1,
-  "plan": "docs/debugger-integration-plan.md",
+  "source_commit": "1fce58fa759babd1df1026eadf887acb1b757c84",
+  "status": "INCOMPLETE",
+  "device_status": "NOT_RUN",
+  "scope": "Local qualification only. Physical Steam Deck deferred. No publication or archival.",
+  "gate_register": {
+    "path": "docs/integration/status.json",
+    "sha256": "b9c3965ba5993446cb3dd37a9d3f6a11a7f9e4cbeb035dd6ba07420af8c849e3"
+  },
+  "packages": [
+    {
+      "path": "dist/integration-final-1fce58f/macos/both.tar.gz",
+      "sha256": "ef1cf569b99641188b6651645e60b3891aa11dd988dbea9c82fd4eb9c8bd0de4",
+      "backend": "both",
+      "source_head": "1fce58fa759babd1df1026eadf887acb1b757c84",
+      "index": {
+        "path": "dist/integration-final-1fce58f/macos/packages.json",
+        "sha256": "8ac06bded281573e38f36382e02ccc770af68883d95d25fdb531d6b312bb3f8d"
+      }
+    },
+    {
+      "path": "dist/integration-final-1fce58f/macos/sameboy.tar.gz",
+      "sha256": "3346b696a0bc87aa5fb8048031c4caaa45859b767ebe937658aa9c5b024d0ef8",
+      "backend": "sameboy",
+      "source_head": "1fce58fa759babd1df1026eadf887acb1b757c84",
+      "index": {
+        "path": "dist/integration-final-1fce58f/macos/packages.json",
+        "sha256": "8ac06bded281573e38f36382e02ccc770af68883d95d25fdb531d6b312bb3f8d"
+      }
+    },
+    {
+      "path": "dist/integration-final-1fce58f/macos/mgba.tar.gz",
+      "sha256": "de6612d8a1cdc66825eabc9d78a6fcfe3d73ed38c6858bacdb2d1a196db9fe48",
+      "backend": "mgba",
+      "source_head": "1fce58fa759babd1df1026eadf887acb1b757c84",
+      "index": {
+        "path": "dist/integration-final-1fce58f/macos/packages.json",
+        "sha256": "8ac06bded281573e38f36382e02ccc770af68883d95d25fdb531d6b312bb3f8d"
+      }
+    },
+    {
+      "path": "dist/integration-final-1fce58f/linux/both.tar.gz",
+      "sha256": "37092c80d2c83140c688270a6ee71377da74dde8436ebf575ee19e3dd5f905bc",
+      "backend": "both",
+      "source_head": "1fce58fa759babd1df1026eadf887acb1b757c84",
+      "index": {
+        "path": "dist/integration-final-1fce58f/linux/packages.json",
+        "sha256": "a28873c9883fa0b37c1566937e6e8c1c77d1ffc578e9c108ce1594e1226f514a"
+      }
+    },
+    {
+      "path": "dist/integration-final-1fce58f/linux/sameboy.tar.gz",
+      "sha256": "6123b7c1df294e4c3a445f23fb7d7f6b56d225f158626f8522e9939fa4d39ff5",
+      "backend": "sameboy",
+      "source_head": "1fce58fa759babd1df1026eadf887acb1b757c84",
+      "index": {
+        "path": "dist/integration-final-1fce58f/linux/packages.json",
+        "sha256": "a28873c9883fa0b37c1566937e6e8c1c77d1ffc578e9c108ce1594e1226f514a"
+      }
+    },
+    {
+      "path": "dist/integration-final-1fce58f/linux/mgba.tar.gz",
+      "sha256": "7840c3aed1afd8bf0bfe8aa67ab56cf61a5de969e8cf5e9d09794692cb7ada7a",
+      "backend": "mgba",
+      "source_head": "1fce58fa759babd1df1026eadf887acb1b757c84",
+      "index": {
+        "path": "dist/integration-final-1fce58f/linux/packages.json",
+        "sha256": "a28873c9883fa0b37c1566937e6e8c1c77d1ffc578e9c108ce1594e1226f514a"
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "path": "docs/integration/final-static-resume-evidence.json",
+      "sha256": "8dd03e9a74ffb999450dab37d99b20b835f6e55e7b4b85e0672faca5ae0a0673"
+    },
+    {
+      "path": "dist/integration-resume/hardware/artifact-hashes.json",
+      "sha256": "8b369c8d137a922d76305a3bb81649f077507104964bf952f3c5f3258fc222ff"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/macos/acceptance/receipt.json",
+      "sha256": "1ce5f7847b9b0f3c9e6f29f9259a39af3e652a4f9024896481d0f212e45bac58"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/linux/acceptance/qualification.json",
+      "sha256": "94a1a661c3501845bda4b9f148354086adddf21548f0159f7a139b581da791ef"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/soak-qualification.json",
+      "sha256": "6c9ff0140a959e07e0722ab02968ab39c3c28740ea0218b7297be77ee9b6a3f0"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/performance/quiescent-assessment.json",
+      "sha256": "39c76990bd0b37498232c13e3e94e0304354933c05335eebb22a2c4d840234da"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/performance/quiescent-all-nine-assessment.json",
+      "sha256": "7ed442f7495df1eb08ac07f077978f551e2f80f0b1eadadf2550a1282ada1f40"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/source-archive.json",
+      "sha256": "8f2407bc996a204ec2176f1c6c94d4cf72355e1f0f15b3049154d649b92dd0e3"
+    },
+    {
+      "path": "dist/integration-final-1fce58f/payload-transition.json",
+      "sha256": "57ade1a56bd85f9203d20dd68e587995083bcf29b37f300c64bfec6d9a643250"
+    }
+  ],
   "gates": [
     {
       "id": "BASE-01",
@@ -651,5 +758,16 @@
       ],
       "note": "Canonical generic source/build/test ownership is GhidraBoy; private household GBW3 source/support stays GhiBW3. Old generic implementations replaced by tested delegates; historical game sources moved byte-for-byte with old-path links. History/tags/artifacts/checkpoints/unrelated work preserved. No publication or archival; delegates retained for minimum two supported cycles."
     }
+  ],
+  "remaining_non_deck": [
+    "BACKEND-04",
+    "A-GUI",
+    "A-RELEASE",
+    "MGBA-02",
+    "TOOL-01",
+    "TOOL-02",
+    "TOOL-03",
+    "UI-01",
+    "B-RELEASE"
   ]
 }

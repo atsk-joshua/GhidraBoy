@@ -2,41 +2,34 @@
 
 Status: implementation in progress; executed checks and remaining gates are tracked in the [execution ledger](integration/progress.md) and [gate status](integration/status.json). Prepared 2026-09-05 against the local checkouts below. Requirements below do not themselves establish completion. Milestone IDs in this document are independent of the earlier GhiBW3 suite integration milestones.
 
-### Execution checkpoint — 2026-09-06 handoff
+### Execution checkpoint — current non-Deck qualification
 
-Implementation is committed through GhidraBoy `1518f02` on `integrate-ghigbc`.
-[Current handoff](integration/agent-handoff.md), [state snapshot](integration/handoff-state.json),
-and [active-work plan](integration/active-work.md) supersede old checkpoints.
-GhiBW3 remains at `c8a858f`; original GhiGBC history remains preserved at `c1cfeef`
-with intentional uncommitted documentation redirects. Final physical Steam Deck
-verification is explicitly deferred by the user. Neither release is fully qualified.
+Code is committed through `1fce58f` on `integrate-ghigbc`. The current
+[handoff](integration/agent-handoff.md), [state](integration/handoff-state.json),
+and [58-gate register](integration/status.json) identify exact evidence and active
+jobs. Neither release is fully qualified; physical Steam Deck is explicitly
+deferred. Original requirements below remain unchanged.
 
-| Milestone | Current state | Evidence / remaining work |
-| --- | --- | --- |
-| M0 | Baseline retained; final paired latency PASS | Three matched baseline/candidate runs pass all four unchanged budgets. Review dependency-matched reuse of static/preservation evidence. |
-| M1 | Implemented feasibility decisions and production conformance | mGBA's bounded native execution/ownership is implemented and tested; external Emulicious coherence remains explicitly unavailable. Finish formal gate reconciliation. |
-| M2 | Complete at retained snapshot | Unsquashed source/history import and exclusions preserved. |
-| M3 | Final package component suites PASS | Six reproducible selected-backend archives; Mac/Linux installation, recovery and offline/runtime checks recorded. |
-| M4 | Shared ownership and failure tests implemented | Physical controls passed historically; final mGBA soak exposes a closed-trace AWT lifecycle failure needing triage/fix. |
-| M5 | Historical compatibility PASS; final consumer refresh pending | Real old checkpoints reread after new native patch. Final GhiBW3 worker never ran (usage limit); audit source/artifact-matched preservation reuse. |
-| M6 | Final latency PASS; final soaks outstanding | Mac/Linux component suites pass. Both final 30-minute measurement/budget checks pass; SameBoy final cleanup assertions/marker pass; recorded PIDs are absent (independent exits unavailable). mGBA exceptions prohibit accepting its terminal marker as a clean pass. Final GUI and release synthesis remain. |
-| M7 | Models/MBC2/device/pristine checks implemented and passing within scope | True DMG/CGB modes, bounds, MBC2, STOP/DMA/wake and legacy-state tests; 55-row pristine matrix plus speed fixture. Audit each original hardware/static exit condition; no blanket accuracy claim. |
-| M8 | Experimental native CGB/MBC5 mGBA integrated and independently packaged | Common RMI/unsupported-action/reopen and both-platform installation pass. Retired opcode count unavailable; CPU lockouts/IO unknown. Soak lifecycle failure and final GUI/resource tier remain. |
-| M9 | Research/history implementation and packaged reproducibility tests PASS | Filter/pin/compare/export/reopen and 85 controlled-repeat assertions. Final physical UI/selection/cancellation/error workflows still need acceptance. |
-| M10 | Final audit/cutover pending; physical Deck deferred | Final consumer, gate/support report, documentation commits and any affected retests remain. No remote publication/archival. |
-
-Read the live-job section before launching validation. The new mGBA
-`ClosedException` in register rendering is distinct from retained terminal-close
-and intentionally induced socket-close diagnostics. `BackendTraceTest.main` lacks
-the parent's uncaught-error collector; correct accounting and actual lifecycle
-behavior must be established before promotion. Exact paths and observed PIDs are
-in the handoff/state files. Final component receipts name code/artifacts `1518f02`;
-older receipts remain historical and are reused only by explicit dependency matching.
-
-The implementation uses `debugger/python/ghigbc/{backend,session,agent}.py`, private
-`backends/{sameboy,mgba}.py` and native directories, one generic Java extension,
-and the existing static provider. Preserve those boundaries and all requirements
-below. Finish non-Deck work; do not expand optional engine scope or weaken gates.
+- The upstream closed-trace register-renderer defect is fixed through the declared
+  copy-only Java dependency `12.1.3+ghidraboy.register-lifetime.1`. Uncaught-error
+  injection fails correctly; bounded asynchronous register readiness passes on
+  Mac and Linux. Native decompiler remains `switch-recovery.2`.
+- Mapper identity fallback is rejected; fresh geometry, bus, native, pristine,
+  checkpoint and private consumer checks pass at their recorded scopes. Static
+  preservation and CPU coverage reuse is explicitly hash/dependency matched.
+- Six final archives reproduce; final macOS component checks and all three
+  Linux offline/compiler-free compositions pass. Final long soaks and cleanup pass.
+- Original and aggregate latency budgets failed under varying concurrent load;
+  the predeclared controlled 3+3 and all-retained 9+9 now pass original budgets.
+  All failed batches remain intact; no threshold or sample selection was changed.
+- GhiGBC duplicate implementations have been replaced with tested delegates in
+  local commits `65e1208`/`413a971`. GhiBW3 `99802e0` retains private household
+  GBW3 validation/family support and byte-preserved historical game harnesses.
+  Original histories, artifacts, rollback inputs and unrelated files remain.
+- Final physical GUI workflows are pending. Isolated apps show Ghidra's User
+  Agreement; required user confirmation has not arrived. The user questioned
+  the temporary VNC viewer chosen for local Linux GUI access, so GUI interaction
+  is paused. No agreement or acceptance is inferred.
 
 ## 1. Outcome and release boundaries
 

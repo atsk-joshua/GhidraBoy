@@ -218,3 +218,45 @@ all inventoried descendants absent and no uncaught asynchronous errors, and
 printed REAL_TRACE_TEST_PASSED. All four recorded JVM/primary-sidecar PIDs were
 absent. Independent harness exit codes remain unavailable. The mGBA AWT failure
 remains unresolved despite its completed measurements, budgets and marker.
+
+## 2026-09-06 — finish-migration resume
+
+- Verified all handoff source/artifact/log hashes; reassessed both completed soaks
+  against their copied original limits (both bounded budget PASS). Four recorded
+  PIDs absent. No original independent exit was recovered; mGBA lifecycle remains
+  FAIL with 17 uncaught closed-database register-renderer errors.
+- Started three bounded workers for trace-lifetime/error accounting, explicit
+  static/dependency reuse, and final private consumer verification/cutover map.
+- Added an optional extended physical UI observation window and uncaught-error
+  accounting to the UI harness; extra physical workflows require their own
+  observation receipt. The teardown marker is not acceptance evidence.
+- Clarified household-only GhiBW3 ownership/publication boundary in its README.
+  No remote action or duplicate deletion has occurred in this resume yet.
+
+## 2026-09-06 — final non-Deck automated qualification and local cutover
+
+- Runtime code frozen at `1fce58f`; six selected-backend Mac/Linux archives and
+  source archive reproduce. Java register-lifetime companion builds reproduce and
+  copy-only install/rollback preserves original Ghidra. Native decompiler identity
+  remains `12.1.3+ghidraboy.switch-recovery.2`.
+- Final Mac 18 component jobs and all three Linux offline/compiler-free
+  compositions pass. Shared profiles/historical captures/provider-free reopen,
+  installation/recovery/Java guards, native/SDL/doctor, 250-stop growth, portable
+  reports and controlled research pass at exact recorded package hashes.
+- Final 30-minute soaks both exit0 with no uncaught JVM errors and all original
+  budgets PASS: SameBoy109 cycles/1800.46s, mGBA112 cycles/1801.37s. SameBoy idle
+  and descendant cleanup passes; owned soak processes absent before timing.
+- Original latency3+3 and aggregate6+6 FAILs remain intact. The predeclared
+  controlled3+3 and all-retained9+9 pass unchanged budgets. Background processes
+  and logged handled sorting/shutdown diagnostics are separately documented.
+- Static/CPU/hardware/source/pristine/checkpoint evidence is explicitly matched
+  or refreshed. Expanded mapper tests found and fixed actual/header-controller
+  mismatch acceptance; the final native/profile/private parity checks pass.
+- GhiGBC `65e1208`/`413a971` replaces duplicate implementation with tested delegates.
+  GhiBW3 `99802e0`/`29145f8` preserves household-only game source and private
+  evidence. Original history/tags/artifacts/rollback/private/unrelated work remains.
+- **Incomplete physical GUI qualification:** both isolated apps were observed at
+  Ghidra User Agreement. Required confirmation remains pending. User questioned
+  VNC; coordinator explained the temporary local Linux viewer and paused GUI
+  interaction. No consent or physical acceptance is inferred. Steam Deck stays
+  explicitly deferred; no release publication or remote archival occurred.
