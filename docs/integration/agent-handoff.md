@@ -53,7 +53,7 @@ two supported release cycles. No unrelated working files were committed.
   selection, raw/decoded provenance and provider-free separate-JVM reopen.
   See [shared contract](final-shared-profile-resume-notes.md).
 
-## Final artifact checks and active jobs
+## Recorded final automated checks
 
 All **18 macOS component jobs PASS** on exact 1fce58f packages. All three final
 Linux offline/compiler-free compositions PASS, including real failure lifecycle,
@@ -87,49 +87,121 @@ after metrics during termination. Exact installed bytecode/context explains the
 handled branches; later launcher/sidecar/terminated-state/async assertions pass.
 Neither exit 0 nor the collector alone is used to erase these diagnostics.
 
-## Physical UI: actual external approval dependency
+## Current pause: user-directed documentation only
 
-Both isolated GUI apps are stopped at Ghidra's User Agreement. The computer-use
-tool requires confirmation at the time a license is accepted. One async question
-asks permission for the validation apps; **no affirmative answer has been received**.
-Do not click agreement buttons or bypass the prompt through preferences.
+**Latest update: the user reports killing the Ghidra sessions. All PID/live-state
+observations below are historical. Do not restart anything in this docs-only task.**
 
-The user asked why VNC was being used. Coordinator explained it was a temporary
-localhost-only viewer chosen to expose the isolated Linux GUI to CUA, not a
-product/migration requirement, and paused GUI interaction. Do not infer approval
-for that approach or for the agreement from the question.
+The user explicitly stopped the CUA attempt and requested this plan/docs/handoff
+refresh. They confirmed **all open Ghidra sessions were created by the assistant**
+and objected to repeated fresh launches, first-run popups, and multiple instances.
+They also questioned the Chrome connection. **Do not resume UI/test execution in
+this documentation turn.** An execution resume must use one persistent configured
+session and one project, with no timed-observer restart loop or concurrent native
+GUI probe workers.
 
-Mac app bundle: `/private/tmp/ghidraboy-physical-ui-app/GhidraBoyValidation.app`,
-ID `org.ghidraboy.validation`; setup/context/receipt are under
-`dist/integration-final-bb0720d/gui/`. Linux desktop/relay remains isolated and
-local at `http://127.0.0.1:16080/vnc.html?autoconnect=true&resize=scale`; full process,
-image and network receipt is `/private/tmp/ghidraboy-linux-resume/desktop/readiness.json`.
-Coordinator alone owns physical CUA. Do not control the unrelated user Ghidra.
+## Authoritative current UI/process state
 
-The prepared GUI uses bb0720d package bytes; explicit per-file/class comparison
-`dist/integration-final-1fce58f/payload-transition.json` proves all production
-payloads and UiActionTest classes identical; only unrelated RealTraceTest classes
-changed. Record this binding or use fresh 1fce58f extraction before UI acceptance.
-Full launch/import/bank-navigation, capability controls, report filter/pin/compare/
-export/reopen/cancel/malformed, checkpoint/edit, selection/switch/reconnect and
-controls-after-errors remain physical gates. Do not turn preparation into PASS.
+Read `dist/integration-final-1fce58f/handoff-current-state/processes.json` and
+[handoff-state.json](handoff-state.json). Recorded PIDs are observations, never
+permission to signal a recycled process. At the recorded OS check:
 
-## Finish order and boundaries
+| Process | Observed identity | State |
+| --- | --- | --- |
+| JVM47285, parent47270 | Patched12.1.3 `/private/tmp/ghidraboy-java-dependency/installed/distribution`; started17:49:29 local | Previously live; user reports killed |
+| JVM47493, parent1 | Old `/Users/joshuahansen/ghidra_12.1.2_PUBLIC`; started17:52:07 local | Previously live; user reports killed |
+| Earlier timed observer44733 / agent44797 | Explicit app-identity retry | Stopped via verified SIGTERM; raw wrapper exit143 retained |
+| Teardown worker probes |12 inventoried prepare/compiler/JVM/agent PIDs | All verified gone |
+| Linux desktop containers | `ghidraboy-linux-resume-desktop-jdk` and predecessor | Stopped; no matching relay process in current inventory |
 
-1. Automated evidence is collected and passing within the recorded scopes. Read
-   the final reports; do not repeat finished measurements without changed inputs.
-2. When explicit agreement approval/GUI direction arrives, complete final physical
-   GUI checks. Otherwise document this concrete blocker without claiming completion.
-3. The original gate register and generated qualification report remain explicitly
-   incomplete because of the physical GUI dependency. Update them after actual
-   acceptance; `tools/integration_report.py --require-qualified` must keep refusing
-   until the remaining non-Deck gates pass.
-4. Keep physical Deck NOT_RUN, compatibility delegates, private household scope
-   and all unrelated files. No publication, archival or quota-reset redemption.
+The intended persistent launch uses the **normal** `support/launch.sh fg jdk ...
+ghidra.GhidraRun`, not UiActionTest or a custom timed .app. Exact command,
+settings/home, hashes, wrapper PID47269 and child47270 are in
+`dist/integration-final-1fce58f/gui-consolidation/persistent-{spec.json,run/receipt.json}`.
+Home: `/private/tmp/ghidraboy-ui-bb0720d-home`. Its preferences already contain
+`USER_AGREEMENT=ACCEPT` and `SHOW_TIPS=false`; neither was changed through file
+edits during consolidation. **The old license-only blocker is stale.**
 
-Packaging is coordinator-serialized. Validation homes/extractions are isolated.
-Use durable wrappers: `/private/tmp/ghidraboy-run-evidence.py` persists exact
-command, input hashes, wrapper/child PIDs, logs and independent exit. Java 21 is
-`/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`; final Mac Ghidra is
-`/private/tmp/ghidraboy-java-dependency/installed/distribution`; final Linux copy is
-`/private/tmp/ghidraboy-linux-resume/ghidra-updated/distribution`.
+Normal Java applications share CUA bundle ID `net.java.openjdk.java`. The old
+12.1.2 process appeared during generic CUA selection; this is a timing-based
+inference, not an independently captured launch ancestry. Do not assume that
+`getApp` attaches to the desired already-running candidate. The last observed
+`NO ACTIVE PROJECT` window and tips dismissal cannot be attributed to the candidate
+with sufficient confidence. The attempted consolidation failed; the user subsequently reports killing both sessions.
+Verify exact version/distribution/process binding before interacting, and do not
+launch another instance to recover a stale handle.
+
+The only deliberately opened browser view was Codex's in-app browser (`iab`) for
+localhost noVNC. Chrome appeared in available-surface inventory; there was no
+intentional Chrome-tab navigation in this continuation. The user's Chrome
+connection concern is unresolved; do not speculate about the connector or infer
+permission to use Chrome. VNC is stopped and must not be restarted without
+explicit direction. No browser/CUA calls are part of this docs-only refresh.
+
+## Failed GUI attempts and new lifecycle issues
+
+The timed observer repeatedly reconstructed a tool from the shipped Debugger
+template, retriggering extension/setup dialogs instead of preserving a configured
+tool. Native button actions sometimes worked (one **Pin capture → Pinned snapshot1**
+response), but text input/navigation was not verified. Raise/clipboard/Dock
+attempts failed or timed out; an observer timed out at the first physical bank
+breakpoint. **No complete physical GUI gate passed.** Raw logs and snapshots are
+retained under `dist/integration-final-1fce58f/handoff-current-state/`, with an
+[evidence inventory](../../dist/integration-final-1fce58f/handoff-current-state/evidence-index.json).
+Do not treat a passing Pin action, a visible window, or startup as acceptance.
+
+A later full-tool teardown exposed a distinct issue beyond the repaired register
+renderer. See [full investigation](gui-teardown-investigation.md):
+
+- Observed uncaught `IllegalStateException: Trace must be opened before activated`
+  during UiActionTest timeout cleanup, through queued target withdrawal.
+- Full-template probes reproduced stale manager coordinates (`current=teaching`,
+  open traces=0) and logged logical-breakpoint `TraceClosedException` despite
+  ASYNC_COUNT=0 and exit0. Those runs are **not clean passes**.
+- An interrupted live-dispose probe also logged duplicate
+  `StaticMappingGeneration` ObjectTreeModel nodes before disposal and a logical-
+  breakpoint NullPointerException afterward. Do not collapse these into known
+  terminal EBadF or launcher-waiter interruption diagnostics.
+- The exact original IllegalStateException was **not independently reproduced**.
+  Evidence supports inadequate harness ordering exposing an upstream manager
+  queued-event/disposal weakness. It does not prove the exact failure under an
+  orderly normal user close. No fix was applied or qualified.
+
+Proposed only: keep the accepted connection available to finally; await process
+exit, the actual TraceRMI close future, and deferred automatic trace closure;
+verify empty open traces/null current and closure notifications before disposing
+providers. `activateTrace(null)` is not a barrier when ensureActiveTrace=true.
+Keep original timeouts, visible providers, auto-close/save and error accounting.
+Review logged Ghidra service failures as well as uncaught exceptions. Qualify any
+fix under the full tool before selecting a production patch or repeating affected
+package/lifecycle checks. No new native Mac probe launches are authorized now.
+
+## What is done versus what remains
+
+The earlier exact-source component, native/static/hardware/consumer, package,
+soak and controlled latency receipts remain unchanged and valid at their stated
+scopes. They do **not** establish clean full-tool disposal or physical usability.
+BACKEND-03/A-RUNTIME/MGBA-06 are reopened IN_PROGRESS; TOOL-03 records the observed
+FAIL. Neither release nor the overall non-Deck migration is fully qualified.
+
+On a fresh, explicitly resumed execution task:
+
+1. Read this handoff/state and preserve the user's one-session constraint. Inspect
+   actual processes and consolidate to the intended patched12.1.3 instance; do not
+   use a generic Java bundle selector without proving its binding.
+2. Configure/save one normal Debugger tool/project once. Avoid tips/help/plugin
+   startup loops. Do not run timed/fresh-home GUI observers concurrently.
+3. Resolve and qualify full-tool teardown and logged-error handling. Any worker
+   must have bounded ownership and use non-visible/offscreen execution where
+   appropriate; coordinator alone owns physical UI. Do not hide providers to pass.
+4. Complete actual import/launch/control, listing/decompiler/physical bank and
+   watch navigation, report filter/pin/compare/export/reopen/cancel/malformed,
+   checkpoint/edit, selection/switch/reconnect and post-error usability workflows.
+5. Rerun only genuinely affected checks through explicit dependency/hash matching,
+   then regenerate original-gate qualification/support docs and local commits.
+   Never relabel recorded failed runs or weaken budgets.
+
+Physical Steam Deck remains explicitly NOT_RUN. No publication, remote archival,
+compatibility-delegate removal or unrelated-file cleanup is authorized. Generic
+GB/GBC source belongs to GhidraBoy; GBW3 validation/family support remains private
+in GhiBW3. Runtime code is still `1fce58f`; this update changes documentation only.

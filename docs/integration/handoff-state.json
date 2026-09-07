@@ -1,7 +1,7 @@
 {
   "schema": 3,
-  "observed_at_utc": "2026-09-07T00:17:07.345163+00:00",
-  "scope": "Active resume snapshot, not release qualification. Inspect durable receipts before acting on recorded processes.",
+  "observed_at_utc": "2026-09-07T00:56:44.781774+00:00",
+  "scope": "Documentation-only pause snapshot. Read current process identities before cleanup/attachment. No non-Deck completion claim.",
   "code_revision": "1fce58fa759babd1df1026eadf887acb1b757c84",
   "branch": "integrate-ghigbc",
   "prior_snapshot": "docs/integration/handoff-state-pre-resume-1fce58f.json",
@@ -50,27 +50,73 @@
     "worker_state": "COMPLETE"
   },
   "physical_gui": {
-    "status": "PENDING_USER_AGREEMENT_APPROVAL",
-    "macos_context": "dist/integration-final-bb0720d/gui/context.json",
-    "macos_run_receipt": "dist/integration-final-bb0720d/gui/physical-run/receipt.json",
-    "linux_readiness": "/private/tmp/ghidraboy-linux-resume/desktop/readiness.json",
-    "linux_url": "http://127.0.0.1:16080/vnc.html?autoconnect=true&resize=scale",
-    "approval": "Async question pending to accept Ghidra User Agreement in isolated validation apps; no affirmative answer received. Tool policy requires at-action agreement confirmation.",
-    "user_steering": "User asked why VNC. Coordinator explained it was a temporary localhost-only Linux desktop viewer, an infrastructure choice rather than a product requirement. GUI interaction paused; no consent inferred.",
-    "payload_binding": "dist/integration-final-1fce58f/payload-transition.json proves production payloads and UiActionTest unchanged from GUI prepared bb0720d package; only unrelated RealTraceTest classes changed."
+    "status": "STOPPED_BY_USER_NOT_QUALIFIED",
+    "latest_user_statements": [
+      "All open Ghidra sessions are assistant-created.",
+      "Repeated fresh launches cause tips/help/new-extension dialogs and targeting confusion.",
+      "Why connected to Chrome?",
+      "Stop struggling with CUA and update plan/docs/handoffs with actual progress and issues.",
+      "I killed them; hurry up and finish the documentation."
+    ],
+    "persistent_launcher_spec": "dist/integration-final-1fce58f/gui-consolidation/persistent-spec.json",
+    "persistent_launcher_receipt": "dist/integration-final-1fce58f/gui-consolidation/persistent-run/receipt.json",
+    "intended_ghidra": "/private/tmp/ghidraboy-java-dependency/installed/distribution",
+    "settings_home": "/private/tmp/ghidraboy-ui-bb0720d-home",
+    "candidate_jvm": {
+      "pid": 47285,
+      "ppid": 47270,
+      "started_local": "2026-09-06 17:49:29 America/Phoenix",
+      "version": "12.1.3 with declared Java/native fixes",
+      "status": "USER_REPORTS_KILLED_AFTER_OS_SNAPSHOT"
+    },
+    "additional_jvm": {
+      "pid": 47493,
+      "ppid": 1,
+      "started_local": "2026-09-06 17:52:07 America/Phoenix",
+      "distribution": "/Users/joshuahansen/ghidra_12.1.2_PUBLIC",
+      "status": "USER_REPORTS_KILLED_AFTER_OS_SNAPSHOT",
+      "note": "Appeared during generic net.java.openjdk.java CUA selection. Attribution to that selection is timing-based inference; no explicit terminal launch of this old distribution was issued in this continuation."
+    },
+    "cua_binding_issue": "Both normal JVMs share net.java.openjdk.java. Generic getApp cannot be assumed to attach to the candidate and may activate/launch the registered old distribution. Last NO ACTIVE PROJECT screenshot is not proven to be the candidate.",
+    "agreement_correction": "Intended home preferences show USER_AGREEMENT=ACCEPT and SHOW_TIPS=false. Mac advanced beyond agreement; old pending-license-only blocker is stale. Do not change agreement preferences or infer new consent for another prompt.",
+    "limited_observations": "New-plugin setup and one Pin capture -> Pinned snapshot1 response observed in timed observer. No full GUI gate passed; text/navigation input was not successfully verified. Later tips dialog was dismissed but target distribution is ambiguous.",
+    "vnc": "Both temporary Linux desktop containers are stopped. No relay process matched the recorded relay path in the current OS inventory. Do not restart VNC/browser work without explicit user direction.",
+    "chrome": "User questioned Chrome connection. Recorded intentional browser work used the Codex in-app browser for localhost noVNC, not a Chrome tab; Chrome appeared in surface inventory. Actual connection/targeting behavior was not diagnosed. Do not infer permission to use Chrome.",
+    "evidence_index": "dist/integration-final-1fce58f/handoff-current-state/evidence-index.json",
+    "process_inventory": "dist/integration-final-1fce58f/handoff-current-state/processes.json",
+    "failed_observers": [
+      "dist/integration-final-bb0720d/gui/physical-run/receipt.json",
+      "dist/integration-final-1fce58f/gui-native-identity/run/receipt.json"
+    ],
+    "normal_session_warning": "User reports killing the sessions after the recorded inventory. PID records are historical. Do not restart or attach during this documentation-only task."
   },
   "deferred": "Physical Steam Deck explicitly NOT_RUN. No publication or remote archival. Compatibility delegates retained.",
-  "qualification": "INCOMPLETE: physical GUI acceptance requires explicit user agreement approval and remains paused. All automated qualification/cutover work is complete within recorded scopes; physical Deck deferred.",
+  "qualification": "INCOMPLETE: prior automated receipts remain valid at their scopes, but later full-tool lifecycle failures reopen broad acceptance. Physical GUI is unqualified and execution is paused by user for handoff, not solely waiting for a license decision.",
   "soak_qualification": "dist/integration-final-1fce58f/soak-qualification.json",
   "remaining_non_deck": [
+    "BACKEND-03",
     "BACKEND-04",
+    "A-RUNTIME",
     "A-GUI",
     "A-RELEASE",
     "MGBA-02",
+    "MGBA-06",
     "TOOL-01",
     "TOOL-02",
     "TOOL-03",
     "UI-01",
     "B-RELEASE"
-  ]
+  ],
+  "execution_directive": "Latest user request is plan/docs/handoff reconciliation only. Stop CUA and test launches. On an explicitly resumed execution task, use one persistent configured Ghidra session; no fresh-home/timed-observer loops or concurrent native GUI probes.",
+  "new_known_issues": {
+    "report": "docs/integration/gui-teardown-investigation.md",
+    "observed": "UiActionTest timeout cleanup logged uncaught IllegalStateException: Trace must be opened before activated, through targetWithdrawn -> updateCurrentTarget -> activateAndNotify.",
+    "reproduced": "Full-template probes leave current=teaching with open traces=0 and log TraceClosedException in logical breakpoint mappingsChanged despite ASYNC_COUNT=0 and exit0. Interrupted live-dispose probe also logged duplicate StaticMappingGeneration node before disposal and a logical-breakpoint NPE afterward.",
+    "not_proven": "Exact original IllegalStateException was not independently reproduced. No production fix or harness cleanup fix is applied/qualified. Normal orderly user-close behavior remains to be tested.",
+    "proposed_only": "Retain connection in observer finally; await process and real connection closure plus deferred automatic trace closure; verify empty open traces/null current and drained notifications before disposal. Preserve original action timeout, auto-close/save and error visibility. Review logged service errors in addition to uncaught collector.",
+    "worker_state": "gui_teardown_race completed; all its12 identified owned processes verified gone. No shared source/package mutation."
+  },
+  "documentation_base": "baead10; this documentation-only reconciliation is committed separately.",
+  "latest_user_update": "User reports killing the Ghidra sessions and requests immediate completion of documentation only. Do not launch anything.",
+  "updated_at_utc": "2026-09-07T01:03:25.601408+00:00"
 }

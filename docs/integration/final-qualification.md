@@ -2,7 +2,7 @@
 
 **INCOMPLETE** — Local qualification only. Physical Steam Deck deferred. No publication or archival.
 
-Source commit: `1fce58fa759babd1df1026eadf887acb1b757c84`. Receipt and archive hashes are in the adjacent JSON.
+Source commit: `baead1028bdee1ad122afd4e2fd6237e14e5d2dc`. Receipt and archive hashes are in the adjacent JSON.
 
 | Original gate | Status | Requirement |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Source commit: `1fce58fa759babd1df1026eadf887acb1b757c84`. Receipt and archive h
 | BUILD-05 | PASS | packaging identifies stock versus patched native decompiler requirements; the doctor detects mismatches and never silently overwrites an active Ghidra distribution. |
 | BACKEND-01 | PASS | structural checks find no SameBoy headers/private fields outside its adapter, and no native handle/API access from generic agent/UI/display/profile code. Compatibility readers and labeled provenance may mention SameBoy. |
 | BACKEND-02 | PASS | run identical self-authored fixtures through the pre-extraction and new SameBoy paths; compare defined registers, physical bytes, stop reasons, event order/precision, bank mappings, edits and restore semantics. |
-| BACKEND-03 | PASS | pause during run/queue saturation, timed-out requests, disconnect/reconnect, target exit, callback ordering, event overflow and shutdown have bounded behavior with visible error/loss reporting. |
+| BACKEND-03 | IN_PROGRESS | pause during run/queue saturation, timed-out requests, disconnect/reconnect, target exit, callback ordering, event overflow and shutdown have bounded behavior with visible error/loss reporting. |
 | BACKEND-04 | IN_PROGRESS | display input, focus loss, minimized/paused pumping, frame copying and close work through the abstraction without stale held keys or lock inversion. |
 | BACKEND-05 | PASS | startup and action requests reject unsupported model/mapper/capability combinations explicitly; capability enforcement does not rely on disabled UI controls alone. |
 | COMPAT-01 | PASS | copied old Programs reopen with preserved constructor identity, comments, symbols, types, functions, overrides and ownership receipts; removal never deletes later user work. |
@@ -35,7 +35,7 @@ Source commit: `1fce58fa759babd1df1026eadf887acb1b757c84`. Receipt and archive h
 | PROFILE-01 | PASS | GhiBW3 static-only, live, missing/failing/wrong-revision profile and profile-removal/reopen cases pass. Generic package class loading and startup require no study code. |
 | PROFILE-02 | PASS | stale session/epoch/capture actions, oversized declarations and failed decodes are rejected with preserved raw controls/history; field batches retain complete provenance and counts. |
 | A-STATIC | PASS | all current SLEIGH, static analysis, mapper, compiler ABI, generated-C/native decompiler, ownership, schema and actual database migration gates pass for the selected dependency tuple. |
-| A-RUNTIME | PASS | native/Python and real installed Trace RMI gates pass, including 250-stop growth, paused display, edits/checkpoints/reopen and shutdown error scanning. |
+| A-RUNTIME | IN_PROGRESS | native/Python and real installed Trace RMI gates pass, including 250-stop growth, paused display, edits/checkpoints/reopen and shutdown error scanning. |
 | A-INSTALL | PASS | clean install, upgrade, interrupted install/recovery, altered-user-file preservation, component removal and rollback pass on macOS arm64 and Linux x86-64 using extracted packages without source/build tools. |
 | A-GUI | IN_PROGRESS | identify the exact installed candidate and use real Ghidra actions for import, launch, step, physical breakpoint/watch, historical navigation, bookmark, save/reopen, cancel and close. Headless harnesses alone do not pass this gate. |
 | A-PERF | PASS | comparable baseline/candidate runs meet the performance checks in section 6. No unexplained unbounded queue, memory or thread growth. |
@@ -52,10 +52,10 @@ Source commit: `1fce58fa759babd1df1026eadf887acb1b757c84`. Receipt and archive h
 | MGBA-03 | PASS | common static mapping, selected-capture, save/reopen and synthetic-profile tests run unchanged against both real backends. Tests parameterize capabilities; a blanket skip cannot pass a required tier. |
 | MGBA-04 | PASS | install only mGBA with SameBoy absent and vice versa; neither selected backend relies on the other's shared library, boot asset or metadata. Recorded traces remain readable after removing either runtime. |
 | MGBA-05 | PASS | mismatch fixtures compare the two cores without demanding identical undefined startup memory, wall-clock RTC or backend-private state formats. At least one disagreement fixture proves the diagnostic path works. |
-| MGBA-06 | PASS | both backends run from extracted platform packages and pass resource, failure and cleanup gates. Mark experimental until its required tier passes on the named platform. |
+| MGBA-06 | IN_PROGRESS | both backends run from extracted platform packages and pass resource, failure and cleanup gates. Mark experimental until its required tier passes on the named platform. |
 | TOOL-01 | IN_PROGRESS | from a fresh installation, import a banked fixture, launch either supported backend, set a physical breakpoint from the listing and navigate the resulting capture back to the correct static bank. No manual address conversion or developer-only command is required; ambiguity uses the supported view selector. |
 | TOOL-02 | IN_PROGRESS | register/memory inspection, watch setup, history filtering, capture comparison and checkpoint/edit operations have executable checks plus real GUI acceptance. Actions operate on the selected session/capture, and unavailable capabilities fail with a specific reason. |
-| TOOL-03 | IN_PROGRESS | listing, decompiler, memory and history views retain coherent selection and useful state through stepping, Program/session switching, reconnect and reopen. Long operations remain cancellable; malformed inputs and backend failures leave usable controls and diagnostics. |
+| TOOL-03 | FAIL | listing, decompiler, memory and history views retain coherent selection and useful state through stepping, Program/session switching, reconnect and reopen. Long operations remain cancellable; malformed inputs and backend failures leave usable controls and diagnostics. |
 | RESEARCH-01 | PASS | a synthetic experiment can be exported, reopened without the emulator, and traced from a conclusion to exact observed bytes and source locations. Invalid/stale Program bindings remain visible. |
 | RESEARCH-02 | PASS | restore/repeat under controlled conditions reproduces declared results; divergent settings and missing replay capabilities are detected. A bookmark naming a writer never becomes proof of a caller or damage formula. |
 | UI-01 | IN_PROGRESS | keyboard navigation, readable labels/statuses, cancellation, capability-disabled actions, display scaling and historical/live selection are checked on claimed platforms. Routine operation requires no knowledge of internal ABI/schema names. |

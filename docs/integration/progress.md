@@ -260,3 +260,34 @@ remains unresolved despite its completed measurements, budgets and marker.
   VNC; coordinator explained the temporary local Linux viewer and paused GUI
   interaction. No consent or physical acceptance is inferred. Steam Deck stays
   explicitly deferred; no release publication or remote archival occurred.
+
+## 2026-09-06 — GUI attempts, targeting discrepancy and user-directed handoff
+
+- Corrected stale license-blocker narrative: Mac progressed past agreement, and
+  intended-home preferences show USER_AGREEMENT=ACCEPT/SHOW_TIPS=false. No consent
+  preference files were edited during consolidation.
+- Timed observer attempts retriggered setup/plugin dialogs; one Pin capture
+  response was seen, but input/navigation and full workflows were not qualified.
+  A first action timeout exposed an uncaught trace-activation cleanup exception.
+- Full-template investigation reproduced stale manager coordinates and logged
+  closed-trace/logical-breakpoint failures despite clean uncaught queues/exit0.
+  Exact original IllegalStateException was not independently reproduced. An
+  interrupted probe had additional duplicate-node/NPE diagnostics. No fix applied.
+- User objected to repeated fresh Ghidra windows and confirmed all were ours.
+  Timed observer44733/agent44797 and all worker probes were stopped. VNC desktop
+  containers stopped; no matching relay process found.
+- Started one normal foreground launcher with existing settings, but OS inventory
+  then found an additional old12.1.2 JVM during generic Java CUA selection. Intended
+  PID47285/patched12.1.3 and additional PID47493/old12.1.2 are both recorded live.
+  Last tips/project-manager observations cannot be qualified as candidate UI.
+- User questioned Chrome connection, then explicitly requested docs/plan/handoff
+  only. No further CUA or test launches in this refresh. Intentional browser work
+  was local noVNC in Codex's in-app browser; actual Chrome connection concern is
+  unresolved and no permission is inferred from surface inventory.
+- Preserved45 observation/probe files in the handoff evidence index. Reopened
+  broad lifecycle gates and recorded TOOL-03 FAIL; prior bounded automated
+  measurements remain unchanged. Completion/GUI/release claims remain unproven.
+
+Latest user update: user killed the Ghidra sessions and requested immediate
+completion of documentation only. Recorded live PIDs are now historical; no
+restart, attachment, CUA or test execution is authorized in this update.

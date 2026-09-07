@@ -204,12 +204,14 @@
       "id": "BACKEND-03",
       "milestone": "M4",
       "requirement": "pause during run/queue saturation, timed-out requests, disconnect/reconnect, target exit, callback ordering, event overflow and shutdown have bounded behavior with visible error/loss reporting.",
-      "status": "PASS",
+      "status": "IN_PROGRESS",
       "evidence": [
         "docs/integration/m4-session-evidence.json",
-        "docs/integration/m5-evidence.json"
+        "docs/integration/m5-evidence.json",
+        "docs/integration/gui-teardown-investigation.md",
+        "dist/integration-final-1fce58f/handoff-current-state/evidence-index.json"
       ],
-      "note": "Real RMI disconnect, forced sidecar death, bounded process exit, saved-history reopen and replacement-session stale-action rejection pass, supplementing queue/pause/overflow/failure tests."
+      "note": "Recorded final component/soak checks still PASS within their exact scopes. Later full shipped-Debugger-tool timeout/disposal runs exposed stale trace-manager coordinates, an observed uncaught activation error, and logged logical-breakpoint failures. Exact original exception was not independently reproduced; no fix is implemented or qualified. Broader lifecycle acceptance is reopened, not the prior measurement results."
     },
     {
       "id": "BACKEND-04",
@@ -220,7 +222,7 @@
         "docs/integration/m4-session-evidence.json",
         "docs/integration/m6-measurements-evidence.json"
       ],
-      "note": "Historical physical SameBoy keyboard/focus/minimize/close checks passed on earlier bytes. Final component SDL/frame/input tests pass, but final physical interaction remains pending with the other GUI gates; no unmatched binary reuse is claimed. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Final physical GUI acceptance remains incomplete. Repeated timed/fresh launches caused setup dialogs and targeting confusion. One Pin capture action responded, but navigation/text input and the required workflows were not verified. Two normal Ghidra JVMs are currently recorded, including unintended old12.1.2; generic Java bundle selection is ambiguous. User requested one persistent configured session and has now stopped execution for documentation/handoff. License approval is no longer the established blocker."
     },
     {
       "id": "BACKEND-05",
@@ -324,14 +326,16 @@
       "id": "A-RUNTIME",
       "milestone": "M6",
       "requirement": "native/Python and real installed Trace RMI gates pass, including 250-stop growth, paused display, edits/checkpoints/reopen and shutdown error scanning.",
-      "status": "PASS",
+      "status": "IN_PROGRESS",
       "evidence": [
         "dist/integration-final-1fce58f/macos/acceptance/receipt.json",
         "dist/integration-final-1fce58f/linux/acceptance/qualification.json",
         "dist/integration-final-1fce58f/soak-sameboy/receipt.json",
-        "dist/integration-final-1fce58f/soak-mgba/receipt.json"
+        "dist/integration-final-1fce58f/soak-mgba/receipt.json",
+        "docs/integration/gui-teardown-investigation.md",
+        "dist/integration-final-1fce58f/handoff-current-state/evidence-index.json"
       ],
-      "note": "Exact final1fce58f installed component/lifecycle suites pass on Mac/Linux. Both final30minsoaks exit0 with original budgets PASS and no uncaught JVM errors; SameBoy idle/descendant cleanup passes. Physical user controls and broad release qualification remain separate gates."
+      "note": "Recorded final component/soak checks still PASS within their exact scopes. Later full shipped-Debugger-tool timeout/disposal runs exposed stale trace-manager coordinates, an observed uncaught activation error, and logged logical-breakpoint failures. Exact original exception was not independently reproduced; no fix is implemented or qualified. Broader lifecycle acceptance is reopened, not the prior measurement results."
     },
     {
       "id": "A-INSTALL",
@@ -354,7 +358,7 @@
         "docs/integration/m6-measurements-evidence.json",
         "docs/integration/agent-handoff.md"
       ],
-      "note": "Earlier physical SameBoy sequence passed. Updated final M9/both-backend physical workflows remain unqualified. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Final physical GUI acceptance remains incomplete. Repeated timed/fresh launches caused setup dialogs and targeting confusion. One Pin capture action responded, but navigation/text input and the required workflows were not verified. Two normal Ghidra JVMs are currently recorded, including unintended old12.1.2; generic Java bundle selection is ambiguous. User requested one persistent configured session and has now stopped execution for documentation/handoff. License approval is no longer the established blocker."
     },
     {
       "id": "A-PERF",
@@ -375,7 +379,7 @@
       "requirement": "reproducible artifacts and complete provenance exist; an installed end-to-end debugging smoke test passes with a self-authored fixture; each support claim points to a passing gate. Platform-specific blocked gates prevent claiming that platform supported.",
       "status": "NOT_RUN",
       "evidence": [],
-      "note": "Not fully qualified: final physical GUI gates remain pending user agreement approval/GUI direction. Final automated Mac/Linux suites, reproducible artifacts/source archive, bounded resources, controlled latency, static/hardware/research/consumer checks and local cutover are complete at recorded scopes. Physical Deck remains explicitly deferred; no publication or archival."
+      "note": "Not fully qualified. Exact recorded automated component/soak/latency/build/static/hardware/research/consumer scopes pass, but later full-tool lifecycle errors and incomplete physical GUI acceptance remain. User paused execution for documentation/handoff. No publication/archival; physical Deck explicitly deferred."
     },
     {
       "id": "HW-01",
@@ -476,7 +480,7 @@
         "docs/integration/m8-review-notes.md",
         "docs/integration/m9-reproduction-notes.md"
       ],
-      "note": "Unsupported capabilities are rejected and unnegotiated; direct and RMI tests pass. Final physical UI capability checks remain. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Final physical GUI acceptance remains incomplete. Repeated timed/fresh launches caused setup dialogs and targeting confusion. One Pin capture action responded, but navigation/text input and the required workflows were not verified. Two normal Ghidra JVMs are currently recorded, including unintended old12.1.2; generic Java bundle selection is ambiguous. User requested one persistent configured session and has now stopped execution for documentation/handoff. License approval is no longer the established blocker."
     },
     {
       "id": "MGBA-03",
@@ -516,14 +520,16 @@
       "id": "MGBA-06",
       "milestone": "M8",
       "requirement": "both backends run from extracted platform packages and pass resource, failure and cleanup gates. Mark experimental until its required tier passes on the named platform.",
-      "status": "PASS",
+      "status": "IN_PROGRESS",
       "evidence": [
         "dist/integration-final-1fce58f/macos/acceptance/receipt.json",
         "dist/integration-final-1fce58f/linux/acceptance/qualification.json",
         "dist/integration-final-1fce58f/soak-sameboy/receipt.json",
-        "dist/integration-final-1fce58f/soak-mgba/receipt.json"
+        "dist/integration-final-1fce58f/soak-mgba/receipt.json",
+        "docs/integration/gui-teardown-investigation.md",
+        "dist/integration-final-1fce58f/handoff-current-state/evidence-index.json"
       ],
-      "note": "Exact final1fce58f installed component/lifecycle suites pass on Mac/Linux. Both final30minsoaks exit0 with original budgets PASS and no uncaught JVM errors; SameBoy idle/descendant cleanup passes. Physical user controls and broad release qualification remain separate gates."
+      "note": "Recorded final component/soak checks still PASS within their exact scopes. Later full shipped-Debugger-tool timeout/disposal runs exposed stale trace-manager coordinates, an observed uncaught activation error, and logged logical-breakpoint failures. Exact original exception was not independently reproduced; no fix is implemented or qualified. Broader lifecycle acceptance is reopened, not the prior measurement results."
     },
     {
       "id": "TOOL-01",
@@ -534,7 +540,7 @@
         "docs/integration/m6-measurements-evidence.json",
         "docs/integration/agent-handoff.md"
       ],
-      "note": "Historical physical bank/navigation sequence passed; final both-backend GUI import/launch/navigation still needs acceptance. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Final physical GUI acceptance remains incomplete. Repeated timed/fresh launches caused setup dialogs and targeting confusion. One Pin capture action responded, but navigation/text input and the required workflows were not verified. Two normal Ghidra JVMs are currently recorded, including unintended old12.1.2; generic Java bundle selection is ambiguous. User requested one persistent configured session and has now stopped execution for documentation/handoff. License approval is no longer the established blocker."
     },
     {
       "id": "TOOL-02",
@@ -545,18 +551,18 @@
         "docs/integration/m9-research-notes.md",
         "docs/integration/m9-reproduction-notes.md"
       ],
-      "note": "Filtering/comparison/export and control operations have executable evidence; final physical UI operations remain. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Final physical GUI acceptance remains incomplete. Repeated timed/fresh launches caused setup dialogs and targeting confusion. One Pin capture action responded, but navigation/text input and the required workflows were not verified. Two normal Ghidra JVMs are currently recorded, including unintended old12.1.2; generic Java bundle selection is ambiguous. User requested one persistent configured session and has now stopped execution for documentation/handoff. License approval is no longer the established blocker."
     },
     {
       "id": "TOOL-03",
       "milestone": "M9",
       "requirement": "listing, decompiler, memory and history views retain coherent selection and useful state through stepping, Program/session switching, reconnect and reopen. Long operations remain cancellable; malformed inputs and backend failures leave usable controls and diagnostics.",
-      "status": "IN_PROGRESS",
+      "status": "FAIL",
       "evidence": [
-        "docs/integration/handoff-state.json",
-        "docs/integration/m9-research-notes.md"
+        "docs/integration/gui-teardown-investigation.md",
+        "dist/integration-final-1fce58f/handoff-current-state/evidence-index.json"
       ],
-      "note": "Final switching/reconnect/error/cancellation UI qualification remains, including investigation of closed-trace register-view errors. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Observed full-tool teardown errors and stale current coordinates prevent coherent selection/close/error-recovery qualification. Harness shutdown ordering is inadequate; production queued-event/disposal weakness remains under investigation. Proposed connection/auto-close barrier is unimplemented and untested. No physical workflow PASS."
     },
     {
       "id": "RESEARCH-01",
@@ -591,7 +597,7 @@
         "docs/integration/m9-research-notes.md",
         "docs/integration/agent-handoff.md"
       ],
-      "note": "Final physical keyboard/scaling/selection/cancellation/error and capability-disabled UI checks remain. Final physical qualification is pending: isolated Ghidra agreement dialogs require explicit user approval under the computer-use tool rule. GUI interaction is paused after the user questioned the chosen local VNC viewer. No approval is inferred."
+      "note": "Final physical GUI acceptance remains incomplete. Repeated timed/fresh launches caused setup dialogs and targeting confusion. One Pin capture action responded, but navigation/text input and the required workflows were not verified. Two normal Ghidra JVMs are currently recorded, including unintended old12.1.2; generic Java bundle selection is ambiguous. User requested one persistent configured session and has now stopped execution for documentation/handoff. License approval is no longer the established blocker."
     },
     {
       "id": "B-RELEASE",
@@ -599,7 +605,7 @@
       "requirement": "M7\u2013M9 and the refreshed Release A gates pass for every claimed release configuration. Backend-specific research differences are published; universal parity is not implied.",
       "status": "NOT_RUN",
       "evidence": [],
-      "note": "Not fully qualified: final physical GUI gates remain pending user agreement approval/GUI direction. Final automated Mac/Linux suites, reproducible artifacts/source archive, bounded resources, controlled latency, static/hardware/research/consumer checks and local cutover are complete at recorded scopes. Physical Deck remains explicitly deferred; no publication or archival."
+      "note": "Not fully qualified. Exact recorded automated component/soak/latency/build/static/hardware/research/consumer scopes pass, but later full-tool lifecycle errors and incomplete physical GUI acceptance remain. User paused execution for documentation/handoff. No publication/archival; physical Deck explicitly deferred."
     },
     {
       "id": "DEVICE-01",

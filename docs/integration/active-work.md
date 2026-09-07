@@ -1,23 +1,28 @@
-# Integration handoff status
+# Current execution directive: documentation-only pause
 
-Code/runtime source is frozen at `1fce58f`. Six archives and the source archive
-reproduce. Final Mac and Linux component suites, both 30-minute soaks/cleanup,
-and controlled 3+3 plus all-retained 9+9 latency assessments pass original budgets.
-Static/hardware/shared profile/research and private consumer checks are qualified
-within their recorded scopes. All bounded workers are complete.
+The user stopped CUA execution and requested an accurate plan/docs/handoff refresh.
+Do not open more apps/browsers, launch GUI probes, or resume the old timed observer.
+See [handoff](agent-handoff.md) and [state](handoff-state.json).
 
-Local GhiGBC cutover (`65e1208`/`413a971`) removes duplicate implementations while
-keeping tested compatibility delegates. Private GhiBW3 `99802e0` retains game
-validation/family support and historical sources. No publication or archival.
+Done: runtime code `1fce58f`, reproducible six packages/source archive, scoped
+Mac/Linux component checks, native/static/hardware/profile/research/consumer
+evidence, both final 30-minute soaks and controlled/all-retained latency budgets.
+GhiGBC duplicate implementation cutover and private GhiBW3 commits remain intact.
 
-**Remaining external dependency:** physical GUI is paused at Ghidra User Agreement.
-The computer-use tool requires explicit confirmation for accepting it; the pending
-question has not received approval. The user questioned the chosen temporary VNC
-viewer, so do not infer GUI direction or agreement consent. Finish the physical
-gates when that is resolved; until then neither release is fully qualified.
+New unresolved issues: full-tool timeout/disposal errors, stale trace-manager
+coordinates, logged service exceptions that the uncaught collector does not count,
+and unreliable CUA app/window/keyboard targeting. Exact original teardown
+exception not independently reproduced; no proposed cleanup fix has been applied.
+Broader lifecycle gates are reopened; no physical GUI gate or release PASS.
 
-See [handoff](agent-handoff.md), [state](handoff-state.json) and original
-[gate register](status.json). Physical Steam Deck stays explicitly NOT_RUN.
-No validation jobs remain running except the two deliberately paused GUI setups;
-inspect recorded process identities before any cleanup or reuse. Preserve all
-unrelated files and minimum-two-cycle compatibility delegates.
+Before the user killed the sessions, two normal Ghidra JVMs were found: intended patched
+12.1.3 PID47285 and unintended old12.1.2 PID47493. All sessions are assistant-created
+according to the user. Revalidate identity before cleanup/attachment; do not start
+another. Use one persistent configured session/project on an execution resume.
+VNC containers are stopped. Chrome connection concern remains unresolved; only
+in-app noVNC navigation was intentionally performed. No Chrome/VNC use by default.
+
+The prior license-only blocker is stale: the intended home has accepted agreement
+and disabled-tips preferences. Last GUI view is not proven to belong to the
+candidate. All investigation workers are complete; no background validation jobs
+remain ; the user reports killing the normal GUI processes. Physical Deck stays deferred.

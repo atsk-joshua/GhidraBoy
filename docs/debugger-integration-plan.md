@@ -2,34 +2,36 @@
 
 Status: implementation in progress; executed checks and remaining gates are tracked in the [execution ledger](integration/progress.md) and [gate status](integration/status.json). Prepared 2026-09-05 against the local checkouts below. Requirements below do not themselves establish completion. Milestone IDs in this document are independent of the earlier GhiBW3 suite integration milestones.
 
-### Execution checkpoint — current non-Deck qualification
+### Execution checkpoint — documentation-only pause after GUI failures
 
-Code is committed through `1fce58f` on `integrate-ghigbc`. The current
-[handoff](integration/agent-handoff.md), [state](integration/handoff-state.json),
-and [58-gate register](integration/status.json) identify exact evidence and active
-jobs. Neither release is fully qualified; physical Steam Deck is explicitly
-deferred. Original requirements below remain unchanged.
+Runtime code remains `1fce58f`; latest prior documentation commit is `baead10`.
+Read the current [handoff](integration/agent-handoff.md),
+[state](integration/handoff-state.json), [58-gate register](integration/status.json),
+and [full-tool teardown investigation](integration/gui-teardown-investigation.md).
+The user stopped CUA execution and asked for this documentation refresh.
+**Neither release nor the non-Deck outcome is fully qualified.**
 
-- The upstream closed-trace register-renderer defect is fixed through the declared
-  copy-only Java dependency `12.1.3+ghidraboy.register-lifetime.1`. Uncaught-error
-  injection fails correctly; bounded asynchronous register readiness passes on
-  Mac and Linux. Native decompiler remains `switch-recovery.2`.
-- Mapper identity fallback is rejected; fresh geometry, bus, native, pristine,
-  checkpoint and private consumer checks pass at their recorded scopes. Static
-  preservation and CPU coverage reuse is explicitly hash/dependency matched.
-- Six final archives reproduce; final macOS component checks and all three
-  Linux offline/compiler-free compositions pass. Final long soaks and cleanup pass.
-- Original and aggregate latency budgets failed under varying concurrent load;
-  the predeclared controlled 3+3 and all-retained 9+9 now pass original budgets.
-  All failed batches remain intact; no threshold or sample selection was changed.
-- GhiGBC duplicate implementations have been replaced with tested delegates in
-  local commits `65e1208`/`413a971`. GhiBW3 `99802e0` retains private household
-  GBW3 validation/family support and byte-preserved historical game harnesses.
-  Original histories, artifacts, rollback inputs and unrelated files remain.
-- Final physical GUI workflows are pending. Isolated apps show Ghidra's User
-  Agreement; required user confirmation has not arrived. The user questioned
-  the temporary VNC viewer chosen for local Linux GUI access, so GUI interaction
-  is paused. No agreement or acceptance is inferred.
+- Scoped final Mac/Linux component checks, reproducible packages/source archive,
+  static/hardware/shared-profile/research/private-consumer checks, both30-minute
+  soaks and controlled/all-retained latency budgets passed on their recorded
+  exact inputs. Preserve all earlier failures and scope limits.
+- The original register-renderer repair and uncaught collector are implemented.
+  Later full shipped-tool disposal exposed different errors: stale current trace
+  coordinates, an observed uncaught activation error, and logged logical-breakpoint
+  failures despite exit0/empty uncaught queues. Exact original stack not independently
+  reproduced; proposed orderly-teardown barrier is unimplemented/unqualified.
+- Broad lifecycle acceptance is reopened; physical GUI workflows remain incomplete.
+  Repeated fresh/timed launches caused first-run dialogs and CUA confusion. The user
+  confirmed all open Ghidra sessions were assistant-created and requires one
+  persistent configured session, without concurrent native GUI probes.
+- The last OS inventory found intended patched12.1.3 and unintended old12.1.2
+  JVMs; the user subsequently reports killing them. Generic Java CUA selection is ambiguous; no further target assumptions.
+  VNC is stopped, Chrome connection concern is unresolved, and the old
+  license-approval-only blocker is stale.
+- GhiGBC cutover `65e1208`/`413a971` and private GhiBW3 `99802e0`/`29145f8` remain
+  committed. Histories, artifacts, rollback inputs, delegates and unrelated files
+  remain preserved. Physical Steam Deck is explicitly deferred; no publication
+  or remote archival is authorized. Original requirements below are unchanged.
 
 ## 1. Outcome and release boundaries
 
