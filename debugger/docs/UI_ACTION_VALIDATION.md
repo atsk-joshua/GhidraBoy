@@ -10,6 +10,6 @@ Before interacting, positively identify the **GhiGBC UI Validation** window and 
 4. At later_state, click Resume, then open **GBC History**, select the captured write and click Go to writer. The observer checks the original snapshot, exact static writer and read-only historical Trace mode.
 5. At bookmark, click Bookmark observation. The existing note must remain alongside the new captured observation.
 
-Each phase allows eight minutes. Read docs/evidence/ui-action-phase.txt for the next step. Only UI_ACTIONS_PASSED after cleanup is a pass; keep timeouts/partial logs as failures. Collect-results.sh includes these logs. Do not reinterpret this observer as a renderer, physical held-key/focus, or Deck performance test.
+Each phase allows eight minutes. Read `.local/results/ui-action-phase.txt` for the next step, or `ui-action-phase.txt` under the absolute directory selected with `GBC_EVIDENCE_DIR`. Only UI_ACTIONS_PASSED after cleanup is a pass; keep timeouts/partial logs as failures. Collect-results.sh includes these logs. Do not reinterpret this observer as a renderer, physical held-key/focus, or Deck performance test.
 
 Game-specific UI acceptance instructions are maintained by the optional profile project.

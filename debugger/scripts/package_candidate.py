@@ -171,7 +171,7 @@ def main(default_platform=None):
     # Simple runtime entry points. Setup installs; validation invokes installed components.
     setup='#!/usr/bin/env bash\nset -euo pipefail\ncd "$(dirname "$0")"\nmkdir -p .local/results\n"${GBC_PYTHON:-python3}" scripts/install.py "$@" 2>&1 | tee .local/results/setup.log\n'
     (stage/'Setup.sh').write_text(setup);(stage/'Setup.sh').chmod(0o755)
-    validate='#!/usr/bin/env bash\nset -euo pipefail\ncd "$(dirname "$0")"\nmkdir -p .local/results docs/evidence\n{\n  "${GBC_PYTHON:-python3}" scripts/prepare_runtime.py\n  export GBC_PYTHON="$PWD/.venv12/bin/python"\n  if [[ "${1:-}" == "--ui" ]]; then\n    bash scripts/test_ui_actions.sh\n  else\n    bash scripts/test_native.sh\n    bash scripts/test_ghidra.sh --growth\n  fi\n} 2>&1 | tee .local/results/validate.log\n'
+    validate='#!/usr/bin/env bash\nset -euo pipefail\ncd "$(dirname "$0")"\nmkdir -p .local/results\n{\n  "${GBC_PYTHON:-python3}" scripts/prepare_runtime.py\n  export GBC_PYTHON="$PWD/.venv12/bin/python"\n  if [[ "${1:-}" == "--ui" ]]; then\n    bash scripts/test_ui_actions.sh\n  else\n    bash scripts/test_native.sh\n    bash scripts/test_ghidra.sh --growth\n  fi\n} 2>&1 | tee .local/results/validate.log\n'
     if 'mgba' in backends:
         validate=validate.replace('    bash scripts/test_ghidra.sh --growth', '    bash scripts/test_backend_trace.sh '+ ' '.join(backends))
         if 'sameboy' not in backends:

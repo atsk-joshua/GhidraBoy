@@ -7,7 +7,8 @@ cd "$(dirname "$0")/.."
 export GBC_PYTHON="${GBC_PYTHON:-$PWD/.venv12/bin/python}"
 ui_home="${GBC_TEST_HOME:-$PWD/.local/ghidra-ui-test-user}"
 "$GBC_PYTHON" scripts/install.py --user-home "$ui_home"
-mkdir -p build/projects docs/evidence
+export GBC_EVIDENCE_DIR="${GBC_EVIDENCE_DIR:-$PWD/.local/results}"
+mkdir -p build/projects "$GBC_EVIDENCE_DIR"
 ui_classes="$(mktemp -d "$PWD/build/ui-test-classes.XXXXXX")"
 ui_classpath="$(python3 - "$GHIDRA_INSTALL_DIR" "$ui_home" <<'PY'
 from pathlib import Path
@@ -23,5 +24,5 @@ if [[ -f build/GhiGBC-acceptance.jar ]]; then
 else
   "$JAVA_HOME/bin/javac" -proc:none -cp "$ui_classpath" -d "$ui_classes" tests/ghidra/UiActionTest.java
 fi
-printf '%s\n' 'Follow docs/UI_ACTION_VALIDATION.md; phases are written to docs/evidence/ui-action-phase.txt.'
+printf 'Follow docs/UI_ACTION_VALIDATION.md; phases are written to %s/ui-action-phase.txt.\n' "$GBC_EVIDENCE_DIR"
 "$JAVA_HOME/bin/java" -Duser.home="$ui_home" -cp "$ui_classes:$ui_classpath" "$ui_test" "$PWD" "$GHIDRA_INSTALL_DIR" "$@"

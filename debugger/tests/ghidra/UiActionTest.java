@@ -29,6 +29,7 @@ public class UiActionTest {
         @Override protected void shutdown(){}
     }
     static Path root;
+    static Path evidence;
     static final Queue<Throwable> asyncErrors=new ConcurrentLinkedQueue<>();
     static Trace trace;
     static long snap(){Long latest=trace.getTimeManager().getMaxSnap();return latest==null?Long.MIN_VALUE:latest;}
@@ -37,7 +38,7 @@ public class UiActionTest {
     static Object attr(String key){var m=object("Machine");return m==null?null:value(m,snap(),key);}
     static void phase(String name,String instruction)throws Exception{
         System.out.println("PHASE "+name+": "+instruction);System.out.flush();
-        Files.writeString(root.resolve("docs/evidence/ui-action-phase.txt"),name+"\n"+instruction+"\n");
+        Files.writeString(evidence.resolve("ui-action-phase.txt"),name+"\n"+instruction+"\n");
     }
     static void await(BooleanSupplier test,String assertion)throws Exception{
         long end=System.nanoTime()+TimeUnit.MINUTES.toNanos(8);
@@ -54,7 +55,9 @@ public class UiActionTest {
     public static void main(String[] args){
         root=Path.of(args[0]).toAbsolutePath().normalize();
         try{
-            PrintStream output=new PrintStream(root.resolve("docs/evidence/ui-actions.log").toFile());System.setOut(output);System.setErr(output);
+            evidence=Path.of(System.getenv().getOrDefault("GBC_EVIDENCE_DIR",root.resolve(".local/results").toString())).toAbsolutePath().normalize();
+            Files.createDirectories(evidence);
+            PrintStream output=new PrintStream(evidence.resolve("ui-actions.log").toFile());System.setOut(output);System.setErr(output);
             Thread.setDefaultUncaughtExceptionHandler((thread,error)->{asyncErrors.add(error);error.printStackTrace();});
             run(args);
             Swing.runNow(()->{});
@@ -98,7 +101,7 @@ public class UiActionTest {
         var tool=holder[0];var acceptor=tool.getService(TraceRmiService.class).acceptOne(new InetSocketAddress("127.0.0.1",0));acceptor.setTimeout(15000);
         var python=System.getenv().getOrDefault("GBC_PYTHON",root.resolve(".venv12/bin/python").toString());
         var pb=new ProcessBuilder(python,"-m","ghigbc.agent","--connect","127.0.0.1:"+((InetSocketAddress)acceptor.getAddress()).getPort(),"--rom",root.resolve("build/teaching.gbc").toString(),"--fixture-ready");
-        pb.environment().put("PYTHONPATH",root.resolve("python").toString());pb.redirectErrorStream(true);pb.redirectOutput(root.resolve("docs/evidence/ui-action-agent.log").toFile());
+        pb.environment().put("PYTHONPATH",root.resolve("python").toString());pb.redirectErrorStream(true);pb.redirectOutput(evidence.resolve("ui-action-agent.log").toFile());
         var agent=pb.start();
         try{
             var connection=acceptor.accept();trace=connection.waitForTrace(15000);
@@ -130,7 +133,7 @@ public class UiActionTest {
             System.out.println("PASS existing student bookmark text preserved");
             connection.getMethods().get("save_trace").invokeAsync(Map.of("process",object("Machine"))).get(15,TimeUnit.SECONDS);
             if(Arrays.asList(args).contains("--extended")) {
-                Path completion=root.resolve("docs/evidence/ui-extended-complete.txt");
+                Path completion=evidence.resolve("ui-extended-complete.txt");
                 if(Files.exists(completion))throw new AssertionError("Use a fresh runtime for extended UI acceptance");
                 phase("extended","Perform final report, error recovery, selection, launch and control workflows through the UI; record physical observations separately, then write ui-extended-complete.txt to permit cleanup.");
                 long deadline=System.nanoTime()+TimeUnit.MINUTES.toNanos(90);

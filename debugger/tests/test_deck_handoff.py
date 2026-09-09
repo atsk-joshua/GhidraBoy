@@ -19,6 +19,7 @@ class DeckHandoffTests(unittest.TestCase):
             private.write_text('private data')
             (root/'NOTES.txt').symlink_to(private)
             output = collect(root)
+            self.assertEqual(output.parent, root / ".local/results")
             with zipfile.ZipFile(output) as archive:
                 self.assertEqual(set(archive.namelist()), {'GhiGBC-results/doctor.json', 'GhiGBC-results/README.txt'})
                 self.assertNotIn(b'private data', b''.join(archive.read(name) for name in archive.namelist()))

@@ -78,7 +78,7 @@ public class RealTraceTest {
     }
     static Object attr(String path,String name){return object(path).getValue(snap(),name).getValue();}
     static void require(boolean ok,String message){if(!ok)throw new AssertionError(message);System.out.println("PASS "+message);}
-    static Path evidence(Path root)throws Exception{var path=Path.of(System.getenv().getOrDefault("GBC_EVIDENCE_DIR",root.resolve("docs/evidence").toString()));Files.createDirectories(path);return path;}
+    static Path evidence(Path root)throws Exception{var path=Path.of(System.getenv().getOrDefault("GBC_EVIDENCE_DIR",root.resolve(".local/results").toString()));Files.createDirectories(path);return path;}
     static long rssKiB(long pid)throws Exception{
         var process=new ProcessBuilder("ps","-o","rss=","-p",Long.toString(pid)).start();
         if(!process.waitFor(5,TimeUnit.SECONDS)){process.destroyForcibly();throw new IOException("RSS probe timed out");}

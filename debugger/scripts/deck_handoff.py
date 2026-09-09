@@ -91,7 +91,9 @@ def collect(root=ROOT):
     results = root / '.local/deck-results'
     results.mkdir(parents=True, exist_ok=True)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
-    output = root / f'GhiGBC-results-{stamp}.zip'
+    output_directory = root / '.local/results'
+    output_directory.mkdir(parents=True, exist_ok=True)
+    output = output_directory / f'GhiGBC-results-{stamp}.zip'
     with zipfile.ZipFile(output, 'x', zipfile.ZIP_DEFLATED) as archive:
         for name in RESULT_NAMES:
             path = results / name
@@ -138,22 +140,22 @@ def main():
             if args.ui:
                 print('Follow docs/UI_ACTION_VALIDATION.md in the Ghidra window. Each action has an eight-minute limit.', flush=True)
                 run(['bash', ROOT/'scripts/test_ui_actions.sh'], env, results/'ui.log')
-                source = ROOT/'docs/evidence/ui-actions.log'
-                if source.exists():
+                source = Path(env.get('GBC_EVIDENCE_DIR', str(ROOT/'.local/results')))/'ui-actions.log'
+                if source.exists() and source.resolve() != (results/source.name).resolve():
                     shutil.copy2(source, results/source.name)
             else:
                 run(['bash', ROOT/'scripts/test_native.sh'], env, results/'native.log')
                 run(['bash', ROOT/'scripts/test_ghidra.sh', '--growth'], env, results/'ghidra.log')
-                growth = ROOT/'docs/evidence/integrated-growth.json'
-                if growth.exists():
+                growth = Path(env.get('GBC_EVIDENCE_DIR', str(ROOT/'.local/results')))/'integrated-growth.json'
+                if growth.exists() and growth.resolve() != (results/growth.name).resolve():
                     shutil.copy2(growth, results/growth.name)
         print('Setup complete. Restart Ghidra and follow docs/INSTALL.md.' if args.action == 'setup'
               else 'Checks passed. Complete the playable-window and focus checks in docs/INSTALL.md.')
     finally:
         # Copy a partially completed UI log too, so failures are reviewable.
         if args.action == 'validate' and args.ui:
-            source = ROOT/'docs/evidence/ui-actions.log'
-            if source.exists():
+            source = Path(env.get('GBC_EVIDENCE_DIR', str(ROOT/'.local/results')))/'ui-actions.log'
+            if source.exists() and source.resolve() != (results/source.name).resolve():
                 shutil.copy2(source, results/source.name)
         print('Results folder:', results)
         print('Collect a shareable log ZIP with: bash Collect-results.sh')

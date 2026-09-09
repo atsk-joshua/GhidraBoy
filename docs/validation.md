@@ -4,7 +4,7 @@ Product capabilities and supported workflows are defined by the root README,
 [user workflows](user-workflows.md), and the [GhidraBoy debugger support contract](../debugger/docs/SUPPORT.md).
 Engineering qualification applies to exact source, build and package identities;
 [historical modernization evidence](modernization-evidence.md) and
-[integration receipts](integration/final-qualification.md) are not fresh results
+[integration receipts](sa/evidence-index.json#docs/integration/final-qualification.md) are not fresh results
 for this checkout. Game-specific corpus evidence does not substitute for
 generic regressions or establish whole-ROM semantic correctness.
 
@@ -44,6 +44,8 @@ saved-instruction decoding are separate from the runtime support policy:
 claimed. No provider semantics changed in this cleanup, and installed migration,
 GUI/device and full decompilation acceptance were not rerun.
 
-Historical engineering reports with source-only links remain in the source checkout; the static extension ships the explicit user documentation allowlist in `packaging/static-docs.txt`. Packaged documentation links must resolve within the extracted payload.
+Historical engineering reports are preserved externally through the [evidence index](sa/evidence-index.json); the static extension ships the explicit user documentation allowlist in `packaging/static-docs.txt`. Packaged documentation links must resolve within the extracted payload.
 
 See the [retained debugger identity inventory](debugger-identities.md) before proposing an identity migration.
+
+Retained new captures and execution receipts use an explicit external work/output directory. Debugger Java capture writers and result collectors honor `GBC_EVIDENCE_DIR` (use an absolute path); their default is ignored `debugger/.local/results` from a source checkout or `.local/results` in an extracted package. UI phase markers, partial logs and growth JSON use that same directory. Generated collection ZIPs stay in `.local/results`. Ordinary ignored Gradle output remains in `build/`. Never place new run output into tracked documentation; maintained fixtures and design inputs under `docs/evidence` remain visible to Git.

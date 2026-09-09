@@ -33,3 +33,13 @@ build-ghidra-12.1.2.ps1
 # JVM crash logs (common when running Ghidra headless tests)
 hs_err_pid*
 replay_pid*
+
+# Generated local Python bytecode and collected validation archives
+__pycache__/
+*.pyc
+/debugger/GhiGBC-results-*.zip
+
+# Known generated output names; maintained docs/evidence inputs remain visible
+/debugger/docs/evidence/ui-action-phase.txt
+/debugger/docs/evidence/ui-extended-complete.txt
+/debugger/docs/evidence/integrated-growth.json
