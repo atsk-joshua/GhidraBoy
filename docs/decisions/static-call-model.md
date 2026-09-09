@@ -179,7 +179,7 @@ and Java injection implementations prevent self-reinjection. Registry version 3
 records explicit execution conditions and native dependency closure; strict JSON
 parsing prevents missing primitive premises from silently becoming zero.
 
-Resume from the source file `docs/evidence/sa01-production-20260907/HANDOFF.md`.
+That historical handoff is preserved through [the evidence index](../sa/evidence-index.json). Current task routing is in [SA status](../sa/IMPLEMENTATION-STATUS.md).
 The original requirements and unresolved architectural obligations are retained;
 no milestone is closed by this handoff.
 

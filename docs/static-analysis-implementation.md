@@ -1,13 +1,6 @@
 # Static analysis implementation handoff
 
-Updated 2026-09-07. Start here when implementing the static-accuracy milestone.
-
-**Active integration:** read `docs/evidence/sa01-state-20260907/HANDOFF.md` and
-its original requirement audit. Preserve the preceding production/resumed
-receipts in `docs/evidence/sa01-production-20260907/` and
-`docs/evidence/sa01-resume-20260907/`. The canonical failure was reproduced and its
-assertions retained while implementing local continuation lowering. Qualification
-and original SA-01/SA-02 obligations remain open; earlier passes are historical.
+This retained implementation guide describes the original SA requirement decomposition. Start with [current SA status](sa/IMPLEMENTATION-STATUS.md), the [implementation plan](sa/IMPLEMENTATION-PLAN.md), and [decision gates](sa/DECISION-GATES.md). Dated campaign instructions below are historical; they do not authorize replay or supersede accepted W3b. Original SA/FX/M scope remains required.
 
 This guide makes the [roadmap](roadmap.md) executable; it does not replace any
 roadmap item, the [requirements](static-analysis-spec.md), or existing gates.
@@ -37,7 +30,7 @@ static-accuracy specification describes the required future behavior. Do not
 change language IDs, versions, constructors, schemas, or compiler IDs merely to
 make them resemble the planned architecture.
 
-## Begin with SA-00
+## Original SA-00 implementation requirements
 
 First inspect `ProgramFingerprint`, `BankAnalysis`, `PcodeConstants`,
 `AnalysisApplication`, `AnalysisOwnership`, and `AnalysisResult` under
@@ -248,8 +241,7 @@ status change.
 
 ## State-qualified integration successor
 
-Continue from `docs/evidence/sa01-state-20260907/` for the current implementation
-and qualification, retaining the preceding resumed receipt. The integration now
+The historical state-qualified campaign is preserved through [the evidence index](sa/evidence-index.json). Current implementation and qualification routing comes from the tracked SA authority. The integration now
 uses `SoftwareCallEffects` state graphs, `SoftwareCallContinuationView`, rooted
 `SoftwareCallInstructionDiscovery`, and optional `SoftwareCallStateEntryInjection`.
 See the latest sections of the call/bank decisions for the explicit compatibility

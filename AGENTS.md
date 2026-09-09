@@ -13,8 +13,14 @@ their ROMs, annotations, exact-game conventions and research artifacts.
   overwrite another worker's changes.
 - Do not prefix branches with `codex/`.
 - Use [docs/README.md](docs/README.md) to find the current documentation authority.
-- For priorities, read [docs/roadmap.md](docs/roadmap.md). Do not hard-code the
-  next milestone from an old prompt or handoff.
+- For priorities and accepted checkpoints, read [SA status](docs/sa/IMPLEMENTATION-STATUS.md),
+  [the retained plan](docs/sa/IMPLEMENTATION-PLAN.md), [decision gates](docs/sa/DECISION-GATES.md)
+  and [docs/roadmap.md](docs/roadmap.md). Do not schedule work from historical handoffs.
+- This Git checkout is the sole maintained development source. Workspace copies
+  are evidence/runtime/cache or inactive recovery, never a second source authority.
+  Keep detailed execution receipts outside the source tree; use the [evidence index](docs/sa/evidence-index.json).
+- Follow the [cutover and future main-history guardrail](docs/sa/REPO-CUTOVER.md).
+  Development-branch cleanup does not authorize importing historical evidence ancestry into main.
 - For static implementation, read
   [the implementation handoff](docs/static-analysis-implementation.md) and the
   relevant requirements in [the specification](docs/static-analysis-spec.md).

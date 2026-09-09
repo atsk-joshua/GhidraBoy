@@ -6,14 +6,14 @@
 
 # GhiGBC → GhidraBoy integration plan
 
-Status: implementation in progress; executed checks and remaining gates are tracked in the [execution ledger](integration/progress.md) and [gate status](integration/status.json). Prepared 2026-09-05 against the local checkouts below. Requirements below do not themselves establish completion. Milestone IDs in this document are independent of the earlier GhiBW3 suite integration milestones.
+Status: implementation in progress; executed checks and remaining gates are tracked in the [execution ledger](sa/evidence-index.json#docs/integration/progress.md) and [gate status](integration/status.json). Prepared 2026-09-05 against the local checkouts below. Requirements below do not themselves establish completion. Milestone IDs in this document are independent of the earlier GhiBW3 suite integration milestones.
 
 ### Execution checkpoint — documentation-only pause after GUI failures
 
 Runtime code remains `1fce58f`; latest prior documentation commit is `baead10`.
-Read the current [handoff](integration/agent-handoff.md),
-[state](integration/handoff-state.json), [58-gate register](integration/status.json),
-and [full-tool teardown investigation](integration/gui-teardown-investigation.md).
+Read the current [handoff](sa/evidence-index.json#docs/integration/agent-handoff.md),
+[state](sa/evidence-index.json#docs/integration/handoff-state.json), [58-gate register](integration/status.json),
+and [full-tool teardown investigation](sa/evidence-index.json#docs/integration/gui-teardown-investigation.md).
 The user stopped CUA execution and asked for this documentation refresh.
 **Neither release nor the non-Deck outcome is fully qualified.**
 

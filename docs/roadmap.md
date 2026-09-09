@@ -1,6 +1,6 @@
 # Development roadmap
 
-Updated 2026-09-07. This is the current authority for development priorities.
+Retained roadmap and original SA/M scope. Current package sequencing and accepted checkpoints are in [SA status](sa/IMPLEMENTATION-STATUS.md), the [retained implementation plan](sa/IMPLEMENTATION-PLAN.md), and [decision gates](sa/DECISION-GATES.md). The dated entries below preserve requirements and historical dispositions; their next-step instructions are superseded by that authority.
 The [static accuracy specification](static-analysis-spec.md) defines the required
 outcome; [research and design decisions](static-analysis-research.md) records its
 evidence. Requirements and research are not implemented capabilities or release
@@ -9,7 +9,7 @@ qualification. Current behavior remains documented in [analysis](analysis.md),
 
 Agents should begin with the [implementation handoff](static-analysis-implementation.md),
 which maps these items to source files, focused regressions, commands and decision
-deliverables. SA-00 is complete within its bounded integrity scope. Start next with
+deliverables. SA-00 is complete within its bounded integrity scope. The original sequence began with
 SA-01; SA-01 through SA-07 remain open. Do not assume the unselected banking architecture.
 
 ## First priority: complete and trustworthy static analysis
@@ -130,7 +130,7 @@ nor this implementation checkpoint closes SA-01 or the general SA-02 milestone;
 the requirement audit owns the final disposition. All original items remain.
 
 
-## Current SA-01 integration (2026-09-07)
+## Historical SA-01 integration (2026-09-07)
 
 The retained production handoff and its failures remain in
 `docs/evidence/sa01-production-20260907/HANDOFF.md`. The resumed source receipt and
@@ -148,8 +148,8 @@ prepared fixtures. SA-01 and SA-02 remain incomplete; no SA or M item is replace
 
 ## State-sensitive handoff (2026-09-07)
 
-The active successor is [the state-sensitive handoff](evidence/sa01-state-20260907/HANDOFF.md)
-and its [original requirement audit](evidence/sa01-state-20260907/completion-audit.md).
+The historical successor was [the state-sensitive handoff](sa/evidence-index.json#docs/evidence/sa01-state-20260907/HANDOFF.md)
+and its [original requirement audit](sa/evidence-index.json#docs/evidence/sa01-state-20260907/completion-audit.md).
 The built registry5 candidate passes full provider/lint/build and the retained six
 finite installed phases. Fresh state/context installation still fails during
 normal automatic analysis; its thunk/fixup drift and fragment-flow diagnostics

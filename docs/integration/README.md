@@ -1,19 +1,5 @@
-# Historical integration records
+# Retained integration contracts and gates
 
-Files in this directory are retained source snapshots, handoffs, execution logs
-and qualification receipts from their recorded campaigns. They are immutable
-observations, including historical external-consumer names and old checkout paths.
-Do not use old plans, migration recipes, delegate-retention rules or milestone
-counts as current instructions.
+Current static-analysis work is governed by [SA status](../sa/IMPLEMENTATION-STATUS.md), the [implementation plan](../sa/IMPLEMENTATION-PLAN.md) and [decision gates](../sa/DECISION-GATES.md). This directory retains the original [58-gate ledger](status.json), [integration plan](../debugger-integration-plan.md), architectural decisions, compatibility/source-migration policy and Linux build identities used by maintained tooling. Their recorded success claims apply only to their original artifacts.
 
-Current entry points are [the documentation map](../README.md),
-[roadmap and retained backlog](../roadmap.md), [building](../building.md), [validation](../validation.md), and
-[debugger installation](../../debugger/docs/INSTALL.md).
-
-`status.json` and its generated report describe the same historical gate set;
-`tools/integration_report.py` remains its reader. `progress.md`, `agent-handoff*.md`,
-`resume-goal.md`, `active-work.md`, `compatibility.md`, `migration.md` and
-`../debugger-integration-plan.md` are historical continuation/migration context.
-The `*-evidence.json`, `*-qualification*` and `final-*-notes.md` files apply only
-to their recorded source and artifact identities. New artifact qualification
-needs a new receipt, without changing the historical result.
+Superseded handoffs, per-run qualification output and historical captures were copied and verified externally. Use [the evidence index](../sa/evidence-index.json) with the original `docs/integration/...` path to find the exact origin variant, checksum and recovery reference. Detailed relocation inventory and new cutover receipts are external. No old gate or requirement was removed or promoted by this cleanup.

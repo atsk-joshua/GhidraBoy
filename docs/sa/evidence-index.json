@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "external_root": "Selected ghidraboy-sa workspace (configured locally; never a test/build input)",
+  "cutover_id": "REPO-CUTOVER-20260909-v2",
+  "batch": "W3b-CFG-CONVERGENCE",
+  "acceptance": "Master-accepted bounded W3b: cyclic joins/convergence, active continuation order, same physical configured site/two exact domains",
+  "limits": [
+    "Bounded finite relational convergence, not general scalability",
+    "Native HighFunction is not architectural SP/PC or write-count evidence",
+    "Configured coexistence is not automatic discovery",
+    "G1/G3/G4 and broader W3 qualification remain open; W2 scheduled foundation frozen"
+  ],
+  "accepted_source_manifest": {
+    "path": "evidence/batches/W3b-CFG-CONVERGENCE/final-source-files.json",
+    "sha256": "ad023bf61f5273b9d1466c5292f09aa738cd6911cfb89bb2aaf4d48cc3bcc06e"
+  },
+  "accepted_archive": {
+    "path": "evidence/batches/W3b-CFG-CONVERGENCE/CHANGES-W3b-CFG-CONVERGENCE.zip",
+    "sha256": "e99e3bcd2a88c9ff0378a2c5a6d10b85ed801ab6be7b07d29f7a811ad834f138"
+  },
+  "accepted_extension_sha256": "de7b17963d8f009ce2dabfb1fe2090e7dd3ab29000c20cd26b8b632bd81e00ed",
+  "accepted_provider_jar_sha256": "e4928a54622a6010bce716000dc43fac4a1a8020fb0fb6fa97c79e4574508b9b",
+  "native_sha256": "d60be1dd82b660b4123adbe2a8c7c3353a7974e856d4298208f8dc68490db871",
+  "sla_sha256": "02f52cc6eeb44ebc94cfda1d24e58e73b27b8585e729ea30dff1807a0a994a2a",
+  "historical_relocation": {
+    "root": "evidence/repo-imports/REPO-CUTOVER-20260909-v2",
+    "pattern": "<origin>/<original repository-relative path>",
+    "inventory": "evidence/cutovers/REPO-CUTOVER-20260909-v2/reconciliation-disposition.json",
+    "recovery_manifest": "evidence/cutovers/REPO-CUTOVER-20260909-v2/recovery.json"
+  },
+  "preserved_development_history": {
+    "bundle": "evidence/cutovers/REPO-CUTOVER-20260909-v2/development-history.bundle",
+    "sha256": "c3f012fee4afc6c192622df0a21d2839afcb20bf6e2b9487ee5980e22a5837e3",
+    "recovery_archives": [
+      {
+        "path": "evidence/cutovers/REPO-CUTOVER-20260909-v2/REPO-recovery.tar.gz",
+        "sha256": "cb5f9486835c09cc46deb53208253f52a4dd22ee1f33c527a7742912e97c6f24"
+      },
+      {
+        "path": "evidence/cutovers/REPO-CUTOVER-20260909-v2/SA_SOURCE-recovery.tar.gz",
+        "sha256": "3cb7cdc8a38262c64c3a5908bc774d241ecf9e075b369494d927d9e6c2df79d4"
+      }
+    ]
+  },
+  "pre_cutover_head": "5ffc32f65bbd3254c9694d4f33c4fb21039d3fa1",
+  "implementation_commit": "0a607eff4e63dc44a206d4db2563383a5c85c188",
+  "evidence_cleanup_commit": "ec48e312a1d4a96dcafbed51c591c5129b2c15d4",
+  "cutover_validation": "Pending fresh REPO-built checkpoint; accepted W3b runs do not test the new commit",
+  "original_planning_evidence": {
+    "archive_reference": "GhidraBoy-EX0205/20260908-182408/EVIDENCE.tar.gz",
+    "sha256": "d4914efc99c38ecfe0e1ca473a55ccddef87aa51518a35715ecb37c00ce70949",
+    "member_root": "EX0205/run/",
+    "reference_maps": [
+      "evidence/cutovers/REPO-CUTOVER-20260909-v2/IMPLEMENTATION-PLAN.md.historical-references.json",
+      "evidence/cutovers/REPO-CUTOVER-20260909-v2/DECISION-GATES.md.historical-references.json"
+    ]
+  },
+  "maintained_source_references": [
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "ordinary",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/OrdinaryEntryAccess.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "finite",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/FiniteEntryProducer.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "bank",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/BankAnalysis.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "mapping",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/ProgramMapping.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "mapper",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/MapperState.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "mapper-knowledge",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/MapperKnowledge.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "effects",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallEffects.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "continuation",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallContinuationView.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "call-model",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallModel.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "registry",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallRegistry.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "fingerprint",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/ProgramFingerprint.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "entry",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallStateEntryInjection.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "native-patch",
+      "repository_path": "tools/patches/ghidra-12.1.3-state-entry-1.patch",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "ownership",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/AnalysisOwnership.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "application",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallApplication.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "analysis-application",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/AnalysisApplication.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "tools",
+      "repository_path": "ghidra_scripts/GhidraBoyTools.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "knowledge",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/ProgramKnowledge.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "consumer",
+      "repository_path": "debugger/ghidra-extension/src/main/java/ghigbc/BankMappings.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "state-tests",
+      "repository_path": "src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStatePathsTest.kt",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "automatic-test",
+      "repository_path": "src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallAutomaticAnalysisTest.kt",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "isolation-tests",
+      "repository_path": "src/test/kotlin/fi/gekkio/ghidraboy/OrdinaryIsolationAccessTest.kt",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "IMPLEMENTATION-PLAN.md",
+      "reference": "validation",
+      "repository_path": "docs/validation.md",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "DECISION-GATES.md",
+      "reference": "state-tests",
+      "repository_path": "src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStatePathsTest.kt",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "DECISION-GATES.md",
+      "reference": "callee-tests",
+      "repository_path": "src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallStateCalleeApplicationTest.kt",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "DECISION-GATES.md",
+      "reference": "ordinary",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/OrdinaryEntryAccess.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "DECISION-GATES.md",
+      "reference": "effects",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/SoftwareCallEffects.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "DECISION-GATES.md",
+      "reference": "mapping",
+      "repository_path": "src/main/java/fi/gekkio/ghidraboy/ProgramMapping.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    },
+    {
+      "document": "DECISION-GATES.md",
+      "reference": "migration-script",
+      "repository_path": "src/test/scripts/GhidraBoySa01StateMigration.java",
+      "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
+    }
+  ]
+}

@@ -7,8 +7,8 @@ extracted archives; source README files are entry points for contributors.
 | --- | --- |
 | Agent working rules | [Root AGENTS.md](../AGENTS.md), [processor rules](../data/languages/AGENTS.md), [debugger rules](../debugger/AGENTS.md) |
 | Development priorities and retained backlog | [Roadmap](roadmap.md) |
-| Agent implementation entry point | [Static implementation handoff](static-analysis-implementation.md) |
-| Active SA-01 production integration | [Current handoff](evidence/sa01-state-20260907/HANDOFF.md), [requirement audit](evidence/sa01-state-20260907/completion-audit.md), [receipt](evidence/sa01-state-20260907/README.md); [retained finite qualification](evidence/sa01-resume-20260907/README.md) |
+| Static implementation plan and current checkpoint | [Status](sa/IMPLEMENTATION-STATUS.md), [retained plan](sa/IMPLEMENTATION-PLAN.md), [decision gates](sa/DECISION-GATES.md) |
+| Accepted evidence and repository recovery | [Evidence index](sa/evidence-index.json), [cutover/history policy](sa/REPO-CUTOVER.md) |
 | Planned static accuracy requirements | [Static accuracy specification](static-analysis-spec.md) |
 | Static design evidence and unresolved choices | [Research and design decisions](static-analysis-research.md) |
 | Static installation and everyday use | [User workflows](user-workflows.md) |

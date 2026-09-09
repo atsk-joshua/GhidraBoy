@@ -26,3 +26,11 @@ debugger-identities.md
 decisions/sa00-integrity.md
 decisions/static-call-model.md
 decisions/static-bank-model.md
+
+# Current static implementation authority and compact provenance
+sa/README.md
+sa/IMPLEMENTATION-PLAN.md
+sa/DECISION-GATES.md
+sa/IMPLEMENTATION-STATUS.md
+sa/REPO-CUTOVER.md
+sa/evidence-index.json
