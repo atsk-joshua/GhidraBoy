@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.emu.SignedStackInstructionTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:58:49.609Z" hostname="MacBookPro.localdomain" time="0.513">
-  <properties/>
-  <testcase name="signed SP additions preserve correct low byte flags and wrap()" classname="fi.gekkio.ghidraboy.emu.SignedStackInstructionTest" time="0.51"/>
-  <testcase name="HL auto increment and decrement wrap at sixteen bits()" classname="fi.gekkio.ghidraboy.emu.SignedStackInstructionTest" time="0.002"/>
-  <testcase name="stack word accesses wrap the flat sixteen bit address space()" classname="fi.gekkio.ghidraboy.emu.SignedStackInstructionTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

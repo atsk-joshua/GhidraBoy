@@ -1,7 +1,0 @@
-{
-  "testedBeforeFinalDocs": "/private/tmp/ghidraboy-sa00/sa00-tested-before-final-docs.zip",
-  "sha256": "5a2b6f22a47ac0b98eb04fa0f4eac51d3d93bb65e167bdf4729c527c83050a64",
-  "finalArchive": "/Users/joshuahansen/dev/GhidraBoy/build/distributions/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip",
-  "finalSha256": "d5a18485d6b971a5a6f39cf552466b8997681723b5a4a25cddefc05db1f9258c",
-  "nonDocumentationPayloadByteIdentical": true
-}

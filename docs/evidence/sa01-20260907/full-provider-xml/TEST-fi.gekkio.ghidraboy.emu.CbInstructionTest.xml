@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.emu.CbInstructionTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:58:49.169Z" hostname="MacBookPro.localdomain" time="0.305">
-  <properties/>
-  <testcase name="all CB encodings execute register and memory semantics()" classname="fi.gekkio.ghidraboy.emu.CbInstructionTest" time="0.305"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.SoftwareCallBankedApplicationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:06:34.775Z" hostname="MacBookPro.localdomain" time="0.545">
-  <properties/>
-  <testcase name="ordinary production view carries nonrestoring banked continuation into native function()" classname="fi.gekkio.ghidraboy.SoftwareCallBankedApplicationTest" time="0.545"/>
-  <system-out><![CDATA[WARN  Decompiling rom1::4100, pcode error at 8000: Could not follow disassembly flow into non-existing memory at 8000 (DecompileCallback)  
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

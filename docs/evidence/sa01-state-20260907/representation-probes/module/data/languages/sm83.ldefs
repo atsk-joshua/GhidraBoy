@@ -1,1 +1,0 @@
-<language_definitions><language processor="SM83WideExperiment" endian="little" size="32" variant="default" version="1.0" slafile="sm83.sla" processorspec="sm83.pspec" id="SM83WideExperiment:LE:32:default"><description>Disposable physical-space experiment</description><compiler name="default" spec="sm83.cspec" id="default"/></language></language_definitions>

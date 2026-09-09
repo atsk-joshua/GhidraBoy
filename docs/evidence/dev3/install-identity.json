@@ -1,9 +1,0 @@
-{
-  "artifact": "/tmp/ghidraboy-dev3-gui/ghidra_12.1.3_PUBLIC_20260905-dev3_GhidraBoy.zip",
-  "sha256": "4c0fd62c1046ca52ad75a99953c4d8851d13efa568351f346fd0630cbfbc597b",
-  "installedRoot": "/tmp/ghidraboy-dev3-gui/ghidra_12.1.3_PUBLIC",
-  "ghidraVersion": "12.1.3",
-  "extensionProperties": "author=Gekkio\nbuildEpoch=1788566400\ncreatedOn=2026-09-05\ndescription=Support for Sharp SM83 / Game Boy\nextensionVersion=20260905-dev3\nname=GhidraBoy\nversion=12.1.3\n",
-  "verifiedFileCount": 36,
-  "allInstalledMembersMatch": true
-}

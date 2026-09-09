@@ -1,6 +1,0 @@
-{
-  "files": [
-    "src/test/kotlin/fi/gekkio/ghidraboy/SoftwareCallAutomaticAnalysisTest.kt"
-  ],
-  "scope": "Kotlin formatting only; focused behavioral result predates this formatting; provider Java unchanged"
-}

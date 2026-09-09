@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.PcodeConstantsSleighTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:41:43.921Z" hostname="MacBookPro.localdomain" time="0.003">
-  <properties/>
-  <testcase name="compiled instructions propagate overlap arithmetic wrap and arithmetic right shift()" classname="fi.gekkio.ghidraboy.PcodeConstantsSleighTest" time="0.003"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

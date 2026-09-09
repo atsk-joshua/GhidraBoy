@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.ApplicationIntegrityTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T10:40:39.293Z" hostname="MacBookPro.localdomain" time="0.036">
-  <properties/>
-  <testcase name="old supplemental reference receipt cannot authorize deleting user primary edit()" classname="fi.gekkio.ghidraboy.ApplicationIntegrityTest" time="0.017"/>
-  <testcase name="late cancellation rolls back saved result and final discovery ownership()" classname="fi.gekkio.ghidraboy.ApplicationIntegrityTest" time="0.019"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

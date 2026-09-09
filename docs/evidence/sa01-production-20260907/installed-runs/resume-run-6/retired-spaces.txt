@@ -1,6 +1,0 @@
-gb_call_view_291_4200
-gb_call_view_291_4200_1
-gb_call_view_291_4500
-gb_call_view_291_4500_1
-gb_call_view_291_4800
-gb_call_view_291_4800_1

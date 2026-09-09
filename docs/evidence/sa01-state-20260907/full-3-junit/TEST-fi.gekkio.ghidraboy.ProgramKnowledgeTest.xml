@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.ProgramKnowledgeTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:38:12.186Z" hostname="MacBookPro.localdomain" time="0.012">
-  <properties/>
-  <testcase name="cancelled export creates no file and leaves program unchanged()" classname="fi.gekkio.ghidraboy.ProgramKnowledgeTest" time="0.006"/>
-  <testcase name="export preserves legacy schema annotations and create-new semantics()" classname="fi.gekkio.ghidraboy.ProgramKnowledgeTest" time="0.006"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

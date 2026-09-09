@@ -1,5 +1,0 @@
-60837     1 /private/tmp/ghidraboy-sa01-window-20260907/app/GhidraBoySA01.app/Contents/MacOS/GhidraBoySA01
-61498 60837 /private/tmp/ghidraboy-sa01-resume-install-7/ghidra_12.1.3_PUBLIC/Ghidra/Features/Decompiler/os/mac_arm_64/decompile
-63999 51693 /bin/zsh -c ps -axo pid,ppid,command | rg 'GhidraBoySA01|ghidra.Ghidra|ghidraboy-sa01|decompile' > docs/evidence/sa01-state-20260907/initial-processes.txt
-64000 63983 /private/tmp/ghidraboy-sa00/ghidra_12.1.3_PUBLIC/Ghidra/Features/Decompiler/os/mac_arm_64/decompile
-64002 63999 rg GhidraBoySA01|ghidra.Ghidra|ghidraboy-sa01|decompile

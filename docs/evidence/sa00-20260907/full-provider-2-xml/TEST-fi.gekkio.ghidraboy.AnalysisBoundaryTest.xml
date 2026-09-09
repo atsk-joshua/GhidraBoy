@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.AnalysisBoundaryTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-07T04:08:40.094Z" hostname="MacBookPro.localdomain" time="0.489">
-  <properties/>
-  <testcase name="PC wrap follows the established low ROM window()" classname="fi.gekkio.ghidraboy.AnalysisBoundaryTest" time="0.367"/>
-  <testcase name="relative cross-window instruction fetch requires the correct physical bytes()" classname="fi.gekkio.ghidraboy.AnalysisBoundaryTest" time="0.121"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

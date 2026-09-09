@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.SoftwareCallExecutionViewTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-07T20:28:26.914Z" hostname="MacBookPro.localdomain" time="0.017">
-  <properties/>
-  <testcase name="identical physical continuation fixture compares overlays segmented addresses and scoped execution view()" classname="fi.gekkio.ghidraboy.SoftwareCallExecutionViewTest" time="0.007"/>
-  <testcase name="continuation permits exact fixed RAM writes but protects mapper devices and return word()" classname="fi.gekkio.ghidraboy.SoftwareCallExecutionViewTest" time="0.006"/>
-  <testcase name="continuation requires a native physical data view for register indirect loads()" classname="fi.gekkio.ghidraboy.SoftwareCallExecutionViewTest" time="0.004"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

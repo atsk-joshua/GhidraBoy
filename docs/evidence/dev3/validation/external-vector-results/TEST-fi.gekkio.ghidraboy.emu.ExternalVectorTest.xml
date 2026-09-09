@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="fi.gekkio.ghidraboy.emu.ExternalVectorTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-05T09:41:11.237Z" hostname="MacBookPro.localdomain" time="1.113">
-  <properties/>
-  <testcase name="pinned MIT SingleStepTests samples compare registers and memory()" classname="fi.gekkio.ghidraboy.emu.ExternalVectorTest" time="1.113"/>
-  <system-out><![CDATA[GHIDRABOY_VECTOR_EVIDENCE={  "revision": "f9c30210245dd691661db39f5ace022c465ecc2f",  "files": 21,  "vectors": 21000,  "sampleHashesVerified": true}
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

@@ -1,2 +1,0 @@
-  PID  PPID COMMAND
-60837     1 /private/tmp/ghidraboy-sa01-window-20260907/app/GhidraBoySA01.app/Contents/MacOS/GhidraBoySA01
