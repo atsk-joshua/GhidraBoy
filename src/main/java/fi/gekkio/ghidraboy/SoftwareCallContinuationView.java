@@ -15,7 +15,7 @@ import java.util.*;
  */
 public final class SoftwareCallContinuationView {
   private SoftwareCallContinuationView() {}
-  public static final String VERSION = "software-call-state-continuation-2";
+  public static final String VERSION = "software-call-state-continuation-3";
 
   /** Detect mapper-sensitive raw branches which native recovery would decode outside the selected path. */
   static boolean requiresEntryContext(Program p, SoftwareCallModel.Frame frame,
@@ -81,8 +81,7 @@ public final class SoftwareCallContinuationView {
       }
       if (Set.of("FETCH_SPACE", "DATA_IDENTITY", "MAPPER_WRITE", "INDIRECT_BRANCH", "CALL_TARGET").contains(veto.kind())
           || (veto.kind().equals("NONLOCAL_CALL") && graph.kind().equals("CALLEE") && graph.exit().equals("NONLOCAL")
-              && graph.steps().get(graph.steps().size() - 1).index() == veto.step()
-              && graph.steps().get(graph.steps().size() - 1).transfer().equals("RETURN")))
+              && graph.steps().stream().anyMatch(step->step.index()==veto.step()&&step.callDepth()==0&&step.successor()==null&&step.transfer().equals("RETURN"))))
         discharged.add(veto.reason());
     }
     // A shared diagnostic must not lose a nested occurrence when its root occurrence is discharged.
@@ -171,6 +170,19 @@ public final class SoftwareCallContinuationView {
     return lowering.emit();
   }
 
+  /** Rebind already validated machine graph edges as local p-code edges, retaining conditions. */
+  static PcodeOp[] bindPredicateEdges(Program p, Address site, List<PcodeOp> ops,
+      Map<String,Integer> labels, Map<Integer,String> edges) {
+    for (var edge : edges.entrySet()) {
+      var destination = labels.get(edge.getValue());
+      if (destination == null) throw new IllegalArgumentException("Predicate edge escapes its native invocation");
+      var op = ops.get(edge.getKey()); var inputs = op.getInputs().clone();
+      inputs[0] = new Varnode(p.getAddressFactory().getConstantSpace().getAddress((destination-edge.getKey()) & 0xffffffffL),4);
+      ops.set(edge.getKey(),new PcodeOp(site,edge.getKey(),op.getOpcode(),inputs,op.getOutput()));
+    }
+    return ops.toArray(PcodeOp[]::new);
+  }
+
   private static final class Lowering {
     final Program p;
     final Address site;
@@ -184,7 +196,7 @@ public final class SoftwareCallContinuationView {
     Lowering(Program p, Address site, SoftwareCallEffects.ContinuationSummary graph,
         List<SoftwareCallValidation.Configuration> configurations, long unique) {
       this.p = p; this.site = site; this.graph = graph; this.configurations = configurations; this.unique = unique;
-      this.entryStep = graph.steps().get(0).index();
+      this.entryStep = graph.entryStep();
       this.sourceSite = SoftwareCallRegistry.graphSourceSite(p, site);
       this.originKind = SoftwareCallRegistry.graphOrigin(p, site, graph.kind());
     }
@@ -210,10 +222,7 @@ public final class SoftwareCallContinuationView {
           || (step.transfer().equals("RETURN") && step.successor() == null
               && (graph.exit().equals("NONLOCAL") || graph.kind().equals("CALLEE")))
           || (step.callOutcome() != null && step.callOutcome().exit().equals("NONRETURNING"))) return null;
-      if (step.afterCall() != null)
-        return graph.steps().stream().filter(candidate -> candidate.index() > step.index() && candidate.callDepth() == 0
-            && candidate.before().equals(step.afterCall())).map(SoftwareCallEffects.ContinuationStep::index).findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Missing post-call state"));
+      if (step.afterCall() != null) return SoftwareCallEffects.postCallSuccessor(graph,step);
       if (step.callOutcome() != null && step.callOutcome().exit().equals("NONLOCAL")) {
         int resume = step.callOutcome().resumeStep();
         if (graph.steps().stream().noneMatch(candidate -> candidate.index() == resume)) return null;
@@ -250,7 +259,7 @@ public final class SoftwareCallContinuationView {
           if (code == PcodeOp.RETURN && !external) continue;
           if (softwareTransfer || code == PcodeOp.CALL || code == PcodeOp.CALLIND) {
             var invocation = SoftwareCallEffects.calleeInvocations(graph).stream().filter(call -> call.callStep() == step.index()).findFirst().orElseThrow();
-            var contextual = SoftwareCallRegistry.contextualTarget(p, sourceSite, originKind, invocation.graph().steps().get(0).index());
+            var contextual = SoftwareCallRegistry.contextualTarget(p, sourceSite, originKind, invocation.graph().entry().index());
             if (step.softwareCall() != null) {
               SoftwareCallValidation.Preview validated = null;
               for (var candidate : configurations) {
@@ -275,7 +284,7 @@ public final class SoftwareCallContinuationView {
               if (resumed != null && (!resumed.before().equals(outcome.state()) || resumed.callDepth() != step.callDepth()))
                 throw new IllegalArgumentException("Nonlocal continuation does not retain the proved live state");
               if (resumed == null && (!graph.kind().equals("CALLEE") || !graph.exit().equals("NONLOCAL")
-                  || graph.steps().get(graph.steps().size() - 1).index() != outcome.terminalStep()))
+                  || graph.steps().stream().noneMatch(terminal->terminal.index()==outcome.terminalStep()&&terminal.transfer().equals("RETURN")&&terminal.successor()==null&&Objects.equals(terminal.after(),outcome.state()))))
                 throw new IllegalArgumentException("Nonlocal edge leaves its proved invocation boundary");
               results(outcome.state());
               add(PcodeOp.COPY, new Varnode(p.getRegister("PC").getAddress(), 2), constant(outcome.state().cpu(), 2));
@@ -341,11 +350,7 @@ public final class SoftwareCallContinuationView {
         if (!external && !propagatedNonlocal && !(step.callOutcome() != null && step.callOutcome().exit().equals("NONRETURNING"))) {
           Integer successor = step.callOutcome() != null && step.callOutcome().exit().equals("NONLOCAL")
               ? step.callOutcome().resumeStep() : step.successor();
-          if (step.afterCall() != null) {
-            successor = null;
-            for (var next : graph.steps()) if (next.index() > step.index() && next.callDepth() == 0
-                && next.before().equals(step.afterCall())) { successor = next.index(); break; }
-          }
+          if (step.afterCall() != null) successor=SoftwareCallEffects.postCallSuccessor(graph,step);
           if (successor == null) throw new IllegalArgumentException("Continuation graph lacks a represented successor at " + step.address());
           edge(successor);
         }

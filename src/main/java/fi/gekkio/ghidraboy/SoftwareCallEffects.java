@@ -14,7 +14,7 @@ import java.util.*;
  */
 public final class SoftwareCallEffects {
   private SoftwareCallEffects() {}
-  public static final String VERSION = "software-call-effects-5";
+  public static final String VERSION = "software-call-effects-6";
   public record MemoryWrite(int cpu, MapperState.Physical physical, int value) {}
   public record Path(SoftwareCallModel.Returned returned, List<MemoryWrite> writes,
       Set<String> changedRegisters) {
@@ -33,6 +33,57 @@ public final class SoftwareCallEffects {
     public ContinuationState { memory = List.copyOf(memory); }
   }
   /** Expected native resume and current physical stack bytes are separate facts. */
+  /** Symbolic ordinary frame: offsets are relative to the unknown root SP, never absolute CPU addresses. */
+  public record RelativeFrame(String invocation, String caller, String callNode,
+      int returnCpu, int returnSpDelta, int wordDelta) {}
+  public record RelativeAccess(int operation, int delta, boolean write, Integer value) {}
+
+  /** Conservative byte liveness for an effect-derived native result contract, in actual instruction order. */
+  static Set<Long> ordinaryResultInputs(Program p, List<ghidra.program.model.listing.Instruction> instructions, String resultRegister) {
+    var live = new HashSet<String>(); var register = p.getRegister(resultRegister);
+    for (int b=0;b<register.getMinimumByteSize();b++) live.add("register:"+(register.getAddress().getOffset()+b));
+    for (int step=instructions.size()-1;step>=0;step--) {
+      var raw=instructions.get(step).getPcode(false);
+      for (int index=raw.length-1;index>=0;index--) {
+        var op=raw[index];var output=op.getOutput();if(output==null)continue;
+        String outSpace=output.isUnique()?"unique:"+step:output.getAddress().getAddressSpace().getName();
+        boolean needed=false;
+        for(int b=0;b<output.getSize();b++)needed|=live.remove(outSpace+":"+(output.getOffset()+b));
+        if(!needed)continue;
+        for(var input:op.getInputs())if(!input.isConstant()) {
+          String space=input.isUnique()?"unique:"+step:input.getAddress().getAddressSpace().getName();
+          for(int b=0;b<input.getSize();b++)live.add(space+":"+(input.getOffset()+b));
+        }
+      }
+    }
+    var result=new TreeSet<Long>();
+    for(String input:live) {
+      if(!input.startsWith("register:"))throw new IllegalArgumentException("Native result depends on unproved memory/unique input");
+      result.add(Long.parseLong(input.substring("register:".length())));
+    }
+    return result;
+  }
+
+  static RelativeFrame ordinaryFrame(String invocation, String caller, String node,
+      int returnCpu, int beforeSp, int afterSp, List<RelativeAccess> accesses) {
+    var writes = accesses.stream().filter(RelativeAccess::write).toList();
+    if (afterSp != beforeSp - 2 || writes.size() != 2
+        || writes.get(0).delta() != beforeSp - 1 || !Objects.equals(writes.get(0).value(), returnCpu >>> 8)
+        || writes.get(1).delta() != beforeSp - 2 || !Objects.equals(writes.get(1).value(), returnCpu & 255))
+      throw new IllegalArgumentException("Ordinary CALL lacks its actual ordered return-word push");
+    return new RelativeFrame(invocation, caller, node, returnCpu, beforeSp, afterSp);
+  }
+
+  static void matchedOrdinaryReturn(RelativeFrame frame, int destination, int sp,
+      List<RelativeAccess> accesses) {
+    var reads = accesses.stream().filter(a -> !a.write()).toList();
+    if (destination != frame.returnCpu() || sp != frame.returnSpDelta() || reads.size() != 2
+        || reads.get(0).delta() != frame.wordDelta() || reads.get(1).delta() != frame.wordDelta() + 1
+        || !Objects.equals(reads.get(0).value(), destination & 255)
+        || !Objects.equals(reads.get(1).value(), destination >>> 8))
+      throw new IllegalArgumentException("Unmatched ordinary RET frame/continuation");
+  }
+
   public record NativeFrame(int returnCpu, int returnSp, int returnWordCpu, Integer liveReturnWord,
       String callerEntry, SoftwareCallModel.Frame softwareCall, int phase) {}
   public record CallOutcome(String exit, ContinuationState state, List<NativeFrame> liveFrames, int terminalStep, Integer resumeStep) {
@@ -47,13 +98,20 @@ public final class SoftwareCallEffects {
   public record ContinuationSummary(String version, String kind, String dependencies, List<ContinuationStep> steps,
       String exit, List<String> unresolved, List<String> nativeIncompatibilities,
       List<String> returningNativeFunctions, List<ReturningCall> returningCalls, List<TransportVeto> transportVetoes,
-      ContinuationSummary prerequisiteCallee) {
+      ContinuationSummary prerequisiteCallee, int entryStep) {
+    public ContinuationSummary(String version,String kind,String dependencies,List<ContinuationStep> steps,String exit,List<String> unresolved,
+        List<String> nativeIncompatibilities,List<String> returningNativeFunctions,List<ReturningCall> returningCalls,List<TransportVeto> transportVetoes,
+        ContinuationSummary prerequisiteCallee) {
+      this(version,kind,dependencies,steps,exit,unresolved,nativeIncompatibilities,returningNativeFunctions,returningCalls,transportVetoes,prerequisiteCallee,
+          steps.isEmpty()?-1:steps.getFirst().index());
+    }
     public ContinuationSummary {
       steps = List.copyOf(steps); unresolved = List.copyOf(unresolved);
       nativeIncompatibilities = List.copyOf(nativeIncompatibilities);
       returningNativeFunctions = List.copyOf(returningNativeFunctions); returningCalls = List.copyOf(returningCalls);
       transportVetoes = List.copyOf(transportVetoes);
     }
+    public ContinuationStep entry() { return steps.stream().filter(step->step.index()==entryStep).findFirst().orElseThrow(()->new IllegalArgumentException("Missing explicit continuation entry identity")); }
     public boolean complete() { return unresolved.isEmpty() && !steps.isEmpty() && exit != null; }
     public boolean nativeCompatible() { return complete() && nativeIncompatibilities.isEmpty(); }
   }
@@ -169,51 +227,41 @@ public final class SoftwareCallEffects {
     for (var call : source.steps()) {
       if ((call.afterCall() == null && call.callOutcome() == null) || call.physicalTarget() == null) continue;
       if (!call.transfer().equals("CALL") && !call.transfer().equals("CALLIND") && call.softwareCall() == null) continue;
-      int depth = call.callDepth() + 1, first = -1, last = -1;
-      for (int index = 0; index < source.steps().size(); index++) {
-        var step = source.steps().get(index);
-        if (step.index() <= call.index() || step.callDepth() != depth
-            || !step.nativeFunctionEntry().equals(call.physicalTarget())) continue;
-        if (first < 0) first = index;
-        if (call.callOutcome() != null) continue;
-        if (!step.transfer().equals("RETURN") || step.after() == null) continue;
-        boolean matched;
-        if (call.softwareCall() == null) matched = step.after().equals(call.afterCall());
-        else {
-          var frame = call.softwareCall();
-          int returnCpu = frame.template().epilogueCpu() < 0 ? frame.continuationCpu() : frame.template().epilogueCpu();
-          matched = step.after().cpu() == returnCpu && step.after().sp() == ((frame.targetSp() + 2) & 0xffff);
+      int depth = call.callDepth() + 1;
+      var byId=new HashMap<Integer,ContinuationStep>();for(var step:source.steps()) {
+        if(byId.put(step.index(),step)!=null)throw new IllegalArgumentException("Duplicate continuation edge identity");
+      }
+      var selected=new ArrayList<ContinuationStep>();var seen=new HashSet<Integer>();Integer cursor=call.successor();boolean matched=false;
+      while(cursor!=null&&seen.add(cursor)) {
+        var step=byId.get(cursor);if(step==null)throw new IllegalArgumentException("Call edge leaves represented graph");
+        if(selected.isEmpty()&&(step.callDepth()!=depth||!step.nativeFunctionEntry().equals(call.physicalTarget()))) {cursor=step.successor();continue;}
+        if(step.callDepth()<depth)throw new IllegalArgumentException("Native invocation crosses unmatched outer frame");
+        selected.add(step);
+        if(call.callOutcome()!=null)matched=step.index()==call.callOutcome().terminalStep();
+        else if(step.transfer().equals("RETURN")&&step.after()!=null&&step.callDepth()==depth) {
+          if(call.softwareCall()==null)matched=step.after().equals(call.afterCall());
+          else {
+            var frame=call.softwareCall();int returnCpu=frame.template().epilogueCpu()<0?frame.continuationCpu():frame.template().epilogueCpu();
+            matched=step.after().cpu()==returnCpu&&step.after().sp()==((frame.targetSp()+2)&0xffff);
+          }
         }
-        if (matched) { last = index; break; }
+        if(matched)break;cursor=step.successor();
       }
-      if (call.callOutcome() != null) {
-        for (int index = first; index >= 0 && index < source.steps().size(); index++)
-          if (source.steps().get(index).index() == call.callOutcome().terminalStep()) { last = index; break; }
+      if(selected.isEmpty()||!matched)throw new IllegalArgumentException("Proven call lacks its edge-connected native invocation at step "+call.index());
+      var steps=new ArrayList<ContinuationStep>();
+      for(int i=0;i<selected.size();i++) {
+        var step=selected.get(i);boolean terminal=i==selected.size()-1;
+        steps.add(new ContinuationStep(step.index(),step.address(),step.length(),step.before(),step.after(),step.executedPcode(),step.accesses(),
+            step.callDepth()-depth,step.nativeFunctionEntry(),step.transfer(),step.physicalTarget(),
+            terminal&&(call.callOutcome()==null||!call.callOutcome().exit().equals("NONRETURNING"))?null:step.successor(),step.softwareCall(),step.afterCall(),step.callOutcome()));
       }
-      if (first < 0 || last < first)
-        throw new IllegalArgumentException("Proven call lacks its contiguous raw native invocation at step " + call.index());
-      var steps = new ArrayList<ContinuationStep>();
-      for (int index = first; index <= last; index++) {
-        var step = source.steps().get(index);
-        if (step.callDepth() < depth)
-          throw new IllegalArgumentException("Nested invocation crosses an unmatched outer frame");
-        steps.add(new ContinuationStep(step.index(), step.address(), step.length(), step.before(), step.after(),
-            step.executedPcode(), step.accesses(), step.callDepth() - depth, step.nativeFunctionEntry(),
-            step.transfer(), step.physicalTarget(), index == last && (call.callOutcome() == null
-                || !call.callOutcome().exit().equals("NONRETURNING")) ? null : step.successor(),
-            step.softwareCall(), step.afterCall(), step.callOutcome()));
-      }
-      int begin = steps.get(0).index(), end = steps.get(steps.size() - 1).index();
-      var vetoes = new ArrayList<TransportVeto>();
-      var incompatibilities = new LinkedHashSet<String>();
-      // Annotation/contract errors have no transport exemption, including when their exact scope
-      // is broader than this invocation. Conservatively retain them for the enclosing proof.
-      for (var reason : source.nativeIncompatibilities()) if (!typedReasons.contains(reason)) incompatibilities.add(reason);
-      for (var veto : source.transportVetoes()) {
-        if (veto.step() < begin || veto.step() > end) continue;
-        if (veto.callDepth() < depth) throw new IllegalArgumentException("Transport veto contradicts invocation depth");
-        vetoes.add(new TransportVeto(veto.step(), veto.callDepth() - depth, veto.kind(), veto.reason()));
-        incompatibilities.add(veto.reason());
+      int begin=steps.getFirst().index(),end=steps.getLast().index();var membership=new HashSet<Integer>();for(var step:steps)membership.add(step.index());
+      var vetoes=new ArrayList<TransportVeto>();var incompatibilities=new LinkedHashSet<String>();
+      for(var reason:source.nativeIncompatibilities())if(!typedReasons.contains(reason))incompatibilities.add(reason);
+      for(var veto:source.transportVetoes()) {
+        if(!membership.contains(veto.step()))continue;
+        if(veto.callDepth()<depth)throw new IllegalArgumentException("Transport veto contradicts invocation depth");
+        vetoes.add(new TransportVeto(veto.step(),veto.callDepth()-depth,veto.kind(),veto.reason()));incompatibilities.add(veto.reason());
       }
       var addresses = new HashSet<String>(); var entries = new HashSet<String>();
       for (var step : steps) { addresses.add(step.address()); entries.add(step.nativeFunctionEntry()); }
@@ -229,6 +277,24 @@ public final class SoftwareCallEffects {
       result.add(new CalleeInvocation(call.index(), call.physicalTarget(), graph));
     }
     return List.copyOf(result);
+  }
+
+  /** Follow the actual raw call/return edges; labels and serialization order are never eligibility. */
+  static int postCallSuccessor(ContinuationSummary graph,ContinuationStep call) {
+    if(call.afterCall()==null)throw new IllegalArgumentException("Missing matched returned state");
+    var byId=new HashMap<Integer,ContinuationStep>();for(var step:graph.steps()) {
+      if(byId.put(step.index(),step)!=null)throw new IllegalArgumentException("Duplicate continuation edge identity");
+    }
+    var seen=new HashSet<Integer>();Integer cursor=call.successor();
+    while(cursor!=null&&seen.add(cursor)) {
+      var step=byId.get(cursor);if(step==null)break;
+      if(step.callDepth()==call.callDepth()) {
+        if(step.before().equals(call.afterCall())&&step.nativeFunctionEntry().equals(call.nativeFunctionEntry()))return step.index();
+        throw new IllegalArgumentException("Returned edge has wrong physical/state/frame continuation");
+      }
+      cursor=step.successor();
+    }
+    throw new IllegalArgumentException("Missing edge-connected post-call state at "+call.address());
   }
 
   private static final class TraceStep {
@@ -335,22 +401,22 @@ public final class SoftwareCallEffects {
         nativeIncompatibilities.add("Newly installed neutral marker lacks a freshly matched RET witness at " + target);
     }
     private static final class NativeCall {
-      final int returnCpu, returnSp;
+      final int returnCpu, returnSp, invocation;
       final Address callerEntry;
       final SoftwareCallModel.Frame software;
       Address site;
       TraceStep traceCall;
       int phase; // 0: exact helper prelude, 1: target callee, 2: exact helper epilogue
       SoftwareCallModel.Returned expectedReturn;
-      NativeCall(int returnCpu, int returnSp, Address callerEntry, SoftwareCallModel.Frame software) {
-        this.returnCpu = returnCpu; this.returnSp = returnSp; this.callerEntry = callerEntry; this.software = software;
+      NativeCall(int returnCpu, int returnSp, Address callerEntry, SoftwareCallModel.Frame software, int invocation) {
+        this.returnCpu = returnCpu; this.returnSp = returnSp; this.callerEntry = callerEntry; this.software = software; this.invocation=invocation;
       }
     }
     final List<SoftwareCallValidation.Configuration> candidates;
     final Deque<NativeCall> nativeCalls = new ArrayDeque<>();
     Address nativeEntry;
     MapperState mapper;
-    int cpu;
+    int cpu, nextInvocation;
     boolean continuationMode, calleeGraphMode;
     int externalSp;
     String continuationExit;
@@ -464,7 +530,7 @@ public final class SoftwareCallEffects {
         monitor.checkCancelled();
         put("PC", cpu);
         String frames = nativeCalls.stream().map(call -> call.returnCpu + ":" + call.returnSp + ":"
-            + call.callerEntry + ":" + call.phase).toList().toString();
+            + call.callerEntry + ":" + call.phase + ":invocation:" + call.invocation).toList().toString();
         String key = cpu + ":" + mapper + ":" + new TreeMap<>(registers) + ":" + memory + ":" + frames;
         if (!seen.add(key)) {
           if (continuationMode) {
@@ -707,7 +773,7 @@ public final class SoftwareCallEffects {
               if (nested != null) {
                 if (next != nested.template().helperCpu())
                   throw new Unresolved("Nested software call does not enter validated helper");
-                var call = new NativeCall(nested.continuationCpu(), nested.entry().callerSp(), nativeEntry, nested);
+                var call = new NativeCall(nested.continuationCpu(), nested.entry().callerSp(), nativeEntry, nested, nextInvocation++);
                 call.traceCall = tracing; nativeCalls.push(call);
                 if (tracing != null) { tracing.softwareCall = nested; tracing.physicalTarget = SoftwareCallValidation.executionAddress(program, nested.targetMapper(), nested.targetCpu()).toString(); }
               } else {
@@ -740,7 +806,7 @@ public final class SoftwareCallEffects {
                     && purge != ghidra.program.model.listing.Function.INVALID_STACK_DEPTH_CHANGE)
                   nativeIncompatibilities.add("Nested call has unsupported native stack purge at " + actualTarget);
               }
-              var call = new NativeCall((cpu + instruction.getLength()) & 0xffff, (get("SP") + 2) & 0xffff, nativeEntry, null);
+              var call = new NativeCall((cpu + instruction.getLength()) & 0xffff, (get("SP") + 2) & 0xffff, nativeEntry, null, nextInvocation++);
               call.site = address; call.traceCall = tracing;
               nativeCalls.push(call);
               nativeEntry = actualTarget;

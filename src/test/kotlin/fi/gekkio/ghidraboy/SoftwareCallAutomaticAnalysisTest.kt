@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.HexFormat
 
@@ -189,7 +189,8 @@ class SoftwareCallAutomaticAnalysisTest : IntegrationTest() {
                     val helper = address(0x28)
                     p.listing.clearCodeUnits(helper, helper.add(2), false)
                     p.memory.setByte(helper.add(1), 1)
-                    ghidra.program.disassemble.Disassembler.getDisassembler(p, TaskMonitor.DUMMY, null)
+                    ghidra.program.disassemble.Disassembler
+                        .getDisassembler(p, TaskMonitor.DUMMY, null)
                         .disassemble(helper, AddressSet(helper, helper.add(2)))
                 }
                 assertThrows(IllegalArgumentException::class.java) { SoftwareCallRegistry.resolve(p, root) }
@@ -199,16 +200,22 @@ class SoftwareCallAutomaticAnalysisTest : IntegrationTest() {
                     val helper = address(0x28)
                     p.listing.clearCodeUnits(helper, helper.add(2), false)
                     p.memory.setByte(helper.add(1), 0)
-                    ghidra.program.disassemble.Disassembler.getDisassembler(p, TaskMonitor.DUMMY, null)
+                    ghidra.program.disassemble.Disassembler
+                        .getDisassembler(p, TaskMonitor.DUMMY, null)
                         .disassemble(helper, AddressSet(helper, helper.add(2)))
                     p.listing.clearCodeUnits(address(0x240), address(0x241), false)
                     p.memory.setByte(address(0x241), 0x6a)
-                    ghidra.program.disassemble.Disassembler.getDisassembler(p, TaskMonitor.DUMMY, null)
+                    ghidra.program.disassemble.Disassembler
+                        .getDisassembler(p, TaskMonitor.DUMMY, null)
                         .disassemble(address(0x240), AddressSet(address(0x240), address(0x241)))
                 }
                 val reapplied = SoftwareCallApplication.preview(p, listOf(config), TaskMonitor.DUMMY)
                 SoftwareCallApplication.apply(p, reapplied, TaskMonitor.DUMMY)
-                val nextAlias = p.addressFactory.getAddressSpace(reapplied.executionViews().getValue(root.toString()).name()).getAddress(root.offset)
+                val nextAlias =
+                    p.addressFactory
+                        .getAddressSpace(
+                            reapplied.executionViews().getValue(root.toString()).name(),
+                        ).getAddress(root.offset)
                 p.withTransaction {
                     manager.reAnalyzeAll(AddressSet(p.memory))
                     manager.startAnalysis(TaskMonitor.DUMMY)

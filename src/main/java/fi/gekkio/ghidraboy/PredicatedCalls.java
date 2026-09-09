@@ -1,0 +1,212 @@
+package fi.gekkio.ghidraboy;
+
+import ghidra.program.model.address.*;
+import ghidra.program.model.data.ByteDataType;
+import ghidra.program.model.listing.*;
+import ghidra.program.model.pcode.*;
+import ghidra.program.model.symbol.SourceType;
+import ghidra.program.disassemble.Disassembler;
+import ghidra.util.task.TaskMonitor;
+import java.util.*;
+
+/** Segregated experimental graph records, using the existing ordinary views and native entry protocol. */
+public final class PredicatedCalls {
+  private PredicatedCalls() {}
+  public static final String VERSION="predicated-ordinary-calls-3";
+  public static final String OPTIONS="GhidraBoyPredicatedCalls";
+  public record View(String invocation,String entry,List<SoftwareCallExecutionView.Segment> segments,boolean byteAContract,List<Long> inputBytes) {
+    public View {segments=List.copyOf(segments);inputBytes=List.copyOf(inputBytes);}
+  }
+  private record Registration(String version,long programId,String root,PredicatedCallGraph.Proof proof,
+      List<View> views,String dependencies,String nativeIdentity) {Registration{views=List.copyOf(views);}}
+  public static PredicatedCallGraph.Proof preview(Program p,Function root,PredicatedCallGraph.Limits limits,TaskMonitor monitor) throws Exception {
+    return PredicatedCallGraph.preview(p,root,limits,monitor);
+  }
+  public static boolean registered(Program p,Address entry) {
+    return entry!=null&&p.getOptionsNames().contains(OPTIONS)&&p.getOptions(OPTIONS).contains(entry.toString());
+  }
+  private static Registration read(Program p,Address entry) {
+    if(!registered(p,entry))throw new IllegalArgumentException("Missing predicated graph registration");
+    var json=com.google.gson.JsonParser.parseString(p.getOptions(OPTIONS).getString(entry.toString(),null)).getAsJsonObject();
+    if(!json.has("version")||!VERSION.equals(json.get("version").getAsString()))
+      throw new IllegalArgumentException("Unsupported predicated graph version; record retained without migration");
+    return ProgramMapping.JSON.fromJson(json,Registration.class);
+  }
+  public static PredicatedCallGraph.Proof registeredProof(Program p,Address entry){return read(p,entry).proof();}
+  public static List<View> views(Program p,Address entry){return read(p,entry).views();}
+  static boolean sameGraph(PredicatedCallGraph.Proof a,PredicatedCallGraph.Proof b) {
+    return a.version().equals(b.version())&&a.programId()==b.programId()&&a.entry().equals(b.entry())&&a.end().equals(b.end())
+        &&a.domain().equals(b.domain())&&a.limits().equals(b.limits())&&Objects.equals(a.root(),b.root())
+        &&a.nodes().equals(b.nodes())&&a.invocations().equals(b.invocations())&&a.frontier().equals(b.frontier())
+        &&a.coverageComplete()==b.coverageComplete()&&a.joins().equals(b.joins())&&Objects.equals(a.convergence(),b.convergence())&&a.origins().equals(b.origins())&&a.joinDomains().equals(b.joinDomains());
+  }
+  private static void currentPreview(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
+    require(proof.complete()&&PredicatedCallGraph.VERSION.equals(proof.version())&&proof.programId()==p.getUniqueProgramID(),"Incomplete or foreign predicated graph");
+    require(proof.dependencies().equals(OrdinaryProofDependencies.fingerprint(p,monitor)),"Stale predicated graph preview");
+    var actual=preview(p,p.getFunctionManager().getFunctionAt(ProgramMapping.staticAddress(p,proof.entry())),proof.limits(),monitor);
+    require(sameGraph(actual,proof),"Changed predicated graph/guards/frame proof");
+    require(actual.discovery().equals(proof.discovery()), "Discovery inventory is not rooted in this graph");
+  }
+  private static void require(boolean ok,String message){if(!ok)throw new IllegalArgumentException(message);}
+  private static List<SoftwareCallExecutionView.Segment> segments(Program p,PredicatedCallGraph.Proof proof,String invocation) {
+    var body=new AddressSet();
+    for(var node:proof.nodes())if(node.invocation().equals(invocation)) {
+      var at=ProgramMapping.staticAddress(p,node.source());body.add(at,at.add(node.bytes().length()/2-1));
+    }
+    var result=new ArrayList<SoftwareCallExecutionView.Segment>();
+    for(var range:body.getAddressRanges())result.add(new SoftwareCallExecutionView.Segment((int)range.getMinAddress().getOffset(),(int)range.getLength(),range.getMinAddress().toString()));
+    return result;
+  }
+  public static Address install(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
+    currentPreview(p,proof,monitor);String nativeIdentity=SoftwareCallStateEntryInjection.nativeIdentity();
+    int tx=p.startTransaction("Install reviewed predicate-qualified ordinary call graph");boolean success=false;
+    try {
+      SoftwareCallInstructionDiscovery.apply(p,proof.discovery(),monitor);
+      var invocations=new ArrayList<String>();invocations.add("root");invocations.addAll(proof.invocations().stream().map(PredicatedCallGraph.Invocation::id).toList());
+      var views=new ArrayList<View>();Address root=null;
+      for(var invocation:invocations) {
+        String name=OrdinaryEntryAccess.PREFIX+"pred_"+proof.entry()+"_"+(invocation.equals("root")?"root":invocation.substring(0,12));
+        var pieces=segments(p,proof,invocation);
+        var made=SoftwareCallExecutionView.createOrdinary(p,SoftwareCallExecutionView.previewOrdinary(p,name,pieces,monitor),monitor);
+        String node=invocation.equals("root")?proof.root():proof.invocations().stream().filter(i->i.id().equals(invocation)).findFirst().orElseThrow().entry();
+        int cpu=proof.nodes().stream().filter(n->n.id().equals(node)).findFirst().orElseThrow().cpu();
+        var entry=made.body().getMinAddress().getAddressSpace().getAddress(cpu);
+        Disassembler.getDisassembler(p,monitor,null).disassemble(entry,made.body());
+        var function=p.getFunctionManager().createFunction(name,entry,made.body(),SourceType.ANALYSIS);
+        require(function!=null,"Predicate view Function creation failed");
+        function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
+        boolean contract=!invocation.equals("root");List<Long> inputBytes=List.of();
+        if(contract) {
+          require(proof.invocations().stream().anyMatch(i->i.id().equals(invocation)&&i.byteAContract()),"Unproved callee byte-A effect contract");
+          inputBytes=proof.invocations().stream().filter(i->i.id().equals(invocation)).findFirst().orElseThrow().inputBytes();
+          var parameters=new ArrayList<Variable>();
+          for(long offset:inputBytes) {
+            var address=p.getRegister("A").getAddress().getAddressSpace().getAddress(offset);
+            var register=p.getRegister(address,1);
+            require(register!=null,"Missing proved byte-register input storage");
+            parameters.add(new ParameterImpl("input_"+register.getName(),ByteDataType.dataType,
+                new VariableStorage(p,new Varnode(address,1)),p));
+          }
+          // Locations derive from actual read-before-write byte liveness, not a guessed assembly ABI.
+          function.updateFunction(SoftwareCallStateEntryInjection.CONVENTION,
+              new ReturnParameterImpl(ByteDataType.dataType,p.getRegister("A"),p),
+              Function.FunctionUpdateType.CUSTOM_STORAGE,true,SourceType.ANALYSIS,parameters.toArray(Variable[]::new));
+        }
+        function.setComment(VERSION+"\n"+ProgramMapping.JSON.toJson(proof.domain())+"\nInvocation: "+invocation
+            +(contract?"\nValidated ordinary effects: byte A result; input register bytes "+inputBytes+"; only A/F modified; PC/SP matched RET; BC/DE/HL preserved.":"\nOne unknown-input predicate-qualified root graph."));
+        views.add(new View(invocation,entry.toString(),pieces,contract,inputBytes));if(invocation.equals("root"))root=entry;
+      }
+      var registration=new Registration(VERSION,p.getUniqueProgramID(),root.toString(),proof,views,
+          OrdinaryProofDependencies.fingerprint(p,monitor),nativeIdentity);
+      for(var view:views)p.getOptions(OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(registration));
+      validateViews(p,registration);success=true;return root;
+    } finally {p.endTransaction(tx,success);}
+  }
+  private static void validateViews(Program p,Registration registration) throws Exception {
+    require(registration.programId()==p.getUniqueProgramID(),"Foreign predicate Program registration");
+    var expected=new HashSet<String>();expected.add("root");expected.addAll(registration.proof().invocations().stream().map(PredicatedCallGraph.Invocation::id).toList());
+    require(registration.views().size()==expected.size()
+        &&new HashSet<>(registration.views().stream().map(View::invocation).toList()).equals(expected)
+        &&registration.views().stream().map(View::entry).distinct().count()==expected.size(),"Changed predicate view inventory");
+    for(var view:registration.views()) {
+      var entry=ProgramMapping.staticAddress(p,view.entry());var f=p.getFunctionManager().getFunctionAt(entry);var body=new AddressSet();
+      if(view.invocation().equals("root")) {
+        require(!view.byteAContract()&&view.inputBytes().isEmpty()&&view.entry().equals(registration.root()),"Changed root view contract flag");
+      } else {
+        var authority=registration.proof().invocations().stream().filter(i->i.id().equals(view.invocation())).findFirst().orElseThrow();
+        require(view.byteAContract()&&authority.byteAContract()&&view.inputBytes().equals(authority.inputBytes()),"Child view contract not bound to graph authority");
+      }
+      require(f!=null&&SoftwareCallStateEntryInjection.CONVENTION.equals(f.getCallingConventionName())&&!f.isInline()&&!f.isThunk()
+          &&!f.hasNoReturn()&&f.getCallFixup()==null,"Changed predicated native Function contract");
+      require(view.segments().equals(segments(p,registration.proof(),view.invocation())),"Changed physical predicate view binding");
+      for(var segment:view.segments()) {
+        var at=entry.getAddressSpace().getAddress(segment.cpu());var block=p.getMemory().getBlock(at);
+        require(block!=null&&block.getType()==ghidra.program.model.mem.MemoryBlockType.BYTE_MAPPED&&block.isRead()&&block.isExecute()
+            &&!block.isWrite()&&!block.isVolatile()&&block.getStart().equals(at)&&block.getSize()==segment.length(),"Changed predicate mapped fragment");
+        var mapped=block.getSourceInfos().get(0).getMappedRange().orElseThrow();
+        var source=ProgramMapping.staticAddress(p,segment.source());
+        require(mapped.getMinAddress().equals(source)&&mapped.getMaxAddress().equals(source.add(segment.length()-1)),"Foreign predicate physical fragment");
+        body.add(at,at.add(segment.length()-1));
+      }
+      require(f.getBody().equals(body),"Changed predicate Function body");
+      int purge=f.getStackPurgeSize();
+      require((purge==0||purge==Function.UNKNOWN_STACK_DEPTH_CHANGE||purge==Function.INVALID_STACK_DEPTH_CHANGE)
+          &&!f.hasVarArgs(),"Changed matched-return stack/varargs contract");
+      if(view.byteAContract()) {
+        require(f.getParameterCount()==view.inputBytes().size()&&f.hasCustomVariableStorage(),"Changed effect-derived native input contract");
+        var proved=registration.proof().invocations().stream().filter(i->i.id().equals(view.invocation())).findFirst().orElseThrow();
+        require(proved.inputBytes().equals(view.inputBytes()),"Native parameters not bound to current invocation effects");
+        for(int index=0;index<view.inputBytes().size();index++) {
+          var input=f.getParameter(index);var location=input.getVariableStorage().getVarnodes();
+          require(input.getDataType().getLength()==1&&location.length==1&&location[0].getSize()==1
+              &&location[0].isRegister()&&location[0].getOffset()==view.inputBytes().get(index),"Changed native input register slice");
+        }
+        var storage=f.getReturn().getVariableStorage().getVarnodes();
+        require(f.getReturnType().getLength()==1&&storage.length==1&&storage[0].getSize()==1
+            &&storage[0].getAddress().equals(p.getRegister("A").getAddress()),"Changed effect-derived byte-A return storage");
+      }
+    }
+  }
+  public static void refresh(Program p,Address root,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
+    var old=read(p,root);currentPreview(p,proof,monitor);
+    require(old.proof().entry().equals(proof.entry())&&old.proof().end().equals(proof.end()),"Refresh changed predicate root extent");
+    for(var view:old.views()) require(view.segments().equals(segments(p,proof,view.invocation())),"Refresh changes predicate invocation/view topology");
+    var next=new Registration(VERSION,p.getUniqueProgramID(),old.root(),proof,old.views(),OrdinaryProofDependencies.fingerprint(p,monitor),SoftwareCallStateEntryInjection.nativeIdentity());
+    validateViews(p,next);int tx=p.startTransaction("Explicit predicate graph refresh");boolean success=false;
+    try{for(var view:next.views())p.getOptions(OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(next));success=true;}finally{p.endTransaction(tx,success);}
+  }
+  public static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor) throws Exception {
+    long revision=p.getModificationNumber();var record=read(p,entry);
+    require(record.nativeIdentity().equals(SoftwareCallStateEntryInjection.nativeIdentity()),"Predicate native companion changed");
+    require(record.dependencies().equals(OrdinaryProofDependencies.fingerprint(p,monitor)),"Stale predicated graph registration; explicit refresh required");
+    validateViews(p,record);
+    var actual=preview(p,p.getFunctionManager().getFunctionAt(ProgramMapping.staticAddress(p,record.proof().entry())),record.proof().limits(),monitor);
+    require(actual.complete()&&sameGraph(actual,record.proof()),"Changed/forged predicate graph, feasible edge or frame authority");
+    var view=record.views().stream().filter(v->v.entry().equals(entry.toString())).findFirst().orElseThrow();
+    var result=lower(p,entry,record.proof(),record.views(),view.invocation(),uniqueBase);
+    require(revision==p.getModificationNumber(),"Program changed during predicated native callback");return result;
+  }
+  private static PcodeOp[] lower(Program p,Address site,PredicatedCallGraph.Proof proof,List<View> views,String invocation,long uniqueBase) throws Exception {
+    String entry=invocation.equals("root")?proof.root():proof.invocations().stream().filter(i->i.id().equals(invocation)).findFirst().orElseThrow().entry();
+    var selected=proof.nodes().stream().filter(n->n.invocation().equals(invocation)).sorted(Comparator.comparing(n->n.id().equals(entry)?"":n.id())).toList();
+    var ops=new ArrayList<PcodeOp>();var labels=new HashMap<String,Integer>();var edges=new HashMap<Integer,String>();long unique=uniqueBase;
+    for(var node:selected) {
+      labels.put(node.id(),ops.size());var temporaries=new HashMap<Long,Long>();var ins=p.getListing().getInstructionAt(ProgramMapping.staticAddress(p,node.source()));
+      require(ins!=null&&node.bytes().equals(HexFormat.of().formatHex(ins.getBytes())),"Changed physical graph instruction");
+      // Explicit stable local target follows the existing continuation transport convention.
+      ops.add(new PcodeOp(site,ops.size(),PcodeOp.COPY,new Varnode[]{constant(p,0,1)},new Varnode(p.getAddressFactory().getUniqueSpace().getAddress(unique),1)));unique+=0x10000;
+      for(var op:ins.getPcode(false)) {
+        var inputs=op.getInputs().clone();
+        for(int i=0;i<inputs.length;i++)inputs[i]=relocate(p,inputs[i],temporaries,unique);
+        var output=op.getOutput()==null?null:relocate(p,op.getOutput(),temporaries,unique);int code=op.getOpcode();
+        if(code==PcodeOp.BRANCH||code==PcodeOp.CBRANCH) {
+          var taken=node.edges().stream().filter(e->e.kind().equals(code==PcodeOp.BRANCH?"BRANCH":"TAKEN")).findFirst().orElse(null);
+          var fall=node.edges().stream().filter(e->e.kind().equals("FALLTHROUGH")).findFirst().orElse(null);
+          if(code==PcodeOp.CBRANCH&&taken!=null&&fall!=null) {
+            edges.put(ops.size(),taken.target());ops.add(new PcodeOp(site,ops.size(),PcodeOp.CBRANCH,new Varnode[]{constant(p,0,4),inputs[1]}));
+            edges.put(ops.size(),fall.target());ops.add(new PcodeOp(site,ops.size(),PcodeOp.BRANCH,new Varnode[]{constant(p,0,4)}));
+          } else {
+            var edge=taken==null?fall:taken;require(edge!=null,"Missing feasible graph successor");
+            edges.put(ops.size(),edge.target());ops.add(new PcodeOp(site,ops.size(),PcodeOp.BRANCH,new Varnode[]{constant(p,0,4)}));
+          }
+        } else if(code==PcodeOp.CALL) {
+          var target=views.stream().filter(v->v.invocation().equals(node.callee())).findFirst().orElseThrow();
+          ops.add(new PcodeOp(site,ops.size(),PcodeOp.CALL,new Varnode[]{new Varnode(ProgramMapping.staticAddress(p,target.entry()),2)}));
+        } else ops.add(new PcodeOp(site,ops.size(),code,inputs,output));
+      }
+      if(node.transfer().equals("NEXT")||node.transfer().equals("CALL")) {
+        var next=node.edges().stream().filter(e->e.kind().equals(node.transfer().equals("CALL")?"RESUME":"NEXT")).findFirst().orElseThrow();
+        edges.put(ops.size(),next.target());ops.add(new PcodeOp(site,ops.size(),PcodeOp.BRANCH,new Varnode[]{constant(p,0,4)}));
+      }
+      unique+=0x1000000;
+      require(ops.size()<=16384&&unique-uniqueBase<=0x100000000L,"Predicate lowering operation/scratch budget exceeded");
+    }
+    return SoftwareCallContinuationView.bindPredicateEdges(p,site,ops,labels,edges);
+  }
+  private static Varnode constant(Program p,long value,int size){return new Varnode(p.getAddressFactory().getConstantSpace().getAddress(value),size);}
+  private static Varnode relocate(Program p,Varnode value,Map<Long,Long> temporaries,long base){
+    if(!value.isUnique())return value;long block=value.getOffset()&~0xffffL;
+    long next=temporaries.computeIfAbsent(block,k->base+temporaries.size()*0x10000L);
+    return new Varnode(p.getAddressFactory().getUniqueSpace().getAddress(next+(value.getOffset()&0xffff)),value.getSize());
+  }
+}

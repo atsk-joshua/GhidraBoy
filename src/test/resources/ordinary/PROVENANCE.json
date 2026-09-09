@@ -1,0 +1,122 @@
+[
+  {
+    "path": "A.gb",
+    "sha256": "71de36be405f34d19b07117833d83a3cd2f6102ceb976d2314e5a90021734786",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/run/evidence/GhidraBoy-EX-02-03-20260908-review/fixtures/roms/A.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "C.gb",
+    "sha256": "667bbf037333472132d4c57f45a46d49dd2e8230c948a71ed84047ac83b436ef",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/run/evidence/GhidraBoy-EX-02-03-20260908-review/fixtures/roms/C.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12.gb",
+    "sha256": "6af7ff922913418033058056b9475099e56ca564d23e9434ed8fcde797c983c5",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12_D4.gb",
+    "sha256": "e29b08db7e3a6ed8c9ea8df228887d5de6006e28710f9e72e30ee135d35e53a5",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12_D4.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12_INDEPENDENT.gb",
+    "sha256": "b39f4ecf72fa9bcb19749b8db682cf1434d6ea6394a940e6e6f6b0c36d23125b",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12_INDEPENDENT.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12_KNOWN1.gb",
+    "sha256": "b3ec4e693f6eabd2ec8caac22336caf496ee5cb8d9dd676af08a61c53c10d47b",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12_KNOWN1.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12_SAME.gb",
+    "sha256": "b4cde46efae2ded6e1afa6394d9f24e9fd25414a6b95bc1973a28c4282837565",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12_SAME.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12_UNUSED.gb",
+    "sha256": "9c2589c5a93bf3c234325a0e8419029a41379cb648b6e0d6dd0842686682eb46",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12_UNUSED.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "F12_WIDE.gb",
+    "sha256": "44b7a11c813075fe32ba757e5dceac9e738396b69e5056c008ce027b6db6b306",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/fixtures/roms/F12_WIDE.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "I_BD.gb",
+    "sha256": "387f2abed61607878f6d8d6b6dbbebfa135c11c285e93584fa5685f5f9564949",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/fixtures/I_BD.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "P.gb",
+    "sha256": "6af7ff922913418033058056b9475099e56ca564d23e9434ed8fcde797c983c5",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/fixtures/P.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "Q.gb",
+    "sha256": "e29b08db7e3a6ed8c9ea8df228887d5de6006e28710f9e72e30ee135d35e53a5",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/fixtures/Q.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "Q_B2.gb",
+    "sha256": "3cb028642cd444feafd33b797cef1729533b7d7f9dbb2fca1a6175213d2edbbf",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/fixtures/Q_B2.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "U1.gb",
+    "sha256": "b958b5b6754fafb4c12096e9e0a3d52bfcc1c96503e5091c0f4789dbee1bc5fe",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/run/evidence/GhidraBoy-EX-02-03-20260908-review/fixtures/unknown/U1.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "U2.gb",
+    "sha256": "5d9031598ccc2c38256e6f7fb12ae9ad2d629488d224a38df953f28509898d65",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/run/evidence/GhidraBoy-EX-02-03-20260908-review/fixtures/unknown/U2.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "U_PAIR.gb",
+    "sha256": "e144152a55822f77a4c136f5b18165a3442926177ec2ea5d7438526b381ebb00",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/reference/prior-fixtures/U_PAIR.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "U_PTR.gb",
+    "sha256": "56f1c0eaa6ffe504509dd9bb2bea670fc73d70d9c729d1730a2d34e80cf02419",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/reference/prior-fixtures/U_PTR.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "U_SEL.gb",
+    "sha256": "3c9caa92af32bfb1e10471b48781d48368ac260b043d97e03e37f726d36d6ce8",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/input/EX0204/GhidraBoy-EX0204-Codex-Handoff/reference/prior-fixtures/U_SEL.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "base-F12.gb",
+    "sha256": "6af7ff922913418033058056b9475099e56ca564d23e9434ed8fcde797c983c5",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/fixtures/base-F12.gb",
+    "kind": "retained self-authored fixture"
+  },
+  {
+    "path": "base-F12_D4.gb",
+    "sha256": "e29b08db7e3a6ed8c9ea8df228887d5de6006e28710f9e72e30ee135d35e53a5",
+    "source_provenance": "/private/tmp/GhidraBoy-EX0205-20260908-180109/workspace/fixtures/base-F12_D4.gb",
+    "kind": "retained self-authored fixture"
+  }
+]

@@ -96,7 +96,7 @@ public final class SoftwareCallApplication {
             && !AnalysisOwnership.stateEntryCurrent(p, existing.getEntryPoint()))
           throw new IllegalArgumentException("State entry requires reviewed bare native contract at " + target);
         for (var invocation : SoftwareCallEffects.calleeInvocations(graph)) {
-          var nested = p.getFunctionManager().getFunctionAt(ProgramMapping.staticAddress(p, invocation.graph().steps().get(0).address()));
+          var nested = p.getFunctionManager().getFunctionAt(ProgramMapping.staticAddress(p, invocation.graph().entry().address()));
           if (nested != null && !defaultCallerContract(nested)
               && !AnalysisOwnership.stateEntryCurrent(p, nested.getEntryPoint()))
             throw new IllegalArgumentException("Nested state entry requires reviewed bare native contract at " + nested.getEntryPoint());
@@ -426,7 +426,7 @@ public final class SoftwareCallApplication {
       var entrySources = new ArrayList<Map.Entry<String, SoftwareCallEffects.ContinuationSummary>>(review.stateCallees.entrySet());
       entrySources.addAll(review.stateContinuations.entrySet());
       for (var entry : entrySources) for (var graph : nativeEntryGraphs(entry.getValue())) {
-        var root = ProgramMapping.staticAddress(p, graph.steps().get(0).address());
+        var root = ProgramMapping.staticAddress(p, graph.entry().address());
         if (p.getFunctionManager().getFunctionAt(root) == null) {
           var body = new ghidra.program.model.address.AddressSet();
           for (var step : graph.steps()) {
@@ -435,9 +435,9 @@ public final class SoftwareCallApplication {
           }
           owned.function(createNamedFunction(p, root, body));
         }
-        var stateEntry = new SoftwareCallRegistry.StateEntry(entry.getKey(), graph.steps().get(0).index(), root.toString(), entry.getValue().kind());
+        var stateEntry = new SoftwareCallRegistry.StateEntry(entry.getKey(), graph.entry().index(), root.toString(), entry.getValue().kind());
         stateEntries.putIfAbsent(root.toString(), stateEntry);
-        String key = nativeViewKey(entry.getKey(), entry.getValue().kind(), graph.steps().get(0).index());
+        String key = nativeViewKey(entry.getKey(), entry.getValue().kind(), graph.entry().index());
         for (var fragment : createdViews.entrySet()) if (fragment.getKey().startsWith(key)) {
           var space = p.getAddressFactory().getAddressSpace(fragment.getValue().name());
           var alias = space.getAddress(root.getOffset());
@@ -448,7 +448,7 @@ public final class SoftwareCallApplication {
             if (step.callDepth() == 0 && at.getAddressSpace().equals(root.getAddressSpace()))
               body.add(space.getAddress(at.getOffset()), space.getAddress(at.getOffset() + step.length() - 1));
           }
-          var function = p.getFunctionManager().createFunction(p.getFunctionManager().getFunctionAt(root).getName() + "_state_" + graph.steps().get(0).index(),
+          var function = p.getFunctionManager().createFunction(p.getFunctionManager().getFunctionAt(root).getName() + "_state_" + graph.entry().index(),
               alias, body, ghidra.program.model.symbol.SourceType.ANALYSIS);
           owned.function(function); stateEntries.put(alias.toString(), stateEntry);
         }
@@ -491,7 +491,7 @@ public final class SoftwareCallApplication {
         String appliedComment = AnalysisOwnership.stateEntryComment(originalComment,
             ProgramMapping.JSON.toJson(Map.of("sourceSite", context.site(), "origin", context.kind(), "state", state)));
         function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
-        var selectedGraph = projectionGraphs(source).stream().filter(graph -> graph.steps().get(0).index() == context.graphEntry()).findFirst().orElseThrow();
+        var selectedGraph = projectionGraphs(source).stream().filter(graph -> graph.entry().index() == context.graphEntry()).findFirst().orElseThrow();
         if (!entry.getKey().equals(context.canonical()) && selectedGraph.exit().equals("LOOP")) function.setNoReturn(true);
         function.setComment(appliedComment);
         owned.stateEntries.add(new AnalysisOwnership.StateEntry(AnalysisOwnership.Point.of(function.getEntryPoint()),
@@ -547,7 +547,7 @@ public final class SoftwareCallApplication {
       if (view.getKey().contains("#native_")) {
         String[] identity = view.getKey().substring(view.getKey().indexOf('#') + 1).split("_");
         int graphEntry = Integer.parseInt(identity[2]);
-        fragmentGraph = projectionGraphs(source).stream().filter(graph -> graph.steps().get(0).index() == graphEntry)
+        fragmentGraph = projectionGraphs(source).stream().filter(graph -> graph.entry().index() == graphEntry)
             .findFirst().orElseThrow(() -> new IllegalArgumentException("Missing planned fragment invocation"));
       }
       for (var graph : projectionGraphs(fragmentGraph)) {
@@ -568,7 +568,7 @@ public final class SoftwareCallApplication {
         var function = p.getFunctionManager().createFunction("projection_" + Integer.toHexString(first.before().cpu()),
             alias, body, ghidra.program.model.symbol.SourceType.ANALYSIS);
         owned.function(function);
-        entries.put(alias.toString(), new SoftwareCallRegistry.StateEntry(site, graph.steps().get(0).index(),
+        entries.put(alias.toString(), new SoftwareCallRegistry.StateEntry(site, graph.entry().index(),
             first.address(), source.kind(), first.index(), true));
       }
     }
@@ -587,11 +587,11 @@ public final class SoftwareCallApplication {
       Map<String, SoftwareCallExecutionView.Preview> views, TaskMonitor monitor) throws Exception {
     for (var graph : nativeEntryGraphs(source)) {
       SoftwareCallStateEntryInjection.nativeIdentity();
-      var root = ProgramMapping.staticAddress(p, graph.steps().get(0).address());
+      var root = ProgramMapping.staticAddress(p, graph.entry().address());
       var function = p.getFunctionManager().getFunctionAt(root);
       if (function != null && !defaultCallerContract(function) && !AnalysisOwnership.stateEntryCurrent(p, root))
         throw new IllegalArgumentException("State entry requires reviewed bare native contract at " + root);
-      int node = graph.steps().get(0).index(), fragment = 0;
+      int node = graph.entry().index(), fragment = 0;
       var sourceSite = ProgramMapping.staticAddress(p, site);
       String base = SoftwareCallExecutionView.PREFIX + "entry_" + Integer.toUnsignedString(sourceSite.getAddressSpace().getSpaceID(), 16)
           + "_" + Long.toHexString(sourceSite.getOffset()) + "_" + source.kind().toLowerCase(java.util.Locale.ROOT) + "_" + node;

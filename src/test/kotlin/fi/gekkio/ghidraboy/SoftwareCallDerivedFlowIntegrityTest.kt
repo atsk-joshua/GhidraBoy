@@ -27,14 +27,15 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
             ByteArray(0x10000).apply {
                 this[0x147] = 0x13
                 this[0x148] = 1
-                for ((offset, hex) in
-                    mapOf(
-                        0x28 to helper.bodyHex(),
-                        0x240 to "3e5a37c9",
-                        0x4500 to "ef",
-                        0x8000 to "c9",
-                        0x8501 to "cd40023c38023e00ea00c2c9",
-                    )
+                for (
+                (offset, hex) in
+                mapOf(
+                    0x28 to helper.bodyHex(),
+                    0x240 to "3e5a37c9",
+                    0x4500 to "ef",
+                    0x8000 to "c9",
+                    0x8501 to "cd40023c38023e00ea00c2c9",
+                )
                 ) {
                     HexFormat.of().parseHex(hex).copyInto(this, offset)
                 }
@@ -63,9 +64,12 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
             assertFalse(graph.steps().any { it.before().cpu() == 0x4507 }, "The untaken physical bytes are not proof steps")
             SoftwareCallApplication.apply(p, review, TaskMonitor.DUMMY)
             val fragment =
-                review.executionViews().entries.single {
-                    it.key.startsWith("$root#state") && it.value.segments().any { segment -> segment.cpu() == 0x4501 }
-                }.value
+                review
+                    .executionViews()
+                    .entries
+                    .single {
+                        it.key.startsWith("$root#state") && it.value.segments().any { segment -> segment.cpu() == 0x4501 }
+                    }.value
             val continuation = p.addressFactory.getAddressSpace(fragment.name()).getAddress(0x4501)
             val canonical = ProgramMapping.staticAddress(p, graph.steps().first().address())
             action(p, root, continuation, canonical)
@@ -96,7 +100,10 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
                 assertFalse(c.contains(diagnostic, ignoreCase = true), "$entry: $c")
                 assertFalse(result.errorMessage.orEmpty().contains(diagnostic, ignoreCase = true), "$entry: ${result.errorMessage}")
             }
-            val ops = result.highFunction.pcodeOps.asSequence().toList()
+            val ops =
+                result.highFunction.pcodeOps
+                    .asSequence()
+                    .toList()
             assertTrue(ops.any { it.opcode == PcodeOp.CALL && it.getInput(0).address == address(0x240) }, c)
             assertTrue(ops.any { it.opcode == PcodeOp.RETURN }, c)
             assertTrue(
@@ -117,7 +124,13 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
     fun `supplementary continuation can be independently decompiled without following its untaken unmapped edge`() =
         fixture { p, _, continuation, canonical ->
             assertNotNull(p.listing.getInstructionAt(continuation))
-            assertEquals(listOf(0x38.toByte(), 0x02.toByte()), p.listing.getInstructionAt(canonical.add(4)).bytes.toList())
+            assertEquals(
+                listOf(0x38.toByte(), 0x02.toByte()),
+                p.listing
+                    .getInstructionAt(canonical.add(4))
+                    .bytes
+                    .toList(),
+            )
             assertNotNull(p.memory.getBlock(continuation.add(8)), "The proved branch destination fragment must remain present")
             verifyContinuation(p, continuation)
         }
@@ -146,11 +159,20 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
                 try {
                     assertTrue(decompiler.openProgram(p))
                     for (function in p.functionManager.getFunctions(true)) {
-                        if (p.memory.getBlock(function.entryPoint)?.name?.startsWith(SoftwareCallExecutionView.PREFIX) != true) continue
+                        if (p.memory
+                                .getBlock(function.entryPoint)
+                                ?.name
+                                ?.startsWith(SoftwareCallExecutionView.PREFIX) != true
+                        ) {
+                            continue
+                        }
                         val result = decompiler.decompileFunction(function, 30, TaskMonitor.DUMMY)
                         assertTrue(result.decompileCompleted(), "${function.entryPoint}: ${result.errorMessage}")
                         assertFalse(result.decompiledFunction.c.contains("halt_baddata"), result.decompiledFunction.c)
-                        assertFalse(result.decompiledFunction.c.contains("truncating control flow", ignoreCase = true), result.decompiledFunction.c)
+                        assertFalse(
+                            result.decompiledFunction.c.contains("truncating control flow", ignoreCase = true),
+                            result.decompiledFunction.c,
+                        )
                     }
                 } finally {
                     decompiler.dispose()
@@ -165,15 +187,16 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
             ByteArray(0x10000).apply {
                 this[0x147] = 0x13
                 this[0x148] = 1
-                for ((offset, hex) in
-                    mapOf(
-                        0x28 to helper.bodyHex(),
-                        0x200 to "efc9",
-                        0x8100 to "afcd0042f601cd0042c9",
-                        0x8200 to "3e03ea0020",
-                        0xc205 to "28043e3318023e22ea10c23e02ea0020",
-                        0x8215 to "c9",
-                    )
+                for (
+                (offset, hex) in
+                mapOf(
+                    0x28 to helper.bodyHex(),
+                    0x200 to "efc9",
+                    0x8100 to "afcd0042f601cd0042c9",
+                    0x8200 to "3e03ea0020",
+                    0xc205 to "28043e3318023e22ea10c23e02ea0020",
+                    0x8215 to "c9",
+                )
                 ) {
                     HexFormat.of().parseHex(hex).copyInto(this, offset)
                 }
@@ -196,20 +219,47 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
                 )
             val review = SoftwareCallApplication.preview(p, listOf(config), TaskMonitor.DUMMY)
             val source = review.stateCallees().getValue(address(0x200).toString())
-            val invocations = SoftwareCallEffects.calleeInvocations(source).filter { it.graph().steps().first().before().cpu() == 0x4200 }
+            val invocations =
+                SoftwareCallEffects.calleeInvocations(source).filter {
+                    it
+                        .graph()
+                        .steps()
+                        .first()
+                        .before()
+                        .cpu() == 0x4200
+                }
             assertEquals(2, invocations.size)
-            assertEquals(listOf(0x80, 0), invocations.map { it.graph().steps().first().before().registers().f() })
+            assertEquals(
+                listOf(0x80, 0),
+                invocations.map {
+                    it
+                        .graph()
+                        .steps()
+                        .first()
+                        .before()
+                        .registers()
+                        .f()
+                },
+            )
             SoftwareCallApplication.apply(p, review, TaskMonitor.DUMMY)
             val decompiler = DecompInterface()
             try {
                 assertTrue(decompiler.openProgram(p))
                 for ((invocation, expected) in invocations.zip(listOf(0x22L, 0x33L))) {
-                    val index = invocation.graph().steps().first().index()
+                    val index =
+                        invocation
+                            .graph()
+                            .steps()
+                            .first()
+                            .index()
                     val view =
-                        review.executionViews().entries.single {
-                            it.key.startsWith("${address(0x200)}#native_CALLEE_${index}_") &&
-                                it.value.segments().any { segment -> segment.cpu() == 0x4205 }
-                        }.value
+                        review
+                            .executionViews()
+                            .entries
+                            .single {
+                                it.key.startsWith("${address(0x200)}#native_CALLEE_${index}_") &&
+                                    it.value.segments().any { segment -> segment.cpu() == 0x4205 }
+                            }.value
                     val entry = p.addressFactory.getAddressSpace(view.name()).getAddress(0x4205)
                     val input = SoftwareCallRegistry.resolveStateEntry(p, entry)
                     val graph = SoftwareCallRegistry.entryGraph(p, entry, input)
@@ -237,7 +287,6 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
         }
     }
 
-
     @Test
     fun `later bank projection preserves a loop backedge before its selected entry`() {
         val helper = SoftwareCallModel.Template(SoftwareCallModel.Family.REGISTER_JP, 0x28, 0, null)
@@ -245,14 +294,15 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
             ByteArray(0x10000).apply {
                 this[0x147] = 0x13
                 this[0x148] = 1
-                for ((offset, hex) in
-                    mapOf(
-                        0x28 to helper.bodyHex(),
-                        0x200 to "efc9",
-                        0x8100 to "3e03ea0020",
-                        0xc105 to "3e02ea0020",
-                        0x810a to "c30041",
-                    )
+                for (
+                (offset, hex) in
+                mapOf(
+                    0x28 to helper.bodyHex(),
+                    0x200 to "efc9",
+                    0x8100 to "3e03ea0020",
+                    0xc105 to "3e02ea0020",
+                    0x810a to "c30041",
+                )
                 ) {
                     HexFormat.of().parseHex(hex).copyInto(this, offset)
                 }
@@ -277,10 +327,13 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
             val source = review.stateCallees().getValue(address(0x200).toString())
             assertEquals("LOOP", source.exit())
             val view =
-                review.executionViews().entries.single {
-                    it.key.startsWith("${address(0x200)}#native_CALLEE_0_") &&
-                        it.value.segments().any { segment -> segment.cpu() == 0x4105 }
-                }.value
+                review
+                    .executionViews()
+                    .entries
+                    .single {
+                        it.key.startsWith("${address(0x200)}#native_CALLEE_0_") &&
+                            it.value.segments().any { segment -> segment.cpu() == 0x4105 }
+                    }.value
             SoftwareCallApplication.apply(p, review, TaskMonitor.DUMMY)
             val entry = p.addressFactory.getAddressSpace(view.name()).getAddress(0x4105)
             val input = SoftwareCallRegistry.resolveStateEntry(p, entry)
@@ -299,7 +352,12 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
                 val c = result.decompiledFunction.c
                 assertFalse(c.contains("halt_baddata"), c)
                 assertFalse(c.contains("truncating control flow", ignoreCase = true), c)
-                assertFalse(result.highFunction.pcodeOps.asSequence().any { it.opcode == PcodeOp.RETURN }, c)
+                assertFalse(
+                    result.highFunction.pcodeOps
+                        .asSequence()
+                        .any { it.opcode == PcodeOp.RETURN },
+                    c,
+                )
             } finally {
                 decompiler.dispose()
             }
@@ -307,5 +365,4 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
             p.release(consumer)
         }
     }
-
 }

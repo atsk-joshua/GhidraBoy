@@ -214,3 +214,28 @@ The bounded analyzer still checks its incoming register and mapper facts before
 consuming a configured software-call effect; a context alias is not independent
 evidence for those facts. See the current state integration receipt for executed
 native, discovery, persistence and normal-window coverage and remaining scope.
+
+
+## Bounded ordinary finite selector reads
+
+The straight-line ordinary-entry producer can lower an N-member byte selector
+through the existing list-shaped proof records. It retains the actual selector
+computation, captures its operand at the mapper write, and derives every
+selector/physical-ROM-byte association through the concrete mapper authority.
+Each non-first alternative adds a byte equality, product and modular sum. A
+single incoming domain therefore preserves selector/value correlation rather
+than choosing a bank from the displayed address.
+
+This path retains exact/singleton/two-way behavior and refuses the completely
+unknown 256-member byte set as TOP. Supported finite expansion is bounded by
+4,096 added p-code operations per payload, including selector snapshots, and by
+the reserved scratch region and actual unique-space capacity. Every added
+operation consumes a 16-byte scratch slot. The complete cost is checked before
+proof admission and emission; exhaustion reports a finite frontier without
+truncating alternatives. This is a provider work budget, not a native protocol
+limit. The existing 4,096 raw-operation producer bound remains separate.
+
+Broad Program fingerprints still conservatively invalidate proofs after an
+unrelated byte edit. Explicit refresh rederives the selector/byte relationship;
+this generalization does not narrow dependencies, interpret branches, add
+unknown-pointer support or model symbolic mutable RAM.

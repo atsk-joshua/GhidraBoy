@@ -37,6 +37,12 @@ public final class SoftwareCallStateEntryInjection extends InjectPayloadSleigh {
   @Override public PcodeOp[] getPcode(Program program, InjectContext context) {
     return SoftwareCallInjection.revalidated(program, () -> {
       try {
+        if (SoftwareCallDomains.registered(program, context.baseAddr))
+          return SoftwareCallDomains.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
+        if (PredicatedCalls.registered(program, context.baseAddr))
+          return PredicatedCalls.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
+        if (OrdinaryEntryAccess.registered(program, context.baseAddr))
+          return OrdinaryEntryAccess.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
         long before = program.getModificationNumber();
         var input = SoftwareCallRegistry.resolveStateEntry(program, context.baseAddr);
         var graph = SoftwareCallRegistry.entryGraph(program, context.baseAddr, input);

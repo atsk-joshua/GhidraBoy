@@ -106,26 +106,7 @@ public final class SoftwareCallInjection extends InjectPayloadCallfixup {
       }
       // These are site-conditional proven results, not a helper-wide ABI or guessed prototype.
       // In particular F must not inherit its pre-call value merely because a native ABI omits it.
-      var first = effects.paths().get(0).returned().registers();
-      Map<String, Integer> results = Map.of("A", first.a(), "F", first.f(), "BC", first.bc(),
-          "DE", first.de(), "HL", first.hl());
-      for (var result : results.entrySet()) {
-        boolean agreed = effects.paths().stream().allMatch(path -> {
-          var registers = path.returned().registers();
-          int value = switch (result.getKey()) {
-            case "A" -> registers.a(); case "F" -> registers.f();
-            case "BC" -> registers.bc(); case "DE" -> registers.de(); default -> registers.hl();
-          };
-          return value == result.getValue();
-        });
-        if (agreed) {
-          var register = program.getRegister(result.getKey());
-          expanded.add(new PcodeOp(context.baseAddr, expanded.size(), PcodeOp.COPY,
-              new Varnode[] {new Varnode(program.getAddressFactory().getConstantSpace()
-                  .getAddress(result.getValue()), register.getMinimumByteSize())},
-              new Varnode(register.getAddress(), register.getMinimumByteSize())));
-        }
-      }
+      returnedRegisters(program,effects,context.baseAddr,expanded);
       if (SoftwareCallRegistry.stateContinuation(program, context.baseAddr)) {
         var configurations = SoftwareCallRegistry.configurations(program);
         var graph = SoftwareCallEffects.deriveContinuation(program, preview.frame(), effects.paths().get(0), configurations,
@@ -150,6 +131,30 @@ public final class SoftwareCallInjection extends InjectPayloadCallfixup {
       throw new IllegalArgumentException("Unresolved software-call injection at " + context.baseAddr
           + ": " + failure.getMessage(), failure);
     }
+  }
+
+  /** Shared exact effect contract; a caller may use only results agreed by the actual returned paths. */
+  static void returnedRegisters(Program program,SoftwareCallEffects.Summary effects,Address site,List<PcodeOp> operations) {
+      var first = effects.paths().get(0).returned().registers();
+      Map<String, Integer> results = Map.of("A", first.a(), "F", first.f(), "BC", first.bc(),
+          "DE", first.de(), "HL", first.hl());
+      for (var result : results.entrySet()) {
+        boolean agreed = effects.paths().stream().allMatch(path -> {
+          var registers = path.returned().registers();
+          int value = switch (result.getKey()) {
+            case "A" -> registers.a(); case "F" -> registers.f();
+            case "BC" -> registers.bc(); case "DE" -> registers.de(); default -> registers.hl();
+          };
+          return value == result.getValue();
+        });
+        if (agreed) {
+          var register = program.getRegister(result.getKey());
+          operations.add(new PcodeOp(site, operations.size(), PcodeOp.COPY,
+              new Varnode[] {new Varnode(program.getAddressFactory().getConstantSpace()
+                  .getAddress(result.getValue()), register.getMinimumByteSize())},
+              new Varnode(register.getAddress(), register.getMinimumByteSize())));
+        }
+      }
   }
 
   private static PcodeOp[] unchanged(Program program, long modification, List<PcodeOp> operations) {

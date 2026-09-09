@@ -26,8 +26,17 @@ public final class SoftwareCallExecutionView {
   }
 
   public static Preview preview(Program program, String name, List<Segment> segments, TaskMonitor monitor) throws Exception {
-    if (!name.matches("[A-Za-z0-9_]+") || !name.startsWith(PREFIX))
-      throw new IllegalArgumentException("Execution view name must begin " + PREFIX + " and use identifier characters");
+    return previewOwned(program, name, segments, PREFIX, VERSION, monitor);
+  }
+
+  static Preview previewOrdinary(Program program, String name, List<Segment> segments, TaskMonitor monitor) throws Exception {
+    return previewOwned(program, name, segments, OrdinaryEntryAccess.PREFIX, OrdinaryEntryAccess.VERSION, monitor);
+  }
+
+  private static Preview previewOwned(Program program, String name, List<Segment> segments,
+      String prefix, String version, TaskMonitor monitor) throws Exception {
+    if (!name.matches("[A-Za-z0-9_]+") || !name.startsWith(prefix))
+      throw new IllegalArgumentException("Execution view name must begin " + prefix + " and use identifier characters");
     if (program.getAddressFactory().getAddressSpace(name) != null)
       throw new IllegalArgumentException("Execution view already exists");
     if (segments.isEmpty()) throw new IllegalArgumentException("No execution ranges");
@@ -60,12 +69,21 @@ public final class SoftwareCallExecutionView {
           || (last != null && !last.getMaxAddress().equals(source.add(segment.length - 1))))
         throw new IllegalArgumentException("Execution segment cuts an instruction");
     }
-    return new Preview(VERSION, FarCallEvidence.capture(program, monitor), name, ordered);
+    return new Preview(version, FarCallEvidence.capture(program, monitor), name, ordered);
   }
 
   /** Caller owns the transaction, listing/Function migration and its reviewed rollback receipt. */
   public static Created create(Program program, Preview reviewed, TaskMonitor monitor) throws Exception {
-    var current = preview(program, reviewed.name, reviewed.segments, monitor);
+    return createOwned(program, reviewed, PREFIX, VERSION, monitor);
+  }
+
+  static Created createOrdinary(Program program, Preview reviewed, TaskMonitor monitor) throws Exception {
+    return createOwned(program, reviewed, OrdinaryEntryAccess.PREFIX, OrdinaryEntryAccess.VERSION, monitor);
+  }
+
+  private static Created createOwned(Program program, Preview reviewed, String prefix,
+      String version, TaskMonitor monitor) throws Exception {
+    var current = previewOwned(program, reviewed.name, reviewed.segments, prefix, version, monitor);
     if (!current.equals(reviewed)) throw new IllegalArgumentException("Stale execution-view preview");
     if (program.getCurrentTransactionInfo() == null)
       throw new IllegalArgumentException("Execution view creation requires caller transaction");
@@ -80,11 +98,11 @@ public final class SoftwareCallExecutionView {
           first ? reviewed.name : reviewed.name + "_" + Integer.toHexString(segment.cpu),
           destination, source, segment.length, first);
       block.setRead(true); block.setWrite(false); block.setExecute(true);
-      block.setComment(VERSION + "; shared physical source " + segment.source);
+      block.setComment(version + "; shared physical source " + segment.source);
       space = block.getStart().getAddressSpace(); first = false;
       body.add(block.getStart(), block.getEnd());
     }
-    return new Created(VERSION, reviewed.name, reviewed.segments, body);
+    return new Created(version, reviewed.name, reviewed.segments, body);
   }
 
   /**

@@ -56,9 +56,21 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
             val site = root.add(if (manual) 4 else 0)
             p.withTransaction {
                 p.symbolTable.createLabel(root, "bounded_source", SourceType.USER_DEFINED)
-                Disassembler.getDisassembler(p, TaskMonitor.DUMMY, null).disassemble(root, AddressSet(root, root.add(source.length / 2L - 1)))
+                Disassembler
+                    .getDisassembler(
+                        p,
+                        TaskMonitor.DUMMY,
+                        null,
+                    ).disassemble(root, AddressSet(root, root.add(source.length / 2L - 1)))
             }
-            val instructions = p.listing.getInstructions(AddressSet(root, site.add(if (manual) 2 else 0)), true).iterator().asSequence().toList()
+            val instructions =
+                p.listing
+                    .getInstructions(
+                        AddressSet(root, site.add(if (manual) 2 else 0)),
+                        true,
+                    ).iterator()
+                    .asSequence()
+                    .toList()
             val originalPcode = instructions.flatMap { it.getPcode(false).toList() }
             val raw = originalPcode.map { it.toString() }
             // Both architectures push exactly one word, high byte then low byte, via two
@@ -71,7 +83,14 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                         it.output.size == 2 && it.getInput(1).isConstant && it.getInput(1).offset == 1L
                 },
             )
-            if (manual) assertFalse(p.listing.getInstructionAt(site).getPcode(false).any { it.opcode == PcodeOp.STORE })
+            if (manual) {
+                assertFalse(
+                    p.listing
+                        .getInstructionAt(site)
+                        .getPcode(false)
+                        .any { it.opcode == PcodeOp.STORE },
+                )
+            }
             val config =
                 SoftwareCallValidation.Configuration(
                     0x4500,
@@ -99,7 +118,14 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
         raw: List<String>,
     ) {
         val manual = root != site
-        val instructions = p.listing.getInstructions(AddressSet(root, site.add(if (manual) 2 else 0)), true).iterator().asSequence().toList()
+        val instructions =
+            p.listing
+                .getInstructions(
+                    AddressSet(root, site.add(if (manual) 2 else 0)),
+                    true,
+                ).iterator()
+                .asSequence()
+                .toList()
         assertEquals(raw, instructions.flatMap { it.getPcode(false).map { op -> op.toString() } })
         for (entry in listOf(site, alias)) {
             val instruction = p.listing.getInstructionAt(entry)
@@ -155,7 +181,12 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 "name" to function.getName(true),
                 "symbolSource" to function.symbol.source.toString(),
                 "symbolPinned" to function.symbol.isPinned,
-                "body" to function.body.addressRanges.iterator().asSequence().map { it.toString() }.toList(),
+                "body" to
+                    function.body.addressRanges
+                        .iterator()
+                        .asSequence()
+                        .map { it.toString() }
+                        .toList(),
                 "thunk" to function.isThunk,
                 "thunkTarget" to function.getThunkedFunction(false)?.entryPoint?.toString(),
                 "recursiveThunkTarget" to function.getThunkedFunction(true)?.entryPoint?.toString(),
@@ -178,31 +209,42 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 "ownershipStamp" to AnalysisOwnership.functionStamp(function, true),
             )
         val options = p.getOptions(ProgramMapping.OPTIONS)
-        val functions = p.functionManager.getFunctions(true).iterator().asSequence().map { functionInventory(it) }.toList()
+        val functions =
+            p.functionManager
+                .getFunctions(true)
+                .iterator()
+                .asSequence()
+                .map { functionInventory(it) }
+                .toList()
         val instructions =
-            p.listing.getInstructions(true).iterator().asSequence().map { instruction ->
-                linkedMapOf(
-                    "address" to instruction.address.toString(),
-                    "bytes" to HexFormat.of().formatHex(instruction.bytes),
-                    "flowOverride" to instruction.flowOverride.toString(),
-                    "flowType" to instruction.flowType.toString(),
-                    "fallthroughOverridden" to instruction.isFallThroughOverridden,
-                    "fallthrough" to instruction.fallThrough?.toString(),
-                    "flows" to instruction.flows.map { it.toString() }.sorted(),
-                    "rawPcode" to instruction.getPcode(false).map { it.toString() },
-                    "references" to instruction.referencesFrom.map { reference ->
-                        linkedMapOf(
-                            "from" to reference.fromAddress.toString(),
-                            "to" to reference.toAddress.toString(),
-                            "type" to reference.referenceType.toString(),
-                            "source" to reference.source.toString(),
-                            "operand" to reference.operandIndex,
-                            "primary" to reference.isPrimary,
-                            "symbolId" to reference.symbolID,
-                        )
-                    },
-                )
-            }.toList()
+            p.listing
+                .getInstructions(true)
+                .iterator()
+                .asSequence()
+                .map { instruction ->
+                    linkedMapOf(
+                        "address" to instruction.address.toString(),
+                        "bytes" to HexFormat.of().formatHex(instruction.bytes),
+                        "flowOverride" to instruction.flowOverride.toString(),
+                        "flowType" to instruction.flowType.toString(),
+                        "fallthroughOverridden" to instruction.isFallThroughOverridden,
+                        "fallthrough" to instruction.fallThrough?.toString(),
+                        "flows" to instruction.flows.map { it.toString() }.sorted(),
+                        "rawPcode" to instruction.getPcode(false).map { it.toString() },
+                        "references" to
+                            instruction.referencesFrom.map { reference ->
+                                linkedMapOf(
+                                    "from" to reference.fromAddress.toString(),
+                                    "to" to reference.toAddress.toString(),
+                                    "type" to reference.referenceType.toString(),
+                                    "source" to reference.source.toString(),
+                                    "operand" to reference.operandIndex,
+                                    "primary" to reference.isPrimary,
+                                    "symbolId" to reference.symbolID,
+                                )
+                            },
+                    )
+                }.toList()
         val inventory =
             linkedMapOf(
                 "phase" to phase,
@@ -217,7 +259,14 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 "rawOwnership" to options.getString("analysis.ownership.v1", null),
                 "completeKnowledgeFingerprint" to FarCallEvidence.capture(p, TaskMonitor.DUMMY),
             )
-        println("SA01_STOCK_TRANSITION_JSON " + com.google.gson.GsonBuilder().serializeNulls().create().toJson(inventory))
+        println(
+            "SA01_STOCK_TRANSITION_JSON " +
+                com.google.gson
+                    .GsonBuilder()
+                    .serializeNulls()
+                    .create()
+                    .toJson(inventory),
+        )
     }
 
     @Test
@@ -241,8 +290,16 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 transitionInventory(p, "LEGACY_TERMINAL_BEFORE_STOCK_REPAIR", root, alias)
                 CreateFunctionCmd.fixupFunctionBody(p, derived, TaskMonitor.DUMMY)
                 transitionInventory(p, "LEGACY_TERMINAL_AFTER_STOCK_REPAIR", root, alias)
-                assertEquals(registryBefore, options.getString(SoftwareCallRegistry.KEY, null), "Stock repair must not refresh semantic dependencies")
-                assertEquals(ownershipBefore, options.getString("analysis.ownership.v1", null), "Stock repair must not refresh ownership receipts")
+                assertEquals(
+                    registryBefore,
+                    options.getString(SoftwareCallRegistry.KEY, null),
+                    "Stock repair must not refresh semantic dependencies",
+                )
+                assertEquals(
+                    ownershipBefore,
+                    options.getString("analysis.ownership.v1", null),
+                    "Stock repair must not refresh ownership receipts",
+                )
                 assertEquals(id, derived.id)
                 assertTrue(derived.isThunk)
                 assertEquals(address(0x28), derived.getThunkedFunction(false).entryPoint)
@@ -276,7 +333,13 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                                 }
                             p.referenceManager.delete(reference)
                             p.referenceManager.setPrimary(
-                                p.referenceManager.addMemoryReference(alias, address(0x240), RefType.CALL_OVERRIDE_UNCONDITIONAL, SourceType.USER_DEFINED, -1),
+                                p.referenceManager.addMemoryReference(
+                                    alias,
+                                    address(0x240),
+                                    RefType.CALL_OVERRIDE_UNCONDITIONAL,
+                                    SourceType.USER_DEFINED,
+                                    -1,
+                                ),
                                 true,
                             )
                         }

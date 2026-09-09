@@ -26,7 +26,51 @@ public final class BankAnalysis {
     }
   }
 
+  /** Read-only observations of the production worklist, not a second state evaluator. */
+  public record FetchByte(int cpu, String source, MapperState.Physical physical, int value) {}
+
+  public record WriteTransition(
+      int operation, int byteIndex, int cpu, Integer value,
+      MapperKnowledge before, MapperKnowledge after, boolean mapperControl) {}
+
+  public record FetchStep(
+      String source, int cpu, List<FetchByte> bytes, List<String> rawPcode,
+      MapperKnowledge incoming, MapperKnowledge outgoing,
+      List<WriteTransition> writes, List<String> successors) {
+    public FetchStep {
+      bytes = List.copyOf(bytes);
+      rawPcode = List.copyOf(rawPcode);
+      writes = List.copyOf(writes);
+      successors = List.copyOf(successors);
+    }
+  }
+
+  /** Steps are worklist visitation order; callers must prove a unique path before linear emission. */
+  public record FetchPreview(AnalysisResult result, List<FetchStep> steps, List<String> frontier) {
+    public FetchPreview {
+      steps = List.copyOf(steps);
+      frontier = List.copyOf(frontier);
+    }
+  }
+
+  private static final class FetchCollector {
+    final List<FetchStep> steps = new ArrayList<>();
+    final List<String> frontier = new ArrayList<>();
+  }
+
   private record Work(Address address, MapperKnowledge state, Map<Long, Integer> registers) {}
+
+  /** The physical entry is an external invocation premise, never evidence of a selected display. */
+  public static FetchPreview previewFetch(
+      Program p, Address start, MapperState assumption,
+      AnalysisResult.Configuration configuration, TaskMonitor monitor) throws Exception {
+    var diagnostic = new FetchCollector();
+    var result = preview(p, start, assumption, configuration, monitor, diagnostic);
+    for (var finding : result.findings())
+      if (finding.confidence() != AnalysisResult.Confidence.PROVEN)
+        diagnostic.frontier.add(finding.source() + " " + finding.access() + ": " + finding.reason());
+    return new FetchPreview(result, diagnostic.steps, diagnostic.frontier);
+  }
 
   public static List<Finding> analyze(
       Program p, Address start, MapperState assumption, TaskMonitor monitor, boolean apply)
@@ -43,6 +87,13 @@ public final class BankAnalysis {
       AnalysisResult.Configuration configuration,
       TaskMonitor monitor)
       throws Exception {
+    return preview(p, start, assumption, configuration, monitor, null);
+  }
+
+  private static AnalysisResult preview(
+      Program p, Address start, MapperState assumption,
+      AnalysisResult.Configuration configuration, TaskMonitor monitor,
+      FetchCollector diagnostic) throws Exception {
     // Content hashes alone cannot detect an edit that is restored during exploration.
     long modification = p.getModificationNumber();
     String fingerprint = ProgramFingerprint.capture(p, monitor);
@@ -89,7 +140,7 @@ public final class BankAnalysis {
               "No defined instruction; data/undefined bytes left intact");
           continue;
         }
-        if (!fetchEstablished(p, cartridge, w.state, ins)) {
+        if (!fetchEstablished(p, cartridge, w.state, ins, diagnostic != null)) {
           reasons.put(
               AnalysisCandidates.Site.control(w.address, "flow"),
               "Instruction fetch crosses an unestablished physical execution view");
@@ -102,6 +153,8 @@ public final class BankAnalysis {
         }
         var softwareCall = InstructionInterpretation.softwareCall(ins);
         if (softwareCall != null) {
+          if (diagnostic != null)
+            diagnostic.frontier.add(w.address + ": Software-call summary is not an instruction fetch trace");
           var premises = softwareCall.configuration();
           var input = premises.registers();
           int expectedSp = premises.callerSp() -
@@ -148,24 +201,27 @@ public final class BankAnalysis {
                   (long) value.getValue(), outputRegisters, new HashMap<>());
             }
             for (var continuation : ProgramMapping.physicalToStatic(p, returned.physical()))
-              if (continuation.getOffset() == returned.cpu() && executionCandidate(p, continuation))
+              if (continuation.getOffset() == returned.cpu() && executionCandidate(p, continuation, diagnostic != null))
                 queue.addLast(new Work(continuation, MapperKnowledge.from(returned.mapper()), Map.copyOf(outputRegisters)));
           }
           continue;
         }
+        var fetchBytes = diagnostic == null ? null : fetchBytes(p, ins);
+        var writes = diagnostic == null ? null : new ArrayList<WriteTransition>();
+        var raw = ins.getPcode(false);
         var state = w.state;
         var regs = new HashMap<>(w.registers);
         var unique = new HashMap<Long, Integer>();
         boolean changedMapper = false;
         // Internal p-code branches are not path interpreted by this finite evaluator.
         boolean internal =
-            Arrays.stream(ins.getPcode(false))
+            Arrays.stream(raw)
                 .anyMatch(
                     op ->
                         op.getOpcode() == PcodeOp.CBRANCH
                             || (op.getOpcode() == PcodeOp.BRANCH && op.getInput(0).isConstant()));
         int operation = 0;
-        for (var op : ins.getPcode(false)) {
+        for (var op : raw) {
           int operationIndex = operation++;
           if (op.getOpcode() != PcodeOp.BRANCH
               && op.getOpcode() != PcodeOp.CBRANCH
@@ -184,7 +240,8 @@ public final class BankAnalysis {
                     operationIndex,
                     operand,
                     targets,
-                    reasons);
+                    reasons,
+                    diagnostic != null);
             }
           if (op.getOpcode() == PcodeOp.STORE || CartridgeBus.isDirectWrite(p.getLanguage(), op)) {
             Long ptr = value(op.getInput(1), regs, unique),
@@ -213,7 +270,8 @@ public final class BankAnalysis {
                       w.address,
                       operationIndex,
                       targets,
-                      reasons);
+                      reasons,
+                      writes);
               changedMapper |= touchesMapper(cartridge, cpu, width);
             }
           } else if (op.getOpcode() == PcodeOp.LOAD) {
@@ -229,7 +287,8 @@ public final class BankAnalysis {
                   operationIndex,
                   -1,
                   targets,
-                  reasons);
+                  reasons,
+                  diagnostic != null);
             else
               unknownAccess(
                   w.address,
@@ -255,7 +314,8 @@ public final class BankAnalysis {
                       w.address,
                       operationIndex,
                       targets,
-                      reasons);
+                      reasons,
+                      writes);
               changedMapper |= touchesMapper(cartridge, cpu, output.getSize());
             }
             put(output, result, regs, unique);
@@ -266,7 +326,7 @@ public final class BankAnalysis {
         for (var dest : ins.getDefaultFlows()) {
           var resolved =
               resolveWithContext(
-                  p, cartridge, state, (int) dest.getOffset(), changedMapper ? null : w.address);
+                  p, cartridge, state, (int) dest.getOffset(), changedMapper ? null : w.address, diagnostic != null);
           var key = AnalysisCandidates.Site.control(w.address, flow.isCall() ? "call" : "jump");
           if (resolved.isEmpty()) reasons.put(key, "Unknown bank or missing static execution view");
           for (var a : resolved) {
@@ -290,7 +350,7 @@ public final class BankAnalysis {
           int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
           if (ins.isFallThroughOverridden()) nextCpu = (int) next.getOffset();
           var nextViews =
-              resolveWithContext(p, cartridge, state, nextCpu, changedMapper ? null : w.address);
+              resolveWithContext(p, cartridge, state, nextCpu, changedMapper ? null : w.address, diagnostic != null);
           if (nextViews.isEmpty())
             reasons.put(
                 AnalysisCandidates.Site.control(w.address, "flow"),
@@ -300,6 +360,10 @@ public final class BankAnalysis {
         }
         if (configuration.reverseBranches()) Collections.reverse(successors);
         queue.addAll(successors);
+        if (diagnostic != null)
+          diagnostic.steps.add(new FetchStep(w.address.toString(), (int) w.address.getOffset(),
+              fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(), w.state, state,
+              writes, successors.stream().map(work -> work.address.toString()).toList()));
         if (flow.isComputed())
           reasons.put(
               AnalysisCandidates.Site.control(w.address, "flow"),
@@ -339,22 +403,44 @@ public final class BankAnalysis {
     AnalysisApplication.apply(p, result, monitor);
   }
 
+  /** Predicate adapters share the production physical-fetch checks and byte evidence. */
+  static List<FetchByte> predicatedFetch(Program p, MapperKnowledge state,
+      ghidra.program.model.listing.Instruction instruction) throws Exception {
+    if (!fetchEstablished(p, ProgramMapping.cartridge(p), state, instruction, true))
+      throw new IllegalArgumentException("Unestablished predicate-qualified physical fetch");
+    var bytes = fetchBytes(p, instruction);
+    for (var octet : bytes) {
+      var at = ProgramMapping.staticAddress(p, octet.source()); var block = p.getMemory().getBlock(at);
+      if (block == null || !block.isInitialized() || !block.isRead() || !block.isExecute() || block.isWrite() || block.isVolatile())
+        throw new IllegalArgumentException("Predicate fetch requires immutable readable executable ROM");
+      var resolution = ScalarAccess.resolve(ProgramMapping.cartridge(p), state,
+          new ScalarAccess.Request(octet.cpu(), ScalarAccess.Kind.FETCH, bytes.size(),
+              octet.cpu() - (int) instruction.getAddress().getOffset(), instruction.getAddress().toString(), -1, -1, null)).resolution().orElseThrow();
+      if (!octet.physical().equals(resolution.physical()))
+        throw new IllegalArgumentException("Predicate fetch physical byte mismatch");
+    }
+    return bytes;
+  }
+
   private static boolean fetchEstablished(
-      Program p, Cartridge c, MapperKnowledge state, ghidra.program.model.listing.Instruction ins)
+      Program p, Cartridge c, MapperKnowledge state, ghidra.program.model.listing.Instruction ins,
+      boolean canonicalOnly)
       throws Exception {
-    if (!executionCandidate(p, ins.getAddress())) return false;
+    if (!executionCandidate(p, ins.getAddress(), canonicalOnly)) return false;
     // Ordinary same-window instructions are already supplied by the listing. A
     // boundary-spanning decode must have physical backing for every fetched byte.
     long start = ins.getAddress().getOffset(), end = start + ins.getLength() - 1;
     var source = ProgramMapping.staticToPhysical(p, ins.getAddress());
-    var expected = state.translate(c, (int) start, false).physical();
+    var request = new ScalarAccess.Request(
+        (int) start, ScalarAccess.Kind.FETCH, ins.getLength(), 0, ins.getAddress().toString(), -1, -1, null);
+    var expected = ScalarAccess.resolve(c, state, request).resolution().orElseThrow().physical();
     if (expected != null && (source.size() != 1 || !source.get(0).equals(expected))) return false;
     if (executionWindow((int) start) == executionWindow((int) (end & 65535)) && end <= 65535)
       return true;
     byte[] bytes = ins.getBytes();
     for (int i = 0; i < bytes.length; i++) {
       int cpu = (int) ((start + i) & 65535);
-      var views = resolveWithContext(p, c, state, cpu, ins.getAddress());
+      var views = resolveWithContext(p, c, state, cpu, ins.getAddress(), canonicalOnly);
       if (views.isEmpty()) return false;
       var actual = ProgramMapping.staticToPhysical(p, ins.getAddress().addWrap(i));
       if (actual.size() != 1) return false;
@@ -364,6 +450,21 @@ public final class BankAnalysis {
       }
     }
     return true;
+  }
+
+  private static List<FetchByte> fetchBytes(
+      Program p, ghidra.program.model.listing.Instruction ins) throws Exception {
+    var result = new ArrayList<FetchByte>();
+    byte[] bytes = ins.getBytes();
+    for (int i = 0; i < bytes.length; i++) {
+      var source = ins.getAddress().addWrap(i);
+      var physical = ProgramMapping.staticToPhysical(p, source);
+      if (physical.size() != 1)
+        throw new IllegalArgumentException("Diagnostic fetch has no unique physical identity: " + source);
+      result.add(new FetchByte((int) (source.getOffset() & 65535), source.toString(),
+          physical.get(0), bytes[i] & 255));
+    }
+    return result;
   }
 
   private static int executionWindow(int cpu) {
@@ -406,16 +507,28 @@ public final class BankAnalysis {
       Address from,
       int operation,
       Map<AnalysisCandidates.Site, Set<Address>> targets,
-      Map<AnalysisCandidates.Site, String> reasons)
+      Map<AnalysisCandidates.Site, String> reasons,
+      List<WriteTransition> writes)
       throws Exception {
     // P-code operations are ordered. Within a remaining little-endian wide store,
     // bytes use increasing 16-bit addresses. SM83 stack stores explicitly encode
     // their distinct high-byte-first architectural order in SLEIGH.
     for (int i = 0; i < width; i++) {
       int cpu = (address + i) & 65535;
-      record(p, c, state, cpu, true, from, operation, -1, i, targets, reasons);
-      if (mapperControl(c, cpu))
-        state = state.write(c, cpu, value == null ? null : (int) (value >>> (i * 8)) & 255);
+      Integer octet = value == null ? null : (int) (value >>> (i * 8)) & 255;
+      var request = new ScalarAccess.Request(
+          cpu, ScalarAccess.Kind.WRITE, width, i, from.toString(), operation, -1, octet);
+      var before = state;
+      var outcome = ScalarAccess.resolve(c, before, request);
+      var access = outcome.request();
+      var key = new AnalysisCandidates.Site(
+          from, AnalysisCandidates.Access.WRITE, access.operation(), access.operand(), access.byteIndex());
+      record(p, outcome.resolution().orElseThrow(), access.cpu(), key, targets, reasons, writes != null);
+      boolean control = mapperControl(c, cpu);
+      // The adapter proposes a state; this caller retains its mapper-control policy, including CGB gating.
+      if (control) state = outcome.after().orElseThrow();
+      if (writes != null)
+        writes.add(new WriteTransition(operation, i, cpu, octet, before, state, control));
     }
     return state;
   }
@@ -430,22 +543,36 @@ public final class BankAnalysis {
       int operation,
       int operand,
       Map<AnalysisCandidates.Site, Set<Address>> targets,
-      Map<AnalysisCandidates.Site, String> reasons)
+      Map<AnalysisCandidates.Site, String> reasons,
+      boolean canonicalOnly)
       throws Exception {
-    for (int i = 0; i < width; i++)
-      record(
-          p, c, state, (address + i) & 65535, false, from, operation, operand, i, targets, reasons);
+    for (int i = 0; i < width; i++) {
+      var request = new ScalarAccess.Request(
+          (address + i) & 65535, ScalarAccess.Kind.READ, width, i,
+          from.toString(), operation, operand, null);
+      var outcome = ScalarAccess.resolve(c, state, request);
+      var access = outcome.request();
+      var key = new AnalysisCandidates.Site(
+          from, AnalysisCandidates.Access.READ, access.operation(), access.operand(), access.byteIndex());
+      record(p, outcome.resolution().orElseThrow(), access.cpu(), key, targets, reasons, canonicalOnly);
+    }
   }
 
-  private static boolean executionCandidate(Program p, Address address) {
+  private static boolean executionCandidate(Program p, Address address, boolean canonicalOnly) {
+    if (canonicalOnly) {
+      var block = p.getMemory().getBlock(address);
+      if (block == null || block.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+          || block.getName().startsWith(OrdinaryEntryAccess.PREFIX)) return false;
+    }
     if (!address.getAddressSpace().getName().startsWith(SoftwareCallExecutionView.PREFIX)) return true;
     var block = p.getMemory().getBlock(address);
     return block != null && block.isExecute();
   }
 
   private static List<Address> resolveWithContext(
-      Program p, Cartridge c, MapperKnowledge s, int cpu, Address context) throws Exception {
-    var result = resolve(p, c, s, cpu);
+      Program p, Cartridge c, MapperKnowledge s, int cpu, Address context,
+      boolean canonicalOnly) throws Exception {
+    var result = resolve(p, c, s, cpu, canonicalOnly);
     if (!result.isEmpty()
         || context == null
         || c.mapper() == Cartridge.Mapper.RAW
@@ -458,47 +585,36 @@ public final class BankAnalysis {
         || !s.allowsExecution(c, cpu, identities.get(0).bank())) return result;
     var physical = new MapperState.Physical("ROM", identities.get(0).bank(), cpu % 0x4000);
     return ProgramMapping.physicalToStatic(p, physical).stream()
-        .filter(a -> a.getOffset() == cpu && executionCandidate(p, a))
+        .filter(a -> a.getOffset() == cpu && executionCandidate(p, a, canonicalOnly))
         .toList();
   }
 
-  private static List<Address> resolve(Program p, Cartridge c, MapperKnowledge s, int cpu)
+  private static List<Address> resolve(Program p, Cartridge c, MapperKnowledge s, int cpu, boolean canonicalOnly)
       throws Exception {
-    var physical = s.translate(c, cpu, false).physical();
+    var request = new ScalarAccess.Request(cpu, ScalarAccess.Kind.FETCH, 1, 0, null, -1, -1, null);
+    var physical = ScalarAccess.resolve(c, s, request).resolution().orElseThrow().physical();
     if (physical == null) return List.of();
     return ProgramMapping.physicalToStatic(p, physical).stream()
-        .filter(a -> a.getOffset() == cpu && executionCandidate(p, a))
+        .filter(a -> a.getOffset() == cpu && executionCandidate(p, a, canonicalOnly))
         .toList();
   }
 
   private static void record(
       Program p,
-      Cartridge c,
-      MapperKnowledge s,
+      MapperState.Resolution result,
       int cpu,
-      boolean write,
-      Address from,
-      int operation,
-      int operand,
-      int byteIndex,
+      AnalysisCandidates.Site key,
       Map<AnalysisCandidates.Site, Set<Address>> targets,
-      Map<AnalysisCandidates.Site, String> reasons)
+      Map<AnalysisCandidates.Site, String> reasons,
+      boolean canonicalOnly)
       throws Exception {
-    var key =
-        new AnalysisCandidates.Site(
-            from,
-            write ? AnalysisCandidates.Access.WRITE : AnalysisCandidates.Access.READ,
-            operation,
-            operand,
-            byteIndex);
-    var result = s.translate(c, cpu, write);
     if (result.physical() == null) {
       reasons.put(key, result.status() + ": " + result.reason());
       return;
     }
     var addresses =
         ProgramMapping.physicalToStatic(p, result.physical()).stream()
-            .filter(a -> a.getOffset() == cpu && executionCandidate(p, a))
+            .filter(a -> a.getOffset() == cpu && executionCandidate(p, a, canonicalOnly))
             .toList();
     if (addresses.isEmpty()) reasons.put(key, "Physical destination has no static mapping");
     for (var a : addresses) targets.computeIfAbsent(key, k -> new TreeSet<>()).add(a);

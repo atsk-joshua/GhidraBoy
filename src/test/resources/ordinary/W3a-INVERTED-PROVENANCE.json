@@ -1,0 +1,7 @@
+{
+  "path": "PREDICATED_CALLS_INVERTED.gb",
+  "sha256": "6e4ba1316ed689d14d7eae6fc223753335f0db145797b00068e3de171ecb9e46",
+  "base_sha256": "21be42898576228ee5674bdffa5dcf97419d807dfc77d44af75bf70017727597",
+  "actual_producer_change": "CPU0153 JR NZ (20) -> JR Z (28); global checksum recomputed",
+  "expected": "B even ->bank2 real callee ->A7; B odd ->bank1 real callee ->31; call/return/effect layout unchanged"
+}

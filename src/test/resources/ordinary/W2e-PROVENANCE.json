@@ -1,0 +1,9 @@
+[
+  {
+    "path": "F1234.gb",
+    "sha256": "047326108b357c6216e408258e56433ba8a5a18bc20fb046437dc72bada4d40b",
+    "kind": "W2e self-authored fixture",
+    "source_provenance": "Eight physical MBC5 banks; 0150 bytes 78e6033cea31c0ea00202100607eea30c0c9; bank1/2/3/4 CPU6000 bytes31/A7/D3/5C; header/global checksums included.",
+    "purpose": "One code-derived four-selector unknown-B domain, without disconnected bank wiring ambiguity."
+  }
+]

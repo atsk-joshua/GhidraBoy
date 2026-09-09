@@ -1,0 +1,71 @@
+{
+  "path": "ROM_INDEX.gb",
+  "sha256": "dc0b697ff7727df3391be878c8deb02dd3700e6620abeef7efcc3d28c597290c",
+  "kind": "W2f self-authored fixture",
+  "template": "F1234.gb",
+  "template_sha256": "047326108b357c6216e408258e56433ba8a5a18bc20fb046437dc72bada4d40b",
+  "entry_cpu": "0150",
+  "entry_hex": "3e02ea002078e6036f26607eea40c0ea00202100617eea41c0c9",
+  "entry_premises": "No register values supplied to static proof. Entry code writes bank2 before indexed read; B remains unknown. Return frame is symbolic.",
+  "changes": "Blanked 0150..01ff and wrote the specified entry; replaced title; authored bank2 CPU6000..6003 [01,03,02,04]; authored CPU6100 bank1=31 bank2=A7 bank3=D3 bank4=5C; recomputed header/global checksums. Other template bytes retained.",
+  "table_sources": [
+    {
+      "cpu": "0x6000",
+      "bank": 2,
+      "offset": "0x2000",
+      "file_offset": "0xa000",
+      "byte": 1
+    },
+    {
+      "cpu": "0x6001",
+      "bank": 2,
+      "offset": "0x2001",
+      "file_offset": "0xa001",
+      "byte": 3
+    },
+    {
+      "cpu": "0x6002",
+      "bank": 2,
+      "offset": "0x2002",
+      "file_offset": "0xa002",
+      "byte": 2
+    },
+    {
+      "cpu": "0x6003",
+      "bank": 2,
+      "offset": "0x2003",
+      "file_offset": "0xa003",
+      "byte": 4
+    }
+  ],
+  "output_sources": [
+    {
+      "cpu": "0x6100",
+      "bank": 1,
+      "offset": "0x2100",
+      "file_offset": "0x6100",
+      "byte": 49
+    },
+    {
+      "cpu": "0x6100",
+      "bank": 2,
+      "offset": "0x2100",
+      "file_offset": "0xa100",
+      "byte": 167
+    },
+    {
+      "cpu": "0x6100",
+      "bank": 3,
+      "offset": "0x2100",
+      "file_offset": "0xe100",
+      "byte": 211
+    },
+    {
+      "cpu": "0x6100",
+      "bank": 4,
+      "offset": "0x2100",
+      "file_offset": "0x12100",
+      "byte": 92
+    }
+  ]
+}

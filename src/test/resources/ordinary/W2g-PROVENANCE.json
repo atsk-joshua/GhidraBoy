@@ -1,0 +1,32 @@
+[
+  {
+    "path": "JOINT_INDEPENDENT.gb",
+    "sha256": "abb27a904946c7c1684948bf37f45de710e982faa7c6c5ade8e546316045e5b8",
+    "code": "78e6013cea50c0ea00207ae6016f26607eea51c0c9",
+    "entry": "0150",
+    "end": "0164",
+    "premise": "unknown B and D, ordinary conditional domain",
+    "template_sha256": "047326108b357c6216e408258e56433ba8a5a18bc20fb046437dc72bada4d40b",
+    "matrix": {
+      "ROM1:2000": 49,
+      "ROM1:2001": 93,
+      "ROM2:2000": 198,
+      "ROM2:2001": 167
+    }
+  },
+  {
+    "path": "JOINT_SAME.gb",
+    "sha256": "9c0da9566d9b0183a9d37e7c2db3c343d54a5f3df518bf76bcb16e0558aa27c4",
+    "code": "78e6013cea50c0ea002078e6016f26607eea51c0c9",
+    "entry": "0150",
+    "end": "0164",
+    "premise": "unknown B and D, ordinary conditional domain",
+    "template_sha256": "047326108b357c6216e408258e56433ba8a5a18bc20fb046437dc72bada4d40b",
+    "matrix": {
+      "ROM1:2000": 49,
+      "ROM1:2001": 93,
+      "ROM2:2000": 198,
+      "ROM2:2001": 167
+    }
+  }
+]

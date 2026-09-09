@@ -178,9 +178,9 @@ public final class SoftwareCallRegistry {
         ? SoftwareCallEffects.deriveCalleeGraph(p, input.frame(), configurations(p), TaskMonitor.DUMMY)
         : SoftwareCallEffects.deriveContinuation(p, input.frame(), effects(p, input, TaskMonitor.DUMMY).paths().get(0), configurations(p), TaskMonitor.DUMMY);
     int index = entry.graphEntry;
-    if (index == graph.steps().get(0).index()) return graph;
+    if (index == graph.entry().index()) return graph;
     return SoftwareCallEffects.calleeInvocations(graph).stream().map(SoftwareCallEffects.CalleeInvocation::graph)
-        .filter(candidate -> candidate.steps().get(0).index() == index).findFirst()
+        .filter(candidate -> candidate.entry().index() == index).findFirst()
         .orElseThrow(() -> new IllegalArgumentException("Missing current contextual callee graph at " + entry.canonical));
   }
 
@@ -204,7 +204,7 @@ public final class SoftwareCallRegistry {
       var graph = entryGraph(p, context, input);
       SoftwareCallContinuationView.requireTransport(p, graph, monitor);
       result.add(new StateContext(context.canonical, entry.getKey(), context.site, context.graphEntry, context.kind,
-          context.equals(selected), graph.steps().get(0).before()));
+          context.equals(selected), graph.entry().before()));
     }
     result.sort(Comparator.comparing(StateContext::site).thenComparingInt(StateContext::graphEntry));
     return List.copyOf(result);

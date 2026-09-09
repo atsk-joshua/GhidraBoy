@@ -1,0 +1,42 @@
+{
+  "path": "PREDICATED_CALLS.gb",
+  "sha256": "21be42898576228ee5674bdffa5dcf97419d807dfc77d44af75bf70017727597",
+  "self_authored": true,
+  "template": "F12.gb",
+  "template_sha256": "6af7ff922913418033058056b9475099e56ca564d23e9434ed8fcde797c983c5",
+  "mapper_header": 25,
+  "banks": 4,
+  "root": {
+    "entry": "0150",
+    "end": "0164",
+    "bytes": "78e60120043e0118023e02ea0020cd0040ea60c0c9",
+    "condition": "B&1 unknown at entry",
+    "branch": "0153 JR NZ0159",
+    "join": "015b mapper write",
+    "call": "015e CALL4000",
+    "return_word": "0161",
+    "output": "C060",
+    "outer_return": "0164"
+  },
+  "callees": [
+    {
+      "bank": 1,
+      "cpu": "4000",
+      "file_offset": "4000",
+      "bytes": "3e31c9",
+      "ret": "4002",
+      "A": 49
+    },
+    {
+      "bank": 2,
+      "cpu": "4000",
+      "file_offset": "8000",
+      "bytes": "3ea63cc9",
+      "ret": "4003",
+      "A": 167
+    }
+  ],
+  "expected": "B even -> selector1, actual bank1 instructions ->31; B odd ->selector2, actual bank2 LD A,A6 INC A ->A7",
+  "effects": "CALL pushes high01 at SP-1 then low61 at SP-2; callee RET reads low/high, returns0161; C060 store; outer RET reads symbolic original word",
+  "static_frame_domain": "root SP C082..CFFC; live frame bytes C080..CFFD disjoint from outputs below C080; test SP/return words are witnesses only"
+}

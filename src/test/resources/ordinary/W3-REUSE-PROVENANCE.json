@@ -1,0 +1,27 @@
+{
+  "path": "INVOCATION_REUSE.gb",
+  "sha256": "4b578b20226c083cd9850ddf6e5cc52785aac297149ca4453465de44985ca96b",
+  "base_sha256": "21be42898576228ee5674bdffa5dcf97419d807dfc77d44af75bf70017727597",
+  "root_bytes": "3e01ea0020cd0040ea61c004cd0040ea62c0c9",
+  "entry": "0150",
+  "end": "0162",
+  "callee": {
+    "source": "rom1::4000",
+    "bytes": "783cc9",
+    "actual": "LD A,B; INC A; RET"
+  },
+  "calls": [
+    {
+      "site": "0155",
+      "return": "0158",
+      "output": "C061"
+    },
+    {
+      "site": "015c",
+      "return": "015f",
+      "output": "C062"
+    }
+  ],
+  "input_definition_change": "INC B at015b between calls",
+  "expected": "C061=(B_entry+1)&255; C062=(B_entry+2)&255; one unknown root, actual inputs/returns per invocation; same physical target and internal depth1"
+}
