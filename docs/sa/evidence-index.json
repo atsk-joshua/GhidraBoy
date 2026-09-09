@@ -45,7 +45,29 @@
   "pre_cutover_head": "5ffc32f65bbd3254c9694d4f33c4fb21039d3fa1",
   "implementation_commit": "0a607eff4e63dc44a206d4db2563383a5c85c188",
   "evidence_cleanup_commit": "ec48e312a1d4a96dcafbed51c591c5129b2c15d4",
-  "cutover_validation": "Pending fresh REPO-built checkpoint; accepted W3b runs do not test the new commit",
+  "cutover_validation": {
+    "status": "BLOCKED",
+    "tested_commit": "d7027eaafa86f8b76e362044841b69a8c3ec3ea9",
+    "tested_tree": "dbf5cf1b547455bfbebb0b3894eb72fa3d8a777b",
+    "built_installed_extension_sha256": "f47307848cd660af05dd023affb6e5b88100b3a8e61c6ee2741f5394bfca4720",
+    "provider_jar_sha256": "e4928a54622a6010bce716000dc43fac4a1a8020fb0fb6fa97c79e4574508b9b",
+    "full_tests": {
+      "tests": 773,
+      "classes": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "all_accepted_case_names_retained": true
+    },
+    "build_inputs": "7 PASS",
+    "tools": "65 tests: 64 PASS, one accepted optional companion-package skip",
+    "debugger_pure": "15 PASS",
+    "cyclic_and_active_order_native": "PASS",
+    "same_site_two_domain_native": "FAIL: Domain discovery differs from rooted proof; capture incomplete before native requests",
+    "blocker_receipt": "evidence/cutovers/REPO-CUTOVER-20260909-v2/BLOCKER.json",
+    "report": "evidence/cutovers/REPO-CUTOVER-20260909-v2/REPORT-REPO-CUTOVER.md",
+    "retirement": "BLOCKED: installed regression unresolved and independent backup unverified"
+  },
   "original_planning_evidence": {
     "archive_reference": "GhidraBoy-EX0205/20260908-182408/EVIDENCE.tar.gz",
     "sha256": "d4914efc99c38ecfe0e1ca473a55ccddef87aa51518a35715ecb37c00ce70949",
@@ -230,5 +252,7 @@
       "repository_path": "src/test/scripts/GhidraBoySa01StateMigration.java",
       "purpose": "Maintained source citation; source files are not included in the static extension documentation payload"
     }
-  ]
+  ],
+  "documentation_authority_commit": "8e6a6474cfaf771dd4aa2527abe051623f76c5a8",
+  "output_hygiene_commit": "d7027eaafa86f8b76e362044841b69a8c3ec3ea9"
 }

@@ -26,3 +26,11 @@ The cumulative accepted SA implementation is reconciled into the normal Git chec
 Bounded finite relational convergence is not general scalability. Native HighFunction observations do not prove architectural SP/PC or write counts. Two configured domains at one site do not establish automatic discovery. Broader W3 dispatch, discovery, frame, nested-entry and invocation qualification remain open; W2’s scheduled foundation stays frozen.
 
 REPO-CUTOVER awaits the coordinating master’s review. No W3c, W4/G3 or other semantic work starts automatically. Local recovery is verified; independent backup has not been verified, so old-source retirement cannot be claimed complete. See [cutover policy](REPO-CUTOVER.md).
+
+## REPO-CUTOVER checkpoint — blocked
+
+The maintained tree at `d7027eaafa86f8b76e362044841b69a8c3ec3ea9` (tree `dbf5cf1b547455bfbebb0b3894eb72fa3d8a777b`) passed one fresh clean full build/lint checkpoint with all 773 accepted tests in 78 classes, no failures/errors/skips. Build-inputs7, tooling64 pass/one accepted optional skip, debugger-pure15, changed capture Java compilation and source/package link checks passed. Cyclic setup/reopen and active production continuation order installed checks passed.
+
+**Cutover acceptance is BLOCKED:** the fresh same-site/two-domain capture throws `Domain discovery differs from rooted proof` at the initial discovery equality guard in `SoftwareCallDomains.current`, before domain installation/native requests. Headless exit zero does not override the script exception and missing completion marker. The source fixture, capture script, provider JAR, native and SLA match accepted identities; the cause is not established. Preserve the capture and stop for master review. No guard/checker was weakened, no semantic correction or favorable retry was attempted, and W3b’s original acceptance remains attached to its original execution.
+
+The former workspace source is isolated read-only, with no compatibility symlink. Retirement remains blocked by this validation failure and unverified independent backup. The normal checkout remains the sole active development authority; further work requires master authorization. See the exact artifact/recovery/report references in [the evidence index](evidence-index.json).
