@@ -1,5 +1,22 @@
 # Implementation status
 
+## W4-MEMORY-IMAGE-G3 — integrated candidate, qualification pending
+
+The v2 task explicitly authorizes this bounded successor. Its predecessor at
+`e242dc4b0eaad741c85a2abae5a13a460fc6f767` is master accepted, including the
+782-test Mac/qualified-companion checkpoint. Remote CI remains failed: the
+supplied exact-head artifact localizes 100 failures to the missing/non-regular
+pre-flow companion marker. No CI repair or Linux qualification is included.
+
+The new [memory/image contract](../decisions/symbolic-memory-executable-images.md)
+binds symbolic WRAM inputs and alias effects into production graph authority,
+with separate durable initializer history, current generation and proof freshness.
+Focused memory/image, ownership/cancellation and cyclic tests pass; one read-only
+review identified and corrected may-write event correlation and checker gaps.
+Full and installed qualification remain pending; this is not G3 PASS. Broader W4
+and G1/G4 remain open. The evidence index identifies the external batch.
+
+
 ## REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX — INTEGRATED; RETIREMENT BLOCKED
 
 The bounded saved-domain workflow passes. Same-traversal diagnostics first

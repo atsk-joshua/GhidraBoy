@@ -105,6 +105,18 @@ public final class SoftwareCallExecutionView {
     return new Created(version, reviewed.name, reviewed.segments, body);
   }
 
+  /** Checked physical RAM source; only ExecutableImages calls this inside its establishment transaction. */
+  static Created createImage(Program p,String name,int cpu,int length,TaskMonitor monitor) throws Exception {
+    if(p.getCurrentTransactionInfo()==null||!name.startsWith(OrdinaryEntryAccess.PREFIX)||p.getAddressFactory().getAddressSpace(name)!=null)
+      throw new IllegalArgumentException("Image view requires a new owned transactional space");
+    for(int i=0;i<length;i++){monitor.checkCancelled();SymbolicMemory.address(p,MapperKnowledge.unknown(),cpu+i,ScalarAccess.Kind.FETCH);}
+    var source=SymbolicMemory.address(p,MapperKnowledge.unknown(),cpu,ScalarAccess.Kind.FETCH);
+    byte[] bytes=new byte[length];p.getMemory().getBytes(source,bytes);
+    var block=p.getMemory().createInitializedBlock(name,p.getAddressFactory().getDefaultAddressSpace().getAddress(cpu),new java.io.ByteArrayInputStream(bytes),length,monitor,true);
+    block.setRead(true);block.setWrite(false);block.setExecute(true);block.setComment(ExecutableImages.VERSION+"; generation snapshot of physical RAM "+source);
+    return new Created(ExecutableImages.VERSION,name,List.of(new Segment(cpu,length,source.toString())),new AddressSet(block.getStart(),block.getEnd()));
+  }
+
   /**
    * Derive a finite continuation CFG whose instructions cannot alter bank selection. This scope
    * admits direct conditional branches and terminal RET, rejects indirect flow, nested calls and

@@ -251,7 +251,7 @@ class Machine:
 FRAMES=[(0xc082,0x190,0,0x53,0x12a6,0xbeef),(0xcffc,0x3a01,0xf0,0xd4,0x7788,0x1234),(0xc283,0x10,0xb0,0x91,0x55ff,0xaa07)]
 
 def validate_capture(cap,image,reuse=False):
-    proof=cap.proof;require(proof['version'] in {'predicated-ordinary-graph-1','predicated-ordinary-graph-2','predicated-ordinary-graph-3'} and proof['coverageComplete'] and not proof['frontier'],'incomplete/unexpected producer')
+    proof=cap.proof;require(proof['version'] in {'predicated-ordinary-graph-1','predicated-ordinary-graph-2','predicated-ordinary-graph-3','predicated-ordinary-graph-4'} and proof['coverageComplete'] and not proof['frontier'],'incomplete/unexpected producer')
     require(proof['domain']['stackMin']==0xc082 and proof['domain']['stackMax']==0xcffc,'changed declared frame domain')
     require(len(proof['invocations'])==2,'missing feasible physical callee')
     require({i['target'] for i in proof['invocations']}==({'rom1::4000'} if reuse else {'rom1::4000','rom2::4000'}),'physical call targets collapsed')
@@ -266,7 +266,7 @@ def validate_capture(cap,image,reuse=False):
     for view in cap.views:
         req=cap.requests[view['tag']];require(req['completed'] and req['highfunction_available'] and not req['error'],'native request failed')
         require(req['entry']==view['view']['entry'],'wrong requested native Function')
-        if view['view']['byteAContract'] and proof['version'] in {'predicated-ordinary-graph-2','predicated-ordinary-graph-3'}:
+        if view['view']['byteAContract'] and proof['version'] in {'predicated-ordinary-graph-2','predicated-ordinary-graph-3','predicated-ordinary-graph-4'}:
             expected=view['view']['inputBytes'];parameters=req.get('parameters',[])
             require(len(parameters)==len(expected),'native live-in parameter count differs')
             for parameter,offset in zip(parameters,expected):

@@ -12,7 +12,7 @@ import java.util.*;
 /** Predicate adapter over the shared value core, production fetch evidence and ordinary frame effects. */
 public final class PredicatedCallGraph {
   private PredicatedCallGraph() {}
-  public static final String VERSION = "predicated-ordinary-graph-3";
+  public static final String VERSION = "predicated-ordinary-graph-4";
   public record Limits(int nodes, int operations, int calls) {
     public static final Limits PRIMARY = new Limits(256, 262144, 1);
     public Limits { if (nodes < 1 || nodes > 512 || operations < 1 || operations > 1048576 || calls < 1 || calls > 2)
@@ -24,21 +24,23 @@ public final class PredicatedCallGraph {
       + "Unknown incoming CPU registers/mapper; outer return word symbolic in fixed WRAM. Root SP C082..CFFC, "
       + "one internal call depth, bounded relational root CFG and straight-line ordinary callees with effect-derived native byte-register inputs. "
       + "Outputs below C080 are disjoint from live frame bytes C080..CFFD.");
+  public static final Domain MEMORY_DOMAIN = new Domain(0xc800, 0xcffc,
+      "Explicit unknown fixed WRAM inputs and established executable generation; synchronous MBC5, boot bypassed; no async/untracked writers except declared may-writes. Symbolic outer frame C800..CFFD disjoint from data/code C000..C7FF.");
   public record Binding(long offset, AbstractValues.Origin origin, List<Long> cover) {}
   public record Edge(String kind, String target, AbstractValues.Condition condition) {}
   public record Effect(int operation, int cpu, AbstractValues.Origin value, boolean mapperControl) {}
-  public record Frontier(String state, int cpu, String invocation, String reason,int domain,List<JoinedBinding> before,String control,int spDelta,List<SoftwareCallEffects.RelativeFrame> frames) {
-    public Frontier(String state,int cpu,String invocation,String reason){this(state,cpu,invocation,reason,-1,List.of(),state,0,List.of());}
-    public Frontier {before=List.copyOf(before);frames=List.copyOf(frames);}
+  public record Frontier(String state, int cpu, String invocation, String reason,int domain,List<JoinedBinding> before,String control,int spDelta,List<SoftwareCallEffects.RelativeFrame> frames,List<SymbolicMemory.Access> memoryAccesses) {
+    public Frontier(String state,int cpu,String invocation,String reason){this(state,cpu,invocation,reason,-1,List.of(),state,0,List.of(),List.of());}
+    public Frontier {memoryAccesses=List.copyOf(memoryAccesses);before=List.copyOf(before);frames=List.copyOf(frames);}
   }
   public record Node(String id, String invocation, int cpu, String source, String bytes,
       List<BankAnalysis.FetchByte> fetch, List<String> rawPcode, AbstractValues.Condition predicate,
       MapperKnowledge incoming, MapperKnowledge outgoing, List<Binding> before, List<Binding> after,
       int beforeSpDelta, int afterSpDelta, List<AbstractValues.Origin> unavailableNativeFlags, List<SoftwareCallEffects.RelativeFrame> frames,
       List<SoftwareCallEffects.RelativeAccess> frameAccesses, List<Effect> effects,
-      String transfer, int transferOperation, List<Edge> edges, String callee) {
+      String transfer, int transferOperation, List<Edge> edges, String callee, List<SymbolicMemory.Access> memoryAccesses) {
     public Node { fetch=List.copyOf(fetch);rawPcode=List.copyOf(rawPcode);before=List.copyOf(before);after=List.copyOf(after);
-      unavailableNativeFlags=List.copyOf(unavailableNativeFlags);frames=List.copyOf(frames);frameAccesses=List.copyOf(frameAccesses);effects=List.copyOf(effects);edges=List.copyOf(edges); }
+      memoryAccesses=List.copyOf(memoryAccesses);unavailableNativeFlags=List.copyOf(unavailableNativeFlags);frames=List.copyOf(frames);frameAccesses=List.copyOf(frameAccesses);effects=List.copyOf(effects);edges=List.copyOf(edges); }
   }
   public record Invocation(String id, String caller, String callNode, String target, String entry,
       String returnNode, String continuation, int returnCpu, boolean byteAContract, List<Long> inputBytes) {
@@ -55,7 +57,7 @@ public final class PredicatedCallGraph {
   public record Convergence(int transfers,int rounds,int worklistMaximum,int rows,int replayTransfers,boolean postFixedPoint,boolean possibleNontermination,int operations) {}
   public record Proof(String version, long programId, String entry, String end, Domain domain, Limits limits,
       String dependencies, String root, List<Node> nodes, List<Invocation> invocations,
-      List<Frontier> frontier, boolean coverageComplete, SoftwareCallInstructionDiscovery.Plan discovery, List<JoinRow> joins, Convergence convergence,List<OriginNode> origins,List<PredicatedJoin.Domain> joinDomains) {
+      List<Frontier> frontier, boolean coverageComplete, SoftwareCallInstructionDiscovery.Plan discovery, List<JoinRow> joins, Convergence convergence,List<OriginNode> origins,List<PredicatedJoin.Domain> joinDomains,SymbolicMemory.Declaration memory) {
     public Proof { nodes=List.copyOf(nodes);invocations=List.copyOf(invocations);frontier=List.copyOf(frontier);joins=joins==null?List.of():List.copyOf(joins);origins=List.copyOf(origins);joinDomains=List.copyOf(joinDomains); }
     public boolean complete() { return coverageComplete && frontier.isEmpty() && root!=null && !nodes.isEmpty(); }
   }
@@ -88,6 +90,7 @@ public final class PredicatedCallGraph {
     int cpu, calls; String invocation="root"; MapperKnowledge mapper=MapperKnowledge.unknown();
     AbstractValues.Condition predicate=new AbstractValues.Condition(List.of());
     final AbstractValues.Storage storage;
+    SymbolicMemory.State memory;
     final Map<Slot,Integer> affine=new HashMap<>();
     final Map<Integer,AbstractValues.Value> stack=new HashMap<>();
     final List<SoftwareCallEffects.RelativeFrame> frames=new ArrayList<>();
@@ -95,7 +98,7 @@ public final class PredicatedCallGraph {
     State(String scope) {storage=new AbstractValues.Storage(scope);}
     State copy() {
       var n=new State(storage.scope);n.cpu=cpu;n.calls=calls;n.invocation=invocation;n.mapper=mapper;n.predicate=predicate;
-      n.storage.registers.putAll(storage.registers);n.storage.uniques.putAll(storage.uniques);n.storage.site=storage.site;
+      n.memory=memory==null?null:memory.copy();n.storage.registers.putAll(storage.registers);n.storage.uniques.putAll(storage.uniques);n.storage.site=storage.site;
       n.domain=domain;n.partition.putAll(partition);n.affine.putAll(affine);n.stack.putAll(stack);n.frames.addAll(frames);n.unavailableFlags.addAll(unavailableFlags);return n;
     }
   }
@@ -108,11 +111,17 @@ public final class PredicatedCallGraph {
     Invocation freeze(){return new Invocation(id,caller,callNode,target,entry,returnNode,continuation,returnCpu,byteAContract,inputBytes);}
   }
   public static Proof preview(Program p,Function root,Limits limits,TaskMonitor monitor) throws Exception {
-    if(root==null || root.getProgram()!=p || root.getEntryPoint().getOffset()>=0x4000
+    return preview(p,root,limits,null,monitor);
+  }
+  public static Proof preview(Program p,Function root,Limits limits,SymbolicMemory.Declaration memory,TaskMonitor monitor) throws Exception {
+    SymbolicMemory.validate(p,memory);
+    boolean image=memory!=null&&memory.image()!=null;
+    if(root==null || root.getProgram()!=p || (!image&&(root.getEntryPoint().getOffset()>=0x4000
         || !root.getEntryPoint().getAddressSpace().equals(p.getAddressFactory().getDefaultAddressSpace())
-        || root.getBody().getNumAddressRanges()!=1 || root.getBody().getMaxAddress().getOffset()>=0x4000
+        || root.getBody().getMaxAddress().getOffset()>=0x4000)) || root.getBody().getNumAddressRanges()!=1
         || root.getBody().getNumAddresses()>1024 || root.hasNoReturn() || root.getCallFixup()!=null || root.isThunk())
       throw new IllegalArgumentException("Predicate root requires bounded canonical ROM0 Function");
+    if(image&&!root.getEntryPoint().toString().equals(ExecutableImages.resolve(p,memory.image()).entry()))throw new IllegalArgumentException("Root is not requested executable generation");
     var cart=ProgramMapping.cartridge(p);
     if(cart==null || cart.mapper()!=Cartridge.Mapper.MBC5 || cart.actualRomBanks()>256
         || !SoftwareCallRegistry.configurationIdentity(p).equals("absent"))
@@ -123,22 +132,26 @@ public final class PredicatedCallGraph {
     }
     long revision=p.getModificationNumber();String dependencies=OrdinaryProofDependencies.fingerprint(p,monitor);
     try(var discovery=SoftwareCallInstructionDiscovery.begin(p,monitor)) {
-      var builder=new Builder(p,root,limits,monitor);var state=new State(p.getUniqueProgramID()+":"+root.getEntryPoint());
+      var builder=new Builder(p,root,limits,memory,monitor);var state=new State(p.getUniqueProgramID()+":"+root.getEntryPoint());
+      state.memory=SymbolicMemory.initial(p,memory,state.storage.scope);
       state.cpu=(int)root.getEntryPoint().getOffset();state.affine.put(slot(builder.sp),0);
       state.stack.put(0,AbstractValues.input(state.storage.scope,"outer-return-byte",0,1));
       state.stack.put(1,AbstractValues.input(state.storage.scope,"outer-return-byte",1,1));
       builder.findCycles(state);
+      if(memory!=null&&!builder.cyclic.isEmpty())throw new IllegalArgumentException("Symbolic memory cyclic joins remain unresolved");
       String entry=builder.visit(state,new HashSet<>());
       builder.converge();
       boolean coverage=builder.coverage();
+      if(memory!=null)for(var write:memory.mayWrites())if(builder.nodes.values().stream().noneMatch(n->n.cpu()==write.beforeCpu())&&builder.frontier.stream().noneMatch(n->n.cpu()==write.beforeCpu()))throw new IllegalArgumentException("May-write declaration is not a reached instruction boundary");
       if(revision!=p.getModificationNumber()||!dependencies.equals(OrdinaryProofDependencies.fingerprint(p,monitor)))
         throw new IllegalArgumentException("Program changed during predicate graph proof");
       return new Proof(VERSION,p.getUniqueProgramID(),root.getEntryPoint().toString(),root.getBody().getMaxAddress().toString(),
-          DOMAIN,limits,dependencies,entry,new ArrayList<>(builder.nodes.values()),
-          builder.invocations.values().stream().map(PendingInvocation::freeze).toList(),builder.frontier,coverage,discovery.plan(monitor),new ArrayList<>(builder.rows.values()),builder.statistics(),builder.origins,builder.domains);
+          memory==null?DOMAIN:MEMORY_DOMAIN,limits,dependencies,entry,new ArrayList<>(builder.nodes.values()),
+          builder.invocations.values().stream().map(PendingInvocation::freeze).toList(),builder.frontier,coverage,discovery.plan(monitor),new ArrayList<>(builder.rows.values()),builder.statistics(),builder.origins,builder.domains,memory);
     }
   }
   private static final class Builder {
+    final SymbolicMemory.Declaration memory;final Domain executionDomain;
     final Program p;final Function root;final Limits limits;final TaskMonitor monitor;final Cartridge cartridge;
     final Varnode sp;final Map<String,Node> nodes=new TreeMap<>();final Map<String,PendingInvocation> invocations=new TreeMap<>();
     final List<Frontier> frontier=new ArrayList<>();final List<AbstractValues.Condition> exits=new ArrayList<>();
@@ -158,7 +171,7 @@ public final class PredicatedCallGraph {
     }
     List<JoinedBinding> intern(List<Binding> values) {return values.stream().map(v->new JoinedBinding(v.offset(),origin(v.origin()),v.cover())).toList();}
     void frontier(State state,String row,String control,String reason) {
-      frontier.add(new Frontier(row,state.cpu,state.invocation,reason,domain(state.domain),intern(bindings(state.storage)),control,sp(state),state.frames));
+      frontier.add(new Frontier(row,state.cpu,state.invocation,reason,domain(state.domain),intern(bindings(state.storage)),control,sp(state),state.frames,List.of()));
     }
     String activeRow;List<String> successors;
     Convergence statistics(){return new Convergence(attempted,rounds,worklistMaximum,rows.size(),replayTransfers,postFixedPoint,recurrent(),operations);}
@@ -244,13 +257,18 @@ public final class PredicatedCallGraph {
     }
     Node replace(Node n,List<Edge> edges) {
       return new Node(n.id(),n.invocation(),n.cpu(),n.source(),n.bytes(),n.fetch(),n.rawPcode(),n.predicate(),n.incoming(),n.outgoing(),
-          List.of(),List.of(),n.beforeSpDelta(),n.afterSpDelta(),n.unavailableNativeFlags(),n.frames(),n.frameAccesses(),List.of(),n.transfer(),n.transferOperation(),edges,n.callee());
+          List.of(),List.of(),n.beforeSpDelta(),n.afterSpDelta(),n.unavailableNativeFlags(),n.frames(),n.frameAccesses(),List.of(),n.transfer(),n.transferOperation(),edges,n.callee(),n.memoryAccesses());
     }
 
-    Builder(Program p,Function root,Limits limits,TaskMonitor monitor){this.p=p;this.root=root;this.limits=limits;this.monitor=monitor;
+    Builder(Program p,Function root,Limits limits,SymbolicMemory.Declaration memory,TaskMonitor monitor){this.memory=memory;this.executionDomain=memory==null?DOMAIN:MEMORY_DOMAIN;this.p=p;this.root=root;this.limits=limits;this.monitor=monitor;
       cartridge=ProgramMapping.cartridge(p);sp=new Varnode(p.getRegister("SP").getAddress(),2);}
     int sp(State s){var result=s.affine.get(slot(sp));if(result==null)throw new IllegalArgumentException("Unproved symbolic SP delta");return result;}
     Address address(State s) throws Exception {
+      if(memory!=null&&memory.image()!=null) {
+        var image=ExecutableImages.resolve(p,memory.image());
+        ExecutableImages.validateFetch(p,memory.image(),s.memory,image.cpu(),image.length());
+        return ProgramMapping.staticAddress(p,ExecutableImages.resolve(p,memory.image()).entry()).getAddressSpace().getAddress(s.cpu);
+      }
       var physical=ScalarAccess.resolve(cartridge,s.mapper,new ScalarAccess.Request(s.cpu,ScalarAccess.Kind.FETCH,1,0,
           "predicate root/justified edge",-1,-1,null)).resolution().orElseThrow().physical();
       if(physical==null||!physical.region().equals("ROM"))throw new IllegalArgumentException("Unresolved/non-ROM instruction target");
@@ -264,10 +282,14 @@ public final class PredicatedCallGraph {
     String transfer(State incoming,Set<String> path) throws Exception {
       monitor.checkCancelled();var s=incoming.copy();String source="unresolved";
       String id=hash(Arrays.asList(s.cpu,s.invocation,s.mapper,s.predicate,bindings(s.storage),sp(s),s.frames,s.unavailableFlags));
+      var memoryAccesses=new ArrayList<SymbolicMemory.Access>();
       try {
         if(cyclic.isEmpty()&&++attempted>limits.nodes())throw new IllegalArgumentException("Predicate node work budget exhausted");
+        if(memory!=null)for(var write:memory.mayWrites())if(write.beforeCpu()==s.cpu)
+          s.memory.write(p,s.mapper,write.cpu(),AbstractValues.input(s.storage.scope,"declared-interference",0,1),write.reason()+":"+s.invocation+":"+s.cpu,-1,true,memoryAccesses);
         Address at=address(s);source=at.toString();
         id=hash(Arrays.asList(s.cpu,source,ProgramMapping.staticToPhysical(p,at),s.invocation,s.mapper,s.predicate,bindings(s.storage),sp(s),s.frames,s.unavailableFlags));
+        if(memory!=null)id=hash(List.of(id,s.memory.identity(),s.memory.killed.stream().map(Object::toString).sorted().toList()));
         if(!cyclic.isEmpty()){id=control(s);if(!nodes.containsKey(id)&&nodes.size()>=limits.nodes())throw new IllegalArgumentException("Predicate control-node budget exhausted");}
         if(cyclic.isEmpty()&&nodes.containsKey(id))return id;
         String cycle=s.invocation+":"+source;
@@ -275,7 +297,7 @@ public final class PredicatedCallGraph {
         if(s.invocation.equals("root")&&!root.getBody().contains(at))throw new IllegalArgumentException("Root flow escaped declared body");
         var ins=SoftwareCallInstructionDiscovery.instructionAt(p,at,"predicate-qualified graph edge "+id,monitor);
         if(ins==null)throw new IllegalArgumentException("Missing justified instruction");
-        var fetch=BankAnalysis.predicatedFetch(p,s.mapper,ins);
+        var fetch=memory!=null&&memory.image()!=null?ExecutableImages.fetch(p,memory.image(),s.memory,ins):BankAnalysis.predicatedFetch(p,s.mapper,ins);
         if(InstructionInterpretation.architecturalUnresolved(ins)!=null||!Arrays.toString(ins.getPcode(false)).equals(Arrays.toString(ins.getPcode(true))))
           throw new IllegalArgumentException("Unvalidated instruction override in predicate graph");
         var before=bindings(s.storage);var beforeMapper=s.mapper;int beforeSp=sp(s);
@@ -357,7 +379,9 @@ public final class PredicatedCallGraph {
             break;
           }
           if(code==PcodeOp.BRANCHIND||code==PcodeOp.CALLIND)throw new IllegalArgumentException("Unresolved indirect target retained as frontier");
-          var inputs=Arrays.stream(op.getInputs()).map(s.storage::get).map(v->cyclic.isEmpty()||untransported(s,v)?v:PredicatedJoin.restrict(v,s.domain)).toList();
+          var readInputs=new ArrayList<AbstractValues.Value>();
+          for(var operand:op.getInputs())readInputs.add(memory!=null&&operand.isAddress()?readMemory(s,operand,source,index,memoryAccesses):s.storage.get(operand));
+          var inputs=readInputs.stream().map(v->cyclic.isEmpty()||untransported(s,v)?v:PredicatedJoin.restrict(v,s.domain)).toList();
           if(code==PcodeOp.LOAD) {
             var delta=s.affine.get(slot(op.getInput(1)));
             if(delta==null||op.getOutput().getSize()!=1||!ins.getMnemonicString().equals("RET"))
@@ -373,18 +397,19 @@ public final class PredicatedCallGraph {
             if(!CartridgeBus.isDirectWrite(p.getLanguage(),op)||op.getNumInputs()!=3||!op.getInput(1).isConstant()||op.getInput(2).getSize()!=1)
               throw new IllegalArgumentException("Unsupported graph device effect");
             int cpu=(int)op.getInput(1).getOffset();var value=inputs.get(2);boolean mapper=cpu>=0x2000&&cpu<0x3000;
-            if(!mapper&&!(cpu>=0xc000&&cpu<0xc080))throw new IllegalArgumentException("Output intersects frame/device domain");
+            if(!mapper&&memory==null&&!(cpu>=0xc000&&cpu<0xc080))throw new IllegalArgumentException("Output intersects frame/device domain");
             if(untransported(s,value))throw new IllegalArgumentException("Native byte-A call contract cannot carry live returned flags into an effect");
             Integer known=exact(value);if(mapper&&known==null)throw new IllegalArgumentException("Mapper selection is not predicate-exact");
             var access=ScalarAccess.resolve(cartridge,s.mapper,new ScalarAccess.Request(cpu,ScalarAccess.Kind.WRITE,1,0,source,index,2,known));
-            s.mapper=access.after().orElseThrow();effects.add(new Effect(index,cpu,value.origin(),mapper));
+            s.mapper=access.after().orElseThrow();if(!mapper&&memory!=null)s.memory.write(p,s.mapper,cpu,value,source,index,false,memoryAccesses);effects.add(new Effect(index,cpu,value.origin(),mapper));
           } else if(op.getOutput()!=null) {
-            if(op.getOutput().isAddress()||Arrays.stream(op.getInputs()).anyMatch(Varnode::isAddress))
+            if(memory==null&&(op.getOutput().isAddress()||Arrays.stream(op.getInputs()).anyMatch(Varnode::isAddress)))
               throw new IllegalArgumentException("Unmodeled direct memory operation");
             Integer affine=affine(s,op,inputs);
             if(op.getOutput().isRegister()&&op.getOutput().getOffset()==sp.getOffset()&&affine==null)
               throw new IllegalArgumentException("Non-affine SP change");
             var computed=AbstractValues.evaluate(code,op.getOutput().getSize(),inputs,source+":"+index);
+            if(memory!=null&&op.getOutput().isAddress())s.memory.write(p,s.mapper,memoryCpu(op.getOutput()),computed,source,index,false,memoryAccesses);
             s.storage.put(op.getOutput(),cyclic.isEmpty()||untransported(s,computed)?computed:PredicatedJoin.fold(computed));
             var outputSlot=slot(op.getOutput());s.affine.keySet().removeIf(k->k.overlaps(outputSlot));
             if(affine!=null)s.affine.put(outputSlot,affine);
@@ -396,7 +421,7 @@ public final class PredicatedCallGraph {
         }
         var made=new Node(id,incoming.invocation,incoming.cpu,source,HexFormat.of().formatHex(ins.getBytes()),fetch,
             Arrays.stream(raw).map(Object::toString).toList(),incoming.predicate,beforeMapper,s.mapper,before,bindings(s.storage),beforeSp,sp(s),
-            incoming.unavailableFlags,frameBefore,frameAccesses,effects,transfer,transferOperation,edges,callee);
+            incoming.unavailableFlags,frameBefore,frameAccesses,effects,transfer,transferOperation,edges,callee,memoryAccesses);
         if(!cyclic.isEmpty()) {
           var beforeNode=nodes.get(id);var combined=new ArrayList<Edge>(edges);
           if(beforeNode!=null) {
@@ -411,12 +436,20 @@ public final class PredicatedCallGraph {
         nodes.put(id,made);
         return id;
       } catch(IllegalArgumentException failure) {
-        if(cyclic.isEmpty())frontier.add(new Frontier(id,s.cpu,s.invocation,source+": "+failure.getMessage()));
+        if(cyclic.isEmpty())frontier.add(new Frontier(id,s.cpu,s.invocation,source+": "+failure.getMessage(),-1,List.of(),id,sp(s),s.frames,memoryAccesses));
         else frontier(incoming,activeRow,id,source+": "+failure.getMessage());return null;
       }
     }
+    int memoryCpu(Varnode value) {
+      if((!value.getAddress().getAddressSpace().equals(p.getAddressFactory().getDefaultAddressSpace())&&!value.getAddress().getAddressSpace().equals(root.getEntryPoint().getAddressSpace()))||value.getSize()!=1)
+        throw new IllegalArgumentException("Unsupported actual memory space/width");
+      return (int)value.getOffset();
+    }
+    AbstractValues.Value readMemory(State state,Varnode value,String source,int operation,List<SymbolicMemory.Access> accesses) throws Exception {
+      return state.memory.read(p,state.mapper,memoryCpu(value),source,operation,accesses);
+    }
     void frameAddress(int delta) {
-      if(DOMAIN.stackMin()+delta<0xc080||DOMAIN.stackMax()+delta>0xcffd)
+      if(executionDomain.stackMin()+delta<(memory==null?0xc080:0xc800)||executionDomain.stackMax()+delta>0xcffd)
         throw new IllegalArgumentException("Frame access escapes disjoint fixed WRAM domain");
     }
     Integer affine(State s,PcodeOp op,List<AbstractValues.Value> inputs) {

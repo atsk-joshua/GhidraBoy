@@ -285,7 +285,7 @@
   },
   "domain_persistence_repair": {
     "status": "INTEGRATED; RETIREMENT BLOCKED",
-    "review": "Await master review; no automatic W4/G3",
+    "review": "Master accepted predecessor for authorized W4-MEMORY-IMAGE-G3 v2",
     "root": "evidence/batches/REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX/20260910-01",
     "report": "evidence/batches/REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX/20260910-01/REPORT-REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX.md",
     "starting_commit": "913e13f6d0a846c5b620c183ce078a4f6f042332",
@@ -317,5 +317,13 @@
     "cyclic_and_active_order": "PASS",
     "saved_v1": "REJECTED non-destructively before dependency capture",
     "retirement": "BLOCKED: independent backup unverified; validation complete"
+  },
+  "w4_memory_image_g3": {
+    "status": "Integrated candidate; qualification pending",
+    "root": "evidence/batches/W4-MEMORY-IMAGE-G3/20260910-01",
+    "predecessor_commit": "e242dc4b0eaad741c85a2abae5a13a460fc6f767",
+    "decision": "docs/decisions/symbolic-memory-executable-images.md",
+    "remote_ci": "100 failures localized by supplied exact-head artifact to missing/non-regular pre-flow companion marker; no repair or Linux qualification",
+    "remaining": "Both G3 installed positive subchecks and current image reopen must qualify; broader W4 and G1/G4 remain open"
   }
 }
