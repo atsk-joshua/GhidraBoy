@@ -21,3 +21,8 @@ class MemoryBindingTests(unittest.TestCase):
     def test_highglobal_cannot_correct_wrong_actual_storage(self):
         n=self.node('ram',0xc061);n['high_global']={'space':'ram','offset':0xc060,'size':1}
         with self.assertRaises(core.Refusal):self.machine().put(n,0x53,{})
+
+    def test_ssa_global_association_is_not_an_actual_memory_write(self):
+        m=self.machine();n=self.node('unique',123);n['high_global']={'space':'ram','offset':0xc060,'size':1}
+        m.put(n,0xa7,{})
+        self.assertEqual(m.mem[0xc060],0x53)

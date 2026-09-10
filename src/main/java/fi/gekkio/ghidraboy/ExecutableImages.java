@@ -22,7 +22,10 @@ public final class ExecutableImages {
   private static void require(boolean ok,String reason){if(!ok)throw new IllegalArgumentException(reason);}
   private static Envelope read(Program p) {
     if(!p.getOptionsNames().contains(OPTIONS)||!p.getOptions(OPTIONS).contains("authority"))return new Envelope(VERSION,p.getUniqueProgramID(),0,List.of(),Map.of());
-    var json=com.google.gson.JsonParser.parseString(p.getOptions(OPTIONS).getString("authority",null)).getAsJsonObject();
+    String saved=p.getOptions(OPTIONS).getString("authority",null);
+    // Ghidra may register a queried null default without a persisted authority value.
+    if(saved==null)return new Envelope(VERSION,p.getUniqueProgramID(),0,List.of(),Map.of());
+    var json=com.google.gson.JsonParser.parseString(saved).getAsJsonObject();
     require(json.has("version")&&VERSION.equals(json.get("version").getAsString()),"Unsupported executable image version; history retained");
     var e=ProgramMapping.JSON.fromJson(json,Envelope.class);require(e.programId()==p.getUniqueProgramID(),"Foreign image Program authority");return e;
   }

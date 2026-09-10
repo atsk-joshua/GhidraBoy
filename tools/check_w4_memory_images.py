@@ -31,6 +31,8 @@ class Machine(core.Machine):
             raise core.Refusal('wrong actual value storage '+v['space'])
         return super().get(v,env,entry)
     def put(self,v,value,env=None,write=True):
+        if v['space']=='unique':
+            v=dict(v);v.pop('high_global',None) # SSA symbol association is not a memory write.
         g=v.get('high_global')
         if g is not None:require(g['space']==v['space']=='ram' and g['offset']==v['offset'] and g['size']==v['size'],'wrong actual HighGlobal binding')
         return super().put(v,value,env,write)

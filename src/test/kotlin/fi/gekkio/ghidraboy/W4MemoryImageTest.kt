@@ -11,6 +11,7 @@ import ghidra.util.task.TaskMonitor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -128,6 +129,15 @@ class W4MemoryImageTest : IntegrationTest() {
             val disjoint = preview(first, listOf(SymbolicMemory.MayWrite(0xc200, 0xc062, "disjoint possible write")))
             assertTrue(disjoint.complete(), disjoint.frontier().toString())
             assertEquals(authority, ExecutableImages.serialized(p))
+            evidence(
+                "w4-composition.json",
+                mapOf(
+                    "overlap" to overlap,
+                    "disjoint" to disjoint,
+                    "authorityBefore" to authority,
+                    "authorityAfter" to ExecutableImages.serialized(p),
+                ),
+            )
             assertEquals(first, ExecutableImages.resolve(p, first.generation()))
             p.withTransaction { p.memory.setBytes(address(0xc200), bytes2) }
             assertThrows(IllegalArgumentException::class.java) { PredicatedCalls.emit(p, alias, 0x200000, monitor) }
@@ -148,7 +158,18 @@ class W4MemoryImageTest : IntegrationTest() {
                     ExecutableImages.resolve(p, second.generation())
                 }.message!!.contains("Noncurrent"),
             )
-            assertTrue(preview(third).complete())
+            val currentProof = preview(third)
+            assertTrue(currentProof.complete())
+            evidence(
+                "w4-same-bytes-generation.json",
+                mapOf(
+                    "old" to second,
+                    "current" to third,
+                    "currentProof" to currentProof,
+                    "oldRefusal" to
+                        assertThrows(IllegalArgumentException::class.java) { ExecutableImages.resolve(p, second.generation()) }.message,
+                ),
+            )
             assertThrows(IllegalArgumentException::class.java) { ExecutableImages.resolve(p, null) }
         }
 
@@ -211,4 +232,27 @@ class W4MemoryImageTest : IntegrationTest() {
             assertNotEquals(reads[0].value(), reads[1].value())
             for (value in reads) assertEquals(AbstractValues.OriginKind.INPUT, value.value().kind())
         }
+
+    @Test
+    fun `absent image history remains absent after readonly serialized query`() =
+        fixture { p, _ ->
+            val before = p.modificationNumber
+            assertNull(ExecutableImages.serialized(p))
+            assertTrue(ExecutableImages.history(p).isEmpty())
+            assertEquals(before, p.modificationNumber)
+        }
+
+    private fun evidence(
+        name: String,
+        value: Any,
+    ) {
+        val output = System.getenv("GBC_EVIDENCE_DIR") ?: return
+        val directory =
+            java.nio.file.Path
+                .of(output)
+        java.nio.file.Files
+            .createDirectories(directory)
+        java.nio.file.Files
+            .writeString(directory.resolve(name), ProgramMapping.JSON.toJson(value))
+    }
 }
