@@ -1,18 +1,40 @@
 # Implementation status
 
-## STOCK-ROUTE-COMPLETION — LOCAL CANDIDATE; final qualification pending
+## STOCK-ROUTE-COMPLETION — PASS for the scoped local task; STOP for master review
 
-Normal public creation and Tools/application paths now select stock. Independently
-owned one-byte carriers and shipped-convention integrity guards retain source,
-physical and generation authority separately. Earlier stock and companion records
-are preserved without implicit conversion. See the
+Normal public creation and the shipped Tools/application path now select stock.
+One-byte presentation carriers and integrity guards across shipped conventions
+retain source, physical and image-generation authority separately. Earlier stock
+and companion records remain intact without implicit conversion. See the
 [compatibility decision](../decisions/stock-route-completion.md).
 
-Focused semantic/carrier tests and the integrated read-only review are complete.
-The exact clean checkpoint, installed families and current-format reopen must
-finish before the task is reported as complete. Bulk receipts and the 795-instance
-ledger remain external under STOCK-ROUTE-COMPLETION. No release, migration, GUI,
-switch, main-history or inactive-source retirement gate is closed.
+The exact candidate `346305b` passes the clean default stock checkpoint: **819
+instances in 82 classes, zero failures/errors/skips**, plus lint/build, 7 build-input
+checks and 86 tooling passes (one existing optional debugger-package skip).
+All 795 baseline obligations are accounted for: 793 remain stock semantic tests;
+two explicitly optional private canonical-selection protocol cases retain their
+implementation and have passing stock lifecycle replacements. There are 26 added
+default cases. All 100 transport-neutral cases among the original 102 failures pass.
+
+Actual native controls reject invalid results with no HighFunction/no C. The
+21 unit faults include every shipped convention, default/unknown resolution and
+mapped-backing replacement. Installed conditional and cyclic fixtures each pass
+nine faults with an observed one-byte recovery footprint. Public ordinary/refresh,
+physical calls, cyclic graphs, exact continuation order, configured domains,
+symbolic RAM/poisoned fills and image generation/source independence pass their
+maintained independent checks. The shipped Tools apply action is exercised.
+Current image/domain Programs save, exit and reopen in separate read-only processes
+without authority or Program-data changes; two exact project backup housekeeping
+differences are recorded separately. Focused Linux x86-64 G2 and carrier refusal
+pass under Docker/Rosetta, not as a native-host or broad Linux qualification.
+
+The independent integrated review is resolved. Detailed receipts, all intermediate
+failures, the per-instance ledger and exact runtime/payload identities remain
+external through the [evidence index](evidence-index.json). Final documentation
+packaging is distinguished from the tested executable candidate by payload equality.
+This is **not stock release qualification**. Genuine language-1-to-2 migration,
+normal-window acceptance, switch proof/lowering, broader platform/hosted CI and
+inactive-source retirement remain separately open. No new batch starts automatically.
 
 ## STOCK-GHIDRA-TRANSPORT — PARTIAL; STOP for master review
 

@@ -44,9 +44,14 @@ saved-instruction decoding are separate from the runtime support policy:
 claimed. No provider semantics changed in this cleanup, and installed migration,
 GUI/device and full decompilation acceptance were not rerun.
 
-The current experimental stock transport uses language 2.0. Its full stock test
-checkpoint remains failed, and normal-window qualification is blocked. See the
-[transport decision](decisions/stock-ghidra-transport.md) and [current status](sa/IMPLEMENTATION-STATUS.md).
+The current stock route uses language 2.0 and passes its recorded clean default
+checkpoint. `test` needs no stock opt-in flag or companion. Two private canonical
+selection protocol tests remain in the explicit optional `legacyProtocolTest`
+task; their product lifecycle obligations have passing stock coverage. No companion
+is provisioned for the ordinary suite. Exact per-instance accounting and current
+installed evidence are linked from [status](sa/IMPLEMENTATION-STATUS.md).
+Normal-window acceptance, annotated old-language migration and switch lowering
+remain separate gates; see the [route decision](decisions/stock-route-completion.md).
 
 Historical engineering reports are preserved externally through the [evidence index](sa/evidence-index.json); the static extension ships the explicit user documentation allowlist in `packaging/static-docs.txt`. Packaged documentation links must resolve within the extracted payload.
 

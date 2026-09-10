@@ -383,5 +383,41 @@
     "gui": "GUI_BLOCKED",
     "switch": "UPSTREAM_LIMITATION_REPRODUCED; positive switch obligations not passed",
     "compatibility": "Language 2.0; explicit stock transport v2; no general old-Program migration"
+  },
+  "stock_route_completion": {
+    "status": "PASS_SCOPED_LOCAL_TASK_AWAITING_MASTER_REVIEW",
+    "base_head": "18643f4f235a1ff2247d15e75c0792c5d4fd29e4",
+    "tested_commit": "346305b4ff5f0c4a68cb39e21f25540b7f8564a1",
+    "tested_tree": "150e192daa0f6ab11b6a0cc4900ffb7b54db694a",
+    "report": "evidence/batches/STOCK-ROUTE-COMPLETION/delivery/REPORT-STOCK-ROUTE-COMPLETION.md",
+    "changes": "evidence/batches/STOCK-ROUTE-COMPLETION/delivery/CHANGES-STOCK-ROUTE-COMPLETION.zip",
+    "ledger": "evidence/batches/STOCK-ROUTE-COMPLETION/delivery/test-obligations.json",
+    "full": {
+      "tests": 819,
+      "classes": 82,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "baseline_instances": 795,
+      "maintained_baseline_stock": 793,
+      "optional_legacy_protocol": 2,
+      "added_default": 26
+    },
+    "qualified_extension_sha256": "fd2ee27597fed5c173e3711f421ffe2510d2a7bf450b37a2825e24f216615409",
+    "provider_jar_sha256": "d597414cc013ab6767e08ec4ffc1ffc4c6635fc0ea630e2bfd6f52138d651fdc",
+    "sla_sha256": "f7d398d0029de7bc84ae82407bed9edd733942f4a445b5c9927810e56de91a3e",
+    "mac_native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+    "linux_native_sha256": "4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d",
+    "native_faults": "21 unit faults; 9 installed controls per conditional/cyclic Mac fixture; focused Linux conditional controls; all no HighFunction/no C with bounded actual recovery",
+    "persistence": "Current-format image/domain separate read-only processes pass; Program authority/data unchanged; exact backup index/journal housekeeping differences retained",
+    "limits": [
+      "Not stock release qualification",
+      "Genuine SM83 1-to-2 migration open; no user Program opened",
+      "GUI acceptance open; capture driver is not an acceptance checker",
+      "Switch proof/lowering open",
+      "Linux focused under Docker/Rosetta only; hosted CI unrun",
+      "Inactive-source retirement and main-history integration not authorized"
+    ],
+    "final_packaging": "Documentation-only final source/archive distinction and executable-payload equality recorded in delivery manifest; archive SHA-256 detached to avoid a self-reference"
   }
 }

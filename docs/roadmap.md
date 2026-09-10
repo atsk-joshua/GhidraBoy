@@ -1,10 +1,12 @@
 # Development roadmap
 
-The stock-core transport execution is partial: bounded headless relations pass,
-while switches, normal-window qualification and retained test-route transitions
-remain open. See [current status](sa/IMPLEMENTATION-STATUS.md) and the
-[transport decision](decisions/stock-ghidra-transport.md). This changes no retained
-backlog priority or historical G2/G3 runtime acceptance.
+Stock route completion passes its scoped local checkpoint: normal public requests
+use stock, the retained semantic tests are green, and bounded carrier/native
+refusal plus current-format installed reopen are verified. See
+[current status](sa/IMPLEMENTATION-STATUS.md) and the
+[route decision](decisions/stock-route-completion.md). Stock release qualification,
+normal-window acceptance, language migration and switch proof/lowering remain
+open. No retained backlog item or historical G2/G3 acceptance is removed.
 
 Retained roadmap and original SA/M scope. Current package sequencing and accepted checkpoints are in [SA status](sa/IMPLEMENTATION-STATUS.md), the [retained implementation plan](sa/IMPLEMENTATION-PLAN.md), and [decision gates](sa/DECISION-GATES.md). The dated entries below preserve requirements and historical dispositions; their next-step instructions are superseded by that authority.
 The [static accuracy specification](static-analysis-spec.md) defines the required
