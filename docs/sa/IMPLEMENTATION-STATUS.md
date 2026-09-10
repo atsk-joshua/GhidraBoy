@@ -1,21 +1,48 @@
 # Implementation status
 
-## W4-MEMORY-IMAGE-G3 — integrated candidate, qualification pending
+## W4-MEMORY-IMAGE-G3 — G3 PASS; STOP for master review
 
-The v2 task explicitly authorizes this bounded successor. Its predecessor at
-`e242dc4b0eaad741c85a2abae5a13a460fc6f767` is master accepted, including the
-782-test Mac/qualified-companion checkpoint. Remote CI remains failed: the
-supplied exact-head artifact localizes 100 failures to the missing/non-regular
-pre-flow companion marker. No CI repair or Linux qualification is included.
+**G3 PASS — SYMBOLIC RAM EFFECTS AND EXECUTABLE-IMAGE LIFETIME.**
+The bounded [memory/image contract](../decisions/symbolic-memory-executable-images.md)
+is implemented and verified. Broader W4 and G1/G4 qualification remain open.
 
-The new [memory/image contract](../decisions/symbolic-memory-executable-images.md)
-binds symbolic WRAM inputs and alias effects into production graph authority,
-with separate durable initializer history, current generation and proof freshness.
-Focused memory/image, ownership/cancellation and cyclic tests pass; one read-only
-review identified and corrected may-write event correlation and checker gaps.
-Full and installed qualification remain pending; this is not G3 PASS. Broader W4
-and G1/G4 remain open. The evidence index identifies the external batch.
+One production unknown-memory declaration retains the C060/E060 physical input,
+ordered alias effects and `(U, U+1 mod 256)` through raw/emitted/native checks for
+all 256 U values, three return/frame cases and both carry states. Two poisoned
+fills retain the relation. Twelve actual-artifact negative controls pass per
+artifact. A production may-write weakens current data knowledge; the same physical
+footprint refuses dependent image FETCH at E201/C201 while a disjoint C062 write
+preserves it. Hypothetical effects leave persistent image authority unchanged.
 
+Explicit initialization establishes distinct durable generations at WRAM0 C200.
+I1 produces 31 and I2 produces A7; physical replacement refuses old native use.
+Source-ROM edits preserve initializer history, RAM bytes and generation. Same-byte
+re-establishment rejects an explicitly requested old generation and admits the
+current generation. A separate-process first read-only current-image reopen
+preserves Program database bytes and serialized authority without establishment
+or explicit refresh. Two project backup index/journal changes are individually
+classified in the external receipt; no Program mutation is hidden by exclusions.
+
+The corrected exact provider passes 789 tests in 80 classes, retaining every one
+of the 782 accepted case instances with seven additions and no failures/errors/
+skips. Lint/build, seven build-input checks, and tooling (86 passes, one existing
+optional skip) pass. Fresh installed cyclic, same-site domain and active
+continuation-order regressions pass. One read-only review was resolved, and the
+one localized null-default history-reader correction was fully requalified.
+Original failures and both candidate identities remain external.
+
+Image authority is experimental version 1; predicate graph/registration version
+4 rejects incompatible earlier records. Public mapping v2, configured-domain v2,
+FarCallEvidence v3, compiler/language/native/SLEIGH identities remain unchanged.
+This does not qualify general old-provider migration or normal-window events.
+
+The predecessor at `e242dc4b0eaad741c85a2abae5a13a460fc6f767` remains master
+accepted. Remote CI remains failed: the supplied exact-head artifact localizes
+100 failures to the missing/non-regular companion marker. No CI repair or Linux
+companion qualification is claimed. See the [evidence index](evidence-index.json).
+
+**INTEGRATED; RETIREMENT BLOCKED by unverified independent backup.**
+STOP for master review. Do not begin another batch automatically.
 
 ## REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX — INTEGRATED; RETIREMENT BLOCKED
 

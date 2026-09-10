@@ -319,11 +319,43 @@
     "retirement": "BLOCKED: independent backup unverified; validation complete"
   },
   "w4_memory_image_g3": {
-    "status": "Integrated candidate; qualification pending",
+    "status": "G3 PASS \u2014 SYMBOLIC RAM EFFECTS AND EXECUTABLE-IMAGE LIFETIME; STOP for master review",
     "root": "evidence/batches/W4-MEMORY-IMAGE-G3/20260910-01",
     "predecessor_commit": "e242dc4b0eaad741c85a2abae5a13a460fc6f767",
     "decision": "docs/decisions/symbolic-memory-executable-images.md",
     "remote_ci": "100 failures localized by supplied exact-head artifact to missing/non-regular pre-flow companion marker; no repair or Linux qualification",
-    "remaining": "Both G3 installed positive subchecks and current image reopen must qualify; broader W4 and G1/G4 remain open"
+    "remaining": "Bounded W4 slice implemented; broader W4 and G1/G4 qualification remain open. Independent backup still unverified; no CI repair or Linux qualification.",
+    "report": "evidence/batches/W4-MEMORY-IMAGE-G3/20260910-01/REPORT-W4-MEMORY-IMAGE-G3.md",
+    "result": "evidence/batches/W4-MEMORY-IMAGE-G3/20260910-01/result.json",
+    "tested_commit": "d40e3300cf66d85f9225c13096df21e914c61aa9",
+    "tested_tree": "4a3fb00cd42cb1b5e2331abb8fa67404fad34e35",
+    "qualified_artifacts": {
+      "extension_sha256": "400a1b1d0cab008e4be4e9015a8f147c1bd35bc64364e37ca32428331ce4cfa4",
+      "provider": {
+        "lib/GhidraBoy-20260905-integration1.jar": "3354f7b6cae36df94d426daff6beb51821d34607a485036dc621f9daacc4fda0"
+      },
+      "native_sha256": "d60be1dd82b660b4123adbe2a8c7c3353a7974e856d4298208f8dc68490db871",
+      "sla_sha256": "02f52cc6eeb44ebc94cfda1d24e58e73b27b8585e729ea30dff1807a0a994a2a",
+      "marker_sha256": "9c2edda6aca19ead42108fd763ac09cc73d7527bd6b3d69b2c0609a3cca35164",
+      "destination": "/Users/joshuahansen/dev/ghidraboy-sa/workspace/runtime/Ghidra/Extensions/GhidraBoy"
+    },
+    "full_tests": {
+      "tests": 789,
+      "classes": 80,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "all_782_accepted_case_instances_retained": true
+    },
+    "results": {
+      "A": "PASS: one unknown production memory input; 1536 raw/emitted/native cases per artifact, primary plus two poison fills",
+      "B": "PASS: I1=31, I2=A7 at physical WRAM0 C200; native replacement refusal and source independence",
+      "composition": "PASS: E201/C201 overlap kills before FETCH; disjoint C062 retains image; persistent authority unchanged",
+      "generation": "PASS: same bytes, distinct lifetime; explicit old refusal/current proof admission in same current Program",
+      "persistence": "PASS: first separate-process read-only image reopen; no establishment or explicit refresh; Program DB and authority unchanged",
+      "negatives": "PASS: 12 malformed actual payload/HighFunction controls per A artifact; stale/wrong/address-only generation, conflicts and cancellation",
+      "regressions": "PASS: 789 tests/80 classes, all 782 accepted case instances retained; lint/build; build-inputs7; tooling86 passes/one existing optional skip; installed loops/domains/order PASS"
+    },
+    "compatibility": "New image envelope1; predicate graph/registration4 reject prior incompatible versions. Mapping2, configured-domain2, FarCallEvidence3, native/SLEIGH/language/compiler unchanged. No G4 migration."
   }
 }

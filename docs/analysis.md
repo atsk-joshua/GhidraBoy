@@ -239,3 +239,21 @@ Broad Program fingerprints still conservatively invalidate proofs after an
 unrelated byte edit. Explicit refresh rederives the selector/byte relationship;
 this generalization does not narrow dependencies, interpret branches, add
 unknown-pointer support or model symbolic mutable RAM.
+
+## Experimental symbolic RAM and executable images
+
+The programmatic predicate-analysis path accepts an explicit checked unknown-RAM
+input declaration through `SymbolicMemory.declare` and `PredicatedCallGraph.preview`.
+It preserves fixed-WRAM echo aliases and rejects undeclared inputs. An analyzed
+may-write invalidates current byte knowledge and dependent executable FETCH facts;
+native execution of declared interference remains unsupported.
+
+`ExecutableImages.establish` validates an explicit ROM snapshot, copies bounded
+bytes into canonical writable RAM, and creates a durable generation with its own
+execution snapshot. Every proof names that generation. RAM replacement rejects old
+native use until explicit new establishment; changing source ROM does not recopy
+RAM. Source edits may require a separate explicit proof refresh. Old snapshots are
+historical and do not acquire current authority from matching bytes or addresses.
+These experimental APIs have no ordinary GUI workflow or general migration claim.
+See the [memory/image contract](decisions/symbolic-memory-executable-images.md) for
+the precise frame, hardware, lifetime and compatibility limits.

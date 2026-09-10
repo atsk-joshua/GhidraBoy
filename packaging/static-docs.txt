@@ -36,3 +36,4 @@ sa/DECISION-GATES.md
 sa/IMPLEMENTATION-STATUS.md
 sa/REPO-CUTOVER.md
 sa/evidence-index.json
+decisions/symbolic-memory-executable-images.md
