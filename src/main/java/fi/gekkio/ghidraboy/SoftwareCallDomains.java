@@ -34,13 +34,24 @@ public final class SoftwareCallDomains {
     require(configurations.size()>=2&&configurations.size()<=8,"Bounded configured invocation group needs 2..8 domains");
     require(SoftwareCallRegistry.configurationIdentity(p).equals("absent"),"Domain group requires no overlapping ordinary software registry");
     long revision=p.getModificationNumber();String dependencies=fingerprint(p,monitor);
+    // current() rederives from the returned domain order. Traverse that same identity order
+    // before discovery records its ordered candidates, including the first root's provenance.
+    record Incoming(String id,SoftwareCallValidation.Configuration configuration,Address site) {}
+    var incoming=new ArrayList<Incoming>();String physicalSite=null;var ids=new HashSet<String>();
+    for(var config:configurations) {
+      monitor.checkCancelled();
+      require(config.transfer()==SoftwareCallModel.EntryTransfer.HARDWARE_RST||config.transfer()==SoftwareCallModel.EntryTransfer.HARDWARE_CALL,
+          "Scoped domain group requires actual CALL/RST hardware transfer");
+      var site=SoftwareCallValidation.executionAddress(p,config.mapper(),config.callCpu());
+      require(physicalSite==null||physicalSite.equals(site.toString()),"Incoming domains must share the SAME configured physical site");physicalSite=site.toString();
+      String id=domainId(p,config,site);require(ids.add(id),"Duplicate incoming software-call domain");
+      incoming.add(new Incoming(id,config,site));
+    }
+    incoming.sort(Comparator.comparing(Incoming::id));
     try(var discovery=SoftwareCallInstructionDiscovery.begin(p,monitor)) {
-      var result=new ArrayList<Domain>();String physicalSite=null;var ids=new HashSet<String>();
-      for(var config:configurations) {
-        require(config.transfer()==SoftwareCallModel.EntryTransfer.HARDWARE_RST||config.transfer()==SoftwareCallModel.EntryTransfer.HARDWARE_CALL,
-            "Scoped domain group requires actual CALL/RST hardware transfer");
-        var site=SoftwareCallValidation.executionAddress(p,config.mapper(),config.callCpu());
-        require(physicalSite==null||physicalSite.equals(site.toString()),"Incoming domains must share the SAME configured physical site");physicalSite=site.toString();
+      var result=new ArrayList<Domain>();
+      for(var input:incoming) {
+        var config=input.configuration();var site=input.site();
         var instruction=SoftwareCallInstructionDiscovery.instructionAt(p,site,"domain-qualified configured transfer",monitor);
         require(instruction!=null&&InstructionInterpretation.architecturalUnresolved(instruction)==null,"Unvalidated domain transfer instruction");
         var validated=SoftwareCallValidation.preview(p,config,monitor);
@@ -51,10 +62,8 @@ public final class SoftwareCallDomains {
         SoftwareCallContinuationView.requireTransport(p,callee,monitor);SoftwareCallContinuationView.requireTransport(p,continuation,monitor);
         require(SoftwareCallEffects.calleeInvocations(callee).isEmpty()&&SoftwareCallEffects.calleeInvocations(continuation).isEmpty(),"Nested domain invocation remains outside this bounded group");
         require(callee.exit().equals("RETURN")&&continuation.exit().equals("RETURN"),"Domain group requires real callee and outer returns");
-        String id=domainId(p,config,site);require(ids.add(id),"Duplicate incoming software-call domain");
-        result.add(new Domain(id,physicalSite,config,validated.frame(),effects,callee,continuation));
+        result.add(new Domain(input.id(),physicalSite,config,validated.frame(),effects,callee,continuation));
       }
-      result.sort(Comparator.comparing(Domain::id));
       require(revision==p.getModificationNumber()&&dependencies.equals(fingerprint(p,monitor)),"Program changed during software domain proof");
       return new Proof(VERSION,p.getUniqueProgramID(),dependencies,result,discovery.plan(monitor));
     }

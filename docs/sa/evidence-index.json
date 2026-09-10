@@ -254,5 +254,32 @@
     }
   ],
   "documentation_authority_commit": "8e6a6474cfaf771dd4aa2527abe051623f76c5a8",
-  "output_hygiene_commit": "d7027eaafa86f8b76e362044841b69a8c3ec3ea9"
+  "output_hygiene_commit": "d7027eaafa86f8b76e362044841b69a8c3ec3ea9",
+  "domain_repair": {
+    "status": "BLOCKED: saved-domain dependency revalidation",
+    "ordering_regression": "REPAIRED; deterministic before-fail/after-pass",
+    "root": "evidence/batches/REPO-CUTOVER-DOMAIN-FIX/20260910-01",
+    "report": "evidence/batches/REPO-CUTOVER-DOMAIN-FIX/20260910-01/REPORT-REPO-CUTOVER-DOMAIN-FIX.md",
+    "blocker": "evidence/batches/REPO-CUTOVER-DOMAIN-FIX/20260910-01/BLOCKER.json",
+    "original_failure": "evidence/cutovers/REPO-CUTOVER-20260909-v2/BLOCKER.json",
+    "built_source_manifest": "built-candidate-source.json",
+    "extension_sha256": "d3bd38b9172d1ea6d7e52e2ad4292b4ec5f8fa73c7fa4714ee53c8bde0bc47bf",
+    "provider_jar_sha256": "68911d6bb559c8279c9b06d7c52c99a58a2f5c6472a8125ff918206821eaa5f7",
+    "native_sha256": "d60be1dd82b660b4123adbe2a8c7c3353a7974e856d4298208f8dc68490db871",
+    "sla_sha256": "02f52cc6eeb44ebc94cfda1d24e58e73b27b8585e729ea30dff1807a0a994a2a",
+    "full_tests": {
+      "classes": 78,
+      "tests": 776,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "accepted_cases_retained": 773,
+    "new_cases": 3,
+    "fresh_domain_forward_reverse": "PASS for both fixed imports",
+    "saved_domain_reopen": "FAIL: stale registration before rederived proof/native",
+    "cyclic_and_active_order": "PASS",
+    "retirement": "BLOCKED: validation and unverified independent backup",
+    "stop": "Await master review; no W4/G3 or next package"
+  }
 }

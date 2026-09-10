@@ -6,6 +6,7 @@ import ghidra.program.database.ProgramDB
 import ghidra.program.disassemble.Disassembler
 import ghidra.program.model.address.AddressSet
 import ghidra.util.task.TaskMonitor
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -17,7 +18,10 @@ import java.util.HexFormat
 class SoftwareCallDomainsTest : IntegrationTest() {
     private val monitor = TaskMonitor.DUMMY
 
-    private fun fixture(action: (ProgramDB, List<SoftwareCallValidation.Configuration>) -> Unit) {
+    private fun fixture(
+        prepared: Boolean = true,
+        action: (ProgramDB, List<SoftwareCallValidation.Configuration>) -> Unit,
+    ) {
         val helper = SoftwareCallModel.Template(SoftwareCallModel.Family.REGISTER_JP, 0x28, 0, null)
         val chunks =
             linkedMapOf(
@@ -41,18 +45,20 @@ class SoftwareCallDomainsTest : IntegrationTest() {
             ByteArrayProvider(
                 bytes,
             ).use { CartridgeLayout.load(p, it, "CARTRIDGE", "AUTO", GameBoyKind.GB, true, false, monitor, MessageLog()) }
-            p.withTransaction {
-                val disassembler = Disassembler.getDisassembler(p, monitor, null)
-                for ((offset, hex) in chunks) {
-                    val bank = offset / 0x4000
-                    val cpu = if (bank == 0) offset else 0x4000 + offset % 0x4000
-                    val at =
-                        SoftwareCallValidation.executionAddress(
-                            p,
-                            MapperState.reset().write(ProgramMapping.cartridge(p), 0x2000, bank),
-                            cpu,
-                        )
-                    disassembler.disassemble(at, AddressSet(at, at.add(hex.length / 2L - 1)))
+            if (prepared) {
+                p.withTransaction {
+                    val disassembler = Disassembler.getDisassembler(p, monitor, null)
+                    for ((offset, hex) in chunks) {
+                        val bank = offset / 0x4000
+                        val cpu = if (bank == 0) offset else 0x4000 + offset % 0x4000
+                        val at =
+                            SoftwareCallValidation.executionAddress(
+                                p,
+                                MapperState.reset().write(ProgramMapping.cartridge(p), 0x2000, bank),
+                                cpu,
+                            )
+                        disassembler.disassemble(at, AddressSet(at, at.add(hex.length / 2L - 1)))
+                    }
                 }
             }
             val configs =
@@ -71,6 +77,140 @@ class SoftwareCallDomainsTest : IntegrationTest() {
             p.release(owner)
         }
     }
+
+    private fun state(p: ProgramDB): List<Any> =
+        listOf(
+            FarCallEvidence.capture(p, monitor),
+            p.listing
+                .getInstructions(true)
+                .iterator()
+                .asSequence()
+                .map { it.address.toString() }
+                .toList(),
+            p.functionManager.functionCount,
+            p.memory.blocks.map { it.start.toString() },
+            if (p.optionsNames.contains(SoftwareCallDomains.OPTIONS)) {
+                p.getOptions(SoftwareCallDomains.OPTIONS).getString("registration", "absent")
+            } else {
+                "absent"
+            },
+        )
+
+    private fun semantics(proof: SoftwareCallDomains.Proof): String =
+        SoftwareCallDomains.semanticJson(ProgramMapping.JSON.toJsonTree(proof.domains()))
+
+    @Test
+    fun `fresh domains preserve complete discovery for canonical and anti canonical callers through pristine installs`() =
+        fixture(prepared = false) { p, configs ->
+            assertFalse(p.listing.getInstructions(true).hasNext())
+            val before = state(p)
+            val revision = p.modificationNumber
+            val order = SoftwareCallDomains.preview(p, configs, monitor).domains().map { it.configuration() }
+            val canonical = SoftwareCallDomains.preview(p, order, monitor)
+            val antiCanonical = SoftwareCallDomains.preview(p, order.reversed(), monitor)
+            assertNotEquals(order, order.reversed())
+            assertTrue(canonical.discovery().candidates().isNotEmpty())
+            assertTrue(antiCanonical.discovery().candidates().isNotEmpty())
+            for (candidate in canonical.discovery().candidates() + antiCanonical.discovery().candidates()) {
+                assertTrue(p.listing.getInstructionAt(p.addressFactory.getAddress(candidate.address())) == null)
+            }
+            assertEquals(before, state(p))
+            assertEquals(revision, p.modificationNumber)
+            assertEquals(semantics(canonical), semantics(antiCanonical))
+            assertAll(
+                { assertEquals(canonical.discovery(), antiCanonical.discovery(), "Complete ordered discovery authority") },
+                {
+                    for (callerOrder in listOf(order.reversed(), order)) {
+                        assertEquals(before, state(p), "Each arm starts from the same pristine unregistered listing")
+                        assertFalse(p.listing.getInstructions(true).hasNext())
+                        val fresh = SoftwareCallDomains.preview(p, callerOrder, monitor)
+                        assertTrue(fresh.discovery().candidates().isNotEmpty())
+                        val transaction = p.startTransaction("Exercise domain install with complete rollback")
+                        try {
+                            val views = SoftwareCallDomains.install(p, fresh, monitor)
+                            assertEquals(4, views.size)
+                            assertEquals(semantics(fresh), semantics(SoftwareCallDomains.proof(p)))
+                            assertTrue(views.all { SoftwareCallDomains.registered(p, p.addressFactory.getAddress(it.entry())) })
+                        } finally {
+                            p.endTransaction(transaction, false)
+                        }
+                        assertEquals(before, state(p), "Rollback restores bytes, annotations, listing, views and registration")
+                    }
+                },
+            )
+        }
+
+    @Test
+    fun `altered real discovery bytes reject at retained domain discovery guard before application`() =
+        fixture(prepared = false) { p, configs ->
+            val order = SoftwareCallDomains.preview(p, configs, monitor).domains().map { it.configuration() }
+            val proof = SoftwareCallDomains.preview(p, order, monitor)
+            val candidate = proof.discovery().candidates().first()
+            val changedBytes = (if (candidate.bytes().startsWith("00")) "ff" else "00") + candidate.bytes().drop(2)
+            val altered =
+                SoftwareCallInstructionDiscovery.Candidate(
+                    candidate.address(),
+                    candidate.length(),
+                    changedBytes,
+                    candidate.physicalBytes(),
+                    candidate.reason(),
+                    candidate.mnemonic(),
+                    candidate.comments(),
+                )
+            val forged =
+                SoftwareCallDomains.Proof(
+                    proof.version(),
+                    proof.programId(),
+                    proof.dependencies(),
+                    proof.domains(),
+                    SoftwareCallInstructionDiscovery.Plan(
+                        proof.discovery().version(),
+                        proof.discovery().dependencies(),
+                        listOf(altered) + proof.discovery().candidates().drop(1),
+                        proof.discovery().reservations(),
+                    ),
+                )
+            assertNotEquals(proof.discovery(), forged.discovery())
+            assertEquals(semantics(proof), semantics(forged))
+            assertEquals(proof.dependencies(), FarCallEvidence.capture(p, monitor))
+            val before = state(p)
+            val revision = p.modificationNumber
+            val refusal = assertThrows(IllegalArgumentException::class.java) { SoftwareCallDomains.install(p, forged, monitor) }
+            assertEquals("Domain discovery differs from rooted proof", refusal.message)
+            assertEquals(before, state(p))
+            assertEquals(revision, p.modificationNumber)
+            assertFalse(p.listing.getInstructions(true).hasNext())
+        }
+
+    @Test
+    fun `domain v1 registration retains configuration semantics and rederives either persisted order`() =
+        fixture(prepared = false) { p, configs ->
+            val order = SoftwareCallDomains.preview(p, configs, monitor).domains().map { it.configuration() }
+            val proof = SoftwareCallDomains.preview(p, order, monitor)
+            val views = SoftwareCallDomains.install(p, proof, monitor)
+            val options = p.getOptions(SoftwareCallDomains.OPTIONS)
+            val saved =
+                com.google.gson.JsonParser
+                    .parseString(options.getString("registration", ""))
+                    .asJsonObject
+            assertEquals(
+                setOf("version", "programId", "configurations", "semantics", "views", "dependencies", "nativeIdentity"),
+                saved.keySet(),
+            )
+            assertEquals("software-call-domains-1", saved.get("version").asString)
+            assertEquals(p.uniqueProgramID, saved.get("programId").asLong)
+            assertEquals(semantics(proof), saved.get("semantics").asString)
+            assertEquals(semantics(proof), semantics(SoftwareCallDomains.proof(p)))
+            val reversed = com.google.gson.JsonArray()
+            saved.getAsJsonArray("configurations").reversed().forEach(reversed::add)
+            saved.add("configurations", reversed)
+            p.withTransaction { options.setString("registration", saved.toString()) }
+            assertEquals(semantics(proof), semantics(SoftwareCallDomains.proof(p)))
+            assertEquals(views, SoftwareCallDomains.views(p))
+            for (view in views.filter { it.kind() == "root" }) {
+                assertTrue(SoftwareCallDomains.emit(p, p.addressFactory.getAddress(view.entry()), 0x200000, monitor).isNotEmpty())
+            }
+        }
 
     @Test
     fun `same physical configured RST keeps both domains through reverse request and display order`() =

@@ -1,6 +1,39 @@
 # Implementation status
 
-Current completed checkpoint: **W3b-CFG-CONVERGENCE PASS**. W3 FOUNDATIONAL GRAPH/CALL CONTRACT SUFFICIENT TO BEGIN W4 / G3.
+## REPO-CUTOVER-DOMAIN-FIX — BLOCKED at saved-domain revalidation
+
+The demonstrated discovery-order defect is repaired: canonical configuration
+traversal now precedes rooted discovery, preserving complete Plan equality and
+all existing domain checks. The deterministic fresh anti-canonical regression
+failed before the correction and passed afterward. Changed discovery bytes still
+reach the exact retained guard and are rejected. See the
+[local compatibility decision](../decisions/configured-domain-discovery-order.md).
+
+One final clean checkpoint passed 776 tests in 78 classes, retaining all 773
+accepted case identities and adding three regressions, with no failures, errors
+or skips. Lint/build, build-inputs7 and tooling64/one existing optional skip pass.
+Both fixed fresh Programs (anti-canonical then canonical) installed with equal
+nonempty discovery and passed forward/reverse raw/emitted/native stage checks.
+Cyclic setup/mutation/reopen and active continuation-order checks passed against
+the exact new provider; native and SLA identities remain pinned.
+
+**Installed acceptance remains BLOCKED:** both saved domain Programs reopen with
+identical registration but a different FarCallEvidence dependency fingerprint,
+refusing `Stale software domain registration` before current-record discovery
+or reopened native requests. Public ProgramFingerprint components match across
+the second Program's save/reopen, narrowing the discrepancy to the additional
+FarCallEvidence fields or their representation; the exact differing field is not
+established. Reopened native and subsequent installed stale controls were not
+completed. Do not describe this as backup-only retirement blocking.
+
+REPO remains the sole active source. Preserve both failed Program identities,
+the stale guard, the original cutover evidence and the inactive read-only source.
+The [evidence index](evidence-index.json) links the corrective candidate and new
+blocker. Retirement is blocked by validation and unverified independent backup.
+This bounded repair stops for master review; no shared fingerprint redesign,
+W4/G3, W3c, G4 campaign or further implementation package was started.
+
+Accepted predecessor checkpoint: **W3b-CFG-CONVERGENCE PASS**. W3 FOUNDATIONAL GRAPH/CALL CONTRACT SUFFICIENT TO BEGIN W4 / G3.
 
 Report/result/coverage: evidence/batches/W3b-CFG-CONVERGENCE/. All three bounded checkpoints pass; full773/78, lint/build, build-inputs7, new native relationships and cyclic separate-process persistence pass. Source `ad023bf61f5273b9d1466c5292f09aa738cd6911cfb89bb2aaf4d48cc3bcc06e`; extension `de7b17963d8f009ce2dabfb1fe2090e7dd3ab29000c20cd26b8b632bd81e00ed`. Native/SLA unchanged. No active implementation or unresolved bounded blocker.
 
@@ -27,7 +60,7 @@ Bounded finite relational convergence is not general scalability. Native HighFun
 
 REPO-CUTOVER awaits the coordinating master’s review. No W3c, W4/G3 or other semantic work starts automatically. Local recovery is verified; independent backup has not been verified, so old-source retirement cannot be claimed complete. See [cutover policy](REPO-CUTOVER.md).
 
-## REPO-CUTOVER checkpoint — blocked
+## Original REPO-CUTOVER checkpoint — historical failure
 
 The maintained tree at `d7027eaafa86f8b76e362044841b69a8c3ec3ea9` (tree `dbf5cf1b547455bfbebb0b3894eb72fa3d8a777b`) passed one fresh clean full build/lint checkpoint with all 773 accepted tests in 78 classes, no failures/errors/skips. Build-inputs7, tooling64 pass/one accepted optional skip, debugger-pure15, changed capture Java compilation and source/package link checks passed. Cyclic setup/reopen and active production continuation order installed checks passed.
 
