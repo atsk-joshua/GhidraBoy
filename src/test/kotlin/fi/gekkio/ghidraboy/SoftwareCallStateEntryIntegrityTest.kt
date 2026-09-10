@@ -155,7 +155,7 @@ class SoftwareCallStateEntryIntegrityTest : IntegrationTest() {
             assertEquals("user_renamed_target", preserved.name)
             assertEquals("User replacement note after application", preserved.comment)
             assertEquals(originalConvention, preserved.callingConventionName)
-            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
+            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
             assertEquals(originalBytes.toList(), ByteArray(8).also { p.memory.getBytes(target, it) }.toList())
             for (entry in aliases) {
                 assertFalse(p.memory.getBlock(entry).isExecute)
@@ -163,19 +163,68 @@ class SoftwareCallStateEntryIntegrityTest : IntegrationTest() {
             }
         }
 
+    @org.junit.jupiter.api.Tag("legacy-protocol")
     @Test
     fun `selection restores original comment and convention after clean removal`() =
         fixture { p, configs, target, _ ->
             val original = p.functionManager.getFunctionAt(target)
             val convention = original.callingConventionName
             val comment = original.comment
-            SoftwareCallApplication.apply(p, SoftwareCallApplication.preview(p, configs, TaskMonitor.DUMMY), TaskMonitor.DUMMY)
+            SoftwareCallApplication.apply(
+                p,
+                SoftwareCallApplication.previewLegacyComparison(p, configs, TaskMonitor.DUMMY),
+                TaskMonitor.DUMMY,
+            )
             val contexts = SoftwareCallRegistry.stateContexts(p, target, TaskMonitor.DUMMY)
             val other = contexts.single { !it.selected() }
             SoftwareCallRegistry.selectStateContext(p, target, ProgramMapping.staticAddress(p, other.entry()), TaskMonitor.DUMMY)
             AnalysisOwnership.remove(p, SoftwareCallApplication.FEATURE, TaskMonitor.DUMMY)
             assertEquals(comment, p.functionManager.getFunctionAt(target).comment)
             assertEquals(convention, p.functionManager.getFunctionAt(target).callingConventionName)
+        }
+
+    @Test
+    fun `stock entry removal restores original metadata and retires owned carriers`() =
+        fixture { p, configs, target, _ ->
+            val original = p.functionManager.getFunctionAt(target)
+            val convention = original.callingConventionName
+            val comment = original.comment
+            SoftwareCallApplication.apply(p, SoftwareCallApplication.preview(p, configs, TaskMonitor.DUMMY), TaskMonitor.DUMMY)
+            val contexts = SoftwareCallRegistry.stateContexts(p, target, TaskMonitor.DUMMY)
+            for (context in contexts) StockEntries.current(p, ProgramMapping.staticAddress(p, context.entry()), TaskMonitor.DUMMY)
+            AnalysisOwnership.remove(p, SoftwareCallApplication.FEATURE, TaskMonitor.DUMMY)
+            assertEquals(comment, p.functionManager.getFunctionAt(target).comment)
+            assertEquals(convention, p.functionManager.getFunctionAt(target).callingConventionName)
+            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
+            for (context in contexts) {
+                val at = ProgramMapping.staticAddress(p, context.entry())
+                assertTrue(p.functionManager.getFunctionAt(at) == null)
+                assertFalse(p.memory.getBlock(at).isExecute)
+            }
+        }
+
+    @Test
+    fun `cancelled stock application after carrier creation rolls back authority and annotations`() =
+        fixture { p, configs, target, _ ->
+            val before = FarCallEvidence.capture(p, TaskMonitor.DUMMY)
+            val comment = p.functionManager.getFunctionAt(target).comment
+            val review = SoftwareCallApplication.preview(p, configs, TaskMonitor.DUMMY)
+            var sawMutation = false
+            val monitor =
+                object : TaskMonitorAdapter(true) {
+                    override fun checkCancelled() {
+                        if (p.memory.blocks.any { it.comment == StockEntryInjection.STORAGE }) {
+                            sawMutation = true
+                            throw CancelledException()
+                        }
+                        super.checkCancelled()
+                    }
+                }
+            assertThrows(CancelledException::class.java) { SoftwareCallApplication.apply(p, review, monitor) }
+            assertTrue(sawMutation, "Cancellation must follow a real carrier write")
+            assertEquals(before, FarCallEvidence.capture(p, TaskMonitor.DUMMY))
+            assertEquals(comment, p.functionManager.getFunctionAt(target).comment)
+            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
         }
 
     @Test
@@ -214,10 +263,15 @@ class SoftwareCallStateEntryIntegrityTest : IntegrationTest() {
             assertTrue(nested.hasCustomVariableStorage())
         }
 
+    @org.junit.jupiter.api.Tag("legacy-protocol")
     @Test
     fun `cancelled selection after comment mutation rolls back registry ownership and visible context`() =
         fixture { p, configs, target, _ ->
-            SoftwareCallApplication.apply(p, SoftwareCallApplication.preview(p, configs, TaskMonitor.DUMMY), TaskMonitor.DUMMY)
+            SoftwareCallApplication.apply(
+                p,
+                SoftwareCallApplication.previewLegacyComparison(p, configs, TaskMonitor.DUMMY),
+                TaskMonitor.DUMMY,
+            )
             val contexts = SoftwareCallRegistry.stateContexts(p, target, TaskMonitor.DUMMY)
             val alternate = ProgramMapping.staticAddress(p, contexts.single { !it.selected() }.entry())
             val comment = p.functionManager.getFunctionAt(target).comment
@@ -260,7 +314,7 @@ class SoftwareCallStateEntryIntegrityTest : IntegrationTest() {
             val changed = FarCallEvidence.capture(p, TaskMonitor.DUMMY)
             assertThrows(
                 IllegalArgumentException::class.java,
-            ) { SoftwareCallRegistry.selectStateContext(p, target, alternate, TaskMonitor.DUMMY) }
+            ) { StockEntries.current(p, alternate, TaskMonitor.DUMMY) }
             assertEquals(changed, FarCallEvidence.capture(p, TaskMonitor.DUMMY))
         }
 
@@ -348,8 +402,8 @@ class SoftwareCallStateEntryIntegrityTest : IntegrationTest() {
             val alias = ProgramMapping.staticAddress(p, context.entry())
             val payload =
                 p.compilerSpec.pcodeInjectLibrary.getPayload(
-                    InjectPayload.CALLMECHANISM_TYPE,
-                    SoftwareCallStateEntryInjection.NAME,
+                    InjectPayload.CALLOTHERFIXUP_TYPE,
+                    StockEntryInjection.NAME,
                 )
             val request = InjectContext()
             request.baseAddr = alias
@@ -378,7 +432,7 @@ class SoftwareCallStateEntryIntegrityTest : IntegrationTest() {
                         .getAddressSpace(
                             review.executionViews().getValue(root.toString()).name(),
                         ).getAddress(root.offset)
-                for (entry in listOf(root, sourceAlias, intermediate, alias)) {
+                for (entry in listOf(root, sourceAlias, alias)) {
                     val result = decompiler.decompileFunction(p.functionManager.getFunctionAt(entry), 30, TaskMonitor.DUMMY)
                     assertTrue(result.decompileCompleted(), "$entry: ${result.errorMessage}")
                     val c = result.decompiledFunction.c

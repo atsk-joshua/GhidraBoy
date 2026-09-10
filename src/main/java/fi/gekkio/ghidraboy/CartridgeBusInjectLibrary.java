@@ -28,8 +28,8 @@ public final class CartridgeBusInjectLibrary extends PcodeInjectLibrary {
 
   @Override
   public InjectPayload allocateInject(String source, String name, int type) {
-    if (type == InjectPayload.CALLMECHANISM_TYPE && StockEntryGuardInjection.NAME.equals(name))
-      return new StockEntryGuardInjection(source, uniqueBase);
+    if (type == InjectPayload.CALLMECHANISM_TYPE && name.endsWith("@@inject_uponentry") && !SoftwareCallStateEntryInjection.NAME.equals(name))
+      return new StockEntryGuardInjection(source, name, uniqueBase);
     if (type == InjectPayload.CALLMECHANISM_TYPE && SoftwareCallStateEntryInjection.NAME.equals(name))
       return new SoftwareCallStateEntryInjection(source, uniqueBase);
     if (type == InjectPayload.CALLFIXUP_TYPE && SoftwareCallInjection.NAME.equals(name))

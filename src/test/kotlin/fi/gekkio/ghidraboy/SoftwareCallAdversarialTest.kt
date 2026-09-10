@@ -698,12 +698,12 @@ class SoftwareCallAdversarialTest : IntegrationTest() {
                 val options = p.getOptions(ProgramMapping.OPTIONS)
                 val syntheticOld =
                     com.google.gson.JsonParser
-                        .parseString(options.getString(SoftwareCallRegistry.KEY, ""))
+                        .parseString(options.getString(SoftwareCallRegistry.STOCK_KEY, ""))
                         .asJsonObject
                 // Synthetic compatibility negative, not an actual archived-v3 Program migration.
                 syntheticOld.addProperty("version", "software-call-registry-3")
                 for (site in syntheticOld.getAsJsonArray("sites")) site.asJsonObject.remove("canonicalAddress")
-                options.setString(SoftwareCallRegistry.KEY, ProgramMapping.JSON.toJson(syntheticOld))
+                options.setString(SoftwareCallRegistry.STOCK_KEY, ProgramMapping.JSON.toJson(syntheticOld))
             }
             val failure = assertThrows(IllegalArgumentException::class.java) { SoftwareCallRegistry.resolve(p, address(0x200)) }
             assertTrue(failure.message.orEmpty().contains("Incompatible software-call registry"), failure.message)
@@ -714,7 +714,7 @@ class SoftwareCallAdversarialTest : IntegrationTest() {
             context.callAddr = address(0x28)
             assertThrows(IllegalArgumentException::class.java) { payload.getPcode(p, context) }
             AnalysisOwnership.remove(p, SoftwareCallApplication.FEATURE, TaskMonitor.DUMMY)
-            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
+            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
             SoftwareCallApplication.apply(p, SoftwareCallApplication.preview(p, listOf(config), TaskMonitor.DUMMY), TaskMonitor.DUMMY)
             assertNotNull(SoftwareCallRegistry.resolve(p, address(0x200)))
             assertEquals(

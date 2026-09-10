@@ -263,7 +263,7 @@ class OrdinaryEntryAccessTest : IntegrationTest() {
     fun `serialized replacement values and sources cannot certify themselves`() =
         fixture { p, f ->
             val alias = OrdinaryEntryAccess.install(p, OrdinaryEntryAccess.preview(p, f, monitor), monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val key = alias.toString()
             val original = options.getString(key, "")
             val dependencies = OrdinaryEntryAccess.preview(p, f, monitor).dependencies()
@@ -328,7 +328,7 @@ class OrdinaryEntryAccessTest : IntegrationTest() {
             val otherFunction = p.functionManager.getFunctionAt(otherStart)
             val otherProof = OrdinaryEntryAccess.preview(p, otherFunction, monitor)
             assertEquals(listOf(0xa7, 0x31, 0x6e), otherProof.replacements().map { it.value().toInt() })
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val original = options.getString(alias.toString(), "")
             val substitution = JsonParser.parseString(original).asJsonObject
             substitution.add("proof", ProgramMapping.JSON.toJsonTree(otherProof))

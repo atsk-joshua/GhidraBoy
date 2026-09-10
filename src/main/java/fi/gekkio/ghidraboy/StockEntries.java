@@ -24,13 +24,19 @@ public final class StockEntries {
         var proof=OrdinaryEntryAccess.registeredProof(p,at);result.add(new Entry(at.toString(),proof.entry(),ProgramMapping.JSON.toJson(proof.domain()),null));
       } else if(SoftwareCallDomains.registered(p,at)) {
         var view=SoftwareCallDomains.views(p).stream().filter(v->v.entry().equals(at.toString())).findFirst().orElseThrow();
-        result.add(new Entry(at.toString(),view.segments().getFirst().source(),view.domain(),null));
+        result.add(new Entry(at.toString(),SoftwareCallDomains.source(p,at).toString(),view.domain(),null));
       } else if(SoftwareCallRegistry.stockCarrier(p,at)) {
         var state=SoftwareCallRegistry.stockEntry(p,at);
         result.add(new Entry(at.toString(),state.canonical(),state.site()+":"+state.kind()+":"+state.graphEntry()+":"+state.entryStep(),null));
       }
     }
     return List.copyOf(result);
+  }
+  /** Source identity from recorded authority; the carrier itself is not physical game storage. */
+  public static Address source(Program p, Address entry) {
+    StockEntryInjection.validateStorage(p, entry);
+    return ProgramMapping.staticAddress(p, entries(p).stream().filter(e -> e.carrier().equals(entry.toString()))
+        .findFirst().orElseThrow(() -> new IllegalArgumentException("Missing stock source authority")).source());
   }
   public static String current(Program p, Address entry, TaskMonitor monitor) throws Exception {
     monitor.checkCancelled();StockEntryInjection.validate(p,entry);

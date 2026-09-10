@@ -97,7 +97,7 @@ public class GhidraBoyW2eFinite extends GhidraScript {
     return Map.of("entry", function.getEntryPoint().toString(), "body", function.getBody().toString(),
         "name", function.getName(), "instructions", instructions);
   }
-  boolean stockOrdinary(){return Arrays.asList(getScriptArgs()).contains("stock");}
+  boolean stockOrdinary(){return !Arrays.asList(getScriptArgs()).contains("legacy");}
   void artifacts(String label, OrdinaryEntryAccess.Proof proof, Address alias) throws Exception {
     save(label + "-proof.json", proof);
     var payload = currentProgram.getCompilerSpec().getPcodeInjectLibrary().getPayload(
@@ -119,7 +119,7 @@ public class GhidraBoyW2eFinite extends GhidraScript {
         "provider_location", CartridgeLayout.class.getProtectionDomain().getCodeSource().getLocation().toString()));
     var before = canonical(canonical); save("canonical-before.json", before);
     var proof = OrdinaryEntryAccess.preview(currentProgram, canonical, monitor);
-    var alias = stockOrdinary()?OrdinaryEntryAccess.installStock(currentProgram, proof, monitor):OrdinaryEntryAccess.install(currentProgram, proof, monitor);
+    var alias = stockOrdinary()?OrdinaryEntryAccess.install(currentProgram, proof, monitor):OrdinaryEntryAccess.installLegacyComparison(currentProgram, proof, monitor);
     var after = canonical(canonical); save("canonical-after-install.json", after);
     if (!ProgramMapping.JSON.toJson(before).equals(ProgramMapping.JSON.toJson(after))) throw new IllegalStateException("Canonical changed");
     artifacts("original", proof, alias);

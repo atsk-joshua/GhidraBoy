@@ -1,5 +1,19 @@
 # Implementation status
 
+## STOCK-ROUTE-COMPLETION — LOCAL CANDIDATE; final qualification pending
+
+Normal public creation and Tools/application paths now select stock. Independently
+owned one-byte carriers and shipped-convention integrity guards retain source,
+physical and generation authority separately. Earlier stock and companion records
+are preserved without implicit conversion. See the
+[compatibility decision](../decisions/stock-route-completion.md).
+
+Focused semantic/carrier tests and the integrated read-only review are complete.
+The exact clean checkpoint, installed families and current-format reopen must
+finish before the task is reported as complete. Bulk receipts and the 795-instance
+ledger remain external under STOCK-ROUTE-COMPLETION. No release, migration, GUI,
+switch, main-history or inactive-source retirement gate is closed.
+
 ## STOCK-GHIDRA-TRANSPORT — PARTIAL; STOP for master review
 
 The experimental stock transport and its one bounded integrity correction are

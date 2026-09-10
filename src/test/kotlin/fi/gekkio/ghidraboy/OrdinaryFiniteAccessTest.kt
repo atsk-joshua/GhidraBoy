@@ -333,7 +333,7 @@ class OrdinaryFiniteAccessTest : IntegrationTest() {
                 OrdinaryEntryAccess.install(p, ProgramMapping.JSON.fromJson(relabelled, OrdinaryEntryAccess.Proof::class.java), monitor)
             }
             val alias = OrdinaryEntryAccess.install(p, proof, monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val original = options.getString(alias.toString(), "")
             val tampered = JsonParser.parseString(original).asJsonObject
             tampered.addProperty("alias", f.entryPoint.toString())

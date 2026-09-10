@@ -111,7 +111,7 @@ class PredicatedLoopsTest : IntegrationTest() {
                     }
                 }
                 val entry = PredicatedCalls.install(p, proof, monitor)
-                val registration = p.getOptions(PredicatedCalls.OPTIONS).getString(entry.toString(), "")
+                val registration = p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(), "")
                 val output =
                     java.nio.file.Path
                         .of("build", "w3b")

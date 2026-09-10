@@ -174,3 +174,20 @@ This state-sensitive candidate is not yet qualified for fresh ordinary analysis.
 The current source handoff records an automatic thunk/fixup drift failure and
 pending installed/GUI verification. Use disposable Programs for this candidate;
 the preceding finite workflow qualification does not establish this wider path.
+
+## Conditional stock entries
+
+New reviewed software-call preview/apply requests, including `GhidraBoyTools`,
+use the stock transport. Ordinary, predicate and configured-domain public install
+methods do the same. Existing authority retains its recorded transport; earlier
+stock-carrier and companion records are preserved and are not automatically
+converted. Open a reviewed conditional entry to inspect its result; selecting a
+stock context navigates to that entry without specializing the canonical Function.
+
+Carrier bytes are presentation storage, not the source routine. Use the Tools
+source-navigation action for original physical instructions. Explicit refresh is
+required after a consumed dependency changes. See the
+[route and compatibility decision](decisions/stock-route-completion.md).
+
+These development routes do not qualify existing annotated language-1 Programs.
+Keep those Programs on their original provider until separate migration approval.

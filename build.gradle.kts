@@ -189,7 +189,7 @@ tasks.register("buildExtension") {
 
 tasks.named<Test>("test") {
     dependsOn("compileSleigh")
-    useJUnitPlatform()
+    useJUnitPlatform { excludeTags("legacy-protocol") }
     inputs
         .files(
             fileTree("data/languages") {
@@ -205,6 +205,21 @@ tasks.named<Test>("test") {
     maxHeapSize = "4g"
 
     // Required for Ghidra 12 + JDK 21.0.10+ in forked Gradle test workers (see Ghidra javaTestProject.gradle).
+    jvmArgs("-Djdk.serialFilterFactory=ghidra.framework.remote.GhidraSerialFilterFactory")
+}
+
+// Two retained tests assert the private canonical-selection protocol itself.
+// Explicitly opt in with a separately supplied legacy runtime; never provision it for stock tests.
+tasks.register<Test>("legacyProtocolTest") {
+    group = "verification"
+    description = "Optional historical companion protocol comparisons; not part of the stock product checkpoint."
+    dependsOn("compileSleigh", "testClasses")
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { includeTags("legacy-protocol") }
+    systemProperty("ghidra.dir", ghidraDir)
+    systemProperty("SystemUtilities.isTesting", true)
+    maxHeapSize = "4g"
     jvmArgs("-Djdk.serialFilterFactory=ghidra.framework.remote.GhidraSerialFilterFactory")
 }
 

@@ -38,3 +38,4 @@ sa/REPO-CUTOVER.md
 sa/evidence-index.json
 decisions/symbolic-memory-executable-images.md
 decisions/stock-ghidra-transport.md
+decisions/stock-route-completion.md

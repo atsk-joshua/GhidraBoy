@@ -265,7 +265,7 @@ class OrdinaryNWayFiniteAccessTest : IntegrationTest() {
                 assertThrows(IllegalArgumentException::class.java) { OrdinaryEntryAccess.install(other, proof, monitor) }
             }
             val alias = OrdinaryEntryAccess.install(p, proof, monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val original = options.getString(alias.toString(), "")
             for (kind in listOf("missing", "conflicting-duplicate", "swapped", "unproduced", "truncated")) {
                 val registration = JsonParser.parseString(original).asJsonObject

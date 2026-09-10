@@ -146,7 +146,7 @@ class SoftwareCallMayReturnInjectionTest : IntegrationTest() {
                 decompiler.dispose()
             }
             // Neutral metadata may never outlive its independently consumed returning witness.
-            program.withTransaction { program.getOptions(ProgramMapping.OPTIONS).removeOption(SoftwareCallRegistry.KEY) }
+            program.withTransaction { program.getOptions(ProgramMapping.OPTIONS).removeOption(SoftwareCallRegistry.STOCK_KEY) }
             assertThrows(IllegalArgumentException::class.java) { payload.getPcode(program, context) }
             assertNotNull(InstructionInterpretation.unresolved(program.listing.getInstructionAt(ordinary[0])))
         } finally {

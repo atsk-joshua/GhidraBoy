@@ -115,7 +115,19 @@ class SoftwareCallStateContinuationApplicationTest : IntegrationTest() {
                 assertTrue(
                     operations.any {
                         it.opcode == PcodeOp.CALL &&
-                            ProgramMapping.staticToPhysical(p, it.getInput(0).address) == ProgramMapping.staticToPhysical(p, target)
+                            ProgramMapping.staticToPhysical(
+                                p,
+                                if (StockEntryInjection.owned(
+                                        p,
+                                        it.getInput(0).address,
+                                    )
+                                ) {
+                                    StockEntries.source(p, it.getInput(0).address)
+                                } else {
+                                    it.getInput(0).address
+                                },
+                            ) ==
+                            ProgramMapping.staticToPhysical(p, target)
                     },
                     "$entry missing $target\n$c",
                 )
@@ -357,8 +369,11 @@ class SoftwareCallStateContinuationApplicationTest : IntegrationTest() {
             try {
                 assertTrue(decompiler.openProgram(p))
                 verifyNative(p, decompiler, listOf(root, alias(p, review, root)), mapOf(0xc200 to 2), listOf(physical(p, 0x8000), target))
-                verifyNative(p, decompiler, listOf(target, calleeEntry), mapOf(0xc210 to 0x66), emptyList())
-                assertEquals(ProgramMapping.staticToPhysical(p, target), ProgramMapping.staticToPhysical(p, calleeEntry))
+                verifyNative(p, decompiler, listOf(calleeEntry), mapOf(0xc210 to 0x66), emptyList())
+                assertEquals(
+                    ProgramMapping.staticToPhysical(p, target),
+                    ProgramMapping.staticToPhysical(p, StockEntries.source(p, calleeEntry)),
+                )
             } finally {
                 decompiler.dispose()
             }

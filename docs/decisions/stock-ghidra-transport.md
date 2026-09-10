@@ -1,5 +1,8 @@
 # Stock-core transport qualification
 
+The following records the accepted partial predecessor. New-request routing and
+the successor carrier contract are in [stock route completion](stock-route-completion.md).
+
 The normal product target is unmodified Ghidra core plus GhidraBoy. This replaces
 D2's provisional companion-as-deployment direction, without changing accepted
 physical/state graphs, alias effects, frames, symbolic RAM or image generations.

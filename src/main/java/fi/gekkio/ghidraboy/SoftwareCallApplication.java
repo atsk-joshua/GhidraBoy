@@ -48,11 +48,15 @@ public final class SoftwareCallApplication {
 
   public static Review preview(Program p, List<SoftwareCallValidation.Configuration> configurations,
       TaskMonitor monitor) throws Exception {
+    return previewStock(p, configurations, monitor);
+  }
+  public static Review previewLegacyComparison(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor) throws Exception {
     return preview(p, configurations, monitor, false);
   }
   public static Review previewStock(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor) throws Exception {
     if (p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
       throw new IllegalArgumentException("Legacy software-call record retained; stock conversion is not implicit");
+    SoftwareCallRegistry.configurationIdentity(p); // Reject incompatible saved stock authority before reapply.
     return preview(p, configurations, monitor, true);
   }
   private static Review preview(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor, boolean stock) throws Exception {
@@ -310,7 +314,18 @@ public final class SoftwareCallApplication {
       var createdViews = new HashMap<String, SoftwareCallExecutionView.Created>();
       for (var entry : review.views.entrySet()) {
         var plan = entry.getValue();
-        createdViews.put(entry.getKey(), SoftwareCallExecutionView.create(p,
+        if (review.stock && (entry.getKey().contains("#native_") || entry.getKey().contains("#state"))) {
+          var graph = carrierGraph(p, plannedGraph(review, entry.getKey()), plan.segments());
+          if (graph == null) {
+            // Some fragments contain only inlined configured-call effects. They never had
+            // an independently admitted entry; retain their listing without inventing one.
+            createdViews.put(entry.getKey(), SoftwareCallExecutionView.create(p,
+                SoftwareCallExecutionView.preview(p, plan.name(), plan.segments(), monitor), monitor));
+          } else {
+            var first = carrierStep(p, graph, plan.segments());
+            createdViews.put(entry.getKey(), StockEntryInjection.carrier(p, plan.name(), first.before().cpu(), plan.segments(), monitor));
+          }
+        } else createdViews.put(entry.getKey(), SoftwareCallExecutionView.create(p,
             SoftwareCallExecutionView.preview(p, plan.name(), plan.segments(), monitor), monitor));
       }
       var owned = new AnalysisOwnership.Group();
@@ -451,13 +466,15 @@ public final class SoftwareCallApplication {
         for (var fragment : createdViews.entrySet()) if (fragment.getKey().startsWith(key)) {
           var space = p.getAddressFactory().getAddressSpace(fragment.getValue().name());
           var alias = space.getAddress(root.getOffset());
-          if (!ProgramMapping.staticToPhysical(p, alias).equals(ProgramMapping.staticToPhysical(p, root))) continue;
+          if (review.stock ? !fragment.getValue().body().contains(alias) || !containsSource(p, fragment.getValue().segments(), root)
+              : !ProgramMapping.staticToPhysical(p, alias).equals(ProgramMapping.staticToPhysical(p, root))) continue;
           var body = new ghidra.program.model.address.AddressSet();
-          for (var step : graph.steps()) {
+          if (!review.stock) for (var step : graph.steps()) {
             var at = ProgramMapping.staticAddress(p, step.address());
             if (step.callDepth() == 0 && at.getAddressSpace().equals(root.getAddressSpace()))
               body.add(space.getAddress(at.getOffset()), space.getAddress(at.getOffset() + step.length() - 1));
           }
+          if (review.stock) body = new ghidra.program.model.address.AddressSet(alias, alias);
           var function = p.getFunctionManager().createFunction(p.getFunctionManager().getFunctionAt(root).getName() + "_state_" + graph.entry().index(),
               alias, body, ghidra.program.model.symbol.SourceType.ANALYSIS);
           owned.function(function); stateEntries.put(alias.toString(), stateEntry);
@@ -568,6 +585,20 @@ public final class SoftwareCallApplication {
         fragmentGraph = projectionGraphs(source).stream().filter(graph -> graph.entry().index() == graphEntry)
             .findFirst().orElseThrow(() -> new IllegalArgumentException("Missing planned fragment invocation"));
       }
+      if (review.stock) {
+        var selectedGraph = carrierGraph(p, fragmentGraph, view.getValue().segments());
+        if (selectedGraph == null) continue;
+        var first = carrierStep(p, selectedGraph, view.getValue().segments());
+        var alias = view.getValue().body().getMinAddress();
+        if (p.getFunctionManager().getFunctionAt(alias) == null) {
+          var function = p.getFunctionManager().createFunction("projection_" + Integer.toHexString(first.before().cpu()),
+              alias, view.getValue().body(), ghidra.program.model.symbol.SourceType.ANALYSIS);
+          owned.function(function);
+          entries.put(alias.toString(), new SoftwareCallRegistry.StateEntry(site, selectedGraph.entry().index(),
+              first.address(), source.kind(), first.index(), true));
+        }
+        continue;
+      }
       for (var graph : projectionGraphs(fragmentGraph)) {
         monitor.checkCancelled();
         var body = new ghidra.program.model.address.AddressSet();
@@ -592,6 +623,36 @@ public final class SoftwareCallApplication {
     }
   }
 
+  private static boolean containsSource(Program p, List<SoftwareCallExecutionView.Segment> segments, Address source) {
+    return segments.stream().anyMatch(segment -> {
+      var at = ProgramMapping.staticAddress(p, segment.source());
+      return at.getAddressSpace().equals(source.getAddressSpace()) && at.getOffset() <= source.getOffset()
+          && at.getOffset() + segment.length() > source.getOffset();
+    });
+  }
+
+  private static SoftwareCallEffects.ContinuationSummary carrierGraph(Program p,
+      SoftwareCallEffects.ContinuationSummary graph, List<SoftwareCallExecutionView.Segment> segments) {
+    return projectionGraphs(graph).stream().filter(candidate -> candidate.steps().stream().anyMatch(step -> step.callDepth() == 0
+        && containsSource(p, segments, ProgramMapping.staticAddress(p, step.address())))).findFirst()
+        .orElse(null);
+  }
+
+  private static SoftwareCallEffects.ContinuationStep carrierStep(Program p,
+      SoftwareCallEffects.ContinuationSummary graph, List<SoftwareCallExecutionView.Segment> segments) {
+    return graph.steps().stream().filter(step -> step.callDepth() == 0
+        && containsSource(p, segments, ProgramMapping.staticAddress(p, step.address()))).findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No proved entry in presentation fragment"));
+  }
+
+  private static SoftwareCallEffects.ContinuationSummary plannedGraph(Review review, String key) {
+    String site = key.substring(0, key.indexOf('#'));
+    var source = key.contains("#native_CALLEE") ? review.stateCallees.get(site) : review.stateContinuations.get(site);
+    if (!key.contains("#native_")) return source;
+    String[] identity = key.substring(key.indexOf('#') + 1).split("_");
+    return projectionGraphs(source).stream().filter(graph -> graph.entry().index() == Integer.parseInt(identity[2])).findFirst().orElseThrow();
+  }
+
   private static List<SoftwareCallEffects.ContinuationSummary> nativeEntryGraphs(SoftwareCallEffects.ContinuationSummary graph) {
     var result = new ArrayList<SoftwareCallEffects.ContinuationSummary>();
     if (graph.kind().equals("CALLEE")) result.add(graph);
@@ -614,9 +675,10 @@ public final class SoftwareCallApplication {
       String base = SoftwareCallExecutionView.PREFIX + "entry_" + Integer.toUnsignedString(sourceSite.getAddressSpace().getSpaceID(), 16)
           + "_" + Long.toHexString(sourceSite.getOffset()) + "_" + source.kind().toLowerCase(java.util.Locale.ROOT) + "_" + node;
       while (p.getAddressFactory().getAddressSpace(base + "_0") != null) base += "_next";
-      for (var ranges : SoftwareCallContinuationView.fragments(p, graph))
+      for (var ranges : SoftwareCallContinuationView.fragments(p, graph)) {
         views.put(nativeViewKey(site, source.kind(), node) + fragment,
             SoftwareCallExecutionView.preview(p, base + "_" + fragment++, ranges, monitor));
+      }
     }
   }
 

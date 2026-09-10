@@ -12,13 +12,14 @@ import ghidra.util.task.TaskMonitor;
 public final class StockEntryGuardInjection extends InjectPayloadSleigh {
   public static final String NAME=StockEntryInjection.CONVENTION+"@@inject_uponentry";
   private final long uniqueBase;
-  StockEntryGuardInjection(String source,long uniqueBase) {
-    super(NAME,InjectPayload.CALLMECHANISM_TYPE,source);this.uniqueBase=uniqueBase;
+  StockEntryGuardInjection(String source,String name,long uniqueBase) {
+    super(name,InjectPayload.CALLMECHANISM_TYPE,source);this.uniqueBase=uniqueBase;
   }
   @Override public PcodeOp[] getPcode(Program p,InjectContext context) {
     return SoftwareCallInjection.revalidated(p,()->{
       try {
-        StockEntries.current(p,context.baseAddr,TaskMonitor.DUMMY);
+        if (StockEntryInjection.owned(p,context.baseAddr) || NAME.equals(getName()))
+          StockEntries.current(p,context.baseAddr,TaskMonitor.DUMMY);
         // Stock late injection accepts this dead temporary. No CPU register, memory, PC or SP effect.
         return new PcodeOp[]{new PcodeOp(context.baseAddr,0,PcodeOp.COPY,
             new Varnode[]{new Varnode(p.getAddressFactory().getConstantSpace().getAddress(0),1)},

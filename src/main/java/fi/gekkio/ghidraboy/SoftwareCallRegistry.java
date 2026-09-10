@@ -11,9 +11,9 @@ public final class SoftwareCallRegistry {
   private SoftwareCallRegistry() {}
   public static final String KEY = "softwareCall.sites.v1";
   public static final String STOCK_KEY = "softwareCall.stock.sites.v1";
-  public static final String STOCK_VERSION = "stock-software-call-registry-1";
+  public static final String STOCK_VERSION = "stock-software-call-registry-2";
   public static boolean stock(Program p) { return p.getOptions(ProgramMapping.OPTIONS).contains(STOCK_KEY); }
-  private static String key(Program p) { return stock(p) ? STOCK_KEY : KEY; }
+  private static String key(Program p) { if (stock(p) && p.getOptions(ProgramMapping.OPTIONS).contains(KEY)) throw new IllegalArgumentException("Conflicting stock and companion authority; records retained"); return stock(p) ? STOCK_KEY : KEY; }
   public static final String VERSION = "software-call-registry-7";
   private record Site(String address, String canonicalAddress, String target, String executionAlias, boolean stateContinuation, SoftwareCallValidation.Configuration configuration) {}
   public static final String EXECUTION_CONDITIONS = "Synchronous SM83 model: results require no asynchronous interrupt/DMA interference or untracked memory changes, in addition to the supplied register, stack and mapper premises. These are explicit conditions, not an all-input ABI or whole-ROM proof.";
@@ -32,7 +32,7 @@ public final class SoftwareCallRegistry {
         || !raw.getAsJsonObject().get("sites").isJsonArray())
       throw new IllegalArgumentException("Invalid software-call registry");
     if (!raw.getAsJsonObject().has("version") || !(stock(program) ? STOCK_VERSION : VERSION).equals(raw.getAsJsonObject().get("version").getAsString()))
-      throw new IllegalArgumentException("Incompatible software-call registry; review and reapply");
+      throw new IllegalArgumentException("Incompatible software-call registry; retained without migration");
     for (var site : raw.getAsJsonObject().getAsJsonArray("sites")) {
       if (!site.isJsonObject()) throw new IllegalArgumentException("Invalid software-call site record");
       SoftwareCallConfiguration.readOne(site.getAsJsonObject().get("configuration"));
@@ -47,7 +47,7 @@ public final class SoftwareCallRegistry {
     }
     var value = ProgramMapping.JSON.fromJson(raw, Registry.class);
     if (value == null || !(stock(program) ? STOCK_VERSION : VERSION).equals(value.version) || !EXECUTION_CONDITIONS.equals(value.executionConditions) || value.sites == null || value.nativeFunctions == null || value.stateEntries == null)
-      throw new IllegalArgumentException("Incompatible software-call registry; review and reapply");
+      throw new IllegalArgumentException("Incompatible software-call registry; retained without migration");
     if (stock(program) ? !StockEntryInjection.VERSION.equals(value.transport) : value.transport != null)
       throw new IllegalArgumentException("Incompatible software-call transport authority");
     for (var entry : value.stateEntries.entrySet()) {
@@ -90,10 +90,11 @@ public final class SoftwareCallRegistry {
 
   public static void install(Program p, List<SoftwareCallValidation.Configuration> configurations,
       Map<String, String> executionSites, Set<String> stateContinuations, Map<String, StateEntry> stateEntries) throws Exception {
-    install(p, configurations, executionSites, stateContinuations, stateEntries, false);
+    install(p, configurations, executionSites, stateContinuations, stateEntries, true);
   }
   static void install(Program p, List<SoftwareCallValidation.Configuration> configurations,
       Map<String, String> executionSites, Set<String> stateContinuations, Map<String, StateEntry> stateEntries, boolean stock) throws Exception {
+    if (p.getOptions(ProgramMapping.OPTIONS).contains(stock ? STOCK_KEY : KEY)) read(p);
     if (p.getOptions(ProgramMapping.OPTIONS).contains(stock ? KEY : STOCK_KEY))
       throw new IllegalArgumentException("Other transport authority retained; no implicit conversion");
     var sites = new ArrayList<Site>();

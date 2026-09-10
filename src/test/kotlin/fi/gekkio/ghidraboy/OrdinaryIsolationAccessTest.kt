@@ -88,7 +88,7 @@ class OrdinaryIsolationAccessTest : IntegrationTest() {
     private fun registration(
         p: ProgramDB,
         alias: Address,
-    ): JsonObject = JsonParser.parseString(p.getOptions(OrdinaryEntryAccess.OPTIONS).getString(alias.toString(), "")).asJsonObject
+    ): JsonObject = JsonParser.parseString(p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS).getString(alias.toString(), "")).asJsonObject
 
     private data class Snapshot(
         val revision: Long,
@@ -131,7 +131,7 @@ class OrdinaryIsolationAccessTest : IntegrationTest() {
         changed: JsonObject,
         expectedMessage: String? = null,
     ) {
-        val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+        val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
         val original = options.getString(alias.toString(), "")
         val valid = emit(p, alias)
         try {
@@ -177,7 +177,7 @@ class OrdinaryIsolationAccessTest : IntegrationTest() {
                 maliciousRegistration(q, qAlias, "serialized foreign owner", foreign, "Missing or foreign ordinary-entry registration")
                 val own = registration(q, qAlias)
                 val relabelled = foreign.deepCopy()
-                for (field in listOf("programId", "alias", "dependencies", "comment", "nativeIdentity")) {
+                for (field in listOf("programId", "alias", "dependencies", "comment", "transport")) {
                     relabelled.add(field, own[field].deepCopy())
                 }
                 val current = preview(q)

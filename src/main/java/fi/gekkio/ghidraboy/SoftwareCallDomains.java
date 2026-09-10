@@ -12,8 +12,8 @@ import java.util.*;
 public final class SoftwareCallDomains {
   private SoftwareCallDomains() {}
   public static final String VERSION="software-call-domains-2", OPTIONS="GhidraBoySoftwareCallDomains";
-  public static final String STOCK_OPTIONS="GhidraBoyStockSoftwareCallDomains", STOCK_VERSION="stock-software-call-domains-1";
-  private static String options(Program p) { return p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(RECORD)?STOCK_OPTIONS:OPTIONS; }
+  public static final String STOCK_OPTIONS="GhidraBoyStockSoftwareCallDomains", STOCK_VERSION="stock-software-call-domains-2";
+  private static String options(Program p) { require(!(p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(RECORD)&&p.getOptionsNames().contains(OPTIONS)&&p.getOptions(OPTIONS).contains(RECORD)),"Conflicting stock and companion domain authority; records retained"); return p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(RECORD)?STOCK_OPTIONS:OPTIONS; }
   private static final String RECORD="registration", DISPLAY="selected-display";
   public record Domain(String id,String physicalSite,SoftwareCallValidation.Configuration configuration,
       SoftwareCallModel.Frame frame,SoftwareCallEffects.Summary effects,SoftwareCallEffects.ContinuationSummary callee,
@@ -103,6 +103,9 @@ public final class SoftwareCallDomains {
   }
   private static String name(Domain domain,String kind){return SoftwareCallExecutionView.PREFIX+"domain_"+domain.id().substring(0,16)+"_"+kind;}
   public static List<View> install(Program p,Proof proof,TaskMonitor monitor)throws Exception {
+    return install(p,proof,monitor,true);
+  }
+  public static List<View> installLegacyComparison(Program p,Proof proof,TaskMonitor monitor)throws Exception {
     return install(p,proof,monitor,false);
   }
   public static List<View> installStock(Program p,Proof proof,TaskMonitor monitor)throws Exception {
@@ -114,7 +117,7 @@ public final class SoftwareCallDomains {
     try {
       SoftwareCallInstructionDiscovery.apply(p,proof.discovery(),monitor);var views=new ArrayList<View>();
       for(var domain:proof.domains())for(String kind:List.of("root","callee")) {
-        var pieces=segments(p,domain,kind);var made=SoftwareCallExecutionView.create(p,SoftwareCallExecutionView.preview(p,name(domain,kind),pieces,monitor),monitor);
+        var pieces=segments(p,domain,kind);var made=stock?StockEntryInjection.carrier(p,name(domain,kind),kind.equals("root")?domain.configuration().callCpu():domain.frame().targetCpu(),pieces,monitor):SoftwareCallExecutionView.create(p,SoftwareCallExecutionView.preview(p,name(domain,kind),pieces,monitor),monitor);
         int cpu=kind.equals("root")?domain.configuration().callCpu():domain.frame().targetCpu();
         var entry=made.body().getMinAddress().getAddressSpace().getAddress(cpu);
         if(stock)StockEntryInjection.prepare(p,entry);
@@ -138,6 +141,15 @@ public final class SoftwareCallDomains {
     return entry!=null&&p.getOptionsNames().contains(options(p))&&p.getOptions(options(p)).contains(RECORD)
         &&read(p).views().stream().anyMatch(view->view.entry().equals(entry.toString()));
   }
+  static Address source(Program p, Address entry) {
+    var record=read(p);
+    var view=record.views().stream().filter(v->v.entry().equals(entry.toString())).findFirst().orElseThrow();
+    try {
+      var proof=currentRecord(p,record,TaskMonitor.DUMMY);
+      var domain=proof.domains().stream().filter(d->d.id().equals(view.domain())).findFirst().orElseThrow();
+      return ProgramMapping.staticAddress(p,view.kind().equals("root")?domain.physicalSite():domain.callee().entry().address());
+    } catch(Exception failure) { throw new IllegalArgumentException("Unavailable stock domain source authority",failure); }
+  }
   public static List<View> views(Program p){return read(p).views();}
   public static Proof proof(Program p)throws Exception{return currentRecord(p,read(p),TaskMonitor.DUMMY);}
   private static Proof currentRecord(Program p,Registration record,TaskMonitor monitor)throws Exception {
@@ -159,7 +171,8 @@ public final class SoftwareCallDomains {
       int expectedCpu=view.kind().equals("root")?domain.configuration().callCpu():domain.frame().targetCpu();
       require(entry.getAddressSpace().getName().equals(name(domain,view.kind()))&&entry.getOffset()==expectedCpu,"Wrong alias incoming-domain identity");
       require(view.segments().equals(segments(p,domain,view.kind())),"Changed physical software domain mapping");var body=new AddressSet();
-      for(var piece:view.segments()) {
+      if(record.transport()!=null) body.add(entry);
+      else for(var piece:view.segments()) {
         var at=entry.getAddressSpace().getAddress(piece.cpu());var block=p.getMemory().getBlock(at);
         require(block!=null&&block.getType()==ghidra.program.model.mem.MemoryBlockType.BYTE_MAPPED&&block.getStart().equals(at)&&block.getSize()==piece.length()
             &&block.isRead()&&block.isExecute()&&!block.isWrite()&&!block.isVolatile(),"Changed domain byte mapping permissions");
@@ -181,7 +194,10 @@ public final class SoftwareCallDomains {
     return emit(p,entry,uniqueBase,monitor);
   }
   public static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor)throws Exception {
-    return emit(p,entry,uniqueBase,monitor,false);
+    return emit(p,entry,uniqueBase,monitor,read(p).transport()!=null);
+  }
+  public static PcodeOp[] emitLegacyComparison(Program p, Address entry, long uniqueBase, TaskMonitor monitor) throws Exception {
+    return emit(p, entry, uniqueBase, monitor, false);
   }
   public static PcodeOp[] emitStock(Program p,Address entry,long uniqueBase,TaskMonitor monitor)throws Exception {
     return emit(p,entry,uniqueBase,monitor,true);

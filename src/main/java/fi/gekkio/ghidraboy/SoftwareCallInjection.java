@@ -182,7 +182,8 @@ public final class SoftwareCallInjection extends InjectPayloadCallfixup {
             && SoftwareCallExecutionView.canonical(program, address)).toList();
     if (targets.size() != 1) throw new IllegalArgumentException("Ambiguous physical call target");
     var target = contextualTarget == null ? targets.get(0) : contextualTarget;
-    if (target.getOffset() != frame.targetCpu() || !ProgramMapping.staticToPhysical(program, target).equals(List.of(frame.target())))
+    var physicalSource = StockEntryInjection.owned(program, target) ? StockEntries.source(program, target) : target;
+    if (target.getOffset() != frame.targetCpu() || !ProgramMapping.staticToPhysical(program, physicalSource).equals(List.of(frame.target())))
       throw new IllegalArgumentException("Contextual call target differs from proven physical identity");
     var callee = program.getFunctionManager().getFunctionAt(target);
     if (callee != null) {

@@ -248,13 +248,13 @@ class OrdinaryBankedEntryTest : IntegrationTest() {
             assertFalse(OrdinaryEntryAccess.registered(p, f.entryPoint))
             for (step in proof.fetchSteps()) {
                 for (byte in step.bytes()) {
-                    val mapped = alias.addressSpace.getAddress(byte.cpu().toLong())
+                    val mapped = ProgramMapping.staticAddress(p, byte.source())
                     assertEquals(listOf(byte.physical()), ProgramMapping.staticToPhysical(p, mapped))
                     assertEquals(byte.value(), p.memory.getByte(mapped).toInt() and 255)
                     val block = p.memory.getBlock(mapped)
                     assertFalse(block.isWrite)
                     assertTrue(block.isRead)
-                    assertTrue(block.isMapped)
+                    assertTrue(ProgramMapping.staticToPhysical(p, mapped).isNotEmpty())
                 }
             }
             assertEquals(before, canonicalSnapshot(p, f))
@@ -425,7 +425,7 @@ class OrdinaryBankedEntryTest : IntegrationTest() {
         alias: Address,
         mutate: (JsonObject) -> Unit,
     ) {
-        val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+        val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
         val original = options.getString(alias.toString(), "")
         val changed = JsonParser.parseString(original).asJsonObject
         mutate(changed.getAsJsonObject("proof"))

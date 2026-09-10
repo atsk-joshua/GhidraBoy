@@ -93,10 +93,13 @@ public class GhidraBoyTools extends GhidraScript {
         println(ProgramMapping.JSON.toJson(contexts));
         if (action.equals("software-call-select-context")) {
           String selected = args.length > 2 ? args[2]
-              : askChoice("Execution context", "Select the reviewed context displayed at the canonical entry",
+              : askChoice("Execution context", "Open the reviewed conditional entry",
                   contexts.stream().map(SoftwareCallRegistry.StateContext::entry).toList(), contexts.get(0).entry());
-          SoftwareCallRegistry.selectStateContext(currentProgram, canonical,
-              currentProgram.getAddressFactory().getAddress(selected), monitor);
+          var entry = currentProgram.getAddressFactory().getAddress(selected);
+          if (SoftwareCallRegistry.stock(currentProgram)) {
+            StockEntries.current(currentProgram, entry, monitor);
+            goTo(entry);
+          } else SoftwareCallRegistry.selectStateContext(currentProgram, canonical, entry, monitor);
         }
       }
       case "software-call-remove" ->
@@ -207,7 +210,7 @@ public class GhidraBoyTools extends GhidraScript {
         var function=getFunctionContaining(currentAddress);
         if(function==null)throw new IllegalArgumentException("Select a canonical source Function");
         var proof=PredicatedCalls.preview(currentProgram,function,PredicatedCallGraph.Limits.PRIMARY,monitor);
-        goTo(PredicatedCalls.installStock(currentProgram,proof,monitor));
+        goTo(PredicatedCalls.install(currentProgram,proof,monitor));
       }
       case "inspect" -> println(ProgramMapping.JSON.toJson(ProgramMapping.inspect(currentProgram)));
       case "mapping-json" -> {

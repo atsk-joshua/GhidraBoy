@@ -445,7 +445,7 @@ public final class ProgramMapping {
     if (current) {
       var snapshot = inspect(p);
       for (var block : p.getMemory().getBlocks())
-        if (block.getStart().getOffset() < 0x8000) {
+        if (block.getStart().getOffset() < 0x8000 && !StockEntryInjection.presentationStorage(block)) {
           for (var source : block.getSourceInfos())
             if (source.getFileBytesOffset() < 0) {
               var identities = staticToPhysical(p, source.getMinAddress(), snapshot);

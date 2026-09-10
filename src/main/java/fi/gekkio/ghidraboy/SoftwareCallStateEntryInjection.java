@@ -38,11 +38,11 @@ public final class SoftwareCallStateEntryInjection extends InjectPayloadSleigh {
     return SoftwareCallInjection.revalidated(program, () -> {
       try {
         if (SoftwareCallDomains.registered(program, context.baseAddr))
-          return SoftwareCallDomains.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
+          return SoftwareCallDomains.emitLegacyComparison(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
         if (PredicatedCalls.registered(program, context.baseAddr))
-          return PredicatedCalls.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
+          return PredicatedCalls.emitLegacyComparison(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
         if (OrdinaryEntryAccess.registered(program, context.baseAddr))
-          return OrdinaryEntryAccess.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
+          return OrdinaryEntryAccess.emitLegacyComparison(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
         if (SoftwareCallRegistry.stock(program)) throw new IllegalArgumentException("Stock registry cannot use legacy native entry convention");
         long before = program.getModificationNumber();
         var input = SoftwareCallRegistry.resolveStateEntry(program, context.baseAddr);

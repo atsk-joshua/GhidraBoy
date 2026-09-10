@@ -347,7 +347,7 @@ class OrdinaryJointAccessTest : IntegrationTest() {
                 assertThrows(IllegalArgumentException::class.java) { OrdinaryEntryAccess.install(other, proof, monitor) }
             }
             val alias = OrdinaryEntryAccess.install(p, proof, monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val original = options.getString(alias.toString(), "")
             for (kind in listOf("missing", "swapped", "guard", "coverage")) {
                 val record = JsonParser.parseString(original).asJsonObject
@@ -391,7 +391,7 @@ class OrdinaryJointAccessTest : IntegrationTest() {
     fun `v4 record is rejected without changing stored authority`() =
         fixture(hex("3e02ea002078e6016f26607eea51c0c9")) { p, f, _ ->
             val alias = OrdinaryEntryAccess.install(p, OrdinaryEntryAccess.preview(p, f, monitor), monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val record = JsonParser.parseString(options.getString(alias.toString(), "")).asJsonObject
             record.addProperty("version", "ordinary-entry-access-experiment-4-rom-index")
             val oldProof = record.getAsJsonObject("proof")

@@ -15,7 +15,7 @@ public final class PredicatedCalls {
   public static final String VERSION="predicated-ordinary-calls-4";
   public static final String OPTIONS="GhidraBoyPredicatedCalls";
   public static final String STOCK_OPTIONS="GhidraBoyStockPredicatedCalls";
-  public static final String STOCK_VERSION="stock-predicated-ordinary-calls-1";
+  public static final String STOCK_VERSION="stock-predicated-ordinary-calls-2";
   public record View(String invocation,String entry,List<SoftwareCallExecutionView.Segment> segments,boolean byteAContract,List<Long> inputBytes) {
     public View {segments=List.copyOf(segments);inputBytes=List.copyOf(inputBytes);}
   }
@@ -30,6 +30,9 @@ public final class PredicatedCalls {
   }
   private static Registration read(Program p,Address entry) {
     if(!registered(p,entry))throw new IllegalArgumentException("Missing predicated graph registration");
+    require(!(p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(entry.toString())
+        && p.getOptionsNames().contains(OPTIONS) && p.getOptions(OPTIONS).contains(entry.toString())),
+        "Conflicting stock and companion authority; records retained");
     boolean stock=p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(entry.toString());
     var json=com.google.gson.JsonParser.parseString(p.getOptions(stock?STOCK_OPTIONS:OPTIONS).getString(entry.toString(),null)).getAsJsonObject();
     if(!json.has("version")||!(stock?STOCK_VERSION:VERSION).equals(json.get("version").getAsString()))
@@ -68,6 +71,9 @@ public final class PredicatedCalls {
     return result;
   }
   public static Address install(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
+    return install(p,proof,monitor,true);
+  }
+  public static Address installLegacyComparison(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
     return install(p,proof,monitor,false);
   }
   public static Address installStock(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
@@ -87,9 +93,9 @@ public final class PredicatedCalls {
         var pieces=segments(p,proof,invocation);
         boolean image=proof.memory()!=null&&proof.memory().image()!=null;
         var imageEntry=image?ProgramMapping.staticAddress(p,ExecutableImages.resolve(p,proof.memory().image()).entry()):null;
-        var made=image&&stock?StockEntryInjection.imageView(p,name,imageEntry,pieces,monitor):image?new SoftwareCallExecutionView.Created(ExecutableImages.VERSION,imageEntry.getAddressSpace().getName(),pieces,new AddressSet(imageEntry,imageEntry.add(pieces.get(0).length()-1))):SoftwareCallExecutionView.createOrdinary(p,SoftwareCallExecutionView.previewOrdinary(p,name,pieces,monitor),monitor);
         String node=invocation.equals("root")?proof.root():proof.invocations().stream().filter(i->i.id().equals(invocation)).findFirst().orElseThrow().entry();
         int cpu=proof.nodes().stream().filter(n->n.id().equals(node)).findFirst().orElseThrow().cpu();
+        var made=stock?StockEntryInjection.carrier(p,name,cpu,pieces,monitor):image?new SoftwareCallExecutionView.Created(ExecutableImages.VERSION,imageEntry.getAddressSpace().getName(),pieces,new AddressSet(imageEntry,imageEntry.add(pieces.get(0).length()-1))):SoftwareCallExecutionView.createOrdinary(p,SoftwareCallExecutionView.previewOrdinary(p,name,pieces,monitor),monitor);
         var entry=made.body().getMinAddress().getAddressSpace().getAddress(cpu);
         if(stock)StockEntryInjection.prepare(p,entry);
         Disassembler.getDisassembler(p,monitor,null).disassemble(entry,made.body());
@@ -137,11 +143,21 @@ public final class PredicatedCalls {
         var authority=registration.proof().invocations().stream().filter(i->i.id().equals(view.invocation())).findFirst().orElseThrow();
         require(view.byteAContract()&&authority.byteAContract()&&view.inputBytes().equals(authority.inputBytes()),"Child view contract not bound to graph authority");
       }
-      if(registration.transport()!=null)StockEntryInjection.validate(p,entry);
+      if(registration.transport()!=null) {
+        StockEntryInjection.validate(p,entry);
+        String node=view.invocation().equals("root")?registration.proof().root():registration.proof().invocations().stream().filter(i->i.id().equals(view.invocation())).findFirst().orElseThrow().entry();
+        var source=registration.proof().nodes().stream().filter(n->n.id().equals(node)).findFirst().orElseThrow();
+        String name=OrdinaryEntryAccess.PREFIX+"pred_"+registration.proof().entry().replace(':','_')+"_"+(view.invocation().equals("root")?"root":view.invocation().substring(0,12));
+        require(entry.getOffset()==source.cpu()&&entry.getAddressSpace().getName().equals(name),"Changed predicate carrier/source entry identity");
+      }
       require(f!=null&&(registration.transport()!=null?StockEntryInjection.CONVENTION:SoftwareCallStateEntryInjection.CONVENTION).equals(f.getCallingConventionName())&&!f.isInline()&&!f.isThunk()
           &&!f.hasNoReturn()&&f.getCallFixup()==null,"Changed predicated native Function contract");
       require(view.segments().equals(segments(p,registration.proof(),view.invocation())),"Changed physical predicate view binding");
-      for(var segment:view.segments()) {
+      if(registration.transport()!=null) {
+        body.add(entry);
+        if(registration.proof().memory()!=null&&registration.proof().memory().image()!=null)
+          ExecutableImages.resolve(p,registration.proof().memory().image());
+      } else for(var segment:view.segments()) {
         var at=entry.getAddressSpace().getAddress(segment.cpu());var block=p.getMemory().getBlock(at);
         boolean image=registration.proof().memory()!=null&&registration.proof().memory().image()!=null;
         require(block!=null&&(image&&registration.transport()==null?!block.isMapped()&&block.isInitialized():block.getType()==ghidra.program.model.mem.MemoryBlockType.BYTE_MAPPED)&&block.isRead()&&block.isExecute()
@@ -182,7 +198,10 @@ public final class PredicatedCalls {
     try{for(var view:next.views())p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(next));success=true;}finally{p.endTransaction(tx,success);}
   }
   public static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor) throws Exception {
-    return emit(p,entry,uniqueBase,monitor,false);
+    return emit(p,entry,uniqueBase,monitor,read(p,entry).transport()!=null);
+  }
+  public static PcodeOp[] emitLegacyComparison(Program p, Address entry, long uniqueBase, TaskMonitor monitor) throws Exception {
+    return emit(p, entry, uniqueBase, monitor, false);
   }
   public static PcodeOp[] emitStock(Program p,Address entry,long uniqueBase,TaskMonitor monitor) throws Exception {
     return emit(p,entry,uniqueBase,monitor,true);

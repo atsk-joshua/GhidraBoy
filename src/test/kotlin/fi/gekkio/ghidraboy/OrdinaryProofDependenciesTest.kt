@@ -53,7 +53,7 @@ class OrdinaryProofDependenciesTest : IntegrationTest() {
             val proof = OrdinaryEntryAccess.preview(p, function, TaskMonitor.DUMMY)
             assertEquals(before, proof.dependencies())
             val alias = OrdinaryEntryAccess.install(p, proof, TaskMonitor.DUMMY)
-            val registered = p.getOptions(OrdinaryEntryAccess.OPTIONS).getString(alias.toString(), "")
+            val registered = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS).getString(alias.toString(), "")
             val current = compare(p)
             val payload = OrdinaryEntryAccess.emit(p, alias, 0x200000, TaskMonitor.DUMMY).map { it.toString() }
             val at = ProgramMapping.fileToStatic(p, 0xa000).first { it.addressSpace.name == "rom2" }
@@ -63,7 +63,7 @@ class OrdinaryProofDependenciesTest : IntegrationTest() {
             assertThrows(IllegalArgumentException::class.java) { OrdinaryEntryAccess.emit(p, alias, 0x200000, TaskMonitor.DUMMY) }
             p.withTransaction { p.memory.setByte(at, original) }
             assertEquals(current, compare(p))
-            assertEquals(registered, p.getOptions(OrdinaryEntryAccess.OPTIONS).getString(alias.toString(), ""))
+            assertEquals(registered, p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS).getString(alias.toString(), ""))
             assertEquals(payload, OrdinaryEntryAccess.emit(p, alias, 0x200000, TaskMonitor.DUMMY).map { it.toString() })
             assertEquals(canonicalBody, function.body.toString())
             assertEquals(canonicalSignature, function.signature.toString())

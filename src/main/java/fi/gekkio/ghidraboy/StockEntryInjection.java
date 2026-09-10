@@ -12,7 +12,7 @@ import java.math.BigInteger;
 public final class StockEntryInjection extends InjectPayloadCallother {
   public static final String NAME = "gb_analysis_entry_v1";
   public static final String CONVENTION = "__ghidraboy_stock_entry_v1";
-  public static final String VERSION = "stock-callother-entry-2";
+  public static final String VERSION = "stock-callother-entry-3";
   private final long uniqueBase;
 
   StockEntryInjection(String source, long uniqueBase) {
@@ -20,18 +20,58 @@ public final class StockEntryInjection extends InjectPayloadCallother {
     this.uniqueBase = uniqueBase;
   }
 
-  static SoftwareCallExecutionView.Created imageView(Program p, String name, Address source,
-      java.util.List<SoftwareCallExecutionView.Segment> pieces, TaskMonitor monitor) throws Exception {
-    if (pieces.size() != 1 || p.getCurrentTransactionInfo() == null
-        || p.getAddressFactory().getAddressSpace(name) != null)
-      throw new IllegalArgumentException("Invalid new image carrier ownership");
+  static final String STORAGE = "GhidraBoy stock carrier storage v3";
+
+  /** Presentation storage has no physical-source or executable-image identity. */
+  static SoftwareCallExecutionView.Created carrier(Program p, String name, int cpu,
+      java.util.List<SoftwareCallExecutionView.Segment> sources, TaskMonitor monitor) throws Exception {
+    if (p.getCurrentTransactionInfo() == null || p.getAddressFactory().getAddressSpace(name) != null)
+      throw new IllegalArgumentException("Invalid new stock carrier ownership");
     monitor.checkCancelled();
-    var block = p.getMemory().createByteMappedBlock(name,
-        p.getAddressFactory().getDefaultAddressSpace().getAddress(source.getOffset()), source, pieces.getFirst().length(), true);
+    var block = p.getMemory().createInitializedBlock(name,
+        p.getAddressFactory().getDefaultAddressSpace().getAddress(cpu),
+        new java.io.ByteArrayInputStream(new byte[] {(byte) 0xc9}), 1, monitor, true);
     block.setRead(true); block.setWrite(false); block.setExecute(true);
-    block.setComment(VERSION + "; presentation of image snapshot " + source);
-    return new SoftwareCallExecutionView.Created(VERSION, name, pieces,
+    block.setComment(STORAGE);
+    return new SoftwareCallExecutionView.Created(VERSION, name, sources,
         new ghidra.program.model.address.AddressSet(block.getStart(), block.getEnd()));
+  }
+
+  // Ownership detection must survive removal of context, convention and registration.
+  static boolean owned(Program p, Address entry) {
+    var block = p.getMemory().getBlock(entry);
+    return block != null && STORAGE.equals(block.getComment())
+        || p.getOptionsNames().contains(OrdinaryEntryAccess.STOCK_OPTIONS)
+            && p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS).contains(entry.toString())
+        || p.getOptionsNames().contains(PredicatedCalls.STOCK_OPTIONS)
+            && p.getOptions(PredicatedCalls.STOCK_OPTIONS).contains(entry.toString());
+  }
+
+  /** Export ignores only structurally identified presentation storage, including retired carriers. */
+  static boolean presentationStorage(ghidra.program.model.mem.MemoryBlock block) {
+    var space = block.getStart().getAddressSpace();
+    return STORAGE.equals(block.getComment()) && space.isOverlaySpace()
+        && block.getName().equals(space.getName())
+        && (space.getName().startsWith(OrdinaryEntryAccess.PREFIX)
+            || space.getName().startsWith(SoftwareCallExecutionView.PREFIX))
+        && block.isInitialized() && !block.isMapped() && block.getSize() == 1
+        && block.isRead() && !block.isWrite() && !block.isVolatile();
+  }
+
+  static void validateStorage(Program p, Address entry) {
+    var block = p.getMemory().getBlock(entry);
+    try {
+      if (!entry.getAddressSpace().isOverlaySpace() || block == null || !presentationStorage(block) || block.isMapped()
+          || !block.isInitialized() || !block.getStart().equals(entry) || block.getSize() != 1
+          || !block.isRead() || block.isWrite() || !block.isExecute() || block.isVolatile()
+          || !STORAGE.equals(block.getComment()) || (p.getMemory().getByte(entry) & 255) != 0xc9)
+        throw new IllegalArgumentException("Changed stock carrier storage at " + entry);
+      for (var other : p.getMemory().getBlocks())
+        if (other != block && other.getStart().getAddressSpace().equals(entry.getAddressSpace()))
+          throw new IllegalArgumentException("Extra stock carrier range at " + entry);
+    } catch (ghidra.program.model.mem.MemoryAccessException failure) {
+      throw new IllegalArgumentException("Unreadable stock carrier", failure);
+    }
   }
 
   static void prepare(Program p, Address entry) throws Exception {
@@ -39,6 +79,7 @@ public final class StockEntryInjection extends InjectPayloadCallother {
   }
 
   static void validate(Program p, Address entry) {
+    validateStorage(p, entry);
     var instruction = p.getListing().getInstructionAt(entry);
     if (!entry.getAddressSpace().isOverlaySpace() || instruction == null
         || !BigInteger.ONE.equals(p.getProgramContext().getValue(p.getRegister("gb_analysis_entry"), entry, false))

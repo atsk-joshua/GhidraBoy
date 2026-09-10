@@ -43,7 +43,7 @@ public class StockEntryTransportTest extends IntegrationTest {
       var payload=PredicatedCalls.emitStock(p,root,0x200000,TaskMonitor.DUMMY);
       assertEquals(2,java.util.Arrays.stream(payload).filter(o->o.getOpcode()==PcodeOp.CALL).count());
       assertEquals(4,java.util.Arrays.stream(payload).filter(o->o.getOpcode()==PcodeOp.STORE).count());
-      assertThrows(IllegalArgumentException.class,()->PredicatedCalls.emit(p,root,0x200000,TaskMonitor.DUMMY));
+      assertThrows(IllegalArgumentException.class,()->PredicatedCalls.emitLegacyComparison(p,root,0x200000,TaskMonitor.DUMMY));
     });
   }
   @Test void alteredRawBoundIsRejected() throws Exception {

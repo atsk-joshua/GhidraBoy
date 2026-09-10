@@ -225,7 +225,7 @@ class SoftwareCallAutomaticAnalysisTest : IntegrationTest() {
                 AnalysisOwnership.remove(p, SoftwareCallApplication.FEATURE, TaskMonitor.DUMMY)
                 assertNull(p.functionManager.getFunctionAt(nextAlias))
                 assertFalse(p.memory.getBlock(nextAlias).isExecute)
-                assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
+                assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
                 assertEquals("Original source instruction note", p.listing.getComment(CommentType.EOL, root))
             } finally {
                 decompiler.dispose()
@@ -259,7 +259,7 @@ class SoftwareCallAutomaticAnalysisTest : IntegrationTest() {
             assertEquals(SourceType.USER_DEFINED, preserved.symbol.source)
             assertFalse(preserved.isThunk, "Unchanged owned redirect must clear despite unrelated user edits")
             assertNull(preserved.callFixup)
-            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
+            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
             assertNotNull(p.memory.getBlock(alias))
             assertFalse(p.memory.getBlock(alias).isExecute)
             assertNull(p.listing.getInstructionAt(alias))

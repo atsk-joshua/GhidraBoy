@@ -84,7 +84,25 @@ class PredicatedCallsTest : IntegrationTest() {
             val payload = PredicatedCalls.emit(p, root, 0x200000, monitor)
             val calls = payload.filter { it.opcode == PcodeOp.CALL }
             assertEquals(2, calls.size)
-            assertEquals(setOf(1, 2), calls.map { ProgramMapping.staticToPhysical(p, it.getInput(0).address).single().bank() }.toSet())
+            assertEquals(
+                setOf(1, 2),
+                calls
+                    .map { call ->
+                        ProgramMapping
+                            .staticToPhysical(
+                                p,
+                                p.addressFactory.getAddress(
+                                    StockEntries
+                                        .entries(p)
+                                        .single {
+                                            it.carrier() ==
+                                                call.getInput(0).address.toString()
+                                        }.source(),
+                                ),
+                            ).single()
+                            .bank()
+                    }.toSet(),
+            )
             assertEquals(4, payload.count { it.opcode == PcodeOp.STORE })
             assertTrue(payload.any { it.opcode == PcodeOp.CBRANCH && it.getInput(0).isConstant })
             for (view in PredicatedCalls.views(p, root).filter { it.byteAContract() }) {
@@ -137,7 +155,7 @@ class PredicatedCallsTest : IntegrationTest() {
             assertTrue(proof.complete(), proof.frontier().toString())
             fixture { other, _ -> assertThrows(IllegalArgumentException::class.java) { PredicatedCalls.install(other, proof, monitor) } }
             val root = PredicatedCalls.install(p, proof, monitor)
-            val options = p.getOptions(PredicatedCalls.OPTIONS)
+            val options = p.getOptions(PredicatedCalls.STOCK_OPTIONS)
             val saved = options.getString(root.toString(), "")
             for (kind in listOf("edge", "physical", "push", "identity")) {
                 val record = JsonParser.parseString(saved).asJsonObject
@@ -161,7 +179,7 @@ class PredicatedCallsTest : IntegrationTest() {
             val proof = preview(p, f)
             assertTrue(proof.complete(), proof.frontier().toString())
             val root = PredicatedCalls.install(p, proof, monitor)
-            val options = p.getOptions(PredicatedCalls.OPTIONS)
+            val options = p.getOptions(PredicatedCalls.STOCK_OPTIONS)
             val record = JsonParser.parseString(options.getString(root.toString(), "")).asJsonObject
             record.addProperty("version", "predicated-ordinary-calls-2")
             p.withTransaction { options.setString(root.toString(), record.toString()) }
@@ -316,7 +334,7 @@ class PredicatedCallsTest : IntegrationTest() {
             val children = PredicatedCalls.views(p, alias).filter { it.byteAContract() }
             assertEquals(2, children.map { it.entry() }.distinct().size)
             assertEquals(2, PredicatedCalls.emit(p, alias, 0x200000, monitor).count { it.opcode == PcodeOp.CALL })
-            val options = p.getOptions(PredicatedCalls.OPTIONS)
+            val options = p.getOptions(PredicatedCalls.STOCK_OPTIONS)
             val saved = options.getString(alias.toString(), "")
             val changed = JsonParser.parseString(saved).asJsonObject
             val calls = changed.getAsJsonObject("proof").getAsJsonArray("invocations")
@@ -330,7 +348,7 @@ class PredicatedCallsTest : IntegrationTest() {
     fun `serialized child view cannot turn off proven native contract checks`() =
         fixture { p, f ->
             val root = PredicatedCalls.install(p, preview(p, f), monitor)
-            val options = p.getOptions(PredicatedCalls.OPTIONS)
+            val options = p.getOptions(PredicatedCalls.STOCK_OPTIONS)
             val saved = options.getString(root.toString(), "")
             for (kind in listOf("contract", "duplicate")) {
                 val record = JsonParser.parseString(saved).asJsonObject

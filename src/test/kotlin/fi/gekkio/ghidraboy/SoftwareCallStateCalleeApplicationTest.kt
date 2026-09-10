@@ -145,21 +145,18 @@ class SoftwareCallStateCalleeApplicationTest : IntegrationTest() {
                 assertNull(p.listing.getInstructionAt(target))
             }
             SoftwareCallApplication.apply(p, review, TaskMonitor.DUMMY)
-            val aliases = mutableListOf<Address>()
-            val functions = p.functionManager.getFunctions(true)
-            while (functions.hasNext()) {
-                val entry = functions.next().entryPoint
-                if (entry != target && entry.addressSpace.name.startsWith(SoftwareCallExecutionView.PREFIX) &&
-                    ProgramMapping.staticToPhysical(p, entry) == ProgramMapping.staticToPhysical(p, target)
-                ) {
-                    aliases.add(entry)
-                }
-            }
+            val aliases =
+                SoftwareCallRegistry
+                    .stateContexts(
+                        p,
+                        target,
+                        TaskMonitor.DUMMY,
+                    ).map { ProgramMapping.staticAddress(p, it.entry()) }
             assertEquals(1, aliases.size)
             val decompiler = DecompInterface()
             try {
                 assertTrue(decompiler.openProgram(p))
-                for (entry in listOf(target) + aliases + address(0x200)) {
+                for (entry in aliases + address(0x200)) {
                     val result = decompiler.decompileFunction(p.functionManager.getFunctionAt(entry), 30, TaskMonitor.DUMMY)
                     assertTrue(result.decompileCompleted(), "$entry: ${result.errorMessage}")
                     val c = result.decompiledFunction.c
@@ -175,7 +172,7 @@ class SoftwareCallStateCalleeApplicationTest : IntegrationTest() {
                         assertTrue(
                             ops.any {
                                 it.opcode == PcodeOp.CALL &&
-                                    ProgramMapping.staticToPhysical(p, it.getInput(0).address) == ProgramMapping.staticToPhysical(p, target)
+                                    it.getInput(0).address in aliases
                             },
                             c,
                         )
@@ -380,8 +377,8 @@ class SoftwareCallStateCalleeApplicationTest : IntegrationTest() {
                     val entry = ProgramMapping.staticAddress(p, context.entry())
                     val payload =
                         p.compilerSpec.pcodeInjectLibrary.getPayload(
-                            InjectPayload.CALLMECHANISM_TYPE,
-                            SoftwareCallStateEntryInjection.NAME,
+                            InjectPayload.CALLOTHERFIXUP_TYPE,
+                            StockEntryInjection.NAME,
                         )
                     val injectionContext = InjectContext()
                     injectionContext.baseAddr = entry
@@ -488,16 +485,17 @@ class SoftwareCallStateCalleeApplicationTest : IntegrationTest() {
                         },
                         result.decompiledFunction.c,
                     )
-                    assertEquals(ProgramMapping.staticToPhysical(p, target), ProgramMapping.staticToPhysical(p, entry))
-                    SoftwareCallRegistry.selectStateContext(p, target, entry, TaskMonitor.DUMMY)
-                    verify(target, expected)
+                    assertEquals(target.toString(), StockEntries.entries(p).single { it.carrier() == entry.toString() }.source())
+                    assertTrue(ProgramMapping.staticToPhysical(p, entry).isEmpty())
+                    StockEntries.current(p, entry, TaskMonitor.DUMMY)
+                    verify(entry, expected)
                     assertTrue(
                         SoftwareCallRegistry
                             .stateContexts(
                                 p,
                                 target,
                                 TaskMonitor.DUMMY,
-                            ).single { it.selected() }
+                            ).single { it.entry() == context.entry() }
                             .entry() == context.entry(),
                     )
                     assertTrue(

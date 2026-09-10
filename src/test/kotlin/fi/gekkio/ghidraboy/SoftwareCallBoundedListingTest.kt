@@ -255,7 +255,7 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 "sourceRedirectCurrent" to AnalysisOwnership.sourceRedirectCurrent(p, p.functionManager.getFunctionAt(root)),
                 "functions" to functions,
                 "instructions" to instructions,
-                "rawRegistry" to options.getString(SoftwareCallRegistry.KEY, null),
+                "rawRegistry" to options.getString(SoftwareCallRegistry.STOCK_KEY, null),
                 "rawOwnership" to options.getString("analysis.ownership.v1", null),
                 "completeKnowledgeFingerprint" to FarCallEvidence.capture(p, TaskMonitor.DUMMY),
             )
@@ -278,7 +278,7 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
             assertFalse(derived.isThunk)
             assertNull(canonical.callFixup)
             val options = p.getOptions(ProgramMapping.OPTIONS)
-            val registryBefore = options.getString(SoftwareCallRegistry.KEY, null)
+            val registryBefore = options.getString(SoftwareCallRegistry.STOCK_KEY, null)
             val ownershipBefore = options.getString("analysis.ownership.v1", null)
             transitionInventory(p, "BOUNDED_BEFORE", root, alias)
             val transaction = p.startTransaction("Reproduce old terminal listing in disposable transaction")
@@ -292,7 +292,7 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 transitionInventory(p, "LEGACY_TERMINAL_AFTER_STOCK_REPAIR", root, alias)
                 assertEquals(
                     registryBefore,
-                    options.getString(SoftwareCallRegistry.KEY, null),
+                    options.getString(SoftwareCallRegistry.STOCK_KEY, null),
                     "Stock repair must not refresh semantic dependencies",
                 )
                 assertEquals(
@@ -311,7 +311,7 @@ class SoftwareCallBoundedListingTest : IntegrationTest() {
                 p.endTransaction(transaction, false)
             }
             transitionInventory(p, "BOUNDED_AFTER_ROLLBACK", root, alias)
-            assertEquals(registryBefore, options.getString(SoftwareCallRegistry.KEY, null))
+            assertEquals(registryBefore, options.getString(SoftwareCallRegistry.STOCK_KEY, null))
             assertEquals(ownershipBefore, options.getString("analysis.ownership.v1", null))
             assertNotNull(SoftwareCallRegistry.resolve(p, root))
             assertNotNull(SoftwareCallRegistry.resolve(p, alias))

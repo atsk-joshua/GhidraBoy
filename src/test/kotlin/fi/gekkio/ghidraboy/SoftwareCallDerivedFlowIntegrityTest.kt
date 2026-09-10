@@ -131,7 +131,10 @@ class SoftwareCallDerivedFlowIntegrityTest : IntegrationTest() {
                     .bytes
                     .toList(),
             )
-            assertNotNull(p.memory.getBlock(continuation.add(8)), "The proved branch destination fragment must remain present")
+            assertNotNull(
+                p.memory.getBlock(canonical.add(8)),
+                "The proved physical branch destination must remain present independently of carrier storage",
+            )
             verifyContinuation(p, continuation)
         }
 

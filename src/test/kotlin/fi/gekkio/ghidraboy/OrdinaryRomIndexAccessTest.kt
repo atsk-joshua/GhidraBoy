@@ -336,7 +336,7 @@ class OrdinaryRomIndexAccessTest : IntegrationTest() {
                 assertThrows(IllegalArgumentException::class.java) { OrdinaryEntryAccess.install(other, proof, monitor) }
             }
             val alias = OrdinaryEntryAccess.install(p, proof, monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val original = options.getString(alias.toString(), "")
             for (kind in listOf("missing", "forged", "swapped", "truncated", "lost-source")) {
                 val registration = JsonParser.parseString(original).asJsonObject
@@ -413,7 +413,7 @@ class OrdinaryRomIndexAccessTest : IntegrationTest() {
             // This mapper-only entry is in the old v3 domain. Recreate its actual old field
             // layout rather than relabeling a new pointer proof that v3 could never derive.
             val alias = OrdinaryEntryAccess.install(p, OrdinaryEntryAccess.preview(p, f, monitor), monitor)
-            val options = p.getOptions(OrdinaryEntryAccess.OPTIONS)
+            val options = p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS)
             val original = options.getString(alias.toString(), "")
             val old = JsonParser.parseString(original).asJsonObject
             old.addProperty("version", "ordinary-entry-access-experiment-3-finite")

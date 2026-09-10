@@ -89,8 +89,8 @@ class SoftwareCallDomainsTest : IntegrationTest() {
                 .toList(),
             p.functionManager.functionCount,
             p.memory.blocks.map { it.start.toString() },
-            if (p.optionsNames.contains(SoftwareCallDomains.OPTIONS)) {
-                p.getOptions(SoftwareCallDomains.OPTIONS).getString("registration", "absent")
+            if (p.optionsNames.contains(SoftwareCallDomains.STOCK_OPTIONS)) {
+                p.getOptions(SoftwareCallDomains.STOCK_OPTIONS).getString("registration", "absent")
             } else {
                 "absent"
             },
@@ -188,17 +188,17 @@ class SoftwareCallDomainsTest : IntegrationTest() {
             val order = SoftwareCallDomains.preview(p, configs, monitor).domains().map { it.configuration() }
             val proof = SoftwareCallDomains.preview(p, order, monitor)
             val views = SoftwareCallDomains.install(p, proof, monitor)
-            val options = p.getOptions(SoftwareCallDomains.OPTIONS)
+            val options = p.getOptions(SoftwareCallDomains.STOCK_OPTIONS)
             val saved =
                 com.google.gson.JsonParser
                     .parseString(options.getString("registration", ""))
                     .asJsonObject
             assertEquals(
-                setOf("version", "programId", "configurations", "semantics", "views", "dependencies", "nativeIdentity"),
+                setOf("version", "programId", "configurations", "semantics", "views", "dependencies", "transport"),
                 saved.keySet(),
             )
             // Retain this checkpoint test identity; current authority is explicitly versioned.
-            assertEquals(SoftwareCallDomains.VERSION, saved.get("version").asString)
+            assertEquals(SoftwareCallDomains.STOCK_VERSION, saved.get("version").asString)
             assertEquals(p.uniqueProgramID, saved.get("programId").asLong)
             assertEquals(semantics(proof), saved.get("semantics").asString)
             assertEquals(semantics(proof), semantics(SoftwareCallDomains.proof(p)))
@@ -217,7 +217,7 @@ class SoftwareCallDomainsTest : IntegrationTest() {
     fun `legacy domain v1 rejects before proof or native use without changing saved registration`() =
         fixture { p, configs ->
             val views = SoftwareCallDomains.install(p, SoftwareCallDomains.preview(p, configs, monitor), monitor)
-            val options = p.getOptions(SoftwareCallDomains.OPTIONS)
+            val options = p.getOptions(SoftwareCallDomains.STOCK_OPTIONS)
             val legacy =
                 com.google.gson.JsonParser
                     .parseString(options.getString("registration", ""))
@@ -369,7 +369,7 @@ class SoftwareCallDomainsTest : IntegrationTest() {
         fixture { p, configs ->
             val proof = SoftwareCallDomains.preview(p, configs, monitor)
             val roots = SoftwareCallDomains.install(p, proof, monitor).filter { it.kind() == "root" }
-            val options = p.getOptions(SoftwareCallDomains.OPTIONS)
+            val options = p.getOptions(SoftwareCallDomains.STOCK_OPTIONS)
             val saved = options.getString("registration", "")
             val json =
                 com.google.gson.JsonParser

@@ -12,15 +12,19 @@ public class GhidraBoyW3bOrder extends GhidraBoyPredicatedCalls {
     out=Path.of(getScriptArgs()[0]);Files.createDirectories(out);
     var helper=new SoftwareCallModel.Template(SoftwareCallModel.Family.REGISTER_JP,0x28,0,null);
     var config=new SoftwareCallValidation.Configuration(0x180,helper,SoftwareCallModel.EntryTransfer.HARDWARE_CALL,0xc100,new SoftwareCallModel.Registers(2,0,2,0x1234,0x4000),MapperState.reset());
-    boolean stock=Arrays.asList(getScriptArgs()).contains("stock");
-    var review=stock?SoftwareCallApplication.previewStock(currentProgram,List.of(config),monitor):SoftwareCallApplication.preview(currentProgram,List.of(config),monitor);save("producer-continuations.json",review.stateContinuations());
+    boolean stock=!Arrays.asList(getScriptArgs()).contains("legacy");
+    var review=stock?SoftwareCallApplication.preview(currentProgram,List.of(config),monitor):SoftwareCallApplication.previewLegacyComparison(currentProgram,List.of(config),monitor);save("producer-continuations.json",review.stateContinuations());
     var graph=review.stateContinuations().get("0180");if(graph==null)throw new IllegalStateException("Missing actual production exact continuation");
     var lower=new ArrayList<Object>();for(var step:graph.steps())if(step.afterCall()!=null) {
       var candidates=graph.steps().stream().filter(n->n.callDepth()==step.callDepth()&&n.before().equals(step.afterCall())).toList();
       if(candidates.stream().anyMatch(n->n.index()<step.index()))lower.add(Map.of("call",step.index(),"candidates",candidates.stream().map(SoftwareCallEffects.ContinuationStep::index).toList(),"afterCall",step.afterCall()));
     }
     if(lower.isEmpty())throw new IllegalStateException("Production did not generate lower-ID continuation");save("lower-id.json",lower);
-    SoftwareCallApplication.apply(currentProgram,review,monitor);
+    Path configurationFile=out.resolve("tools-configurations.json");Files.writeString(configurationFile,ProgramMapping.JSON.toJson(List.of(config)));
+    if(stock) {
+      runScript("GhidraBoyTools.java",new String[]{"software-call-apply",configurationFile.toString()});
+      save("public-tools-route.json",Map.of("script","GhidraBoyTools.java","action","software-call-apply","configuration",configurationFile.toString(),"registry",SoftwareCallRegistry.STOCK_KEY));
+    } else SoftwareCallApplication.apply(currentProgram,review,monitor);
     String encoded=currentProgram.getOptions(ProgramMapping.OPTIONS).getString(stock?SoftwareCallRegistry.STOCK_KEY:SoftwareCallRegistry.KEY,null);Files.writeString(out.resolve("registry.json"),encoded);
     var registry=com.google.gson.JsonParser.parseString(encoded).getAsJsonObject();String alias=null;
     for(var item:registry.getAsJsonArray("sites")){var site=item.getAsJsonObject();if(site.get("canonicalAddress").getAsString().equals("0180")&&site.has("executionAlias")){alias=site.get("executionAlias").getAsString();break;}}

@@ -9,7 +9,7 @@ import java.util.*;
 
 /** Same physical configured RST, two simultaneous exact domains, ordinary production state-entry requests. */
 public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
-  boolean stock(){return Arrays.asList(getScriptArgs()).contains("stock");}
+  boolean stock(){return !Arrays.asList(getScriptArgs()).contains("legacy");}
   String domainOptions(){return stock()?SoftwareCallDomains.STOCK_OPTIONS:SoftwareCallDomains.OPTIONS;}
   void domainStage(String label,List<SoftwareCallDomains.View> views,DecompInterface owner)throws Exception {
     var proof=SoftwareCallDomains.proof(currentProgram);save(label+"-proof.json",proof);
@@ -166,7 +166,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
     var configurations=List.of(0,0x80).stream().map(flags->new SoftwareCallValidation.Configuration(0x200,helper,SoftwareCallModel.EntryTransfer.HARDWARE_RST,0xc100,new SoftwareCallModel.Registers(2,flags,0,0,0x4100),MapperState.reset())).toList();
     var proof=domainPreview(mode,configurations);var beforeInstall=domainState();List<SoftwareCallDomains.View> views;
     System.setProperty("ghidraboy.farCallEvidencePhase","installation");
-    try{views=(stock()?SoftwareCallDomains.installStock(currentProgram,proof,monitor):SoftwareCallDomains.install(currentProgram,proof,monitor));save("install-result.json",Map.of("installed",true,"views",views.size()));}
+    try{views=(stock()?SoftwareCallDomains.install(currentProgram,proof,monitor):SoftwareCallDomains.installLegacyComparison(currentProgram,proof,monitor));save("install-result.json",Map.of("installed",true,"views",views.size()));}
     catch(Exception failure){
       var after=domainState();save("install-result.json",Map.of("installed",false,"exception",failure.getClass().getName(),"reason",String.valueOf(failure.getMessage()),"readOnly",beforeInstall.equals(after)));save("install-state-after-refusal.json",after);
       if(mode.equals("repro-anti-canonical")&&"Domain discovery differs from rooted proof".equals(failure.getMessage())&&beforeInstall.equals(after)){println("W3B_DOMAIN_REPRO_COMPLETE expected discovery guard refusal");return;}throw failure;

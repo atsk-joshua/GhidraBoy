@@ -60,7 +60,7 @@ public final class OrdinaryEntryAccess {
   private record Registration(String version, long programId, String alias, Proof proof, String dependencies,
       String comment, String nativeIdentity, String transport) {}
   public static final String STOCK_OPTIONS = "GhidraBoyStockOrdinaryEntries";
-  public static final String STOCK_VERSION = "stock-ordinary-entry-1";
+  public static final String STOCK_VERSION = "stock-ordinary-entry-2";
 
   private static String instance(Program p) {
     return INSTANCES.computeIfAbsent(p, ignored -> UUID.randomUUID().toString());
@@ -325,6 +325,9 @@ public final class OrdinaryEntryAccess {
   }
 
   private static Registration read(Program p, Address alias) {
+    require(!(p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString())
+        && p.getOptionsNames().contains(OPTIONS) && p.getOptions(OPTIONS).contains(alias.toString())),
+        "Conflicting stock and companion authority; records retained");
     boolean stock = p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString());
     if (!stock && !p.getOptionsNames().contains(OPTIONS)) return null;
     String json = p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).getString(alias.toString(), null);
@@ -375,7 +378,19 @@ public final class OrdinaryEntryAccess {
   // The actual mapped view and visible domain bind the proof to this invocation. A valid proof
   // for some other Function in the same Program cannot authorize this alias via edited JSON.
   private static void requireAliasBinding(Program p, Address alias, Proof proof, TaskMonitor monitor, boolean stock) throws Exception {
-    if (stock) StockEntryInjection.validate(p, alias);
+    if (stock) {
+      StockEntryInjection.validate(p, alias);
+      var source = ProgramMapping.staticAddress(p, proof.entry());
+      var function = p.getFunctionManager().getFunctionAt(alias);
+      require(source != null && alias.getOffset() == source.getOffset()
+          && alias.getAddressSpace().getName().startsWith(PREFIX)
+          && function != null && function.getBody().equals(new AddressSet(alias, alias))
+          && StockEntryInjection.CONVENTION.equals(function.getCallingConventionName())
+          && domainComment(proof).equals(function.getComment()), "Changed stock ordinary source/Function binding");
+      for (var segment : proof.segments()) for (int i = 0; i < segment.length(); i++)
+        immutable(p, ProgramMapping.staticAddress(p, segment.source()).add(i), false);
+      return;
+    }
     var entry = ProgramMapping.staticAddress(p, proof.entry());
     require(entry != null && alias.getAddressSpace().isOverlaySpace()
         && alias.getAddressSpace().getName().startsWith(PREFIX) && alias.getOffset() == entry.getOffset()
@@ -416,6 +431,9 @@ public final class OrdinaryEntryAccess {
 
   /** Creates only an explicit conditional alias. Entire operation rolls back on failure. */
   public static Address install(Program p, Proof proof, TaskMonitor monitor) throws Exception {
+    return install(p, proof, monitor, true);
+  }
+  public static Address installLegacyComparison(Program p, Proof proof, TaskMonitor monitor) throws Exception {
     return install(p, proof, monitor, false);
   }
   public static Address installStock(Program p, Proof proof, TaskMonitor monitor) throws Exception {
@@ -429,7 +447,8 @@ public final class OrdinaryEntryAccess {
     int tx = p.startTransaction("Install conditional ordinary-entry experiment"); boolean success = false;
     try {
       var reviewed = SoftwareCallExecutionView.previewOrdinary(p, name, proof.segments(), monitor);
-      var created = SoftwareCallExecutionView.createOrdinary(p, reviewed, monitor);
+      var created = stock ? StockEntryInjection.carrier(p, name, (int) entry.getOffset(), proof.segments(), monitor)
+          : SoftwareCallExecutionView.createOrdinary(p, reviewed, monitor);
       var body = created.body(); var alias = body.getMinAddress();
       if (stock) StockEntryInjection.prepare(p, alias);
       Disassembler.getDisassembler(p, monitor, null).disassemble(alias, body);
@@ -538,6 +557,10 @@ public final class OrdinaryEntryAccess {
 
   /** Read-only callback: revalidate dependency snapshot; never run a mutating Program analyzer. */
   public static PcodeOp[] emit(Program p, Address alias, long uniqueBase, TaskMonitor monitor) throws Exception {
+    var record = read(p, alias); require(record != null, "Missing ordinary-entry registration");
+    return emit(p, alias, uniqueBase, monitor, record.transport() != null);
+  }
+  public static PcodeOp[] emitLegacyComparison(Program p, Address alias, long uniqueBase, TaskMonitor monitor) throws Exception {
     return emit(p, alias, uniqueBase, monitor, false);
   }
   public static PcodeOp[] emitStock(Program p, Address alias, long uniqueBase, TaskMonitor monitor) throws Exception {

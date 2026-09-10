@@ -18,7 +18,7 @@ public class GhidraBoyStockEntry extends GhidraBoyPredicatedCalls {
     var proof=PredicatedCalls.preview(currentProgram,function,PredicatedCallGraph.Limits.PRIMARY,monitor);
     save("producer-preview.json",proof);
     if(!proof.complete())throw new IllegalStateException("Incomplete graph: "+proof.frontier());
-    var root=PredicatedCalls.installStock(currentProgram,proof,monitor);
+    var root=PredicatedCalls.install(currentProgram,proof,monitor);
     save("canonical-after-install.json",canonical(function));
     Files.writeString(out.resolve("original-registration.json"),currentProgram.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(root.toString(),null));
     save("original-proof.json",proof);identity("original-before",root);

@@ -10,9 +10,9 @@ import java.util.*;
 public class GhidraBoyMemoryImages extends GhidraBoyPredicatedCalls {
   ghidra.app.decompiler.DecompInterface persistentOwner;
   ghidra.app.decompiler.DecompInterface session()throws Exception {if(persistentOwner==null)persistentOwner=owner();return persistentOwner;}
-  boolean stock(){return Arrays.asList(getScriptArgs()).contains("stock");}
+  boolean stock(){return !Arrays.asList(getScriptArgs()).contains("legacy");}
   Address install(PredicatedCallGraph.Proof proof)throws Exception {
-    return stock()?PredicatedCalls.installStock(currentProgram,proof,monitor):PredicatedCalls.install(currentProgram,proof,monitor);
+    return stock()?PredicatedCalls.install(currentProgram,proof,monitor):PredicatedCalls.installLegacyComparison(currentProgram,proof,monitor);
   }
   void stageFresh(String label,Address root)throws Exception {
     var before=ExecutableImages.serialized(currentProgram);var owner=stock()?session():owner();
