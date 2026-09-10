@@ -11,7 +11,7 @@ import java.util.*;
 /** Multiple exact incoming domains at one configured physical transfer. No selected context is executable authority. */
 public final class SoftwareCallDomains {
   private SoftwareCallDomains() {}
-  public static final String VERSION="software-call-domains-1", OPTIONS="GhidraBoySoftwareCallDomains";
+  public static final String VERSION="software-call-domains-2", OPTIONS="GhidraBoySoftwareCallDomains";
   private static final String RECORD="registration", DISPLAY="selected-display";
   public record Domain(String id,String physicalSite,SoftwareCallValidation.Configuration configuration,
       SoftwareCallModel.Frame frame,SoftwareCallEffects.Summary effects,SoftwareCallEffects.ContinuationSummary callee,

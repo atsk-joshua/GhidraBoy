@@ -19,10 +19,41 @@ final class FarCallEvidence {
     return capture(p, monitor, false);
   }
 
+  private static final java.util.concurrent.atomic.AtomicLong CAPTURE_SEQUENCE =
+      new java.util.concurrent.atomic.AtomicLong();
+
+  /** Opt-in execution evidence, emitted from the traversal used by the real dependency guard. */
+  private static void recordCapture(Program p, boolean includeOwnership,
+      java.util.List<String> fields, java.util.Map<String, String> components,
+      byte[] preimage, String digest) throws java.io.IOException {
+    String directory = System.getProperty("ghidraboy.farCallEvidenceDirectory");
+    if (directory == null) return;
+    long sequence = CAPTURE_SEQUENCE.incrementAndGet();
+    var root = java.nio.file.Path.of(directory);
+    java.nio.file.Files.createDirectories(root);
+    String stem = String.format("%06d", sequence);
+    var metadata = new java.util.LinkedHashMap<String, Object>();
+    metadata.put("sequence", sequence);
+    metadata.put("phase", System.getProperty("ghidraboy.farCallEvidencePhase", "startup"));
+    metadata.put("javaPid", ProcessHandle.current().pid());
+    metadata.put("programId", p.getUniqueProgramID());
+    metadata.put("modification", p.getModificationNumber());
+    metadata.put("includeOwnership", includeOwnership);
+    metadata.put("components", components);
+    metadata.put("fields", fields);
+    metadata.put("digest", digest);
+    metadata.put("stack", Arrays.stream(Thread.currentThread().getStackTrace()).map(Object::toString).toList());
+    java.nio.file.Files.write(root.resolve(stem + ".preimage"), preimage,
+        java.nio.file.StandardOpenOption.CREATE_NEW);
+    java.nio.file.Files.writeString(root.resolve(stem + ".json"), ProgramMapping.JSON.toJson(metadata),
+        StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.CREATE_NEW);
+  }
+
   private static String capture(Program p, TaskMonitor monitor, boolean includeOwnership) throws Exception {
     var fields = new ArrayList<String>();
-    fields.add("far-call-review-v2");
-    fields.add(ProgramFingerprint.capture(p, monitor));
+    fields.add("far-call-review-v3");
+    var components = ProgramFingerprint.components(p, monitor);
+    fields.add(Sha256.of(ProgramMapping.JSON.toJson(components).getBytes(StandardCharsets.UTF_8)).toString());
     var options = p.getOptions(ProgramMapping.OPTIONS);
     for (String key : java.util.List.of("analysis.ownership.v1", "farCallConvention"))
       if (includeOwnership || !key.equals("analysis.ownership.v1")) fields.add(key + ":" + (options.contains(key) ? options.getString(key, null) : "absent"));
@@ -64,7 +95,9 @@ final class FarCallEvidence {
     }
     for (var symbol : p.getSymbolTable().getAllSymbols(true)) {
       monitor.checkCancelled();
-      fields.add("symbol:" + symbol.getID() + ":" + symbol.getAddress() + ":"
+      // Dynamic symbols have no durable record: their IDs encode observation-order address-map indices.
+      // Keep stored ownership identity and reference associations unchanged.
+      fields.add("symbol:" + (symbol.isDynamic() ? "dynamic" : symbol.getID()) + ":" + symbol.getAddress() + ":"
           + symbol.getName(true) + ":" + symbol.getSource() + ":" + symbol.isPinned());
     }
     // Prototypes are conflicts/dependencies, never proof of actual callee return behavior.
@@ -83,6 +116,9 @@ final class FarCallEvidence {
             + parameter.getVariableStorage().getSerializationString());
     }
     Collections.sort(fields);
-    return Sha256.of(ProgramMapping.JSON.toJson(fields).getBytes(StandardCharsets.UTF_8)).toString();
+    byte[] preimage = ProgramMapping.JSON.toJson(fields).getBytes(StandardCharsets.UTF_8);
+    String digest = Sha256.of(preimage).toString();
+    recordCapture(p, includeOwnership, fields, components, preimage, digest);
+    return digest;
   }
 }

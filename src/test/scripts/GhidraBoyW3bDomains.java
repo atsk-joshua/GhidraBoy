@@ -101,34 +101,68 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
       }
       save("stale-domains.json",refusals);
   }
+  Object savedDomainIdentity(List<SoftwareCallDomains.View> views)throws Exception {
+    var file=currentProgram.getDomainFile();var identity=new LinkedHashMap<String,Object>();
+    identity.put("programId",currentProgram.getUniqueProgramID());identity.put("javaPid",ProcessHandle.current().pid());
+    identity.put("domainFile",file.getPathname());identity.put("domainFileId",file.getFileID());
+    var provider=Path.of(SoftwareCallDomains.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    identity.put("provider",provider.toString());identity.put("providerSha256",hash(provider));
+    identity.put("imageSha256",bytesHash(ProgramMapping.exportBytes(currentProgram,true,false,monitor)));
+    identity.put("views",views);identity.put("instructions",currentProgram.getListing().getNumInstructions());
+    identity.put("functions",views.stream().map(v->Map.of("entry",v.entry(),"id",getFunctionAt(currentProgram.getAddressFactory().getAddress(v.entry())).getID(),"body",getFunctionAt(currentProgram.getAddressFactory().getAddress(v.entry())).getBody().toString())).toList());
+    return identity;
+  }
   void reopenDomains()throws Exception {
     String registration=currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null);
     if(!Files.readString(out.resolve("persisted-registration.json")).equals(registration))throw new IllegalStateException("Saved domain registration changed on reopen");
     var identity=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("persisted-identity.json"))).getAsJsonObject();
     if(identity.get("programId").getAsLong()!=currentProgram.getUniqueProgramID()||identity.get("javaPid").getAsLong()==ProcessHandle.current().pid())throw new IllegalStateException("Expected same Program in a separate JVM");
+    long firstRevision=currentProgram.getModificationNumber();
+    System.setProperty("ghidraboy.farCallEvidencePhase","first-reopened-proof");
+    var proof=SoftwareCallDomains.proof(currentProgram);
+    if(firstRevision!=currentProgram.getModificationNumber())throw new IllegalStateException("First reopened proof changed Program revision");
     var before=domainState();save("reopen-state-before.json",before);
-    save("reopened-fingerprint-components.json",ProgramFingerprint.components(currentProgram,monitor));
-    var proof=SoftwareCallDomains.proof(currentProgram);save("reopened-proof.json",proof);var views=SoftwareCallDomains.views(currentProgram);var owner=owner();
+    save("reopened-fingerprint-components.json",ProgramFingerprint.components(currentProgram,monitor));save("reopened-proof.json",proof);var views=SoftwareCallDomains.views(currentProgram);
+    save("reopened-domain-identity.json",savedDomainIdentity(views));var owner=owner();
     try {
       domainStage("reopened",views,owner);var after=domainState();save("reopen-state-after.json",after);
       boolean unchanged=registration.equals(currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null));
-      save("reopen-compatibility.json",Map.of("registrationUnchanged",unchanged,"readOnly",before.equals(after),"programId",currentProgram.getUniqueProgramID(),"javaPid",ProcessHandle.current().pid(),"version",proof.version(),"views",views.size()));
+      save("reopen-compatibility.json",Map.of("registrationUnchanged",unchanged,"readOnly",before.equals(after),"programId",currentProgram.getUniqueProgramID(),"javaPid",ProcessHandle.current().pid(),"version",proof.version(),"views",views.size(),"firstCheckRevision",firstRevision,"finalRevision",currentProgram.getModificationNumber()));
       if(!unchanged||!before.equals(after))throw new IllegalStateException("Reopen revalidation/native requests changed saved authority");
       println("W3B_DOMAIN_REOPEN_COMPLETE");
-      // Preserve the existing stale controls after verifying the saved, unchanged registration.
-      staleDomains(views,owner);
+      // Stale controls run separately on disposable writable state after this read-only process exits.
     }finally{owner.dispose();}
     println("W3B_CAPTURE_COMPLETE setup");
+  }
+  void legacyDomains()throws Exception {
+    String registration=currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null);
+    var json=com.google.gson.JsonParser.parseString(registration).getAsJsonObject();
+    if(!json.get("version").getAsString().equals("software-call-domains-1"))throw new IllegalStateException("Expected actual saved v1 authority");
+    long revision=currentProgram.getModificationNumber();var refusals=new ArrayList<String>();
+    try{SoftwareCallDomains.proof(currentProgram);throw new IllegalStateException("Legacy proof accepted");}
+    catch(IllegalArgumentException expected){refusals.add(expected.getMessage());}
+    for(var item:json.getAsJsonArray("views")) {
+      var at=currentProgram.getAddressFactory().getAddress(item.getAsJsonObject().get("entry").getAsString());
+      try{SoftwareCallDomains.emit(currentProgram,at,0x200000,monitor);throw new IllegalStateException("Legacy emission accepted");}
+      catch(IllegalArgumentException expected){refusals.add(expected.getMessage());}
+    }
+    if(refusals.size()!=5||refusals.stream().anyMatch(r->!r.equals("Unsupported software domain record version")))throw new IllegalStateException("Wrong legacy refusal");
+    boolean unchanged=registration.equals(currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null))&&revision==currentProgram.getModificationNumber();
+    save("legacy-refusal.json",Map.of("programId",currentProgram.getUniqueProgramID(),"javaPid",ProcessHandle.current().pid(),"registrationUnchanged",unchanged,"refusals",refusals));
+    if(!unchanged)throw new IllegalStateException("Legacy authority changed");println("W3B_DOMAIN_LEGACY_REFUSAL_COMPLETE");
   }
   @Override public void run()throws Exception {
     out=Path.of(getScriptArgs()[0]);Files.createDirectories(out);
     String mode=getScriptArgs().length>1?getScriptArgs()[1]:"canonical";
     if(mode.equals("setup"))mode="canonical"; // Preserve the existing runner's setup argument.
     if(mode.equals("reopen")){reopenDomains();return;}
+    if(mode.equals("legacy")){legacyDomains();return;}
+    if(mode.equals("stale")){var owner=owner();try{staleDomains(SoftwareCallDomains.views(currentProgram),owner);}finally{owner.dispose();}println("W3B_DOMAIN_STALE_COMPLETE");return;}
     if(!Set.of("canonical","anti-canonical","repro-anti-canonical","persist-anti-canonical","persist-canonical").contains(mode))throw new IllegalArgumentException("Unknown domain capture mode: "+mode);
     var helper=new SoftwareCallModel.Template(SoftwareCallModel.Family.REGISTER_JP,0x28,0,null);
     var configurations=List.of(0,0x80).stream().map(flags->new SoftwareCallValidation.Configuration(0x200,helper,SoftwareCallModel.EntryTransfer.HARDWARE_RST,0xc100,new SoftwareCallModel.Registers(2,flags,0,0,0x4100),MapperState.reset())).toList();
     var proof=domainPreview(mode,configurations);var beforeInstall=domainState();List<SoftwareCallDomains.View> views;
+    System.setProperty("ghidraboy.farCallEvidencePhase","installation");
     try{views=SoftwareCallDomains.install(currentProgram,proof,monitor);save("install-result.json",Map.of("installed",true,"views",views.size()));}
     catch(Exception failure){
       var after=domainState();save("install-result.json",Map.of("installed",false,"exception",failure.getClass().getName(),"reason",String.valueOf(failure.getMessage()),"readOnly",beforeInstall.equals(after)));save("install-state-after-refusal.json",after);
@@ -144,10 +178,11 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
       boolean wrong=false;String wrongReason="";try{SoftwareCallDomains.emit(currentProgram,currentProgram.getAddressFactory().getAddress(root.entry()),proof.domains().getLast(),0x200000,monitor);}catch(IllegalArgumentException failure){wrong=true;wrongReason=failure.getMessage();}
       if(!wrong)throw new IllegalStateException("Site-only cache consumed a foreign domain");save("site-only-negative.json",Map.of("rejected",wrong,"reason",wrongReason));
       if(mode.startsWith("persist-")) {
+        System.setProperty("ghidraboy.farCallEvidencePhase","immediately-before-save");
         save("persisted-state.json",domainState());
         save("persisted-fingerprint-components.json",ProgramFingerprint.components(currentProgram,monitor));
         Files.writeString(out.resolve("persisted-registration.json"),currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null));
-        save("persisted-identity.json",Map.of("programId",currentProgram.getUniqueProgramID(),"javaPid",ProcessHandle.current().pid()));
+        save("persisted-identity.json",savedDomainIdentity(views));
         println("W3B_DOMAIN_PERSIST_COMPLETE save required by headless project lifecycle");return;
       }
       staleDomains(views,owner);

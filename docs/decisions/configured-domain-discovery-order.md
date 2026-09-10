@@ -1,5 +1,10 @@
 # Configured-domain discovery traversal
 
+The discovery-order correction below remains accepted. Its original v1 persistence
+limit is superseded by the [dependency identity correction](configured-domain-dependency-identity.md),
+which versions current configured-domain authority as v2. The historical
+evidence and compatibility decision below describe the ordering-only checkpoint.
+
 `SoftwareCallDomains.preview` traverses configurations in ascending existing
 domain-ID order before accumulating rooted discovery. IDs still include Program
 identity, physical site and configuration. Canonical order is local to a Program;

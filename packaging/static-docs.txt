@@ -23,6 +23,8 @@ roadmap.md
 user-workflows.md
 repository-ownership.md
 debugger-identities.md
+decisions/configured-domain-discovery-order.md
+decisions/configured-domain-dependency-identity.md
 decisions/sa00-integrity.md
 decisions/static-call-model.md
 decisions/static-bank-model.md

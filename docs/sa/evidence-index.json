@@ -280,6 +280,42 @@
     "saved_domain_reopen": "FAIL: stale registration before rederived proof/native",
     "cyclic_and_active_order": "PASS",
     "retirement": "BLOCKED: validation and unverified independent backup",
-    "stop": "Await master review; no W4/G3 or next package"
+    "stop": "Await master review; no W4/G3 or next package",
+    "superseded_by": "domain_persistence_repair"
+  },
+  "domain_persistence_repair": {
+    "status": "INTEGRATED; RETIREMENT BLOCKED",
+    "review": "Await master review; no automatic W4/G3",
+    "root": "evidence/batches/REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX/20260910-01",
+    "report": "evidence/batches/REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX/20260910-01/REPORT-REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX.md",
+    "starting_commit": "913e13f6d0a846c5b620c183ce078a4f6f042332",
+    "built_source_manifest": "built-candidate-source.json",
+    "root_cause": "Six process-local dynamic-symbol IDs among 412 complete production fields; all other fields unchanged",
+    "before": "before-preimage-comparison.json",
+    "after": [
+      "domains-anti-preimage-comparison.json",
+      "domains-canonical-preimage-comparison.json"
+    ],
+    "zero_unexplained_production_preimage_differences": true,
+    "compatibility": "FarCallEvidence v3; configured-domain authority v2; saved v1 rejects before semantic use",
+    "extension_sha256": "a1553bd37c4fb64dbec9ab204babd8552aada9368aff0d074041fe4cc2e1ece7",
+    "provider_jar_sha256": "12702ae584c194e0cf4cad294f2e7c012a2017aa6477ea09c26ef8ae225666f7",
+    "native_sha256": "d60be1dd82b660b4123adbe2a8c7c3353a7974e856d4298208f8dc68490db871",
+    "sla_sha256": "02f52cc6eeb44ebc94cfda1d24e58e73b27b8585e729ea30dff1807a0a994a2a",
+    "full_tests": {
+      "tests": 782,
+      "classes": 79,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "accepted_cases_retained": 776,
+    "new_cases": 6,
+    "build_inputs": "7 PASS",
+    "tools": "79 PASS; one existing optional skip",
+    "complete_domains": "PASS: canonical and anti-canonical fresh/forward/reverse/save/read-only first reopen/proof/view/native/wrong-domain/stale-copy",
+    "cyclic_and_active_order": "PASS",
+    "saved_v1": "REJECTED non-destructively before dependency capture",
+    "retirement": "BLOCKED: independent backup unverified; validation complete"
   }
 }

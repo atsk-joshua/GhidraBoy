@@ -197,7 +197,8 @@ class SoftwareCallDomainsTest : IntegrationTest() {
                 setOf("version", "programId", "configurations", "semantics", "views", "dependencies", "nativeIdentity"),
                 saved.keySet(),
             )
-            assertEquals("software-call-domains-1", saved.get("version").asString)
+            // Retain this checkpoint test identity; current authority is explicitly versioned.
+            assertEquals(SoftwareCallDomains.VERSION, saved.get("version").asString)
             assertEquals(p.uniqueProgramID, saved.get("programId").asLong)
             assertEquals(semantics(proof), saved.get("semantics").asString)
             assertEquals(semantics(proof), semantics(SoftwareCallDomains.proof(p)))
@@ -209,6 +210,64 @@ class SoftwareCallDomainsTest : IntegrationTest() {
             assertEquals(views, SoftwareCallDomains.views(p))
             for (view in views.filter { it.kind() == "root" }) {
                 assertTrue(SoftwareCallDomains.emit(p, p.addressFactory.getAddress(view.entry()), 0x200000, monitor).isNotEmpty())
+            }
+        }
+
+    @Test
+    fun `legacy domain v1 rejects before proof or native use without changing saved registration`() =
+        fixture { p, configs ->
+            val views = SoftwareCallDomains.install(p, SoftwareCallDomains.preview(p, configs, monitor), monitor)
+            val options = p.getOptions(SoftwareCallDomains.OPTIONS)
+            val legacy =
+                com.google.gson.JsonParser
+                    .parseString(options.getString("registration", ""))
+                    .asJsonObject
+            legacy.addProperty("version", "software-call-domains-1")
+            p.withTransaction { options.setString("registration", legacy.toString()) }
+            val revision = p.modificationNumber
+            val refusal = assertThrows(IllegalArgumentException::class.java) { SoftwareCallDomains.proof(p) }
+            assertEquals("Unsupported software domain record version", refusal.message)
+            for (view in views) {
+                val nativeRefusal =
+                    assertThrows(IllegalArgumentException::class.java) {
+                        SoftwareCallDomains.emit(p, p.addressFactory.getAddress(view.entry()), 0x200000, monitor)
+                    }
+                assertEquals("Unsupported software domain record version", nativeRefusal.message)
+            }
+            assertEquals(legacy.toString(), options.getString("registration", ""))
+            assertEquals(revision, p.modificationNumber)
+        }
+
+    @Test
+    fun `same address stored reference rebinding rejects installed domain authority`() =
+        fixture { p, configs ->
+            val source = address(0x350)
+            val target = address(0x360)
+            val replacement =
+                p.withTransaction {
+                    val first = p.symbolTable.createLabel(target, "binding_A", ghidra.program.model.symbol.SourceType.USER_DEFINED)
+                    val second = p.symbolTable.createLabel(target, "binding_B", ghidra.program.model.symbol.SourceType.USER_DEFINED)
+                    val ref =
+                        p.referenceManager.addMemoryReference(
+                            source,
+                            target,
+                            ghidra.program.model.symbol.RefType.DATA,
+                            ghidra.program.model.symbol.SourceType.USER_DEFINED,
+                            -1,
+                        )
+                    p.referenceManager.setAssociation(first, ref)
+                    second
+                }
+            val views = SoftwareCallDomains.install(p, SoftwareCallDomains.preview(p, configs, monitor), monitor)
+            val before = ProgramFingerprint.capture(p, monitor)
+            p.withTransaction { p.referenceManager.setAssociation(replacement, p.referenceManager.getReferencesFrom(source).single()) }
+            assertEquals(before, ProgramFingerprint.capture(p, monitor))
+            for (view in views) {
+                val refusal =
+                    assertThrows(IllegalArgumentException::class.java) {
+                        SoftwareCallDomains.emit(p, p.addressFactory.getAddress(view.entry()), 0x200000, monitor)
+                    }
+                assertEquals("Stale software domain registration; explicit refresh required", refusal.message)
             }
         }
 

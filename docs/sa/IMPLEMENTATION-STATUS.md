@@ -1,37 +1,42 @@
 # Implementation status
 
-## REPO-CUTOVER-DOMAIN-FIX — BLOCKED at saved-domain revalidation
+## REPO-CUTOVER-DOMAIN-PERSISTENCE-FIX — INTEGRATED; RETIREMENT BLOCKED
 
-The demonstrated discovery-order defect is repaired: canonical configuration
-traversal now precedes rooted discovery, preserving complete Plan equality and
-all existing domain checks. The deterministic fresh anti-canonical regression
-failed before the correction and passed afterward. Changed discovery bytes still
-reach the exact retained guard and are rejected. See the
-[local compatibility decision](../decisions/configured-domain-discovery-order.md).
+The bounded saved-domain workflow passes. Same-traversal diagnostics first
+reproduced the uncorrected rejection: exactly six dynamic-symbol IDs changed
+among 412 complete dependency fields. Registration and pre-save bytes matched;
+all other fields and all eight ProgramFingerprint components matched on the
+first reopened production check. The correction retains dynamic semantic
+identity while preserving stored symbol IDs, reference bindings, Function,
+thunk, parameter, context, ownership and permission dependencies. See the
+[compatibility decision](../decisions/configured-domain-dependency-identity.md).
 
-One final clean checkpoint passed 776 tests in 78 classes, retaining all 773
-accepted case identities and adding three regressions, with no failures, errors
-or skips. Lint/build, build-inputs7 and tooling64/one existing optional skip pass.
-Both fixed fresh Programs (anti-canonical then canonical) installed with equal
-nonempty discovery and passed forward/reverse raw/emitted/native stage checks.
-Cyclic setup/mutation/reopen and active continuation-order checks passed against
-the exact new provider; native and SLA identities remain pinned.
+Configured-domain authority is v2 and FarCallEvidence is v3. Saved v1 authority
+rejects before semantic use without rewriting records. No general migration,
+native, SLEIGH or public mapping-schema change is included. The accepted
+[discovery-order correction](../decisions/configured-domain-discovery-order.md)
+and all five cutover commits remain intact.
 
-**Installed acceptance remains BLOCKED:** both saved domain Programs reopen with
-identical registration but a different FarCallEvidence dependency fingerprint,
-refusing `Stale software domain registration` before current-record discovery
-or reopened native requests. Public ProgramFingerprint components match across
-the second Program's save/reopen, narrowing the discrepancy to the additional
-FarCallEvidence fields or their representation; the exact differing field is not
-established. Reopened native and subsequent installed stale controls were not
-completed. Do not describe this as backup-only retirement blocking.
+The final clean checkpoint passes 782 tests in 79 classes, retaining all 776
+accepted identities with six additions and no failures, errors or skips.
+Lint/build and build-inputs7 pass; tooling passes79 with one existing optional
+skip. Both fresh canonical and anti-canonical Programs pass forward/reverse,
+save/process exit, first read-only reopen, proof/view/native and wrong-domain
+checks. Complete production preimages match byte-for-byte; stale mutation and
+native refusal pass on separate writable copies. Cyclic persistence and active
+continuation-order installed regressions pass on the exact final provider.
 
-REPO remains the sole active source. Preserve both failed Program identities,
-the stale guard, the original cutover evidence and the inactive read-only source.
-The [evidence index](evidence-index.json) links the corrective candidate and new
-blocker. Retirement is blocked by validation and unverified independent backup.
-This bounded repair stops for master review; no shared fingerprint redesign,
-W4/G3, W3c, G4 campaign or further implementation package was started.
+The [evidence index](evidence-index.json) retains the original failures and links
+new captures, independent comparisons, final identities and the report. The
+supplemental project-directory assertion exposed only Ghidra backup-index/journal
+housekeeping; actual Program database/properties and production preimages remain
+unchanged. Exact differences and their source-backed classification are retained.
+
+REPO is the sole active source. The inactive source remains read-only recovery.
+Validation is complete; independent backup remains unverified and blocks
+destructive retirement. History cleanup is not an implementation prerequisite.
+**STOP for master review.** No W4/G3 planning or implementation, W3c, broader
+qualification or source retirement begins automatically.
 
 Accepted predecessor checkpoint: **W3b-CFG-CONVERGENCE PASS**. W3 FOUNDATIONAL GRAPH/CALL CONTRACT SUFFICIENT TO BEGIN W4 / G3.
 
@@ -54,7 +59,7 @@ The accepted W2g predecessor source is `665e6e7050b680da923c47f5f8d7285e65f45bdd
 
 ## Repository authority and cutover review
 
-The cumulative accepted SA implementation is reconciled into the normal Git checkout on `integrate-ghigbc`. The [original plan](IMPLEMENTATION-PLAN.md) and [decision gates](DECISION-GATES.md) retain all requirements, backlog and ownership; their dated proposals do not override this status. The [evidence index](evidence-index.json) distinguishes accepted W3b evidence from new cutover validation. G2 is accepted within W3a’s bounded domain; G1, G3 and G4 remain open. Predicate v3 rejects incompatible earlier envelopes; configured-domain v1 does not establish G4 migration.
+The cumulative accepted SA implementation is reconciled into the normal Git checkout on `integrate-ghigbc`. The [original plan](IMPLEMENTATION-PLAN.md) and [decision gates](DECISION-GATES.md) retain all requirements, backlog and ownership; their dated proposals do not override this status. The [evidence index](evidence-index.json) distinguishes accepted W3b evidence from new cutover validation. G2 is accepted within W3a’s bounded domain; G1, G3 and G4 remain open. Predicate v3 rejects incompatible earlier envelopes; configured-domain v2 rejects v1 and does not establish G4 migration.
 
 Bounded finite relational convergence is not general scalability. Native HighFunction observations do not prove architectural SP/PC or write counts. Two configured domains at one site do not establish automatic discovery. Broader W3 dispatch, discovery, frame, nested-entry and invocation qualification remain open; W2’s scheduled foundation stays frozen.
 

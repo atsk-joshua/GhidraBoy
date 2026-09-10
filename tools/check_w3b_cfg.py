@@ -178,7 +178,9 @@ def loop_negatives(cap,image):
 
 def domains_stage(cap,image,native=True):
     if native:native_identity(cap)
-    proof=cap.proof;require(proof['version']=='software-call-domains-1' and len(proof['domains'])==2,'wrong domain proof')
+    proof=cap.proof;require(proof['version']=='software-call-domains-2' and len(proof['domains'])==2,'wrong domain proof')
+    require(len({d['id'] for d in proof['domains']})==2,'duplicate domain identity')
+    require({d['configuration']['registers']['f'] for d in proof['domains']}=={0,0x80},'missing configured flag domain')
     require({d['physicalSite'] for d in proof['domains']}=={'0200'},'configured physical site differs')
     results=[]
     for domain in proof['domains']:
@@ -198,6 +200,28 @@ def domains_stage(cap,image,native=True):
                 require(effects==[('mapper',0x2000,2),('call',2,0x4100),('mapper',0x2000,bank),('write',0xc210,value)],'native configured-domain effect order differs')
         results.append({'domain':domain['id'],'flags':flags,'C210':value,'bank':bank,'outer_return_words':3})
     return {'status':'PASS','same_physical_site':'0200','domains':results}
+
+def domain_relation(stage):
+    rows=stage['domains'];relation={row['domain']:row for row in rows}
+    require(len(rows)==len(relation)==2,'missing or duplicate checked domain')
+    return relation
+
+def domains_persistence(root,domain_ids):
+    require((root/'persisted-registration.json').read_bytes()==(root/'reopened-registration.json').read_bytes(),'separate-process saved domain registration changed')
+    saved=read(root/'persisted-identity.json');opened=read(root/'reopen-compatibility.json')
+    require(opened['readOnly'] is True and opened['registrationUnchanged'] is True,'domain reopen changed saved authority')
+    require(opened['version']=='software-call-domains-2','unsupported reopened domain authority')
+    require(saved['programId']==opened['programId'],'domain reopen used a different Program')
+    require(all(type(record['javaPid']) is int and record['javaPid']>0 for record in [saved,opened]),'invalid saving/reopened JVM identity')
+    require(saved['javaPid']!=opened['javaPid'],'saving process did not exit before domain reopen')
+    refusals=read(root/'stale-domains.json')
+    require(len(refusals)==2 and {r['domain'] for r in refusals}==domain_ids,'missing distinct stale domain controls')
+    require(len({domain[:12] for domain in domain_ids})==2,'ambiguous stale request artifact identity')
+    for refusal in refusals:
+        require('Stale' in refusal['reason'],'stale domain proof consumed')
+        request=read(root/f"stale-{refusal['domain'][:12]}-request.json")
+        require(not request['completed'] and not request['highfunction_available'] and 'Stale' in request['error'],'native stale domain proof accepted '+refusal['domain'])
+    return {'status':'PASS','saved_java_pid':saved['javaPid'],'reopened_java_pid':opened['javaPid'],'registration_unchanged':True,'read_only':True}
 
 class RawCapture(core.Capture):
     def __init__(self,root,label):
@@ -225,10 +249,13 @@ def run(root,kind,raw=False):
         result['persistence']={'status':'PASS','saved_java_pid':saved['java_pid'],'reopened_java_pid':opened['java_pid']}
         return result
     image=(root/'original-image.gb').read_bytes();forward=domains_stage(core.Capture(root,'forward'),image);reverse=domains_stage(core.Capture(root,'reverse'),image)
-    require(forward==reverse,'request/display order altered domain identity')
+    reopened=domains_stage(core.Capture(root,'reopened'),image)
+    relation=domain_relation(forward)
+    require(relation==domain_relation(reverse),'request/display order altered domain identity')
+    require(relation==domain_relation(reopened),'saved/reopened domain semantics differ')
     require(read(root/'site-only-negative.json')['rejected'],'site-only cache negative missing')
-    for refusal in read(root/'stale-domains.json'):require('Stale' in refusal['reason'],'stale domain proof consumed')
-    return {'forward':forward,'reverse':reverse,'site_only_lookup':'REJECTED','stale_domains':'REJECTED'}
+    persistence=domains_persistence(root,set(relation))
+    return {'forward':forward,'reverse':reverse,'reopened':reopened,'persistence':persistence,'site_only_lookup':'REJECTED','stale_domains':'REJECTED'}
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('kind',choices=['loops','domains']);parser.add_argument('root',type=Path);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--raw-only',action='store_true');args=parser.parse_args()
     try:result={'status':'PASS','checks':run(args.root,args.kind,args.raw_only)}
