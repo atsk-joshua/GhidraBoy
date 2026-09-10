@@ -76,8 +76,8 @@ Original export reads immutable FileBytes; current export starts with those byte
 and overlays established patches. Known-unmapped tails remain intact. Lost,
 conflicting or detached sources produce explicit rejection rather than being
 mistaken for a known-unmapped interval. Mapping schema versioning is independent
-of SLEIGH language versioning; language 1.0 remains appropriate for p-code-only
-changes with unchanged decode/register/context definitions.
+of SLEIGH language versioning. P-code-only changes do not by themselves require
+a version change; the stock transport context schema now requires language 2.0.
 
 
 Software-call model, preview, executable registry and ownership identities are
@@ -154,7 +154,24 @@ delete the original target sequence number. Injection v3 and explicit public
 Architectural return classification, original raw pushes, and function bodies
 remain separate from the canonical expansion's terminal listing override.
 
-### State-sensitive execution contexts
+### Experimental stock execution entries
+
+The stock transport uses default-off, nonflowing context and a bounded CALLOTHER
+entry in an explicitly owned analysis view. Canonical source instructions remain
+hardware instructions. Ordinary, predicate, configured-domain and exact software
+adapters retain separate stock authority keys, with transport version 2 and no
+native-identity substitution. A late straight-line integrity guard rejects the
+demonstrated carrier-mode-removal failure without emitting CPU or memory effects.
+Image carriers map the admitted snapshot in a separate view without establishing
+a new generation. See the [decision and compatibility limits](decisions/stock-ghidra-transport.md).
+
+Language 2.0, current-format headless persistence and specific native witnesses
+are qualified only as recorded. Normal-window behavior, the full retained test
+transition and switch obligations remain incomplete. Old annotated-Program
+migration is not qualified; Ghidra can attempt an in-memory language update even
+when it logs a missing old-language specification.
+
+### Historical companion-based state-sensitive execution contexts
 
 The state-qualified software-call path keeps language `SM83:LE:16:default` 1.0,
 all decoder constructors and register widths, existing compiler IDs and mapping

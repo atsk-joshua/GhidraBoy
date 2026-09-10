@@ -25,6 +25,7 @@ public final class SoftwareCallApplication {
     private final List<NestedRepair> nestedRepairs;
     private final String dependencies;
     private SoftwareCallInstructionDiscovery.Plan discovery;
+    private boolean stock;
     private final Map<String, SoftwareCallEffects.ContinuationSummary> stateContinuations = new LinkedHashMap<>();
     private final Map<String, SoftwareCallEffects.ContinuationSummary> stateCallees = new LinkedHashMap<>();
     private final Map<String, SoftwareCallExecutionView.Preview> views;
@@ -47,18 +48,27 @@ public final class SoftwareCallApplication {
 
   public static Review preview(Program p, List<SoftwareCallValidation.Configuration> configurations,
       TaskMonitor monitor) throws Exception {
+    return preview(p, configurations, monitor, false);
+  }
+  public static Review previewStock(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor) throws Exception {
+    if (p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
+      throw new IllegalArgumentException("Legacy software-call record retained; stock conversion is not implicit");
+    return preview(p, configurations, monitor, true);
+  }
+  private static Review preview(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor, boolean stock) throws Exception {
     try (var session = SoftwareCallInstructionDiscovery.begin(p, monitor)) {
       for (var config : configurations)
         for (var payload : SoftwareCallValidation.payloadSegments(p, config, monitor))
           session.reserve(ProgramMapping.staticAddress(p, payload.address()), payload.length(), "validated software-call payload");
-      var result = previewDecoded(p, configurations, monitor);
+      var result = previewDecoded(p, configurations, monitor, stock);
       result.discovery = session.plan(monitor);
+      result.stock = stock;
       return result;
     }
   }
 
   private static Review previewDecoded(Program p, List<SoftwareCallValidation.Configuration> configurations,
-      TaskMonitor monitor) throws Exception {
+      TaskMonitor monitor, boolean stock) throws Exception {
     if (configurations.isEmpty()) throw new IllegalArgumentException("No software-call sites supplied");
     String before = FarCallEvidence.capture(p, monitor);
     var inventory = new ArrayList<SiteInventory>();
@@ -88,7 +98,7 @@ public final class SoftwareCallApplication {
           validated.frame().targetMapper(), validated.frame().targetCpu()).toString())) {
         var graph = SoftwareCallEffects.deriveCalleeGraphForReview(p, validated.frame(), configurations, monitor);
         SoftwareCallContinuationView.requireTransport(p, graph, monitor);
-        SoftwareCallStateEntryInjection.nativeIdentity();
+        if (!stock) SoftwareCallStateEntryInjection.nativeIdentity();
         String at = site(p, config).toString();
         String target = SoftwareCallValidation.executionAddress(p, validated.frame().targetMapper(), validated.frame().targetCpu()).toString();
         var existing = p.getFunctionManager().getFunctionAt(ProgramMapping.staticAddress(p, target));
@@ -102,7 +112,7 @@ public final class SoftwareCallApplication {
             throw new IllegalArgumentException("Nested state entry requires reviewed bare native contract at " + nested.getEntryPoint());
         }
         stateCallees.put(at, graph); returningTargets.addAll(graph.returningNativeFunctions());
-        planEntryViews(p, at, graph, views, monitor);
+        planEntryViews(p, at, graph, views, monitor, stock);
       }
     }
     for (int configurationIndex = 0; configurationIndex < configurations.size(); configurationIndex++) {
@@ -159,7 +169,7 @@ public final class SoftwareCallApplication {
             throw new IllegalArgumentException(finiteObligation.getMessage() + "; state graph: " + stateObligation.getMessage(), stateObligation);
           }
           stateContinuations.put(site.toString(), stateContinuation);
-          planEntryViews(p, site.toString(), stateContinuation, views, monitor);
+          planEntryViews(p, site.toString(), stateContinuation, views, monitor, stock);
         }
       }
       if (ins.isFallThroughOverridden() && ins.getFallThrough() != null
@@ -191,7 +201,7 @@ public final class SoftwareCallApplication {
         while (p.getAddressFactory().getAddressSpace(name) != null) name = baseName + "_" + ++suffix;
         views.put(site.toString(), SoftwareCallExecutionView.preview(p, name, segments, monitor));
         if (stateContinuation != null) {
-          SoftwareCallStateEntryInjection.nativeIdentity();
+          if (!stock) SoftwareCallStateEntryInjection.nativeIdentity();
           int fragment = 0;
           for (var ranges : SoftwareCallContinuationView.fragments(p, stateContinuation)) {
             String key = site + "#state" + fragment;
@@ -276,7 +286,7 @@ public final class SoftwareCallApplication {
     Objects.requireNonNull(review);
     if (!review.dependencies.equals(FarCallEvidence.capture(p, monitor)))
       throw new IllegalStateException("Stale software-call review; preview again");
-    var freshReview = preview(p, review.configurations, monitor);
+    var freshReview = preview(p, review.configurations, monitor, review.stock);
     if (!ProgramMapping.JSON.toJsonTree(freshReview).equals(ProgramMapping.JSON.toJsonTree(review)))
       throw new IllegalArgumentException("Software-call review plan differs from current validated inventory");
     review = freshReview;
@@ -490,12 +500,20 @@ public final class SoftwareCallApplication {
         var state = source.steps().stream().filter(step -> step.index() == context.entryStep()).findFirst().orElseThrow().before();
         String appliedComment = AnalysisOwnership.stateEntryComment(originalComment,
             ProgramMapping.JSON.toJson(Map.of("sourceSite", context.site(), "origin", context.kind(), "state", state)));
-        function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
+        boolean carrier = review.stock && !entry.getKey().equals(context.canonical());
+        if (carrier) {
+          var at = function.getEntryPoint();
+          p.getListing().clearCodeUnits(at, at, false);
+          StockEntryInjection.prepare(p, at);
+          ghidra.program.disassemble.Disassembler.getDisassembler(p, monitor, null).disassemble(at, new ghidra.program.model.address.AddressSet(at, at), false);
+          function.setCallingConvention(StockEntryInjection.CONVENTION);
+        } else if (!review.stock) function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
+        if (review.stock && !carrier) appliedComment = originalComment;
         var selectedGraph = projectionGraphs(source).stream().filter(graph -> graph.entry().index() == context.graphEntry()).findFirst().orElseThrow();
         if (!entry.getKey().equals(context.canonical()) && selectedGraph.exit().equals("LOOP")) function.setNoReturn(true);
         function.setComment(appliedComment);
         owned.stateEntries.add(new AnalysisOwnership.StateEntry(AnalysisOwnership.Point.of(function.getEntryPoint()),
-            function.getID(), original, originalComment, appliedComment, originalNoReturn, function.hasNoReturn(), AnalysisOwnership.helperMetadataStamp(function)));
+            function.getID(), original, originalComment, appliedComment, originalNoReturn, function.hasNoReturn(), AnalysisOwnership.helperMetadataStamp(function), review.stock ? function.getCallingConventionName() : null));
       }
       for (int index = 0; index < owned.helpers.size(); index++) {
         var receipt = owned.helpers.get(index);
@@ -509,7 +527,7 @@ public final class SoftwareCallApplication {
       }
       AnalysisOwnership.save(p, FEATURE, owned);
       p.getOptions(ProgramMapping.OPTIONS).setString("softwareCall.review.inventory.v1", ProgramMapping.JSON.toJson(Map.of("sites", review.inventory, "nestedRepairs", review.nestedRepairs, "instructionDiscovery", review.discovery, "stateContinuations", review.stateContinuations, "stateCallees", review.stateCallees)));
-      SoftwareCallRegistry.install(p, review.configurations, executionSites, review.stateContinuations.keySet(), stateEntries);
+      SoftwareCallRegistry.install(p, review.configurations, executionSites, review.stateContinuations.keySet(), stateEntries, review.stock);
       for (var view : createdViews.values())
         owned.views.add(new AnalysisOwnership.View(view.name(), AnalysisOwnership.viewStamp(p, view.name(), monitor)));
       AnalysisOwnership.save(p, FEATURE, owned);
@@ -541,7 +559,7 @@ public final class SoftwareCallApplication {
       String site = view.getKey().substring(0, view.getKey().indexOf('#'));
       var source = view.getKey().contains("#native_CALLEE") ? review.stateCallees.get(site) : review.stateContinuations.get(site);
       if (source == null) throw new IllegalArgumentException("Missing fragment source graph");
-      SoftwareCallStateEntryInjection.nativeIdentity();
+      if (!review.stock) SoftwareCallStateEntryInjection.nativeIdentity();
       var space = p.getAddressFactory().getAddressSpace(view.getValue().name());
       var fragmentGraph = source;
       if (view.getKey().contains("#native_")) {
@@ -584,9 +602,9 @@ public final class SoftwareCallApplication {
   }
 
   private static void planEntryViews(Program p, String site, SoftwareCallEffects.ContinuationSummary source,
-      Map<String, SoftwareCallExecutionView.Preview> views, TaskMonitor monitor) throws Exception {
+      Map<String, SoftwareCallExecutionView.Preview> views, TaskMonitor monitor, boolean stock) throws Exception {
     for (var graph : nativeEntryGraphs(source)) {
-      SoftwareCallStateEntryInjection.nativeIdentity();
+      if (!stock) SoftwareCallStateEntryInjection.nativeIdentity();
       var root = ProgramMapping.staticAddress(p, graph.entry().address());
       var function = p.getFunctionManager().getFunctionAt(root);
       if (function != null && !defaultCallerContract(function) && !AnalysisOwnership.stateEntryCurrent(p, root))

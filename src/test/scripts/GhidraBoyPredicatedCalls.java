@@ -32,7 +32,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
   }
   void request(Function function,DecompInterface owner,String label)throws Exception{
     var request=new LinkedHashMap<String,Object>();request.put("entry",function.getEntryPoint().toString());request.put("function_name",function.getName());
-    request.put("function_id",function.getID());request.put("owner_java_pid",ProcessHandle.current().pid());request.put("revision",currentProgram.getModificationNumber());
+    request.put("function_id",function.getID());request.put("native_interface_identity",System.identityHashCode(owner));request.put("owner_java_pid",ProcessHandle.current().pid());request.put("revision",currentProgram.getModificationNumber());
     Path debug=out.resolve(label+"-debug.xml");owner.enableDebug(debug.toFile());var result=owner.decompileFunction(function,90,monitor);
     request.put("completed",result.decompileCompleted());request.put("error",result.getErrorMessage());request.put("highfunction_available",result.getHighFunction()!=null);
     request.put("processes_after",processes());if(Files.exists(debug))request.put("debug",Map.of("sha256",hash(debug),"path",debug.toString()));
@@ -63,8 +63,15 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
     }
     record.put("views",views);save(label+"-identity.json",record);
   }
+  String predicateOptions(Address entry) {
+    return StockEntryInjection.CONVENTION.equals(getFunctionAt(entry).getCallingConventionName())?PredicatedCalls.STOCK_OPTIONS:PredicatedCalls.OPTIONS;
+  }
+  InjectPayload entryPayload(Address entry) {
+    boolean stock=StockEntryInjection.CONVENTION.equals(getFunctionAt(entry).getCallingConventionName());
+    return currentProgram.getCompilerSpec().getPcodeInjectLibrary().getPayload(stock?InjectPayload.CALLOTHERFIXUP_TYPE:InjectPayload.CALLMECHANISM_TYPE,stock?StockEntryInjection.NAME:SoftwareCallStateEntryInjection.NAME);
+  }
   void stage(String label,Address root,DecompInterface owner)throws Exception{
-    String registration=currentProgram.getOptions(PredicatedCalls.OPTIONS).getString(root.toString(),null);
+    String registration=currentProgram.getOptions(predicateOptions(root)).getString(root.toString(),null);
     Files.writeString(out.resolve(label+"-registration.json"),registration);identity(label+"-before",root);
     var proof=PredicatedCalls.registeredProof(currentProgram,root);save(label+"-proof.json",proof);
     var raw=new TreeMap<String,Object>();for(var node:proof.nodes())if(!raw.containsKey(node.source())){
@@ -74,12 +81,12 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
     save(label+"-raw.json",raw);var mapping=new ArrayList<Object>();
     for(var view:PredicatedCalls.views(currentProgram,root)){
       var at=currentProgram.getAddressFactory().getAddress(view.entry());String name=view.invocation().equals("root")?"root":view.invocation().substring(0,12);mapping.add(Map.of("tag",name,"view",view));
-      var payload=currentProgram.getCompilerSpec().getPcodeInjectLibrary().getPayload(InjectPayload.CALLMECHANISM_TYPE,SoftwareCallStateEntryInjection.NAME);
+      var payload=entryPayload(at);
       var context=new InjectContext();context.baseAddr=at;context.nextAddr=at;ids.clear();save(label+"-"+name+"-requested.json",Arrays.stream(payload.getPcode(currentProgram,context)).map(this::operation).toList());
       request(getFunctionAt(at),owner,label+"-"+name);
     }
     save(label+"-views.json",mapping);identity(label+"-after",root);
-    String after=currentProgram.getOptions(PredicatedCalls.OPTIONS).getString(root.toString(),null);Files.writeString(out.resolve(label+"-registration-after.json"),after);
+    String after=currentProgram.getOptions(predicateOptions(root)).getString(root.toString(),null);Files.writeString(out.resolve(label+"-registration-after.json"),after);
     if(!registration.equals(after))throw new IllegalStateException("Native read mutated graph registration");
   }
   @Override public void run()throws Exception{
@@ -98,7 +105,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
     var owner=owner();try{
       stage("original",root,owner);
       if(reuse){println("W3_PREDICATED_CAPTURE_COMPLETE "+mode);return;}
-      String stored=currentProgram.getOptions(PredicatedCalls.OPTIONS).getString(root.toString(),null);
+      String stored=currentProgram.getOptions(predicateOptions(root)).getString(root.toString(),null);
       var canonical=currentProgram.getAddressFactory().getAddress("rom2::4000");
       if((currentProgram.getMemory().getByte(canonical.add(1))&255)!=0xa6)throw new IllegalStateException("Wrong callee mutation source");
       var sites=new ArrayList<Address>();sites.add(canonical);
@@ -107,7 +114,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
       byte[] before=ProgramMapping.exportBytes(currentProgram,true,false,monitor);currentProgram.getMemory().setByte(canonical.add(1),(byte)0xb6);
       for(var at:sites)Disassembler.getDisassembler(currentProgram,monitor,null).disassemble(at,new AddressSet(at,at.add(1)),false);
       byte[] after=ProgramMapping.exportBytes(currentProgram,true,false,monitor);var changed=new ArrayList<Integer>();for(int i=0;i<before.length;i++)if(before[i]!=after[i])changed.add(i);
-      save("mutation.json",Map.of("file_offsets",changed,"old",0xa6,"new",0xb6,"source",canonical.add(1).toString(),"registration_retained",stored.equals(currentProgram.getOptions(PredicatedCalls.OPTIONS).getString(root.toString(),null))));
+      save("mutation.json",Map.of("file_offsets",changed,"old",0xa6,"new",0xb6,"source",canonical.add(1).toString(),"registration_retained",stored.equals(currentProgram.getOptions(predicateOptions(root)).getString(root.toString(),null))));
       request(getFunctionAt(root),owner,"stale-root");
       var stale=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("stale-root-request.json"))).getAsJsonObject();
       if(stale.get("completed").getAsBoolean()||stale.get("highfunction_available").getAsBoolean()||!stale.get("error").getAsString().contains("Stale predicated graph"))throw new IllegalStateException("Stale graph accepted");

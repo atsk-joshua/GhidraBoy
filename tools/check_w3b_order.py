@@ -15,7 +15,7 @@ def successor(graph,call):
         cursor=step.get('successor')
     raise core.Refusal('missing matched continuation edge')
 
-def check(root,unit):
+def check(root,unit,native_validator=None):
     graph=core.read(root/'producer-continuations.json')['0180'];calls=[s for s in graph['steps'] if s['transfer']=='CALL']
     require(len(calls)==2 and all(c.get('afterCall') and not c.get('callOutcome') for c in calls),'callee incorrectly classified nonreturning')
     pairs=[(c['index'],successor(graph,c)) for c in calls];require(any(b<a for a,b in pairs),'production did not create lower-ID continuation')
@@ -37,7 +37,9 @@ def check(root,unit):
     require(sum(o['mnemonic']=='STORE' for o in emitted)>=4,'lowering lost real call frame writes')
     require(any(o['mnemonic']=='BRANCH' and o['inputs'][0]['constant'] and o['inputs'][0]['offset']&0x80000000 for o in emitted),'lowering dropped local backedge')
     request=core.read(root/'root-request.json');require(request['completed'] and request['highfunction_available'] and not request['error'],'native root request failed')
-    require(any(p.get('parent')==request['owner_java_pid'] and p.get('binary_sha256')==core.base.NATIVE for p in request['processes_after']),'wrong native binary')
+    if native_validator is None:
+        require(any(p.get('parent')==request['owner_java_pid'] and p.get('binary_sha256')==core.base.NATIVE for p in request['processes_after']),'wrong native binary')
+    else:native_validator(request)
     blocks={b['index']:b for b in core.read(root/'root-high.json')};reachable=set();queue=[0]
     while queue:
         n=queue.pop()

@@ -53,8 +53,7 @@ def native_identity(cap):
         tag=view['tag'];req=cap.requests[tag]
         require(req['completed'] and req['highfunction_available'] and not req['error'],'native request failed '+tag+': '+str(req.get('error')))
         require(req['entry']==view['view']['entry'],'foreign native entry')
-        require(any(p.get('parent')==req['owner_java_pid'] and p.get('binary_sha256')==core.base.NATIVE for p in req['processes_after']),'wrong native companion')
-        core.base.debug_identity(cap.root/f'{cap.label}-{tag}-debug.xml',cap.requested[tag],req['entry'])
+        cap.verify_native(tag)
 
 def is_ram(v,cpu):return v is not None and v['space']=='ram' and v['offset']==cpu and v['size']==1
 

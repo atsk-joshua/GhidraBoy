@@ -136,6 +136,19 @@ acceptance of a newly built package.
 
 ### Reviewed execution contexts (candidate)
 
+The experimental stock path has separate production APIs (`installStock`,
+`emitStock`, and `SoftwareCallApplication.previewStock`). In GhidraBoy Tools,
+`stock-predicate-install` installs a reviewed bounded predicate root;
+`stock-contexts` navigates existing owned entries, `stock-source` reaches their
+original source, and `stock-current` checks authority explicitly. Native recovery
+still uses the ordinary Decompiler. This is a partial qualification, not a release
+recommendation for old annotated Programs. Language 2.0 migration, normal-window
+lifecycle and retained switch limits are described in the
+[transport decision](decisions/stock-ghidra-transport.md).
+
+The following companion-based instructions describe the retained earlier route;
+they do not establish stock transport or current normal-window qualification.
+
 State-sensitive software calls can produce several execution contexts at the
 same CPU address. `software-call-preview` includes their physical instruction
 ranges, state and discovery inventories. `software-call-apply` commits the

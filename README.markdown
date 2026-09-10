@@ -32,8 +32,9 @@ Contributors need this repository and the pinned build dependencies. Follow
 inexpensive checks. [Validation](docs/validation.md) distinguishes automated tests
 from installed, native and GUI qualification.
 
-Existing Program identities remain `SM83:LE:16:default`, language version 1.0,
-and compiler `default`; added compiler profiles remain available. Preserving
+The experimental stock transport uses `SM83:LE:16:default`, language version 2.0,
+and retains compiler `default` and added compiler profiles. Old annotated-Program
+upgrade is not qualified; see the [transport decision](docs/decisions/stock-ghidra-transport.md). Preserving
 saved Programs is distinct from running on older Ghidra versions: current builds
 require 12.1.3. See [instruction compatibility](docs/instruction-compatibility.md)
 and [changes since the upstream release](docs/changes-since-official-release-report.md).

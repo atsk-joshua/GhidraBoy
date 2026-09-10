@@ -62,17 +62,26 @@ public class NormalizedSwitchRegression extends GhidraScript {
             }finally{probe.dispose();}
             if(norm==null)throw new IllegalStateException("Missing source index at0121");
             var report=new TreeMap<String,Object>();report.put("sourceIndex",definition);report.put("normHash",Long.toUnsignedString(norm.hash(),16));report.put("normAddress",norm.address().toString());
-            var decompiler=new NormalizedSwitchDecompiler(a(0x100),a(0x12f),targets,norm);decompiler.openProgram(fixture);
+            String mode=getScriptArgs().length>1?getScriptArgs()[1]:"diagnostic";
+            if(!Set.of("diagnostic","public","automatic").contains(mode))throw new IllegalArgumentException("Unknown mode");
+            if(mode.equals("public")) {
+                int overrideTx=fixture.startTransaction("Public stock JumpTable override");
+                try {new JumpTable(a(0x12f),targets,true,EquateSymbol.FORMAT_DEFAULT).writeOverride(function);}
+                finally {fixture.endTransaction(overrideTx,true);}
+            }
+            DecompInterface decompiler=mode.equals("diagnostic")?new NormalizedSwitchDecompiler(a(0x100),a(0x12f),targets,norm):new DecompInterface();
+            decompiler.openProgram(fixture);report.put("mode",mode);
+            report.put("native",ghidra.framework.Application.getOSFile("decompile").getAbsolutePath());
             boolean valid=false;
             try {
-                var result=decompiler.decompileFunction(function,30,monitor);report.put("completed",result.decompileCompleted());report.put("error",result.getErrorMessage());report.put("injections",decompiler.getInjections());
+                var result=decompiler.decompileFunction(function,30,monitor);report.put("completed",result.decompileCompleted());report.put("error",result.getErrorMessage());report.put("injections",decompiler instanceof NormalizedSwitchDecompiler diagnostic?diagnostic.getInjections():0);
                 if(result.getDecompiledFunction()!=null)Files.writeString(out.resolve("fixture.c"),result.getDecompiledFunction().getC());
                 var branches=new ArrayList<Object>();var high=result.getHighFunction();
                 if(high!=null) {
                     for(var table:high.getJumpTables()) {
                         report.put("table",Map.of("cases",Arrays.stream(table.getCases()).map(Object::toString).toList(),"labels",Arrays.asList(table.getLabelValues())));
                         if(!Arrays.asList(table.getCases()).equals(targets)||!Arrays.asList(table.getLabelValues()).equals(List.of(0,1,2,3,4,5)))
-                            throw new IllegalStateException("Native case labels/targets differ from guarded fixture mapping");
+                            report.put("mappingMismatch",true);
                     }
                     var ops=high.getPcodeOps();while(ops.hasNext()) {
                         var op=ops.next();if(op.getOpcode()!=PcodeOp.BRANCHIND)continue;
@@ -84,7 +93,7 @@ public class NormalizedSwitchRegression extends GhidraScript {
                 report.put("branches",branches);report.put("status",valid&&result.decompileCompleted()?"PASS":"FAIL");
             }finally{decompiler.dispose();}
             Files.writeString(out.resolve("result.json"),JSON.toJson(report));
-            if(!valid)throw new IllegalStateException("Full phase+lookup switch index was not retained");
+            if(!valid||report.containsKey("mappingMismatch"))throw new IllegalStateException("Full phase+lookup switch semantics remain unqualified; saved result retained");
             println("NORMALIZED_SWITCH_REGRESSION_FINISHED PASS");
         }finally{fixture.release(consumer);}
     }

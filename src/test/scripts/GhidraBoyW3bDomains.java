@@ -9,9 +9,11 @@ import java.util.*;
 
 /** Same physical configured RST, two simultaneous exact domains, ordinary production state-entry requests. */
 public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
+  boolean stock(){return Arrays.asList(getScriptArgs()).contains("stock");}
+  String domainOptions(){return stock()?SoftwareCallDomains.STOCK_OPTIONS:SoftwareCallDomains.OPTIONS;}
   void domainStage(String label,List<SoftwareCallDomains.View> views,DecompInterface owner)throws Exception {
     var proof=SoftwareCallDomains.proof(currentProgram);save(label+"-proof.json",proof);
-    Files.writeString(out.resolve(label+"-registration.json"),currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null));
+    Files.writeString(out.resolve(label+"-registration.json"),currentProgram.getOptions(domainOptions()).getString("registration",null));
     var raw=new TreeMap<String,Object>();
     for(var domain:proof.domains()) {
       var addresses=new TreeSet<String>();addresses.add(domain.physicalSite());
@@ -27,7 +29,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
     save(label+"-raw.json",raw);var mapping=new ArrayList<Object>();
     for(var view:views) {
       var at=currentProgram.getAddressFactory().getAddress(view.entry());String tag=view.domain().substring(0,12)+"-"+view.kind();mapping.add(Map.of("tag",tag,"view",view));
-      var payload=currentProgram.getCompilerSpec().getPcodeInjectLibrary().getPayload(InjectPayload.CALLMECHANISM_TYPE,SoftwareCallStateEntryInjection.NAME);
+      var payload=entryPayload(at);
       var context=new InjectContext();context.baseAddr=at;context.nextAddr=at;ids.clear();save(label+"-"+tag+"-requested.json",Arrays.stream(payload.getPcode(currentProgram,context)).map(this::operation).toList());
       request(getFunctionAt(at),owner,label+"-"+tag);
     }
@@ -113,9 +115,10 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
     return identity;
   }
   void reopenDomains()throws Exception {
-    String registration=currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null);
-    if(!Files.readString(out.resolve("persisted-registration.json")).equals(registration))throw new IllegalStateException("Saved domain registration changed on reopen");
-    var identity=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("persisted-identity.json"))).getAsJsonObject();
+    Path persisted=getScriptArgs().length>3?Path.of(getScriptArgs()[3]):out;
+    String registration=currentProgram.getOptions(domainOptions()).getString("registration",null);
+    if(!Files.readString(persisted.resolve("persisted-registration.json")).equals(registration))throw new IllegalStateException("Saved domain registration changed on reopen");
+    var identity=com.google.gson.JsonParser.parseString(Files.readString(persisted.resolve("persisted-identity.json"))).getAsJsonObject();
     if(identity.get("programId").getAsLong()!=currentProgram.getUniqueProgramID()||identity.get("javaPid").getAsLong()==ProcessHandle.current().pid())throw new IllegalStateException("Expected same Program in a separate JVM");
     long firstRevision=currentProgram.getModificationNumber();
     System.setProperty("ghidraboy.farCallEvidencePhase","first-reopened-proof");
@@ -126,7 +129,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
     save("reopened-domain-identity.json",savedDomainIdentity(views));var owner=owner();
     try {
       domainStage("reopened",views,owner);var after=domainState();save("reopen-state-after.json",after);
-      boolean unchanged=registration.equals(currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null));
+      boolean unchanged=registration.equals(currentProgram.getOptions(domainOptions()).getString("registration",null));
       save("reopen-compatibility.json",Map.of("registrationUnchanged",unchanged,"readOnly",before.equals(after),"programId",currentProgram.getUniqueProgramID(),"javaPid",ProcessHandle.current().pid(),"version",proof.version(),"views",views.size(),"firstCheckRevision",firstRevision,"finalRevision",currentProgram.getModificationNumber()));
       if(!unchanged||!before.equals(after))throw new IllegalStateException("Reopen revalidation/native requests changed saved authority");
       println("W3B_DOMAIN_REOPEN_COMPLETE");
@@ -135,7 +138,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
     println("W3B_CAPTURE_COMPLETE setup");
   }
   void legacyDomains()throws Exception {
-    String registration=currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null);
+    String registration=currentProgram.getOptions(domainOptions()).getString("registration",null);
     var json=com.google.gson.JsonParser.parseString(registration).getAsJsonObject();
     if(!json.get("version").getAsString().equals("software-call-domains-1"))throw new IllegalStateException("Expected actual saved v1 authority");
     long revision=currentProgram.getModificationNumber();var refusals=new ArrayList<String>();
@@ -147,7 +150,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
       catch(IllegalArgumentException expected){refusals.add(expected.getMessage());}
     }
     if(refusals.size()!=5||refusals.stream().anyMatch(r->!r.equals("Unsupported software domain record version")))throw new IllegalStateException("Wrong legacy refusal");
-    boolean unchanged=registration.equals(currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null))&&revision==currentProgram.getModificationNumber();
+    boolean unchanged=registration.equals(currentProgram.getOptions(domainOptions()).getString("registration",null))&&revision==currentProgram.getModificationNumber();
     save("legacy-refusal.json",Map.of("programId",currentProgram.getUniqueProgramID(),"javaPid",ProcessHandle.current().pid(),"registrationUnchanged",unchanged,"refusals",refusals));
     if(!unchanged)throw new IllegalStateException("Legacy authority changed");println("W3B_DOMAIN_LEGACY_REFUSAL_COMPLETE");
   }
@@ -163,7 +166,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
     var configurations=List.of(0,0x80).stream().map(flags->new SoftwareCallValidation.Configuration(0x200,helper,SoftwareCallModel.EntryTransfer.HARDWARE_RST,0xc100,new SoftwareCallModel.Registers(2,flags,0,0,0x4100),MapperState.reset())).toList();
     var proof=domainPreview(mode,configurations);var beforeInstall=domainState();List<SoftwareCallDomains.View> views;
     System.setProperty("ghidraboy.farCallEvidencePhase","installation");
-    try{views=SoftwareCallDomains.install(currentProgram,proof,monitor);save("install-result.json",Map.of("installed",true,"views",views.size()));}
+    try{views=(stock()?SoftwareCallDomains.installStock(currentProgram,proof,monitor):SoftwareCallDomains.install(currentProgram,proof,monitor));save("install-result.json",Map.of("installed",true,"views",views.size()));}
     catch(Exception failure){
       var after=domainState();save("install-result.json",Map.of("installed",false,"exception",failure.getClass().getName(),"reason",String.valueOf(failure.getMessage()),"readOnly",beforeInstall.equals(after)));save("install-state-after-refusal.json",after);
       if(mode.equals("repro-anti-canonical")&&"Domain discovery differs from rooted proof".equals(failure.getMessage())&&beforeInstall.equals(after)){println("W3B_DOMAIN_REPRO_COMPLETE expected discovery guard refusal");return;}throw failure;
@@ -181,7 +184,7 @@ public class GhidraBoyW3bDomains extends GhidraBoyPredicatedCalls {
         System.setProperty("ghidraboy.farCallEvidencePhase","immediately-before-save");
         save("persisted-state.json",domainState());
         save("persisted-fingerprint-components.json",ProgramFingerprint.components(currentProgram,monitor));
-        Files.writeString(out.resolve("persisted-registration.json"),currentProgram.getOptions(SoftwareCallDomains.OPTIONS).getString("registration",null));
+        Files.writeString(out.resolve("persisted-registration.json"),currentProgram.getOptions(domainOptions()).getString("registration",null));
         save("persisted-identity.json",savedDomainIdentity(views));
         println("W3B_DOMAIN_PERSIST_COMPLETE save required by headless project lifecycle");return;
       }

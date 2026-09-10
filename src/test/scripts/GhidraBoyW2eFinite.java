@@ -41,6 +41,17 @@ public class GhidraBoyW2eFinite extends GhidraScript {
     return ProcessHandle.current().descendants().map(p -> {
       var m = new LinkedHashMap<String, Object>();
       m.put("pid", p.pid()); m.put("parent", p.parent().map(ProcessHandle::pid).orElse(-1L));
+      m.put("arguments",p.info().arguments().map(Arrays::asList).orElse(List.of()));
+      try {
+        var proc=Path.of("/proc",Long.toString(p.pid()));
+        if(Files.isDirectory(proc)) {
+          String cmdline=Files.readString(proc.resolve("cmdline"));m.put("proc_cmdline",cmdline.replace('\0',' '));
+          m.put("proc_maps",Files.readString(proc.resolve("maps")));
+          var executables=new ArrayList<Object>();
+          for(String arg:cmdline.split("\u0000"))if(arg.endsWith("/decompile")&&Files.isRegularFile(Path.of(arg)))executables.add(Map.of("path",arg,"sha256",hash(Path.of(arg))));
+          m.put("argv_native_files",executables);
+        }
+      }catch(Exception e){m.put("proc_observation_error",e.toString());}
       p.info().command().ifPresent(command -> {
         m.put("command", command);
         try { m.put("binary_sha256", hash(Path.of(command))); }
@@ -86,10 +97,11 @@ public class GhidraBoyW2eFinite extends GhidraScript {
     return Map.of("entry", function.getEntryPoint().toString(), "body", function.getBody().toString(),
         "name", function.getName(), "instructions", instructions);
   }
+  boolean stockOrdinary(){return Arrays.asList(getScriptArgs()).contains("stock");}
   void artifacts(String label, OrdinaryEntryAccess.Proof proof, Address alias) throws Exception {
     save(label + "-proof.json", proof);
     var payload = currentProgram.getCompilerSpec().getPcodeInjectLibrary().getPayload(
-        InjectPayload.CALLMECHANISM_TYPE, SoftwareCallStateEntryInjection.NAME);
+        stockOrdinary()?InjectPayload.CALLOTHERFIXUP_TYPE:InjectPayload.CALLMECHANISM_TYPE, stockOrdinary()?StockEntryInjection.NAME:SoftwareCallStateEntryInjection.NAME);
     var context = new InjectContext(); context.baseAddr = alias; context.nextAddr = alias;
     ids.clear(); save(label + "-requested-entry-pcode.json",
         Arrays.stream(payload.getPcode(currentProgram, context)).map(this::operation).toList());
@@ -107,7 +119,7 @@ public class GhidraBoyW2eFinite extends GhidraScript {
         "provider_location", CartridgeLayout.class.getProtectionDomain().getCodeSource().getLocation().toString()));
     var before = canonical(canonical); save("canonical-before.json", before);
     var proof = OrdinaryEntryAccess.preview(currentProgram, canonical, monitor);
-    var alias = OrdinaryEntryAccess.install(currentProgram, proof, monitor);
+    var alias = stockOrdinary()?OrdinaryEntryAccess.installStock(currentProgram, proof, monitor):OrdinaryEntryAccess.install(currentProgram, proof, monitor);
     var after = canonical(canonical); save("canonical-after-install.json", after);
     if (!ProgramMapping.JSON.toJson(before).equals(ProgramMapping.JSON.toJson(after))) throw new IllegalStateException("Canonical changed");
     artifacts("original", proof, alias);

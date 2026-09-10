@@ -50,6 +50,12 @@ class Capture:
         self.requested={i['tag']:read(root/f"{label}-{i['tag']}-requested.json") for i in self.views}
         self.high={i['tag']:read(root/f"{label}-{i['tag']}-high.json") for i in self.views}
         self.requests={i['tag']:read(root/f"{label}-{i['tag']}-request.json") for i in self.views}
+    def verify_native(self,tag):
+        req=self.requests[tag]
+        require(any(p.get('parent')==req['owner_java_pid'] and p.get('binary_sha256')==base.NATIVE for p in req['processes_after']),'wrong actual companion')
+        debug=self.root/f'{self.label}-{tag}-debug.xml'
+        require(sha(debug)==req['debug']['sha256'],'changed native debug')
+        return base.debug_identity(debug,self.requested[tag],req['entry'])
     def target(self,node):
         entry=f"{node['space']}::{node['offset']:04x}"
         require(entry in self.by_entry,'CALL has foreign/unqualified Function '+entry)
@@ -67,7 +73,7 @@ class Machine:
         sp,ret,f,c,de,hl=frame;require(0xc082<=sp<=0xcffc,'frame outside declared domain')
         self.image=image;self.root_sp=sp;self.outer_ret=ret;self.bank=None;self.steps=0
         self.reg={0:f,1:0x95,2:c,3:b,4:de&255,5:de>>8,6:hl&255,7:hl>>8,8:0x50,9:1,10:sp&255,11:sp>>8}
-        self.mem={sp:ret&255,sp+1:ret>>8};self.unique={};self.events=[];self.high_trace=[];self.outputs={};self.fetches=[];self.calls=[]
+        self.mem={sp:ret&255,sp+1:ret>>8};self.unique={};self.events=[];self.emitted_trace=[];self.high_trace=[];self.outputs={};self.fetches=[];self.calls=[]
     def register(self,offset,size=1):return sum(self.reg[offset+i]<<(8*i) for i in range(size))
     def set_register(self,offset,size,value):
         for i in range(size):self.reg[offset+i]=(value>>(8*i))&255
@@ -169,7 +175,7 @@ class Machine:
     def emitted(self,cap,tag='root',depth=0):
         require(depth<=1,'unexpected emitted call depth');ops=cap.requested[tag];index=0
         while index<len(ops):
-            op=ops[index];code=op['mnemonic'];self.steps+=1;require(self.steps<20000,'emitted execution budget')
+            op=ops[index];self.emitted_trace.append((tag,index));code=op['mnemonic'];self.steps+=1;require(self.steps<20000,'emitted execution budget')
             if code in {'BRANCH','CBRANCH'}:
                 supported(op['inputs'][0]['constant'] and op['inputs'][0]['size']==4,'unobserved emitted machine branch')
                 taken=code=='BRANCH' or bool(self.get(op['inputs'][1]))
@@ -271,10 +277,7 @@ def validate_capture(cap,image,reuse=False):
             require(len(parameters)==len(expected),'native live-in parameter count differs')
             for parameter,offset in zip(parameters,expected):
                 storage=parameter['storage'];require(len(storage)==1 and storage[0]['space']=='register' and storage[0]['offset']==offset and storage[0]['size']==1,'native argument storage differs')
-        require(any(p.get('parent')==req['owner_java_pid'] and p.get('binary_sha256')==base.NATIVE for p in req['processes_after']),'wrong actual companion')
-        # CALL operands in the native debug stream use overlay transport widths; compare the full replay manually below.
-        debug=cap.root/f"{cap.label}-{view['tag']}-debug.xml";require(sha(debug)==req['debug']['sha256'],'changed native debug')
-        base.debug_identity(debug,cap.requested[view['tag']],req['entry'])
+        cap.verify_native(view['tag'])
     return node_by_id
 
 def run_stage(cap,image,invert=False):

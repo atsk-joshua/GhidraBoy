@@ -37,12 +37,16 @@ to keep a new composition separate from prior artifacts. It refuses existing
 stages and archives. Package manifests identify their exact sources, dependencies
 and payloads. An integrity-only historical audit is not current-source qualification.
 
-The cleanup retains SM83 language version 1.0, `SM83:LE:16:default`, the default
+The historical cleanup retained SM83 language version 1.0, `SM83:LE:16:default`, the default
 compiler identity and all added compiler profiles. Saved-Program migration and
 saved-instruction decoding are separate from the runtime support policy:
 **current builds require Ghidra 12.1.3 / JDK 21**. No broader runtime support is
 claimed. No provider semantics changed in this cleanup, and installed migration,
 GUI/device and full decompilation acceptance were not rerun.
+
+The current experimental stock transport uses language 2.0. Its full stock test
+checkpoint remains failed, and normal-window qualification is blocked. See the
+[transport decision](decisions/stock-ghidra-transport.md) and [current status](sa/IMPLEMENTATION-STATUS.md).
 
 Historical engineering reports are preserved externally through the [evidence index](sa/evidence-index.json); the static extension ships the explicit user documentation allowlist in `packaging/static-docs.txt`. Packaged documentation links must resolve within the extracted payload.
 

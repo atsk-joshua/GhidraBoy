@@ -181,4 +181,49 @@
       </killedbycall>
       <pcode inject="uponentry" dynamic="true"/>
     </prototype>
+  <prototype name="__ghidraboy_stock_entry_v1" extrapop="2" stackshift="2" strategy="register">
+      <input>
+        <pentry minsize="1" maxsize="1">
+          <register name="A"/>
+        </pentry>
+        <pentry minsize="1" maxsize="2">
+          <register name="HL"/>
+        </pentry>
+        <pentry minsize="1" maxsize="2">
+          <register name="BC"/>
+        </pentry>
+        <pentry minsize="1" maxsize="2">
+          <register name="DE"/>
+        </pentry>
+        <pentry minsize="1" maxsize="500" align="1">
+          <addr offset="2" space="stack"/>
+        </pentry>
+      </input>
+      <output>
+        <pentry minsize="1" maxsize="1">
+          <register name="A"/>
+        </pentry>
+        <pentry minsize="1" maxsize="2">
+          <register name="HL"/>
+        </pentry>
+        <pentry minsize="1" maxsize="2">
+          <register name="BC"/>
+        </pentry>
+        <pentry minsize="1" maxsize="2">
+          <register name="DE"/>
+        </pentry>
+      </output>
+      <unaffected>
+        <register name="SP"/>
+      </unaffected>
+      <!-- Unknown assembly callees may change every flag. -->
+      <killedbycall>
+        <register name="F"/>
+      </killedbycall>
+
+      <pcode inject="uponentry" dynamic="true"/>
+    </prototype>
+  <callotherfixup targetop="gb_analysis_entry_v1">
+    <pcode dynamic="true"/>
+  </callotherfixup>
 </compiler_spec>

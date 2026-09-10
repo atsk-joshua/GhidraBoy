@@ -19,7 +19,7 @@
             endian="little"
             size="16"
             variant="default"
-            version="1.0"
+            version="2.0"
             slafile="sm83.sla"
             processorspec="sm83.pspec"
             manualindexfile="../manuals/SM83.idx"

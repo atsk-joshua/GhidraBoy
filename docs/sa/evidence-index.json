@@ -357,5 +357,31 @@
       "regressions": "PASS: 789 tests/80 classes, all 782 accepted case instances retained; lint/build; build-inputs7; tooling86 passes/one existing optional skip; installed loops/domains/order PASS"
     },
     "compatibility": "New image envelope1; predicate graph/registration4 reject prior incompatible versions. Mapping2, configured-domain2, FarCallEvidence3, native/SLEIGH/language/compiler unchanged. No G4 migration."
+  },
+  "stock_ghidra_transport": {
+    "status": "PARTIAL; STOP for master review",
+    "base_commit": "eaf60575e212ae91e64aef48ba691fed2d3f878a",
+    "report": "evidence/batches/STOCK-GHIDRA-TRANSPORT/delivery/REPORT-STOCK-GHIDRA-TRANSPORT.md",
+    "archive": "evidence/batches/STOCK-GHIDRA-TRANSPORT/delivery/CHANGES-STOCK-GHIDRA-TRANSPORT.zip",
+    "source_status": "evidence/batches/STOCK-GHIDRA-TRANSPORT/delivery/source-status.json",
+    "corrected_evidence": "evidence/batches/STOCK-GHIDRA-TRANSPORT/final-corrected",
+    "retained_failures": [
+      "evidence/batches/STOCK-GHIDRA-TRANSPORT/final/mac/damage",
+      "evidence/batches/STOCK-GHIDRA-TRANSPORT/run-1/switch-public",
+      "evidence/batches/STOCK-GHIDRA-TRANSPORT/final-corrected/full-xml"
+    ],
+    "extension_sha256": "68f1179b428f22e0ae860f327612a22222a2e5ff297a9dd03671f9048b1f4c83",
+    "mac_native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+    "linux_native_sha256": "4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d",
+    "full_tests": {
+      "total": 795,
+      "passed": 693,
+      "failed": 102,
+      "skipped": 0,
+      "accepted_cases_retained": 789
+    },
+    "gui": "GUI_BLOCKED",
+    "switch": "UPSTREAM_LIMITATION_REPRODUCED; positive switch obligations not passed",
+    "compatibility": "Language 2.0; explicit stock transport v2; no general old-Program migration"
   }
 }

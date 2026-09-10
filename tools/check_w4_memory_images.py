@@ -66,14 +66,12 @@ def validate_bindings(bindings):
     for cpu,offset in [(0xc060,0x60),(0xe060,0x60),(0xc070,0x70),(0xc071,0x71),(0xc074,0x74),(0xc200,0x200),(0xe201,0x201)]:
         require(cells[cpu]['space']=='ram' and cells[cpu]['physical']==[{'region':'WRAM','bank':0,'offset':offset}],'fixture topology disagrees with independent WRAM binding')
 
-def evaluate(root,label,mode,fixture,bindings):
-    cap=core.Capture(root,label);validate_bindings(bindings)
+def evaluate(root,label,mode,fixture,bindings,cap=None):
+    cap=cap if cap is not None else core.Capture(root,label);validate_bindings(bindings)
     for view in cap.views:
         req=cap.requests[view['tag']];require(req['completed'] and req['highfunction_available'] and not req['error'],'native request failed')
         require(req['entry']==view['view']['entry'],'wrong requested native Function')
-        require(any(p.get('parent')==req['owner_java_pid'] and p.get('binary_sha256')==core.base.NATIVE for p in req['processes_after']),'wrong actual companion')
-        debug=cap.root/f"{cap.label}-{view['tag']}-debug.xml";require(core.sha(debug)==req['debug']['sha256'],'changed native debug')
-        core.base.debug_identity(debug,cap.requested[view['tag']],req['entry'])
+        cap.verify_native(view['tag'])
     require(cap.proof['version']=='predicated-ordinary-graph-4' and cap.proof['coverageComplete'] and not cap.proof['frontier'],'incomplete production proof')
     declaration=cap.proof['memory'];require(declaration is not None,'missing production memory authority')
     if mode=='A':
@@ -137,10 +135,15 @@ def evaluate(root,label,mode,fixture,bindings):
         changed=copy.deepcopy(cap);ops=changed.requested['root'];stores=[i for i,op in enumerate(ops) if op['mnemonic']=='STORE' and op['inputs'][1]['offset']==0xc060]
         require(len(stores)==1,'late-store control lacks unique actual echo effect')
         index=stores[0];store=copy.deepcopy(ops[index]);ops[index]={'mnemonic':'COPY','output':{'id':-1,'space':'unique','offset':0x70000000,'size':1,'constant':False},'inputs':[{'id':-2,'space':'const','offset':0,'size':1,'constant':True}]}
-        rereads=[i for i,op in enumerate(ops) if i>index and any(v['space']=='ram' and v['offset']==0xc060 for v in op['inputs'])]
+        witness=Machine(fixture,0,frames[0],bindings,code,cpu);witness.emitted(cap)
+        order=[i for tag,i in witness.emitted_trace if tag=='root']
+        require(index in order,'echo store not on actual emitted path')
+        after=order[order.index(index)+1:]
+        rereads=[i for i in after if any(v['space']=='ram' and v['offset']==0xc060 for v in ops[i]['inputs'])]
         require(rereads,'late-store control lacks still-dependent physical reread')
-        # Swap into a later harmless unique label COPY; preserve branch offsets and the dependent reread.
-        later=next(i for i in range(rereads[0]+1,len(ops)) if ops[i]['mnemonic']=='COPY' and ops[i].get('output',{}).get('space')=='unique' and ops[i]['inputs'][0]['constant'])
+        # Follow actual local edges: operation array order is not execution order.
+        after_read=after[after.index(rereads[0])+1:]
+        later=next(i for i in after_read if ops[i]['mnemonic']=='COPY' and ops[i].get('output',{}).get('space')=='unique' and ops[i]['inputs'][0]['constant'])
         ops[later]=store
         try:run(changed,0,frames[0]);raise AssertionError('late-store mutation escaped')
         except core.Refusal:negatives['requested/late-store']='counterexample'

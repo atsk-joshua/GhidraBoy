@@ -43,6 +43,7 @@ public final class SoftwareCallStateEntryInjection extends InjectPayloadSleigh {
           return PredicatedCalls.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
         if (OrdinaryEntryAccess.registered(program, context.baseAddr))
           return OrdinaryEntryAccess.emit(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
+        if (SoftwareCallRegistry.stock(program)) throw new IllegalArgumentException("Stock registry cannot use legacy native entry convention");
         long before = program.getModificationNumber();
         var input = SoftwareCallRegistry.resolveStateEntry(program, context.baseAddr);
         var graph = SoftwareCallRegistry.entryGraph(program, context.baseAddr, input);

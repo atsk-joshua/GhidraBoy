@@ -25,9 +25,10 @@ def read(path): return json.loads(path.read_text())
 def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 def signature(v): return None if v is None else (v['space'], v['offset'], v['size'])
 
-def debug_identity(path, emitted, entry):
+def debug_identity(path, emitted, entry, inject_name="__ghidraboy_state_entry_v1@@inject_uponentry"):
+    """Compare a named actual debug replay; callers must separately verify runtime identity."""
     root = ET.fromstring(path.read_text())
-    matches = [n for n in root.findall('.//injectdebug/inject') if n.get('name') == '__ghidraboy_state_entry_v1@@inject_uponentry']
+    matches = [n for n in root.findall('.//injectdebug/inject') if n.get('name') == inject_name]
     require(len(matches) == 1, 'missing actual debug-recorded injection')
     node = matches[0]; at = node.find('addr'); space, offset = entry.split('::')
     require(at is not None and at.get('space') == space and int(at.get('offset'), 0) == int(offset, 16), 'foreign debug entry')
@@ -148,22 +149,30 @@ def check_domain(ops, marker3, high=False):
     return [{'selector':s, 'C030':v, 'C031':s, 'count':n} for (s,v),n in sorted(counts.items())]
 
 
+def finite_choice_fields(proof):
+    finite=proof['finite']
+    if 'choices' in finite:
+        require(finite['version']=='finite-entry-producer-w2g-joint-3','unexpected current finite authority')
+        return 'choices','choice','key'
+    return 'selectors','selector','selector'
+
 def check_proof(proof, marker3):
     require(proof['entry']=='0150' and proof['analysis'].get('assumption') is None
             and proof.get('invocation') is None, 'foreign/selected static entry premise')
     require(''.join(i['bytes'] for i in proof['instructions']) ==
             '78e6033cea31c0ea00202100607eea30c0c9', 'proof does not bind exact four-way code')
-    finite = proof['finite']; selectors = finite['selectors']
+    finite = proof['finite']; choices_key,choice_key,alternative_key=finite_choice_fields(proof); selectors = finite[choices_key]
+    if choices_key=='choices':require(all(c['kind']=='MAPPER_SELECTOR' for c in selectors),'unexpected choice kind')
     require(len(selectors)==1 and selectors[0]['values']==[1,2,3,4]
             and selectors[0]['width']==1 and 'entry-register-byte@3' in selectors[0]['expression'],
             'missing, extra or unproduced selector')
-    reads = [r for r in finite['reads'] if r.get('selector') is not None]
-    require(len(reads)==1 and reads[0]['selector']==selectors[0], 'uncorrelated read/selector')
+    reads = [r for r in finite['reads'] if r.get(choice_key) is not None]
+    require(len(reads)==1 and reads[0][choice_key]==selectors[0], 'uncorrelated read/selector')
     alternatives=reads[0]['alternatives']
-    require(len(alternatives)==4 and [a['selector'] for a in alternatives]==[1,2,3,4],
+    require(len(alternatives)==4 and [a[alternative_key] for a in alternatives]==[1,2,3,4],
             'missing, duplicate, reordered or extra alternative')
     for a in alternatives:
-        s=a['selector']; expected={1:0x31,2:0xa7,3:marker3,4:0x5c}[s]
+        s=a[alternative_key]; expected={1:0x31,2:0xa7,3:marker3,4:0x5c}[s]
         require(a['value']==expected and len(a['sources'])==1, 'swapped selector/physical value')
         source=a['sources'][0]; physical=source['physical']
         require(source['byteIndex']==0 and source['value']==expected
@@ -179,6 +188,7 @@ def check_c(path, marker3):
 #include <stdint.h>
 typedef uint8_t byte, undefined1; typedef uint16_t undefined2; typedef unsigned int uint;
 #define __ghidraboy_state_entry_v1
+#define __ghidraboy_stock_entry_v1
 byte DAT_c030, DAT_c031; int mapper_count, mapper_selector, early;
 void gb_cartridge_write8(unsigned cpu, unsigned value) {
   if (cpu != 0x2000 || DAT_c031 != (byte)value || DAT_c030 != 0) early=1;
@@ -205,6 +215,7 @@ void gb_cartridge_write8(unsigned cpu, unsigned value) {
 
 
 def negative_controls(emitted, high, proof):
+    _,choice_key,alternative_key=finite_choice_fields(proof)
     results=[]
     def reject(name, function):
         try: function()
@@ -212,12 +223,12 @@ def negative_controls(emitted, high, proof):
         else: raise Refusal('negative control escaped: '+name)
     for name, mutation in [
         ('missing-alternative', lambda a: a.pop()),
-        ('conflicting-duplicate-selector', lambda a: a[3].update(selector=3)),
+        ('conflicting-duplicate-selector', lambda a: a[3].update({alternative_key:3})),
         ('swapped-selector-values', lambda a: (a[1].update(value=0xd3),a[2].update(value=0xa7))),
-        ('unproduced-selector', lambda a: a.append(dict(a[-1],selector=5))),
+        ('unproduced-selector', lambda a: a.append(dict(a[-1],**{alternative_key:5}))),
         ('silent-budget-truncation', lambda a: a.__delitem__(slice(2,None))),
     ]:
-        mutant=copy.deepcopy(proof); mutation(next(r for r in mutant['finite']['reads'] if r.get('selector'))['alternatives'])
+        mutant=copy.deepcopy(proof); mutation(next(r for r in mutant['finite']['reads'] if r.get(choice_key))['alternatives'])
         reject(name, lambda m=mutant: check_proof(m,0xd3))
     choices=[i for i,o in enumerate(emitted) if o['mnemonic']=='INT_EQUAL' and o['inputs'][1]['constant'] and o['inputs'][1]['offset'] in {2,3,4}]
     require(len(choices)==3, 'unexpected branchless selection guard shape')

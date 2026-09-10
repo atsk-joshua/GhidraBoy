@@ -1,5 +1,41 @@
 # Implementation status
 
+## STOCK-GHIDRA-TRANSPORT — PARTIAL; STOP for master review
+
+The experimental stock transport and its one bounded integrity correction are
+implemented. The [decision](../decisions/stock-ghidra-transport.md) supersedes
+companion-as-deployment direction, while preserving historical G2/G3 acceptance
+on their original runtime. No core Java or production native patch is included.
+
+The exact corrected Mac artifact passes assigned headless ordinary, physical-call,
+cyclic, exact-continuation, same-site/two-domain, symbolic-RAM and image-generation
+relations and sensitive controls. Current image and domain authority reopen in
+separate read-only processes with unchanged Program data; two exact project backup
+index/journal changes are recorded separately. Linux x86-64 G2 and native refusal
+pass under Docker/Rosetta with actual executable mappings and identities recorded.
+
+Overall stock product qualification **does not pass**. The clean stock checkpoint
+runs all 789 accepted cases plus six stock tests: 693 pass, 102 fail, zero skips.
+The 102 cases still invoke companion-dependent routes; their obligations remain
+untransitioned, not converted to unsupported passes. Lint/build and inexpensive
+checks pass. Public normalized-switch override returns wrong values at inputs
+3/4/5; nibble recovery has extra targets, and two direct stock range tests fail.
+Normal-window execution is GUI_BLOCKED by inability to attach computer-use control
+to the launched Java application. The maintained window script compiled but was
+not executed. No GUI, CI-green, full migration or complete stock workflow claim
+is made.
+
+Language 2.0 adds the nonflowing analysis context. Stock transport version 2 has
+separate registration keys and retains old authority without automatic conversion.
+The initial carrier-mode-removal failure is retained; a straight-line uponentry
+integrity guard now rejects its actual invalid native result without adding CPU
+or memory effects. No materialization fallback or third candidate was started.
+See the [evidence index](evidence-index.json) for report, artifacts and limitations.
+Stop for master review; no W4b, CI repair, debugger/consumer work or publication.
+
+The following sections are historical accepted checkpoints and retained failures,
+not qualification of the new stock artifact.
+
 ## W4-MEMORY-IMAGE-G3 — G3 PASS; STOP for master review
 
 **G3 PASS — SYMBOLIC RAM EFFECTS AND EXECUTABLE-IMAGE LIFETIME.**

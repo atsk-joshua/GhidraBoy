@@ -18,6 +18,10 @@ public class GhidraBoyTools extends GhidraScript {
                 "Action",
                 List.of(
                     "inspect",
+                    "stock-contexts",
+                    "stock-current",
+                    "stock-source",
+                    "stock-predicate-install",
                     "mapping-json",
                     "navigate-file",
                     "navigate-physical",
@@ -180,6 +184,30 @@ public class GhidraBoyTools extends GhidraScript {
             && askYesNo("Save preview", "Save this preview for later application?"))
           Files.writeString(
               askFile("New preview JSON", "Save").toPath(), output, StandardOpenOption.CREATE_NEW);
+      }
+      case "stock-contexts" -> {
+        var entries=StockEntries.entries(currentProgram);
+        if(entries.isEmpty()){println("No installed stock analysis entries");break;}
+        println(ProgramMapping.JSON.toJson(entries));
+        String selected=value!=null?value:askChoice("Conditional stock analysis", "Navigate to an explicitly owned entry",
+            entries.stream().map(StockEntries.Entry::carrier).toList(),entries.getFirst().carrier());
+        var entry=entries.stream().filter(e->e.carrier().equals(selected)).findFirst().orElseThrow();
+        goTo(currentProgram.getAddressFactory().getAddress(entry.carrier()));
+      }
+      case "stock-current" -> {
+        try {println(StockEntries.current(currentProgram,currentAddress,monitor));}
+        catch(Exception failure){popup("Stock analysis unavailable: "+failure.getMessage());}
+      }
+      case "stock-source" -> {
+        var function=getFunctionContaining(currentAddress);
+        var entry=StockEntries.entries(currentProgram).stream().filter(e->function!=null&&e.carrier().equals(function.getEntryPoint().toString())).findFirst().orElseThrow();
+        goTo(currentProgram.getAddressFactory().getAddress(entry.source()));
+      }
+      case "stock-predicate-install" -> {
+        var function=getFunctionContaining(currentAddress);
+        if(function==null)throw new IllegalArgumentException("Select a canonical source Function");
+        var proof=PredicatedCalls.preview(currentProgram,function,PredicatedCallGraph.Limits.PRIMARY,monitor);
+        goTo(PredicatedCalls.installStock(currentProgram,proof,monitor));
       }
       case "inspect" -> println(ProgramMapping.JSON.toJson(ProgramMapping.inspect(currentProgram)));
       case "mapping-json" -> {

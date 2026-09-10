@@ -58,7 +58,9 @@ public final class OrdinaryEntryAccess {
     }
   }
   private record Registration(String version, long programId, String alias, Proof proof, String dependencies,
-      String comment, String nativeIdentity) {}
+      String comment, String nativeIdentity, String transport) {}
+  public static final String STOCK_OPTIONS = "GhidraBoyStockOrdinaryEntries";
+  public static final String STOCK_VERSION = "stock-ordinary-entry-1";
 
   private static String instance(Program p) {
     return INSTANCES.computeIfAbsent(p, ignored -> UUID.randomUUID().toString());
@@ -323,19 +325,21 @@ public final class OrdinaryEntryAccess {
   }
 
   private static Registration read(Program p, Address alias) {
-    if (!p.getOptionsNames().contains(OPTIONS)) return null;
-    String json = p.getOptions(OPTIONS).getString(alias.toString(), null);
+    boolean stock = p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString());
+    if (!stock && !p.getOptionsNames().contains(OPTIONS)) return null;
+    String json = p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).getString(alias.toString(), null);
     if (json == null) return null;
     // Inspect the version before decoding changed finite-choice record fields. Old records
     // remain intact and cannot be silently reinterpreted under pointer-choice semantics.
     var envelope = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-    require(envelope.has("version") && VERSION.equals(envelope.get("version").getAsString()),
+    require(envelope.has("version") && (stock ? STOCK_VERSION : VERSION).equals(envelope.get("version").getAsString()),
         "Unsupported ordinary registration version; record retained without migration");
     var result = ProgramMapping.JSON.fromJson(json, Registration.class);
-    require(result != null && VERSION.equals(result.version()), "Unsupported ordinary registration version");
+    require(result != null && (stock ? StockEntryInjection.VERSION.equals(result.transport()) && result.nativeIdentity() == null : result.transport() == null), "Unsupported ordinary transport authority");
     return result;
   }
   public static boolean registered(Program p, Address alias) {
+    if (p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString())) return true;
     if (!p.getOptionsNames().contains(OPTIONS)) return false;
     return p.getOptions(OPTIONS).contains(alias.toString());
   }
@@ -370,7 +374,8 @@ public final class OrdinaryEntryAccess {
 
   // The actual mapped view and visible domain bind the proof to this invocation. A valid proof
   // for some other Function in the same Program cannot authorize this alias via edited JSON.
-  private static void requireAliasBinding(Program p, Address alias, Proof proof, TaskMonitor monitor) throws Exception {
+  private static void requireAliasBinding(Program p, Address alias, Proof proof, TaskMonitor monitor, boolean stock) throws Exception {
+    if (stock) StockEntryInjection.validate(p, alias);
     var entry = ProgramMapping.staticAddress(p, proof.entry());
     require(entry != null && alias.getAddressSpace().isOverlaySpace()
         && alias.getAddressSpace().getName().startsWith(PREFIX) && alias.getOffset() == entry.getOffset()
@@ -405,13 +410,19 @@ public final class OrdinaryEntryAccess {
           || owned.contains(block.getStart().toString()), "Conditional alias contains unproved extra ranges");
     var function = p.getFunctionManager().getFunctionAt(alias);
     require(function != null && function.getBody().equals(expectedBody)
-        && SoftwareCallStateEntryInjection.CONVENTION.equals(function.getCallingConventionName())
+        && (stock ? StockEntryInjection.CONVENTION : SoftwareCallStateEntryInjection.CONVENTION).equals(function.getCallingConventionName())
         && domainComment(proof).equals(function.getComment()), "Conditional alias/domain does not bind this canonical proof");
   }
 
   /** Creates only an explicit conditional alias. Entire operation rolls back on failure. */
   public static Address install(Program p, Proof proof, TaskMonitor monitor) throws Exception {
-    validatePreview(p, proof, monitor); String nativeIdentity = SoftwareCallStateEntryInjection.nativeIdentity();
+    return install(p, proof, monitor, false);
+  }
+  public static Address installStock(Program p, Proof proof, TaskMonitor monitor) throws Exception {
+    return install(p, proof, monitor, true);
+  }
+  private static Address install(Program p, Proof proof, TaskMonitor monitor, boolean stock) throws Exception {
+    validatePreview(p, proof, monitor); String nativeIdentity = stock ? null : SoftwareCallStateEntryInjection.nativeIdentity();
     var entry = ProgramMapping.staticAddress(p, proof.entry());
     String name = PREFIX + Long.toHexString(entry.getOffset());
     require(p.getAddressFactory().getAddressSpace(name) == null, "Ordinary conditional alias already exists");
@@ -420,33 +431,35 @@ public final class OrdinaryEntryAccess {
       var reviewed = SoftwareCallExecutionView.previewOrdinary(p, name, proof.segments(), monitor);
       var created = SoftwareCallExecutionView.createOrdinary(p, reviewed, monitor);
       var body = created.body(); var alias = body.getMinAddress();
+      if (stock) StockEntryInjection.prepare(p, alias);
       Disassembler.getDisassembler(p, monitor, null).disassemble(alias, body);
       require(p.getListing().getInstructionAt(alias) != null, "Conditional alias failed to decode");
       var function = p.getFunctionManager().createFunction(name + "_conditional", alias, body, SourceType.ANALYSIS);
-      function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
+      function.setCallingConvention(stock ? StockEntryInjection.CONVENTION : SoftwareCallStateEntryInjection.CONVENTION);
       String comment = domainComment(proof);
       function.setComment(comment);
-      requireAliasBinding(p, alias, proof, monitor);
-      var registration = new Registration(VERSION, p.getUniqueProgramID(), alias.toString(), proof,
-          fingerprint(p, monitor), comment, nativeIdentity);
-      p.getOptions(OPTIONS).setString(alias.toString(), ProgramMapping.JSON.toJson(registration));
+      requireAliasBinding(p, alias, proof, monitor, stock);
+      var registration = new Registration(stock ? STOCK_VERSION : VERSION, p.getUniqueProgramID(), alias.toString(), proof,
+          fingerprint(p, monitor), comment, nativeIdentity, stock ? StockEntryInjection.VERSION : null);
+      p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).setString(alias.toString(), ProgramMapping.JSON.toJson(registration));
       monitor.checkCancelled(); success = true; return alias;
     } finally { p.endTransaction(tx, success); }
   }
   /** Explicit regeneration after a retained stale failure; does not conceal decompiler cache work. */
   public static void refresh(Program p, Address alias, Proof proof, TaskMonitor monitor) throws Exception {
     var old = read(p, alias); require(old != null, "Missing ordinary registration");
+    boolean stock = old.transport() != null;
     validatePreview(p, proof, monitor);
     require(old.proof().entry().equals(proof.entry()) && old.proof().end().equals(proof.end())
         && Objects.equals(old.proof().invocation(), proof.invocation()) && old.proof().segments().equals(proof.segments()),
         "Refresh may not change the represented Function extent");
-    requireAliasBinding(p, alias, proof, monitor);
+    requireAliasBinding(p, alias, proof, monitor, stock);
     int tx = p.startTransaction("Refresh ordinary-entry access proof"); boolean success = false;
     try {
-      String nativeIdentity = SoftwareCallStateEntryInjection.nativeIdentity();
-      p.getOptions(OPTIONS).setString(alias.toString(), ProgramMapping.JSON.toJson(
-          new Registration(VERSION, p.getUniqueProgramID(), alias.toString(), proof,
-              fingerprint(p, monitor), old.comment(), nativeIdentity)));
+      String nativeIdentity = stock ? null : SoftwareCallStateEntryInjection.nativeIdentity();
+      p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).setString(alias.toString(), ProgramMapping.JSON.toJson(
+          new Registration(stock ? STOCK_VERSION : VERSION, p.getUniqueProgramID(), alias.toString(), proof,
+              fingerprint(p, monitor), old.comment(), nativeIdentity, old.transport())));
       monitor.checkCancelled(); success = true;
     } finally { p.endTransaction(tx, success); }
   }
@@ -525,12 +538,19 @@ public final class OrdinaryEntryAccess {
 
   /** Read-only callback: revalidate dependency snapshot; never run a mutating Program analyzer. */
   public static PcodeOp[] emit(Program p, Address alias, long uniqueBase, TaskMonitor monitor) throws Exception {
+    return emit(p, alias, uniqueBase, monitor, false);
+  }
+  public static PcodeOp[] emitStock(Program p, Address alias, long uniqueBase, TaskMonitor monitor) throws Exception {
+    return emit(p, alias, uniqueBase, monitor, true);
+  }
+  private static PcodeOp[] emit(Program p, Address alias, long uniqueBase, TaskMonitor monitor, boolean stock) throws Exception {
     long revision = p.getModificationNumber(); var registration = read(p, alias);
     require(registration != null && registration.programId() == p.getUniqueProgramID()
         && alias.toString().equals(registration.alias()), "Missing or foreign ordinary-entry registration");
-    require(registration.nativeIdentity().equals(SoftwareCallStateEntryInjection.nativeIdentity()), "Native companion changed");
+    require(stock ? StockEntryInjection.VERSION.equals(registration.transport()) : registration.transport() == null, "Entry transport mismatch");
+    if (!stock) require(registration.nativeIdentity().equals(SoftwareCallStateEntryInjection.nativeIdentity()), "Native companion changed");
     OrdinaryProofDependencies.requireCurrent(p, registration.dependencies(), monitor);
-    requireAliasBinding(p, alias, registration.proof(), monitor);
+    requireAliasBinding(p, alias, registration.proof(), monitor, stock);
     // The serialized record is not evidence for its own replacements. Re-derive once at this
     // entry request through the read-only production preview, including after save/reopen.
     // This deliberately pays bounded preview cost rather than trusting mutable option JSON.

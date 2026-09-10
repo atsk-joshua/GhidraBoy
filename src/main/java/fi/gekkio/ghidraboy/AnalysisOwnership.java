@@ -62,7 +62,15 @@ public final class AnalysisOwnership {
   public record Redirect(Point source, long id, Point target, String originalStamp, String appliedStamp) {}
   public record View(String name, String stamp) {}
   public record StateEntry(Point address, long id, String originalConvention,
-      String originalComment, String appliedComment, Boolean originalNoReturn, Boolean appliedNoReturn, String appliedMetadata) {}
+      String originalComment, String appliedComment, Boolean originalNoReturn, Boolean appliedNoReturn, String appliedMetadata,
+      String appliedConvention) {
+    public StateEntry(Point address, long id, String originalConvention, String originalComment,
+        String appliedComment, Boolean originalNoReturn, Boolean appliedNoReturn, String appliedMetadata) {
+      this(address,id,originalConvention,originalComment,appliedComment,originalNoReturn,appliedNoReturn,appliedMetadata,null);
+    }
+    // Absent only in old companion-owned receipts; their applied convention had one meaning.
+    public String appliedConvention() { return appliedConvention == null ? SoftwareCallStateEntryInjection.CONVENTION : appliedConvention; }
+  }
   public record SiteReferences(Point address, String stamp) {}
   public record Primary(Point from, Point to, int operand, String type, String source, boolean original, boolean applied) {}
   public record Range(Point min, Point max) {}
@@ -170,7 +178,10 @@ public final class AnalysisOwnership {
     try {
       var group = registry(p).groups.get("software-call");
       var function = p.getFunctionManager().getFunctionAt(entry);
-      return group != null && function != null && SoftwareCallStateEntryInjection.CONVENTION.equals(function.getCallingConventionName())
+      if (SoftwareCallRegistry.stockCarrier(p, entry)) StockEntryInjection.validate(p, entry);
+      return group != null && function != null && (SoftwareCallRegistry.stock(p)
+          ? (SoftwareCallRegistry.stockCarrier(p, entry) ? StockEntryInjection.CONVENTION.equals(function.getCallingConventionName()) : !StockEntryInjection.CONVENTION.equals(function.getCallingConventionName()))
+          : SoftwareCallStateEntryInjection.CONVENTION.equals(function.getCallingConventionName()))
           && group.stateEntries.stream().anyMatch(receipt -> receipt.id == function.getID()
               && Objects.equals(receipt.address.resolve(p), entry) && receipt.appliedMetadata != null
               && receipt.appliedMetadata.equals(helperMetadataStamp(function)));
@@ -187,7 +198,7 @@ public final class AnalysisOwnership {
       String applied = stateEntryComment(old.originalComment, detail);
       function.setComment(applied);
       group.stateEntries.set(index, new StateEntry(old.address, old.id, old.originalConvention,
-          old.originalComment, applied, old.originalNoReturn, old.appliedNoReturn, helperMetadataStamp(function)));
+          old.originalComment, applied, old.originalNoReturn, old.appliedNoReturn, helperMetadataStamp(function), old.appliedConvention()));
       for (int helperIndex = 0; helperIndex < group.helpers.size(); helperIndex++) {
         var helper = group.helpers.get(helperIndex);
         if (helper.id == function.getID()) group.helpers.set(helperIndex, new Helper(helper.address, helper.id,
@@ -300,7 +311,7 @@ public final class AnalysisOwnership {
     for (var receipt : group.stateEntries) {
       var function = p.getFunctionManager().getFunctionAt(receipt.address.resolve(p));
       if (function != null && function.getID() == receipt.id
-          && SoftwareCallStateEntryInjection.CONVENTION.equals(function.getCallingConventionName())
+          && Objects.equals(receipt.appliedConvention(), function.getCallingConventionName())
           && receipt.appliedMetadata != null)
         function.setCallingConvention(receipt.originalConvention);
       else diagnostics.add("Preserved edited state-entry convention at " + receipt.address.resolve(p));

@@ -12,6 +12,8 @@ import java.util.*;
 public final class SoftwareCallDomains {
   private SoftwareCallDomains() {}
   public static final String VERSION="software-call-domains-2", OPTIONS="GhidraBoySoftwareCallDomains";
+  public static final String STOCK_OPTIONS="GhidraBoyStockSoftwareCallDomains", STOCK_VERSION="stock-software-call-domains-1";
+  private static String options(Program p) { return p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(RECORD)?STOCK_OPTIONS:OPTIONS; }
   private static final String RECORD="registration", DISPLAY="selected-display";
   public record Domain(String id,String physicalSite,SoftwareCallValidation.Configuration configuration,
       SoftwareCallModel.Frame frame,SoftwareCallEffects.Summary effects,SoftwareCallEffects.ContinuationSummary callee,
@@ -22,7 +24,7 @@ public final class SoftwareCallDomains {
   public record View(String domain,String kind,String entry,List<SoftwareCallExecutionView.Segment> segments) {
     public View {segments=List.copyOf(segments);}
   }
-  private record Registration(String version,long programId,List<SoftwareCallValidation.Configuration> configurations,String semantics,List<View> views,String dependencies,String nativeIdentity) {
+  private record Registration(String version,long programId,List<SoftwareCallValidation.Configuration> configurations,String semantics,List<View> views,String dependencies,String nativeIdentity,String transport) {
     Registration {configurations=List.copyOf(configurations);views=List.copyOf(views);}
   }
   private static void require(boolean ok,String reason){if(!ok)throw new IllegalArgumentException(reason);}
@@ -101,32 +103,39 @@ public final class SoftwareCallDomains {
   }
   private static String name(Domain domain,String kind){return SoftwareCallExecutionView.PREFIX+"domain_"+domain.id().substring(0,16)+"_"+kind;}
   public static List<View> install(Program p,Proof proof,TaskMonitor monitor)throws Exception {
-    current(p,proof,monitor,true);require(!p.getOptionsNames().contains(OPTIONS)||!p.getOptions(OPTIONS).contains(RECORD),"Software domain group already installed");
-    String nativeIdentity=SoftwareCallStateEntryInjection.nativeIdentity();int tx=p.startTransaction("Install reviewed same-site software invocation domains");boolean success=false;
+    return install(p,proof,monitor,false);
+  }
+  public static List<View> installStock(Program p,Proof proof,TaskMonitor monitor)throws Exception {
+    return install(p,proof,monitor,true);
+  }
+  private static List<View> install(Program p,Proof proof,TaskMonitor monitor,boolean stock)throws Exception {
+    current(p,proof,monitor,true);require(!p.getOptionsNames().contains(options(p))||!p.getOptions(options(p)).contains(RECORD),"Software domain group already installed");
+    String nativeIdentity=stock?null:SoftwareCallStateEntryInjection.nativeIdentity();int tx=p.startTransaction("Install reviewed same-site software invocation domains");boolean success=false;
     try {
       SoftwareCallInstructionDiscovery.apply(p,proof.discovery(),monitor);var views=new ArrayList<View>();
       for(var domain:proof.domains())for(String kind:List.of("root","callee")) {
         var pieces=segments(p,domain,kind);var made=SoftwareCallExecutionView.create(p,SoftwareCallExecutionView.preview(p,name(domain,kind),pieces,monitor),monitor);
         int cpu=kind.equals("root")?domain.configuration().callCpu():domain.frame().targetCpu();
         var entry=made.body().getMinAddress().getAddressSpace().getAddress(cpu);
+        if(stock)StockEntryInjection.prepare(p,entry);
         Disassembler.getDisassembler(p,monitor,null).disassemble(entry,made.body());
         var function=p.getFunctionManager().createFunction(name(domain,kind),entry,made.body(),SourceType.ANALYSIS);
-        require(function!=null,"Domain Function creation failed");function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
+        require(function!=null,"Domain Function creation failed");function.setCallingConvention(stock?StockEntryInjection.CONVENTION:SoftwareCallStateEntryInjection.CONVENTION);
         function.setComment(VERSION+"\nExact incoming domain "+domain.id()+"\n"+ProgramMapping.JSON.toJson(domain.configuration()));
         views.add(new View(domain.id(),kind,entry.toString(),pieces));
       }
-      var registration=new Registration(VERSION,p.getUniqueProgramID(),proof.domains().stream().map(Domain::configuration).toList(),semantics(proof.domains()),views,fingerprint(p,monitor),nativeIdentity);
-      p.getOptions(OPTIONS).setString(RECORD,ProgramMapping.JSON.toJson(registration));validateViews(p,registration,proof);success=true;return views;
+      var registration=new Registration(stock?STOCK_VERSION:VERSION,p.getUniqueProgramID(),proof.domains().stream().map(Domain::configuration).toList(),semantics(proof.domains()),views,fingerprint(p,monitor),nativeIdentity,stock?StockEntryInjection.VERSION:null);
+      p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(RECORD,ProgramMapping.JSON.toJson(registration));validateViews(p,registration,proof);success=true;return views;
     }finally{p.endTransaction(tx,success);}
   }
   private static Registration read(Program p) {
-    require(p.getOptionsNames().contains(OPTIONS)&&p.getOptions(OPTIONS).contains(RECORD),"Missing software domain group");
-    var json=com.google.gson.JsonParser.parseString(p.getOptions(OPTIONS).getString(RECORD,null)).getAsJsonObject();
-    require(json.has("version")&&VERSION.equals(json.get("version").getAsString()),"Unsupported software domain record version");
-    var record=ProgramMapping.JSON.fromJson(json,Registration.class);require(record.programId()==p.getUniqueProgramID(),"Foreign software domain Program");return record;
+    require(p.getOptionsNames().contains(options(p))&&p.getOptions(options(p)).contains(RECORD),"Missing software domain group");
+    var json=com.google.gson.JsonParser.parseString(p.getOptions(options(p)).getString(RECORD,null)).getAsJsonObject();
+    require(json.has("version")&&(options(p).equals(STOCK_OPTIONS)?STOCK_VERSION:VERSION).equals(json.get("version").getAsString()),"Unsupported software domain record version");
+    var record=ProgramMapping.JSON.fromJson(json,Registration.class);require(options(p).equals(STOCK_OPTIONS)?StockEntryInjection.VERSION.equals(record.transport())&&record.nativeIdentity()==null:record.transport()==null,"Incompatible domain transport authority");require(record.programId()==p.getUniqueProgramID(),"Foreign software domain Program");return record;
   }
   public static boolean registered(Program p,Address entry) {
-    return entry!=null&&p.getOptionsNames().contains(OPTIONS)&&p.getOptions(OPTIONS).contains(RECORD)
+    return entry!=null&&p.getOptionsNames().contains(options(p))&&p.getOptions(options(p)).contains(RECORD)
         &&read(p).views().stream().anyMatch(view->view.entry().equals(entry.toString()));
   }
   public static List<View> views(Program p){return read(p).views();}
@@ -139,7 +148,7 @@ public final class SoftwareCallDomains {
   /** A selection for navigation only. Callback domain identity always comes from its explicit entry. */
   public static void selectDisplay(Program p,String domain) {
     require(read(p).views().stream().anyMatch(d->d.domain().equals(domain)),"Foreign display domain");
-    int tx=p.startTransaction("Select software domain display");try{p.getOptions(OPTIONS).setString(DISPLAY,domain);}finally{p.endTransaction(tx,true);}
+    int tx=p.startTransaction("Select software domain display");try{p.getOptions(options(p)).setString(DISPLAY,domain);}finally{p.endTransaction(tx,true);}
   }
   private static void validateViews(Program p,Registration record,Proof proof) {
     require(record.views().size()==proof.domains().size()*2,"Changed software domain view inventory");var seen=new HashSet<String>();
@@ -157,7 +166,8 @@ public final class SoftwareCallDomains {
         var mapped=block.getSourceInfos().getFirst().getMappedRange().orElseThrow();var source=ProgramMapping.staticAddress(p,piece.source());
         require(mapped.getMinAddress().equals(source)&&mapped.getMaxAddress().equals(source.add(piece.length()-1)),"Wrong domain physical source");body.add(at,at.add(piece.length()-1));
       }
-      require(f!=null&&f.getBody().equals(body)&&SoftwareCallStateEntryInjection.CONVENTION.equals(f.getCallingConventionName())&&!f.hasNoReturn()
+      if(record.transport()!=null)StockEntryInjection.validate(p,entry);
+      require(f!=null&&f.getBody().equals(body)&&(record.transport()!=null?StockEntryInjection.CONVENTION:SoftwareCallStateEntryInjection.CONVENTION).equals(f.getCallingConventionName())&&!f.hasNoReturn()
           &&!f.isInline()&&!f.isThunk()&&!f.hasVarArgs()&&f.getCallFixup()==null&&f.getParameterCount()==0&&!f.hasCustomVariableStorage()
           &&f.getReturnType().getName().equals("undefined"),"Changed exact software domain native contract");
     }
@@ -171,9 +181,16 @@ public final class SoftwareCallDomains {
     return emit(p,entry,uniqueBase,monitor);
   }
   public static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor)throws Exception {
+    return emit(p,entry,uniqueBase,monitor,false);
+  }
+  public static PcodeOp[] emitStock(Program p,Address entry,long uniqueBase,TaskMonitor monitor)throws Exception {
+    return emit(p,entry,uniqueBase,monitor,true);
+  }
+  private static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor,boolean stock)throws Exception {
     long revision=p.getModificationNumber();var record=read(p);
+    require(stock?StockEntryInjection.VERSION.equals(record.transport()):record.transport()==null,"Entry transport mismatch");
     require(record.dependencies().equals(fingerprint(p,monitor)),"Stale software domain registration; explicit refresh required");
-    require(record.nativeIdentity().equals(SoftwareCallStateEntryInjection.nativeIdentity()),"Changed domain native companion");var proof=currentRecord(p,record,monitor);validateViews(p,record,proof);
+    if(!stock)require(record.nativeIdentity().equals(SoftwareCallStateEntryInjection.nativeIdentity()),"Changed domain native companion");var proof=currentRecord(p,record,monitor);validateViews(p,record,proof);
     var view=record.views().stream().filter(v->v.entry().equals(entry.toString())).findFirst().orElseThrow();
     var domain=proof.domains().stream().filter(d->d.id().equals(view.domain())).findFirst().orElseThrow();
     PcodeOp[] result;

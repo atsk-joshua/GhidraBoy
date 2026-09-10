@@ -14,4 +14,12 @@
 
 @include "sm83.sinc"
 
+with : gb_analysis_entry=0 {
 @include "sm83_instructions.sinc"
+}
+
+# Owned presentation only; payload supplies all hardware effects.
+:ANALYSIS_ENTRY is gb_analysis_entry=1 & op0_8 {
+  gb_analysis_entry_v1();
+  goto inst_start;
+}

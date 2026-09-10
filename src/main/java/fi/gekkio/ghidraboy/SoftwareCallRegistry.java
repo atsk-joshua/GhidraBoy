@@ -10,6 +10,10 @@ import java.util.*;
 public final class SoftwareCallRegistry {
   private SoftwareCallRegistry() {}
   public static final String KEY = "softwareCall.sites.v1";
+  public static final String STOCK_KEY = "softwareCall.stock.sites.v1";
+  public static final String STOCK_VERSION = "stock-software-call-registry-1";
+  public static boolean stock(Program p) { return p.getOptions(ProgramMapping.OPTIONS).contains(STOCK_KEY); }
+  private static String key(Program p) { return stock(p) ? STOCK_KEY : KEY; }
   public static final String VERSION = "software-call-registry-7";
   private record Site(String address, String canonicalAddress, String target, String executionAlias, boolean stateContinuation, SoftwareCallValidation.Configuration configuration) {}
   public static final String EXECUTION_CONDITIONS = "Synchronous SM83 model: results require no asynchronous interrupt/DMA interference or untracked memory changes, in addition to the supplied register, stack and mapper premises. These are explicit conditions, not an all-input ABI or whole-ROM proof.";
@@ -18,16 +22,16 @@ public final class SoftwareCallRegistry {
       this(site, graphEntry, canonical, kind, graphEntry, false);
     }
   }
-  private record Registry(String version, String executionConditions, List<Site> sites, List<String> nativeFunctions, Map<String, StateEntry> stateEntries, String dependencies) {}
+  private record Registry(String version, String executionConditions, List<Site> sites, List<String> nativeFunctions, Map<String, StateEntry> stateEntries, String dependencies, String transport) {}
 
   private static Registry read(Program program) {
     var options = program.getOptions(ProgramMapping.OPTIONS);
-    if (!options.contains(KEY)) return null;
-    var raw = com.google.gson.JsonParser.parseString(options.getString(KEY, "null"));
+    if (!options.contains(key(program))) return null;
+    var raw = com.google.gson.JsonParser.parseString(options.getString(key(program), "null"));
     if (!raw.isJsonObject() || !raw.getAsJsonObject().has("sites")
         || !raw.getAsJsonObject().get("sites").isJsonArray())
       throw new IllegalArgumentException("Invalid software-call registry");
-    if (!raw.getAsJsonObject().has("version") || !VERSION.equals(raw.getAsJsonObject().get("version").getAsString()))
+    if (!raw.getAsJsonObject().has("version") || !(stock(program) ? STOCK_VERSION : VERSION).equals(raw.getAsJsonObject().get("version").getAsString()))
       throw new IllegalArgumentException("Incompatible software-call registry; review and reapply");
     for (var site : raw.getAsJsonObject().getAsJsonArray("sites")) {
       if (!site.isJsonObject()) throw new IllegalArgumentException("Invalid software-call site record");
@@ -42,8 +46,10 @@ public final class SoftwareCallRegistry {
         throw new IllegalArgumentException("Missing explicit continuation transport policy");
     }
     var value = ProgramMapping.JSON.fromJson(raw, Registry.class);
-    if (value == null || !VERSION.equals(value.version) || !EXECUTION_CONDITIONS.equals(value.executionConditions) || value.sites == null || value.nativeFunctions == null || value.stateEntries == null)
+    if (value == null || !(stock(program) ? STOCK_VERSION : VERSION).equals(value.version) || !EXECUTION_CONDITIONS.equals(value.executionConditions) || value.sites == null || value.nativeFunctions == null || value.stateEntries == null)
       throw new IllegalArgumentException("Incompatible software-call registry; review and reapply");
+    if (stock(program) ? !StockEntryInjection.VERSION.equals(value.transport) : value.transport != null)
+      throw new IllegalArgumentException("Incompatible software-call transport authority");
     for (var entry : value.stateEntries.entrySet()) {
       var state = entry.getValue();
       if (entry.getKey().isBlank() || state == null || state.site == null || state.canonical == null
@@ -84,6 +90,12 @@ public final class SoftwareCallRegistry {
 
   public static void install(Program p, List<SoftwareCallValidation.Configuration> configurations,
       Map<String, String> executionSites, Set<String> stateContinuations, Map<String, StateEntry> stateEntries) throws Exception {
+    install(p, configurations, executionSites, stateContinuations, stateEntries, false);
+  }
+  static void install(Program p, List<SoftwareCallValidation.Configuration> configurations,
+      Map<String, String> executionSites, Set<String> stateContinuations, Map<String, StateEntry> stateEntries, boolean stock) throws Exception {
+    if (p.getOptions(ProgramMapping.OPTIONS).contains(stock ? KEY : STOCK_KEY))
+      throw new IllegalArgumentException("Other transport authority retained; no implicit conversion");
     var sites = new ArrayList<Site>();
     var nativeFunctions = new TreeSet<String>();
     var seen = new HashSet<String>();
@@ -122,17 +134,17 @@ public final class SoftwareCallRegistry {
     }
     sites.sort(Comparator.comparing(Site::address));
     var options = p.getOptions(ProgramMapping.OPTIONS);
-    options.setString(KEY, ProgramMapping.JSON.toJson(new Registry(VERSION, EXECUTION_CONDITIONS, sites, List.copyOf(nativeFunctions), Map.copyOf(stateEntries), "")));
+    options.setString(stock ? STOCK_KEY : KEY, ProgramMapping.JSON.toJson(new Registry(stock ? STOCK_VERSION : VERSION, EXECUTION_CONDITIONS, sites, List.copyOf(nativeFunctions), Map.copyOf(stateEntries), "", stock ? StockEntryInjection.VERSION : null)));
     String dependencies = semanticDependencies(p, TaskMonitor.DUMMY);
-    options.setString(KEY, ProgramMapping.JSON.toJson(new Registry(VERSION, EXECUTION_CONDITIONS, sites, List.copyOf(nativeFunctions), Map.copyOf(stateEntries), dependencies)));
+    options.setString(stock ? STOCK_KEY : KEY, ProgramMapping.JSON.toJson(new Registry(stock ? STOCK_VERSION : VERSION, EXECUTION_CONDITIONS, sites, List.copyOf(nativeFunctions), Map.copyOf(stateEntries), dependencies, stock ? StockEntryInjection.VERSION : null)));
   }
 
-  public static void remove(Program p) { p.getOptions(ProgramMapping.OPTIONS).removeOption(KEY); }
+  public static void remove(Program p) { p.getOptions(ProgramMapping.OPTIONS).removeOption(key(p)); }
 
   /** Included in bounded-analysis invalidation without recursively hashing the saved digest. */
   static String configurationIdentity(Program p) {
     var registry = read(p);
-    return registry == null ? "absent" : VERSION + registry.executionConditions + ProgramMapping.JSON.toJson(registry.sites) + ProgramMapping.JSON.toJson(registry.nativeFunctions) + ProgramMapping.JSON.toJson(registry.stateEntries);
+    return registry == null ? "absent" : registry.version + (registry.transport == null ? "" : registry.transport) + registry.executionConditions + ProgramMapping.JSON.toJson(registry.sites) + ProgramMapping.JSON.toJson(registry.nativeFunctions) + ProgramMapping.JSON.toJson(registry.stateEntries);
   }
 
   public static SoftwareCallValidation.Preview resolve(Program p, Address address) throws Exception {
@@ -155,11 +167,22 @@ public final class SoftwareCallRegistry {
     return site == null || site.executionAlias == null || !site.address.equals(site.canonicalAddress) ? null : ProgramMapping.staticAddress(p, site.executionAlias);
   }
 
+  static StateEntry stockEntry(Program p, Address entry) {
+    if (!stock(p)) throw new IllegalArgumentException("No stock registry");
+    var state = read(p).stateEntries.get(entry.toString());
+    if (state == null || entry.toString().equals(state.canonical)) throw new IllegalArgumentException("Not an owned stock carrier");
+    return state;
+  }
+  static boolean stockCarrier(Program p, Address entry) {
+    var registry = read(p);
+    var state = registry == null ? null : registry.stateEntries.get(entry.toString());
+    return stock(p) && state != null && !entry.toString().equals(state.canonical);
+  }
   static SoftwareCallValidation.Preview resolveStateEntry(Program p, Address entry) throws Exception {
     var registry = read(p);
     if (registry == null || !registry.stateEntries.containsKey(entry.toString()))
       throw new IllegalArgumentException("Missing state-entry registry at " + entry);
-    SoftwareCallStateEntryInjection.nativeIdentity();
+    if (!stock(p)) SoftwareCallStateEntryInjection.nativeIdentity();
     for (String address : registry.stateEntries.keySet())
       if (!AnalysisOwnership.stateEntryCurrent(p, ProgramMapping.staticAddress(p, address)))
         throw new IllegalArgumentException("Paired state-entry metadata changed at " + address);
@@ -211,6 +234,7 @@ public final class SoftwareCallRegistry {
   }
 
   public static void selectStateContext(Program p, Address canonical, Address entry, TaskMonitor monitor) throws Exception {
+    if (stock(p)) throw new IllegalArgumentException("Stock contexts are separate navigation entries; canonical selection is not executable authority");
     long modification = p.getModificationNumber();
     var initialRegistry = read(p);
     if (initialRegistry == null) throw new IllegalArgumentException("Missing state-entry registry");
@@ -231,10 +255,10 @@ public final class SoftwareCallRegistry {
       AnalysisOwnership.selectStateEntryComment(p, canonical,
           ProgramMapping.JSON.toJson(Map.of("sourceSite", selected.site, "origin", selected.kind, "state", selected.entryState)));
       var options = p.getOptions(ProgramMapping.OPTIONS);
-      options.setString(KEY, ProgramMapping.JSON.toJson(new Registry(VERSION, EXECUTION_CONDITIONS,
-          registry.sites, registry.nativeFunctions, Map.copyOf(entries), "")));
-      options.setString(KEY, ProgramMapping.JSON.toJson(new Registry(VERSION, EXECUTION_CONDITIONS,
-          registry.sites, registry.nativeFunctions, Map.copyOf(entries), semanticDependencies(p, monitor))));
+      options.setString(key(p), ProgramMapping.JSON.toJson(new Registry(registry.version, EXECUTION_CONDITIONS,
+          registry.sites, registry.nativeFunctions, Map.copyOf(entries), "", registry.transport)));
+      options.setString(key(p), ProgramMapping.JSON.toJson(new Registry(registry.version, EXECUTION_CONDITIONS,
+          registry.sites, registry.nativeFunctions, Map.copyOf(entries), semanticDependencies(p, monitor), registry.transport)));
       monitor.checkCancelled(); success = true;
     } finally { p.endTransaction(transaction, success); }
   }
@@ -383,7 +407,7 @@ public final class SoftwareCallRegistry {
     fields.put("memory", base.get("memory"));
     fields.put("mapping", base.get("mapping"));
     fields.put("configuration", configurationIdentity(p));
-    if (!read(p).stateEntries.isEmpty()) fields.put("stateEntryNative", SoftwareCallStateEntryInjection.nativeIdentity());
+    if (!read(p).stateEntries.isEmpty()) fields.put(stock(p) ? "stateEntryTransport" : "stateEntryNative", stock(p) ? StockEntryInjection.VERSION : SoftwareCallStateEntryInjection.nativeIdentity());
     var permissions = new ArrayList<String>();
     for (var block : p.getMemory().getBlocks()) permissions.add(block.getStart() + ":" + block.getFlags());
     Collections.sort(permissions);
