@@ -450,5 +450,21 @@
     "negative_action_branch": "NOT_REACHED",
     "production_corrections": 0,
     "stop": "Master review; no automatic next batch"
+  },
+  "g1_window_harness_completion": {
+    "status": "SCOPED_WORKFLOW_PASS_MASTER_REVIEW_PENDING",
+    "candidate_commit": "96119bf74257e323a1377baf76607f70d98c96df",
+    "candidate_tree": "6b832ecb2a554649d8558846739204e13145a0c0",
+    "clean_checkpoint_commit": "48eeacdf23ca6d248bb39e9ef05d82f6501acf98",
+    "report": "evidence/batches/G1-WINDOW-HARNESS-COMPLETION/delivery/REPORT-G1-WINDOW-HARNESS-COMPLETION.md",
+    "archive": "evidence/batches/G1-WINDOW-HARNESS-COMPLETION/delivery/CHANGES-G1-WINDOW-HARNESS-COMPLETION.zip",
+    "archive_digest": "evidence/batches/G1-WINDOW-HARNESS-COMPLETION/delivery/CHANGES-G1-WINDOW-HARNESS-COMPLETION.zip.sha256",
+    "replay": "evidence/batches/G1-WINDOW-HARNESS-COMPLETION/delivery/contents/replay.py",
+    "extension_sha256": "b83d3781b70294c61424a4fbe9f7e4d25b5482aad1007915d1d94af8052990b0",
+    "negative_action_branch": "NOT_AVAILABLE_ON_ERROR then ACTIVE_NAVIGATION_REFUSAL",
+    "default_test_instances": 819,
+    "sensitivity_controls_rejected": 28,
+    "production_corrections": 0,
+    "stop": "Master review; no automatic next batch"
   }
 }

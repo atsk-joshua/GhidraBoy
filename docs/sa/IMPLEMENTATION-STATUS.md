@@ -1,5 +1,18 @@
 # Implementation status
 
+## G1-WINDOW-HARNESS-COMPLETION — scoped workflow PASS; master review pending
+
+The source-qualified event/commit protocol and bounded transaction-aware settlement
+now traverse the complete P/Q/switching/negative/save/close workflow and a genuine
+second-JVM immutable reopen. All 819 default instances remain passing. Twenty final
+phase captures, actual P3 Refresh, all-input/six-case relations, complete authority
+comparison and 28 rejecting sensitivity controls support the scoped result.
+The first post-build run's occluded screenshots remain nonqualifying; the reviewed
+launcher-only visibility correction has a fresh complete confirmation on unchanged
+product bytes. No production correction or new gate allowance was used.
+See [completion](G1-WINDOW-HARNESS-COMPLETION.md) and the [evidence index](evidence-index.json).
+STOP for master review. Stock release, migration, switches and broader work remain open.
+
 ## G1-STOCK-NORMAL-WINDOW-CONTINUATION — HARNESS_OR_CHECKER_BLOCKED
 
 The consolidated candidate executes natural post-proof recovery and actual ordinary
