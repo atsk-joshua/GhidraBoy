@@ -20,6 +20,8 @@ public class GhidraBoyTools extends GhidraScript {
                     "inspect",
                     "stock-contexts",
                     "stock-current",
+                    "stock-ordinary-preview",
+                    "stock-ordinary-refresh",
                     "stock-source",
                     "stock-predicate-install",
                     "mapping-json",
@@ -196,6 +198,31 @@ public class GhidraBoyTools extends GhidraScript {
             entries.stream().map(StockEntries.Entry::carrier).toList(),entries.getFirst().carrier());
         var entry=entries.stream().filter(e->e.carrier().equals(selected)).findFirst().orElseThrow();
         goTo(currentProgram.getAddressFactory().getAddress(entry.carrier()));
+      }
+      case "stock-ordinary-preview", "stock-ordinary-refresh" -> {
+        var selected = getFunctionContaining(currentAddress);
+        if (selected == null || !OrdinaryEntryAccess.registered(currentProgram, selected.getEntryPoint())
+            || !StockEntryInjection.CONVENTION.equals(selected.getCallingConventionName()))
+          throw new IllegalArgumentException("Select an owned stock ordinary-entry Function");
+        var entry = selected.getEntryPoint();
+        var stored = OrdinaryEntryAccess.registeredProof(currentProgram, entry);
+        var source = getFunctionAt(currentProgram.getAddressFactory().getAddress(stored.entry()));
+        if (source == null) throw new IllegalArgumentException("Canonical source Function missing");
+        if (action.equals("stock-ordinary-preview")) {
+          var proof = OrdinaryEntryAccess.preview(currentProgram, source, stored.invocation(), monitor);
+          String json = ProgramMapping.JSON.toJson(proof);
+          println(json);
+          Path target = value == null ? askFile("New ordinary proof preview JSON", "Save").toPath() : Path.of(value);
+          Files.writeString(target, json, StandardOpenOption.CREATE_NEW);
+        } else {
+          Path file = value == null ? askFile("Reviewed ordinary proof preview JSON", "Refresh").toPath() : Path.of(value);
+          var proof = ProgramMapping.JSON.fromJson(Files.readString(file), OrdinaryEntryAccess.Proof.class);
+          if (!Objects.equals(stored.domain(), proof.domain()) || !Objects.equals(stored.invocation(), proof.invocation()))
+            throw new IllegalArgumentException("Refresh must preserve the selected conditional domain");
+          monitor.checkCancelled();
+          OrdinaryEntryAccess.refresh(currentProgram, entry, proof, monitor);
+          println("Ordinary proof refreshed at " + entry + "; use the Decompiler window Refresh action.");
+        }
       }
       case "stock-current" -> {
         try {println(StockEntries.current(currentProgram,currentAddress,monitor));}
