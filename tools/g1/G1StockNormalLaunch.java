@@ -47,7 +47,16 @@ public class G1StockNormalLaunch implements GhidraLaunchable {
         tool.showComponentProvider(provider,true);
         var frame=SwingUtilities.getWindowAncestor(provider.getComponent());
         if(frame instanceof java.awt.Frame f)f.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+        // Visibility support only, before any measured Program operation. Do not
+        // raise/refresh/navigate the window during a passive capture interval.
+        frame.setAlwaysOnTop(true);
+        if(java.awt.Desktop.isDesktopSupported() && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.APP_REQUEST_FOREGROUND))
+          java.awt.Desktop.getDesktop().requestForeground(true);
+        frame.toFront();
         widen(frame,provider.getComponent());
+        try {Files.writeString(out.resolve("window-visibility-setup.json"),ProgramMapping.JSON.toJson(java.util.Map.of(
+          "before_measurement",true,"always_on_top",frame.isAlwaysOnTop(),"showing",frame.isShowing(),"pid",ProcessHandle.current().pid())));}
+        catch(Exception failure){throw new RuntimeException(failure);}
       });
       var script=new GhidraBoyStockWindow();
       script.setPropertiesFileLocation(args[4],"GhidraBoyStockWindow");
