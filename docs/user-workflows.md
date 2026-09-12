@@ -118,7 +118,10 @@ patches, missing sources and detached ambiguous mappings are rejected. Repair is
 explicit and reports changed checksum offsets and the output SHA256.
 
 Close and copy the complete original project directory and `.gpr` before opening
-under newer Ghidra. Enhance only the copy. `enhance-legacy` preserves known
+under newer Ghidra. For SM83 1-to-2, first inspect the core-translated copy, save
+and close it, and verify immutable first use in another process before enhancement
+or reanalysis. The [language compatibility workflow](instruction-compatibility.md#installed-language-1-to-language-2-upgrade)
+describes the supported route and preservation limits. Enhance only a further copy. `enhance-legacy` preserves known
 historical hardware choices; unknown hardware remains unknown unless explicitly
 identified. Use `identify-ram` for reviewed RAM intervals; conflicts are rejected.
 Topology and annotations are never silently recreated. Reanalyze reviewed code.
@@ -142,8 +145,10 @@ The experimental stock path has separate production APIs (`installStock`,
 `stock-contexts` navigates existing owned entries, `stock-source` reaches their
 original source, and `stock-current` checks authority explicitly. Native recovery
 still uses the ordinary Decompiler. This is a partial qualification, not a release
-recommendation for old annotated Programs. Language 2.0 migration, normal-window
-lifecycle and retained switch limits are described in the
+recommendation for old annotated Programs. The bounded language-1-to-2 upgrade
+and unsupported-record refusal policy are described in the
+[compatibility decision](decisions/sm83-v1-v2-compatibility.md). Historical
+normal-window lifecycle and retained switch limits are described in the
 [transport decision](decisions/stock-ghidra-transport.md).
 
 The following companion-based instructions describe the retained earlier route;

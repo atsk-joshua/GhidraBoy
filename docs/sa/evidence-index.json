@@ -466,5 +466,21 @@
     "sensitivity_controls_rejected": 28,
     "production_corrections": 0,
     "stop": "Master review; no automatic next batch"
+  },
+  "sm83_v1_v2_compatibility": {
+    "status": "SCOPED_LOCAL_PASS_MASTER_REVIEW_PENDING",
+    "candidate_commit": "17b3333ecd5fa807813ed2ca71bbc6a8c3476106",
+    "candidate_tree": "5e64694b15afb0fb5bb2a0dd6b8c5e611a2a8782",
+    "extension_sha256": "75c33b5969da5d9ed40f76923637fe392879a1ccc89035eb819f56f25e4604a6",
+    "report": "evidence/batches/SM83-V1-V2-COMPATIBILITY/run-1/delivery/REPORT-SM83-V1-V2-COMPATIBILITY.md",
+    "archive": "evidence/batches/SM83-V1-V2-COMPATIBILITY/run-1/delivery/CHANGES-SM83-V1-V2-COMPATIBILITY.zip",
+    "archive_digest": "evidence/batches/SM83-V1-V2-COMPATIBILITY/run-1/delivery/CHANGES-SM83-V1-V2-COMPATIBILITY.zip.sha256",
+    "replay": "evidence/batches/SM83-V1-V2-COMPATIBILITY/run-1/delivery/contents/replay.py",
+    "baseline_instances_retained": 819,
+    "default_instances": 820,
+    "language": "Final-v1 annotated and 501-instruction preservation, core-only upgrade and first immutable separate-process use",
+    "legacy": "Genuine registry4 and later-edit preservation with scoped read-only public/native refusal; general proof migration and G4 master disposition remain open",
+    "platforms": "Mac arm64 and Docker/Rosetta Linux x86-64 local installed/migration; not hosted Actions acceptance",
+    "stop": "STOP for master review; G1 status unchanged"
   }
 }

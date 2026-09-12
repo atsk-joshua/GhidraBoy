@@ -1,5 +1,24 @@
 # Implementation status
 
+## SM83-V1-V2-COMPATIBILITY — scoped local PASS; master review pending
+
+The installed simple translator upgrades genuine final-language-1 annotated work
+and the complete 501-instruction corpus to unchanged canonical language-2 semantics.
+Core-only observation, save/exit, first immutable second-process use and cancellation
+with restored-original recovery pass. Genuine registry-4 and one later-edit variant
+retain complete knowledge and raw authority, while public operations and actual
+native use refuse unsupported execution/removal without conversion.
+
+The clean stock checkpoint retains all 819 baseline instances and adds one corrupt
+record case: 820 pass, with zero failures/errors/skips, plus lint/build. Mac and
+Docker/Rosetta Linux installed and actual 11.3.1 migration workflows pass on the same
+ZIP. Historical ADC and wrapping-stack corrections remain explicit. This is local
+execution evidence, not hosted Actions success, general old-proof migration, full
+G4 closure or stock-release qualification. G1 remains reported complete with master
+archive review pending; no G1 campaign was rerun. See the
+[decision](../decisions/sm83-v1-v2-compatibility.md) and [evidence index](evidence-index.json).
+STOP for master review; no next batch.
+
 ## G1-WINDOW-HARNESS-COMPLETION — scoped workflow PASS; master review pending
 
 The source-qualified event/commit protocol and bounded transaction-aware settlement
