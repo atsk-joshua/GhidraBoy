@@ -61,7 +61,7 @@ public class G1StockNormalLaunch implements GhidraLaunchable {
         project.close();SwingUtilities.invokeAndWait(()->frontend[0].dispose());
         System.exit(1);return;
       }
-      if(mode.equals("full")||mode.equals("reopen")) {
+      if(mode.equals("full")||mode.equals("reopen")||mode.equals("suffix-rehearsal")) {
         SwingUtilities.invokeAndWait(()->{tool.close();frontend[0].setActiveProject(null);});
         project.close();
         // FrontEndTool.dispose invokes System.exit(0). Record the already closed
