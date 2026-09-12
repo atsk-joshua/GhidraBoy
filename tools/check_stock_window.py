@@ -286,8 +286,9 @@ def check_full(root,reopen_root):
     correlated_operation(timeline,'registration-removal',records['missing-passive'],'missing-passive',{'registration-removed'})
     correlated_operation(timeline,'Q-generation',records['Q2'],'Q2',{'explicit-image-generation','navigate'})
     for name in ('P','Q'):
-        saved=(root/f'{name}-saved-authority.json').read_bytes()
-        require(saved==(reopen_root/f'{name}-before-authority.json').read_bytes()==(reopen_root/f'{name}-after-authority.json').read_bytes(),'saved authority changed '+name)
+        saved=finite.read(root/f'{name}-saved-authority.json')
+        # JSON object order is not persisted state; compare all values, with no excluded keys.
+        require(saved==finite.read(reopen_root/f'{name}-before-authority.json')==finite.read(reopen_root/f'{name}-after-authority.json'),'saved authority changed '+name)
     for base in (root,reopen_root):
         closures=finite.read(base/'program-closures.json');require(len(closures)==(3 if base==root else 2) and all(x['closed'] and x['consumers']==0 for x in closures),'retained/missing Programs')
         expected={p['program_id'],q['program_id'],variant['program_id']} if base==root else {p['program_id'],q['program_id']}

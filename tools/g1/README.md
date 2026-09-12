@@ -11,13 +11,18 @@ arguments. It refuses an existing output directory. `full` expects disposable
 current-language `/F1234.gb` and `/W4_MEMORY_IMAGE.gb` prepared by the two
 `GhidraBoyStock*Prepare.java` scripts. Generate Q with `tools/make_w4_fixtures.py`.
 Setup is separate from measurement. `reopen` requires the saved capture directory
-and opens Programs using `DomainFile.getReadOnlyDomainObject`; no preparation,
+and opens Programs using `DomainFile.getImmutableDomainObject`; no preparation,
 proof refresh, analyzer, establishment or import runs in that session.
 
-The driver ends its own initial Script Manager transaction before measurement
-and rejects any remaining transaction. It observes actual queued Program events,
-then stable controller data for at least six seconds (longer than the pinned
-provider's five-second maximum debounce), with a bounded 60-second deadline.
+The launcher supplies no script Program, so no hidden Script Manager transaction
+is created. The driver owns explicit operation subtransaction IDs, records public
+encompassing TransactionInfo snapshots and commit-call entry/return, and closes
+only its own entries. A bounded 60-second wait observes ordinary tool transactions
+without ending them. Settlement requires the target Program/Function, no active
+transaction, stable revision/event count and controller data for six seconds.
+Real Program events carry persistent/runtime source identity, per-Program sequence,
+types and affected ranges/options. The checker accepts either callback/return-receipt
+order when exact operation, completed commit, source and revision evidence agree.
 Captures serialize on the Swing thread and include real desktop screenshots.
 Process listings are supplemental; they do not independently attribute results.
 The displayed provider/controller, actual Program/Function, native resolution,
@@ -69,3 +74,19 @@ negative branch and reopen were not reached. The initial checker additionally
 rejects the genuine P event arriving just before its commit receipt. Do not call
 this a product defect or rerun automatically; see the
 [continuation disposition](../../docs/sa/G1-STOCK-NORMAL-WINDOW-CONTINUATION.md).
+
+## Harness completion protocol
+
+`--rehearsal` labels controlled support runs and prevents final checker qualification.
+`suffix-rehearsal --rehearsal --saved-captures ...` exercises only the shared negative
+and closure suffix of a disposable saved project; it is never a full acceptance run.
+A copied Program receives a new ID, so explicit shipped preview/refresh prepares its
+own authority before the warm negative. Removing its registration then requires the
+stock dispatcher's specific missing-registration/carrier refusal, with no output.
+A null ordinary action context is recorded as unavailable, never manufactured or
+forced. P3 always requires actual enabled dispatch and a fresh result.
+
+Second-JVM saved-Program reads use the public immutable-open API: Ghidra's API named
+read-only still permits in-memory writes. Raw authority snapshots are retained;
+comparison checks every parsed JSON value and array order while ignoring only JSON
+object-key serialization order. Historical failed receipts remain unchanged.

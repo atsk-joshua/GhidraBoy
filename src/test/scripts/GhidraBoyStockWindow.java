@@ -296,9 +296,12 @@ public class GhidraBoyStockWindow extends GhidraBoyMemoryImages {
     var file=state.getProject().getProjectData().getFile("/"+name);if(file==null)throw new IllegalStateException("Missing fixture "+name);
     Program[] p={null};
     if(readonly) {
-      p[0]=(Program)file.getReadOnlyDomainObject(this,-1,monitor);
-      if(p[0].isChangeable())throw new IllegalStateException("Reopen is writable");
-      SwingUtilities.invokeAndWait(()->state.getTool().getService(ProgramManager.class).openProgram(p[0]));p[0].release(this);
+      p[0]=(Program)file.getImmutableDomainObject(this,-1,monitor);
+      try {
+        if(p[0].isChangeable())throw new IllegalStateException("Reopen is writable");
+        save("open-"+name+".json",Map.of("api","DomainFile.getImmutableDomainObject","source_file_id",file.getFileID(),"source_path",file.getPathname(),"program_id",p[0].getUniqueProgramID(),"changeable",p[0].isChangeable()));
+        SwingUtilities.invokeAndWait(()->state.getTool().getService(ProgramManager.class).openProgram(p[0]));
+      } finally {p[0].release(this);}
     } else SwingUtilities.invokeAndWait(()->p[0]=state.getTool().getService(ProgramManager.class).openProgram(file));
     return p[0];
   }
@@ -450,11 +453,11 @@ public class GhidraBoyStockWindow extends GhidraBoyMemoryImages {
   }
   @Override public void run()throws Exception {
     if(isRunningHeadless())throw new IllegalStateException("Requires normal CodeBrowser");
+    if(currentProgram!=null)throw new IllegalStateException("Launcher must supply no script Program; no hidden Script Manager transaction");
     out=Path.of(getScriptArgs()[0]);Files.createDirectories(out);
     if(getScriptArgs().length>1 && getScriptArgs()[1].equals("reopen")){reopen();return;}
     currentProgram=state.getTool().getService(ProgramManager.class).getCurrentProgram();
-    // Script Manager owns an initial transaction; end only that script-owned transaction.
-    end(true);
+    // The launcher executes with null script Program; only explicit Mutation IDs are ours.
 
     window=(DecompilerProvider)state.getTool().getComponentProvider("Decompiler");
     var listened=currentProgram;
