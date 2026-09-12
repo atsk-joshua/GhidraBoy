@@ -1,5 +1,21 @@
 # Implementation status
 
+## G1-STOCK-NORMAL-WINDOW — BLOCKED; STOP for master review
+
+Genuine visible stock CodeBrowser access is verified. Current-language P0/P1
+window-owned results pass the 256-input oracle; the consumed E000 D3→E4 edit
+retains old registration and passively produces a visible stale-registration
+refusal with no HighFunction/C. The shipped explicit proof actions execute.
+Ordinary Refresh was disabled at the immediate post-proof check in the bounded
+confirming run; its Program event arrived afterward. No P3, Q/window topology,
+Program switching or qualified current-format reopen result was captured.
+
+This is a driver active-action sequencing boundary, not a demonstrated product
+semantic defect. The final ready-runner event wait is compile-only. The clean
+stock checkpoint preserves all 819 cases, with lint/build and tooling checks
+passing. See the [dated G1 disposition](G1-STOCK-NORMAL-WINDOW.md). G1 and the
+scoped workflow are not PASS. No automatic retry, migration or next batch.
+
 ## STOCK-ROUTE-COMPLETION — PASS for the scoped local task; STOP for master review
 
 Normal public creation and the shipped Tools/application path now select stock.

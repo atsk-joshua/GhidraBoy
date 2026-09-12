@@ -419,5 +419,23 @@
       "Inactive-source retirement and main-history integration not authorized"
     ],
     "final_packaging": "Documentation-only final source/archive distinction and executable-payload equality recorded in delivery manifest; archive SHA-256 detached to avoid a self-reference"
+  },
+  "g1_stock_normal_window": {
+    "status": "SEMANTIC_OR_LIFECYCLE_BLOCKED",
+    "scope": "Visible normal-provider and passive P safety pass; active Refresh/P3 and later lifecycle unqualified",
+    "report": "evidence/batches/G1-STOCK-NORMAL-WINDOW/delivery-20260912/REPORT-G1-STOCK-NORMAL-WINDOW.md",
+    "archive": "evidence/batches/G1-STOCK-NORMAL-WINDOW/delivery-20260912/CHANGES-G1-STOCK-NORMAL-WINDOW.zip",
+    "archive_digest": "evidence/batches/G1-STOCK-NORMAL-WINDOW/delivery-20260912/CHANGES-G1-STOCK-NORMAL-WINDOW.zip.sha256",
+    "coverage": {
+      "path": "evidence/batches/G1-STOCK-NORMAL-WINDOW/delivery-20260912/g1-coverage.json",
+      "sha256": "1ce9d1842b12a35e26552898df839ed0341e5b63bffc68289dfc4d04f8d22eeb"
+    },
+    "lifecycle": {
+      "path": "evidence/batches/G1-STOCK-NORMAL-WINDOW/delivery-20260912/lifecycle-results.json",
+      "sha256": "9c3d9c72368572b8a365325f9b78cd2e6ae3c341fd945937a6148a71fbdc5637"
+    },
+    "tested_extension_sha256": "ee272247a60d1ff7d95733641a303bde587c60da8a4f93cc6b580c185d2da965",
+    "ready_runner": "Final post-proof event drain is compile-only, not GUI-qualified",
+    "stop": "Master review; no next batch"
   }
 }

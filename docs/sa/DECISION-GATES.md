@@ -35,6 +35,17 @@ Pinned `DecompilerProgramListener` in the runtime [Decompiler source archive][up
 
 **Bound/consequences.** One Program, one byte mutation, one explicit refresh, one usable GUI session. Stop on the first identical environment failure. PASS supports the stock-listener-plus-thin-service approach. Missing Program events requires a W5 event publication fix; stale controller reuse after correct events requires a W5 supported controller integration fix. Correct window-owned payload but wrong native result becomes a localized lowering/transport defect. Safe stale refusal passes safety only until refreshed positive behavior succeeds. If the GUI remains unavailable, retain the implementation direction, complete other packages and mark A-GHIDRA/normal-window release acceptance blocked. Do not add a custom decompiler window just to claim success.
 
+### G1 dated disposition — 2026-09-12
+
+The authorized current-language F1234/E000 D3→E4 substitution verifies visible
+normal-provider access, all-input cold/warm behavior and passive stale refusal.
+The bounded confirming run stops after explicit proof refresh at a disabled
+ordinary Refresh action, before its queued Program event was delivered. Later
+image/switch/reopen phases remain unrun. G1 is **not PASS**. The final post-proof
+event wait is prepared and compile-only; no further native retry is authorized
+automatically. See the [full disposition](G1-STOCK-NORMAL-WINDOW.md). Historical
+F12/language-1 evidence and the original gate budget remain unchanged.
+
 ## G2 — Branching, same-CPU bank identity and real calls
 
 **Reused evidence/source.** [SoftwareCallStatePathsTest][state-tests] explicitly says its branch checks use two exact flag premises, not one unknown-flag CFG. [SoftwareCallStateCalleeApplicationTest][callee-tests] already covers native competing PCs, physical data identity, nested ordinary call restoration and two selected same-Program contexts. Reuse those frame/target expectations; do not retest every wrapper convention. EX-03-03/C supplies bank-changing fetch transport; EX-02-04/05 supplies unknown-byte selector relationships. [OrdinaryEntryAccess][ordinary] refuses branches/calls and `orderedFetch` rejects multiple states at one instruction; [SoftwareCallEffects][effects] is an existing exact-state graph foundation.
