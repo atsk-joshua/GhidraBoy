@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language version="1" endian="little">
+    <description>
+        <id>SM83:LE:16:default</id>
+        <processor>SM83</processor>
+        <variant>default</variant>
+        <size>16</size>
+    </description>
+    <compiler name="default" id="default" />
+    <compiler name="SDCC 4.5.1 call0" id="sdcc451-call0" />
+    <compiler name="SDCC 4.5.1 call1-first8" id="sdcc451-call1-first8" />
+    <compiler name="SDCC 4.5.1 call1-first16" id="sdcc451-call1-first16" />
+    <compiler name="SDCC 4.5.1 call1-first32" id="sdcc451-call1-first32" />
+    <spaces>
+        <space name="ram" type="ram" size="2" default="yes" />
+        <space name="register" type="register" size="1" />
+    </spaces>
+    <registers>
+        <register name="F" offset="0x0" bitsize="8" />
+        <register name="A" offset="0x1" bitsize="8" />
+        <register name="C" offset="0x2" bitsize="8" />
+        <register name="B" offset="0x3" bitsize="8" />
+        <register name="E" offset="0x4" bitsize="8" />
+        <register name="D" offset="0x5" bitsize="8" />
+        <register name="L" offset="0x6" bitsize="8" />
+        <register name="H" offset="0x7" bitsize="8" />
+        <register name="AF" offset="0x0" bitsize="16" />
+        <register name="BC" offset="0x2" bitsize="16" />
+        <register name="DE" offset="0x4" bitsize="16" />
+        <register name="HL" offset="0x6" bitsize="16" />
+        <register name="PC" offset="0x8" bitsize="16" />
+        <register name="SP" offset="0xa" bitsize="16" />
+    </registers>
+</language>

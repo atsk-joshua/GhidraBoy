@@ -689,6 +689,22 @@ class SoftwareCallAdversarialTest : IntegrationTest() {
         }
 
     @Test
+    fun `unsupported or corrupt registry refuses ownership writes without changing raw records`() =
+        fixture { p, config ->
+            SoftwareCallApplication.apply(p, SoftwareCallApplication.preview(p, listOf(config), TaskMonitor.DUMMY), TaskMonitor.DUMMY)
+            val options = p.getOptions(ProgramMapping.OPTIONS)
+            val ownership = options.getString("analysis.ownership.v1", "")
+            assertTrue(ownership.orEmpty().isNotBlank())
+            for (raw in listOf("{", "null", "{\"version\":\"unknown\",\"sites\":[]}")) {
+                p.withTransaction { options.setString(SoftwareCallRegistry.STOCK_KEY, raw) }
+                assertThrows(RuntimeException::class.java) { AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY) }
+                assertThrows(RuntimeException::class.java) { SoftwareCallRegistry.remove(p) }
+                assertEquals(raw, options.getString(SoftwareCallRegistry.STOCK_KEY, ""))
+                assertEquals(ownership, options.getString("analysis.ownership.v1", ""))
+            }
+        }
+
+    @Test
     fun `registry v3 record is rejected then public removal and reviewed reapplication produce current semantics`() =
         fixture { p, config ->
             val first = SoftwareCallApplication.preview(p, listOf(config), TaskMonitor.DUMMY)
@@ -713,19 +729,14 @@ class SoftwareCallAdversarialTest : IntegrationTest() {
             context.nextAddr = context.baseAddr
             context.callAddr = address(0x28)
             assertThrows(IllegalArgumentException::class.java) { payload.getPcode(p, context) }
-            AnalysisOwnership.remove(p, SoftwareCallApplication.FEATURE, TaskMonitor.DUMMY)
-            assertFalse(p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.STOCK_KEY))
-            SoftwareCallApplication.apply(p, SoftwareCallApplication.preview(p, listOf(config), TaskMonitor.DUMMY), TaskMonitor.DUMMY)
-            assertNotNull(SoftwareCallRegistry.resolve(p, address(0x200)))
-            assertEquals(
-                ProgramMapping.fileToStatic(p, 0x8100).single(),
-                payload
-                    .getPcode(p, context)
-                    .single {
-                        it.opcode == PcodeOp.CALL
-                    }.getInput(0)
-                    .address,
-            )
+            // Retain this incumbent case identity; removal is no longer a proof conversion route.
+            val before = p.getOptions(ProgramMapping.OPTIONS).getString(SoftwareCallRegistry.STOCK_KEY, "")
+            assertThrows(IllegalArgumentException::class.java) {
+                AnalysisOwnership.remove(p, SoftwareCallApplication.FEATURE, TaskMonitor.DUMMY)
+            }
+            assertThrows(IllegalArgumentException::class.java) { AnalysisOwnership.removeAll(p, TaskMonitor.DUMMY) }
+            assertThrows(IllegalArgumentException::class.java) { SoftwareCallRegistry.remove(p) }
+            assertEquals(before, p.getOptions(ProgramMapping.OPTIONS).getString(SoftwareCallRegistry.STOCK_KEY, ""))
         }
 
     @Test

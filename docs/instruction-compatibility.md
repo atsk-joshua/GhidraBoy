@@ -57,3 +57,30 @@ semantic improvements are distinct from saved/fresh decode mismatches, which
 must be zero. Do not delete or redisassemble existing instructions merely to
 make a preservation comparison pass. Retain the complete original Program/GZF;
 an instruction inventory is not a Program backup.
+
+## Installed language-1 to language-2 upgrade
+
+The extension now packages the actual final-language-1 storage descriptor and an
+explicit simple translator. See the [compatibility decision](decisions/sm83-v1-v2-compatibility.md).
+Keep the complete original project closed and backed up. Open only a disposable
+copy with the candidate installation. Inspect the initial translated state before
+running enhancement or analysis; save and close, then verify the saved current
+Program immutably in another process. Canonical code must keep analysis-entry mode
+zero. Existing incompatible executable records remain historical data and refuse
+unsupported use/removal; language translation is not proof migration.
+
+The reusable final-version-1 qualification command is:
+
+```sh
+python3 tools/sm83_compatibility.py --old-ghidra "$OLD_COPY" \
+  --ghidra "$NEW_COPY" --zip "$CANDIDATE_ZIP" --jdk "$JAVA_HOME" \
+  --work "$NEW_EVIDENCE_DIRECTORY"
+```
+
+Both installations must be task-owned temporary copies. The runner verifies the
+ten old language inputs against the recorded source, retains the old project and
+complete 501-instruction inventory, uses installed core translation, then a first
+immutable reopen and cancellation/recovery checks. The existing installed runner
+still exercises `42032f9`; the migration runner still creates a real 11.3.1 database
+and preserves its intentional ADC correction. Enhancement/reanalysis has its own
+later disposable copy, distinct from the first immutable observation.

@@ -146,7 +146,7 @@ val zip by tasks.registering(Zip::class) {
     from(generateExtensionProps)
     from("data") {
         into("data/")
-        include("**/*.cspec", "**/*.ldefs", "**/*.pspec", "**/*.sinc", "**/*.slaspec", "**/sleighArgs.txt")
+        include("**/*.lang", "**/*.trans", "**/*.cspec", "**/*.ldefs", "**/*.pspec", "**/*.sinc", "**/*.slaspec", "**/sleighArgs.txt")
     }
     dependsOn(compileSleigh)
     from("data/languages/sm83.sla") { into("data/languages/") }

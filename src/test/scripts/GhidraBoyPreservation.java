@@ -23,7 +23,7 @@ public class GhidraBoyPreservation extends GhidraScript {
       int tx = p.startTransaction("Legacy annotations");
       try {
         byte[] rom = new byte[0x10000];
-        rom[0x147] = 3;
+        rom[0x147] = (byte) (getScriptArgs().length > 1 && getScriptArgs()[1].equals("mbc5") ? 0x19 : 3);
         rom[0x148] = 1;
         rom[0x149] = 3;
         rom[0x150] = 0x3e;

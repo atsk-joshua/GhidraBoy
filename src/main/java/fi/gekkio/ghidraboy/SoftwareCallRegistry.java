@@ -140,7 +140,13 @@ public final class SoftwareCallRegistry {
     options.setString(stock ? STOCK_KEY : KEY, ProgramMapping.JSON.toJson(new Registry(stock ? STOCK_VERSION : VERSION, EXECUTION_CONDITIONS, sites, List.copyOf(nativeFunctions), Map.copyOf(stateEntries), dependencies, stock ? StockEntryInjection.VERSION : null)));
   }
 
-  public static void remove(Program p) { p.getOptions(ProgramMapping.OPTIONS).removeOption(key(p)); }
+  /** Validate format only, without refreshing dependencies or rewriting historical authority. */
+  public static void requireSupportedRecords(Program p) { read(p); }
+
+  public static void remove(Program p) {
+    requireSupportedRecords(p);
+    p.getOptions(ProgramMapping.OPTIONS).removeOption(key(p));
+  }
 
   /** Included in bounded-analysis invalidation without recursively hashing the saved digest. */
   static String configurationIdentity(Program p) {

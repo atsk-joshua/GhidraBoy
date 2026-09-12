@@ -1,0 +1,10 @@
+<language_translation>
+  <from_language version="1">SM83:LE:16:default</from_language>
+  <to_language version="2">SM83:LE:16:default</to_language>
+  <map_compiler_spec from="default" to="default"/>
+  <map_compiler_spec from="sdcc451-call0" to="sdcc451-call0"/>
+  <map_compiler_spec from="sdcc451-call1-first8" to="sdcc451-call1-first8"/>
+  <map_compiler_spec from="sdcc451-call1-first16" to="sdcc451-call1-first16"/>
+  <map_compiler_spec from="sdcc451-call1-first32" to="sdcc451-call1-first32"/>
+  <set_context name="gb_analysis_entry" value="0"/>
+</language_translation>

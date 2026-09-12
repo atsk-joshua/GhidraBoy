@@ -252,6 +252,7 @@ public final class AnalysisOwnership {
   }
 
   public static void save(Program p, String feature, Group group) {
+    SoftwareCallRegistry.requireSupportedRecords(p);
     var registry = registry(p);
     registry.groups.put(feature, group);
     p.getOptions(ProgramMapping.OPTIONS).setString(KEY, ProgramMapping.JSON.toJson(registry));
@@ -259,6 +260,7 @@ public final class AnalysisOwnership {
 
   public static List<String> remove(Program p, String feature, TaskMonitor monitor)
       throws Exception {
+    SoftwareCallRegistry.requireSupportedRecords(p);
     int tx = p.startTransaction("Remove owned " + feature);
     boolean success = false;
     var diagnostics = new ArrayList<String>();
@@ -279,6 +281,7 @@ public final class AnalysisOwnership {
   }
 
   public static List<String> removeAll(Program p, TaskMonitor monitor) throws Exception {
+    SoftwareCallRegistry.requireSupportedRecords(p);
     int tx = p.startTransaction("Remove GhidraBoy analysis additions");
     boolean success = false;
     var diagnostics = new ArrayList<String>();

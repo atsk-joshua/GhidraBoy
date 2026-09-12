@@ -1,0 +1,353 @@
+{
+  "scope": "Exact self-authored 42032f9 corpus and genuine 11.3.1 ADC fixture only; not a general decoder or proof converter",
+  "old_inputs": [
+    "42032f9",
+    "migrationExtension SHA256 99d0d2755608448b5e611a8b3031762dedb1d0c8397a36504b2b9b6d5600b2db"
+  ],
+  "current_semantics_source": "10e67f9696d5634baca55d09bfcdbfb2024a2633 (unchanged from final language 1)",
+  "transitions": [
+    {
+      "bytes": "083412",
+      "mnemonic": "LD",
+      "old_sha256": "46a91f02b4bb3da26cef42d5c227ece0db4a3fb945b6d55b6a91b75a4e559a89",
+      "current_sha256": "de1149b8c7e03e2bb80323c51027b4cafa5e226967eacff5b826d92276ca9883",
+      "reason": "Explicit hardware bus access / ordered bytewise memory operations"
+    },
+    {
+      "bytes": "27",
+      "mnemonic": "DAA",
+      "old_sha256": "952a03cae916ebfd495922463b7005b35ed4eaa29d73499b73cb01cfe09abc89",
+      "current_sha256": "fe8f94e27ba510ce47d0c43671b2ff6fc3828a90eb0298d56dfbdead6d3e6105",
+      "reason": "Defined DAA arithmetic replaces ignored userop"
+    },
+    {
+      "bytes": "88",
+      "mnemonic": "ADC",
+      "old_sha256": "dada376de038dfddf1b19f9fe7a2335880db6db6c4ca4913fa3e77644040a77d",
+      "current_sha256": "2b5c149208eedda31f0550ae406ebef3815378b1424971312b5f1a8323c07c4d",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "89",
+      "mnemonic": "ADC",
+      "old_sha256": "7e39bd81089f40ce613635757834885dd4a274cefe3c0b87a24072ab79368e5d",
+      "current_sha256": "95dbf6132a11bc3e018499e3d6f52f3b5ff05f0208efd1d4d2d1177fa716a50c",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "8a",
+      "mnemonic": "ADC",
+      "old_sha256": "e858a56d63349a3f4b06cf299f57216f7bdfb7d2189804d5a762b1c422af4a5b",
+      "current_sha256": "966320b4e0a35e8f40ff37e421bfc4559c5eddfb3466a88f5ff105713255c658",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "8b",
+      "mnemonic": "ADC",
+      "old_sha256": "11ff182ad0b8e24425c9dd558c3d9e941abd2aa5529fa28d504c1a45e533d48b",
+      "current_sha256": "9ecf0399e5a5cbbd47341115025d13442ce67ec5313468bba08be8440e0e6f16",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "8c",
+      "mnemonic": "ADC",
+      "old_sha256": "e8e4e07cf7362693d5301d8a3b2bc047d3b7bc282bc60fed367f53218194cc2f",
+      "current_sha256": "1fb1a4534a1885e1f85e1ff0c3e4057c264e34c7ea23ef5e26cc7bdb2eb9bbed",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "8d",
+      "mnemonic": "ADC",
+      "old_sha256": "7962aacd1ec78ad8aa528133e4e2bf995fb0aa8471f28ead24d22d95fbab3fda",
+      "current_sha256": "27ad26105173c3441075fb633d05578ceda564eff920efd0fb0e88acccca608b",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "8e",
+      "mnemonic": "ADC",
+      "old_sha256": "9b5f9f24eb9a0fdba42d57f69cd2dfdb7b933f6e947e471e6a31b57b4ef06c94",
+      "current_sha256": "3f840a2fd824ea863591d762a3725cafe55abd163d9ea5b818718e9a4ebd5c05",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "8f",
+      "mnemonic": "ADC",
+      "old_sha256": "69478202708abffc89bfc9f05b9b974ccce82cefe8af9ed9f6ef6f9ea3c86787",
+      "current_sha256": "14cd7be16fff5eb2233abe3347408fcc0033c16cb12a402a58474468ced2f2d5",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "98",
+      "mnemonic": "SBC",
+      "old_sha256": "287ef022212341c90bf682b714bdf371196bed0c047ab129ab0d6dcc404502a9",
+      "current_sha256": "23f1803f337c8bced4344d0299b1c9a5260aa724b323fec6e55ac09fb9141f39",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "99",
+      "mnemonic": "SBC",
+      "old_sha256": "f1ddde94732c1d2397ba07d47cf09796a3fbe060f9d97681334810691f928c61",
+      "current_sha256": "3a61cf2b327c3f47799dcc4bfa161c9faf23b713bd6759e0aa08c0b243556a8c",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "9a",
+      "mnemonic": "SBC",
+      "old_sha256": "de9b406cab5829806e84838ddc31ccd80e7151663365f3b4d792d1b284edf215",
+      "current_sha256": "bb76212718e45de58bca0ed3aafbd71a7b7a38a64fbd5c6dce5614cd0c774d11",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "9b",
+      "mnemonic": "SBC",
+      "old_sha256": "ed8b677617a483de25dd78a9f4167e71a83c78541132a661c2a4eda023500cbe",
+      "current_sha256": "5a81f66026df366e228663293cea1dde1d6dee4cae3d81288c56f77f067048e5",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "9c",
+      "mnemonic": "SBC",
+      "old_sha256": "00e96021648e2f8ef495f82b400172edfc54ca994c51abe38cefc3c9ee757676",
+      "current_sha256": "5f2d6db41ffc70135f8a8be591041f8ac52bd7299e9ce4992b93a3bf803e0f7c",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "9d",
+      "mnemonic": "SBC",
+      "old_sha256": "5f8a7bcf5ecfd661c8e1b53c1d1dcc5f93cf8735cff66ef8895784b009c5c772",
+      "current_sha256": "137abc1f6136e5aeadc732acedb0ebd95ef8ef3f17b1cf7a0a8a5f9ccc37530d",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "9e",
+      "mnemonic": "SBC",
+      "old_sha256": "50f7c102ec4af52876bc0e78559dd597ae6683022b8c5d0d012edf81f6f56e6f",
+      "current_sha256": "aa3e9bd208058e4c614f9bc8400b5e8f326672f37d1b61f79506b2090995f0de",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "9f",
+      "mnemonic": "SBC",
+      "old_sha256": "ca1dbf41c03d114d30e13001b43d9212ae655dff1e30e5edc7c86d8fbe876ccc",
+      "current_sha256": "6e490cc76f0dd67a8cb981b357dd8be0c9be89869cd8f636c6db53501024f157",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "c0",
+      "mnemonic": "RET",
+      "old_sha256": "cb6fd8f3440cb64584505f9249a28c661edd991422980329e9f5b4a645d47910",
+      "current_sha256": "64f25af65921b43ab623f8e063be043d7d7e83ca129fa0aea5d2a9d1f1288ac7",
+      "reason": "Bytewise wrapping stack return reads"
+    },
+    {
+      "bytes": "c1",
+      "mnemonic": "POP",
+      "old_sha256": "10970779e1a3ff6812bc739f4451263500c232895aab861423ce4fc0d21b53d4",
+      "current_sha256": "58d3cf25ba3c4100f0b5c9c9c7f942cbb3c30d360fbdb515995b9ebbe2126c70",
+      "reason": "Flag mask and bytewise wrapping stack reads"
+    },
+    {
+      "bytes": "c43412",
+      "mnemonic": "CALL",
+      "old_sha256": "8e75cf6be2ff4c57979de5d6a5a2078aea87501a536660a5cbba1666aa67424b",
+      "current_sha256": "d4d49976772214f2669131edf9435a213e9530f629900538d17e12a73b09cfcd",
+      "reason": "Bytewise wrapping call frame writes"
+    },
+    {
+      "bytes": "c5",
+      "mnemonic": "PUSH",
+      "old_sha256": "0fd10e0d26e99cd733b817e7254e1eb0573814bf138384765e3915f46f3375ce",
+      "current_sha256": "48f5cbfbccc43dd9d7948acf61b661870c01f76a42cc9cd7eb5bc4c7e17d67bb",
+      "reason": "Bytewise wrapping stack writes"
+    },
+    {
+      "bytes": "c7",
+      "mnemonic": "RST",
+      "old_sha256": "dcacd5107b2e5281199c2e044b8b6e200fe93cba5d773f4a9c0e7dd28ec4195f",
+      "current_sha256": "c562b4fc06bb56d14e3ce6cf414f6e0ac3ffb190e1a5666e2e16e2f8e68d2551",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "c8",
+      "mnemonic": "RET",
+      "old_sha256": "daff666e6bb0fb2f82e0c8944d8b572f6f1279e1b9ee38ad96ff9747c9fd5dbd",
+      "current_sha256": "ef874fcf524276d15972d31cd10dcaf02b61907fc2a05c12da5d130d8f86e724",
+      "reason": "Bytewise wrapping stack return reads"
+    },
+    {
+      "bytes": "c9",
+      "mnemonic": "RET",
+      "old_sha256": "8304d8416d9aebb87ddd842688a51eea48f2261890a84bae32747ff6880a6844",
+      "current_sha256": "b93fd4dc53e08e1d15a08b20bb49a3b5b6a8e3d20aba1838dd9be9b07d9c846c",
+      "reason": "Bytewise wrapping stack return reads"
+    },
+    {
+      "bytes": "cc3412",
+      "mnemonic": "CALL",
+      "old_sha256": "44e4b3d71f74794b7224c6be884752a60fe7a30075bfbfafddc9437edef52c9e",
+      "current_sha256": "a6e1f119d54357595f15292d7643639c2786e03a6971d16af87eb4b08c9af016",
+      "reason": "Bytewise wrapping call frame writes"
+    },
+    {
+      "bytes": "cd3412",
+      "mnemonic": "CALL",
+      "old_sha256": "a0a5c15c59ed74ca8e6e543bb19a60e6743b407bda4303b403053ada99bc2ac7",
+      "current_sha256": "6d3f84fd3229106a068a6cfd328af30187398bf78166dd8afc5c71a2ea5442d4",
+      "reason": "Bytewise wrapping call frame writes"
+    },
+    {
+      "bytes": "ce00",
+      "mnemonic": "ADC",
+      "old_sha256": "a031344f6cdf61c1d88a64ee2f1c962e41cde5acb31ceaccf4cf6d06942e087e",
+      "current_sha256": "b7e56c0cae58bfaea4820c16da4102495d81ae1ec02fb6b20d3460cac8e541b6",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "ce34",
+      "mnemonic": "ADC",
+      "old_sha256": "093ff3b65c7301f5572ac868554991c3ba1d50b709d7b2af209ff0c49f93926d",
+      "current_sha256": "c53132ef7fb6b959cfdf7244520f1e01f53add311f69fb69c8faacdd542dc9f8",
+      "reason": "Historical carry propagation correction"
+    },
+    {
+      "bytes": "cf",
+      "mnemonic": "RST",
+      "old_sha256": "b5eeb3a53adeefca2a2d1a0db04946928181b352d4eba6156d004dd338f4e73f",
+      "current_sha256": "f90543074afa0977766d4790eebf2a2f911db040663cf59c6c00d47b68cbec2e",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "d0",
+      "mnemonic": "RET",
+      "old_sha256": "b92652c0afcfd44e6c8d0e871dbcf218b05665244c607dcaec6f923e7cd3b460",
+      "current_sha256": "ce79d427a833f75684465f2674ee8b2f6389db786cf61a34e45d9f3eef8209fe",
+      "reason": "Bytewise wrapping stack return reads"
+    },
+    {
+      "bytes": "d1",
+      "mnemonic": "POP",
+      "old_sha256": "fd975856ca24c97ae6bbaf2b168421ec9b8fedef67b6d0d2dde10a0ddcdf1361",
+      "current_sha256": "65bec56ce2e1402c1aa5b9671f446e6f86798066ea6ff954e5de70991d26ada0",
+      "reason": "Flag mask and bytewise wrapping stack reads"
+    },
+    {
+      "bytes": "d43412",
+      "mnemonic": "CALL",
+      "old_sha256": "f8bc7b9ceabf9f19bc62900f09c4d115a44332f142bcf41c07fba1c4b8cde542",
+      "current_sha256": "9094b99ecefc6dfa9286c02b011852d5014a8329ecb761c8ab70772902300acf",
+      "reason": "Bytewise wrapping call frame writes"
+    },
+    {
+      "bytes": "d5",
+      "mnemonic": "PUSH",
+      "old_sha256": "78d40f3dfe30a1f943411108a67c32d8f92393c270c33a057ebdf4d81bd12729",
+      "current_sha256": "2ee3a7997ca2926451d14814a25dd89480451087da42f7e399fd3e7307ba9c39",
+      "reason": "Bytewise wrapping stack writes"
+    },
+    {
+      "bytes": "d7",
+      "mnemonic": "RST",
+      "old_sha256": "de34bf9ffd4c499253ceaa26984bc5f97f45d88a47b13eda2a16d05d70ca8e8a",
+      "current_sha256": "ccf1bdec5142b75b84ed0c811aaee3f067d05833d6bedf646e674ee4ef14e938",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "d8",
+      "mnemonic": "RET",
+      "old_sha256": "977e8b17fa18b67d6b4ac1d635ee8de39cd50c416720b96d5a2b3d9a98ef4436",
+      "current_sha256": "2b2212baf8d954a6c96205ab68453e6d197f41a93ece59ecbbae3ca7e20eed33",
+      "reason": "Bytewise wrapping stack return reads"
+    },
+    {
+      "bytes": "d9",
+      "mnemonic": "RETI",
+      "old_sha256": "ad3b20230052a5330592e61aefd7acb333b7a3739ed21814b969606cacbe23f6",
+      "current_sha256": "c8dfba9328f08ea2f18bc457efc39d4b26ceeed6dc242914ec3cefe8dc9172c1",
+      "reason": "Bytewise wrapping interrupt return reads"
+    },
+    {
+      "bytes": "dc3412",
+      "mnemonic": "CALL",
+      "old_sha256": "25a4e9e2a9e5afb8c352e3f8841a3d0f20a7bc70effc87166c7004e2a7de11b3",
+      "current_sha256": "adb10e55999b9812056594f922441376a8a7d14ac82a9609c355461acbee594f",
+      "reason": "Bytewise wrapping call frame writes"
+    },
+    {
+      "bytes": "de34",
+      "mnemonic": "SBC",
+      "old_sha256": "ac4e7c3c65e972c70aa465c2a94db6f0458681ce05a4e0f5efce3dc60f26d8f1",
+      "current_sha256": "c064b943464af57ebca876f48b1dc03ebbedc5995f56cc08cf12d05849aec5b0",
+      "reason": "Historical carry/half-carry correction"
+    },
+    {
+      "bytes": "df",
+      "mnemonic": "RST",
+      "old_sha256": "9c71b11685dd0de4906df2fb5470271f7d38960c9fd12b52da81a5bea8fad10f",
+      "current_sha256": "3ffcab1dbd3cea96e50099195a8c19a77b9db14b2ddddc9966e5e752ac50f001",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "e1",
+      "mnemonic": "POP",
+      "old_sha256": "8d3c0a939005aee2aecab7ff4d855b965d56a528d7bea81bf569f9d2bf7f5dc1",
+      "current_sha256": "ab9dda7b210fac5aec406b1b70af0bea0227875f12ab1b8133dee7e3c48adc3a",
+      "reason": "Flag mask and bytewise wrapping stack reads"
+    },
+    {
+      "bytes": "e5",
+      "mnemonic": "PUSH",
+      "old_sha256": "010af5077947f1ce8f9dff32f328ae086559f4d374e0df01000e67acee76bbfa",
+      "current_sha256": "3681b1eef2016b109fa0ff6027a699f8e3f15042a6732ba45f0de786403e29b1",
+      "reason": "Bytewise wrapping stack writes"
+    },
+    {
+      "bytes": "e7",
+      "mnemonic": "RST",
+      "old_sha256": "d13410a39eccb2ae24989e13877bebe481ee554b32fdc0078d5f912e33a47c3e",
+      "current_sha256": "d9cb85cf72e785a966072791359678e768f67d1dc4efe9eb821affd4587400ad",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "ea3412",
+      "mnemonic": "LD",
+      "old_sha256": "48af4070a7918fea881de21b10223903db03f3c723d102ec4a254bde1bd1e60f",
+      "current_sha256": "a6767b431b6a2b2e6d389a5e095f0ff8f1b205e2b4c9015955054fd61f2fa055",
+      "reason": "Explicit hardware bus access / ordered bytewise memory operations"
+    },
+    {
+      "bytes": "ef",
+      "mnemonic": "RST",
+      "old_sha256": "fb1464dd87801eec404894a42813dd2d6bae2bebc53642cc28b6e5c35d39efed",
+      "current_sha256": "aaa112fadece2c47c576ddca7775a3b241b6265aefd0e237fec812c0fb40af31",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "f1",
+      "mnemonic": "POP",
+      "old_sha256": "aa1ace75935f3fefee2fcf6a6dec650fdbaa6b49387f43f6505dcec812bee406",
+      "current_sha256": "ff48050cafce6f525a4f6952c872fdc1ef3dbeb69e4aefac21165d7befb57325",
+      "reason": "Flag mask and bytewise wrapping stack reads"
+    },
+    {
+      "bytes": "f5",
+      "mnemonic": "PUSH",
+      "old_sha256": "0c8f20cf6375bb5188846e874d8ace1e1f0d8376ad2e48d3266d65be46988ebc",
+      "current_sha256": "f106749e1bd11132209630efb4d850adb6d8f5466b76c4ff15f4a8572913d571",
+      "reason": "Bytewise wrapping stack writes"
+    },
+    {
+      "bytes": "f7",
+      "mnemonic": "RST",
+      "old_sha256": "2eb387923d976743b2ee592bc6e751c1505e4cbd511ae368a9bfb19c2c7a9360",
+      "current_sha256": "e98716d7fb4e7bc530f4ce3a1b7ad44480dd78bc711553c440042c438e6d1d4d",
+      "reason": "Bytewise wrapping restart frame writes"
+    },
+    {
+      "bytes": "ff",
+      "mnemonic": "RST",
+      "old_sha256": "0094991b7f6be769e02969e165fe03a44e577dd08603f967cdbcbb0e0c893a60",
+      "current_sha256": "6f7e6e2989b404a1760c94aab9cff42e9197e8ee3c5ba45ddae693d37a5b0d55",
+      "reason": "Bytewise wrapping restart frame writes"
+    }
+  ]
+}

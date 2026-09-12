@@ -19,20 +19,22 @@ if previous.exists(): shutil.move(str(previous),str(work/'previous-extension'))
 with zipfile.ZipFile(args.zip) as z: z.extractall(extensions)
 ext=extensions/'GhidraBoy'; languages=ext/'data/languages'
 scripts=work/'scripts'; scripts.mkdir(exist_ok=True)
-for source in (repo/'src/test/scripts').glob('*.java'): shutil.copy(source, scripts)
+for name in ('GhidraBoyPreservation','GhidraBoyInstructionCompatibility','Sm83PreservationInventory','GhidraBoyInstalledCheck','GhidraBoyInstalledLifecycle','GhidraBoyInstalledFunctionOwnership'):
+    shutil.copy(repo/'src/test/scripts'/(name+'.java'),scripts)
 profile=work/'profile'; profile.mkdir(exist_ok=True)
 projects=work/'projects'; projects.mkdir(exist_ok=True)
-env=os.environ.copy(); env['JAVA_HOME']=str(args.jdk); env['JAVA_TOOL_OPTIONS']=f'-Duser.home={profile}'
+env=os.environ.copy(); env['JAVA_HOME']=str(args.jdk); env['JAVA_TOOL_OPTIONS']=f'-Duser.home={profile}'; env['XDG_CACHE_HOME']=str(profile)
 classpath=os.pathsep.join(str(p) for p in ghidra.glob('Ghidra/**/*.jar'))
 def run(cmd, name):
     with (work/(name+'.log')).open('w') as output:
         result=subprocess.run([str(c) for c in cmd],cwd=work,env=env,stdout=output,stderr=subprocess.STDOUT)
     text=(work/(name+'.log')).read_text()
     print(text[-7000:],flush=True)
-    if result.returncode or ('ERROR' in text and name not in ['compile-old']):
+    if result.returncode or 'ERROR' in text or 'error:' in text:
         raise SystemExit(f'{name} failed, see log')
 # Preserve maintained files and compile original upstream language independently of checkout files.
-backup={p.name:p.read_bytes() for p in languages.iterdir() if p.is_file()}
+backup=work/'candidate-languages'
+shutil.move(str(languages),str(backup)); languages.mkdir()
 opcode_fixture=work/'instruction-compatibility.bin'
 opcode_fixture.write_bytes(bytes(0x8000))
 try:
@@ -45,8 +47,32 @@ try:
          '-loader','BinaryLoader','-processor','SM83:LE:16:default','-cspec','default',
          '-scriptPath',scripts,'-postScript','GhidraBoyInstructionCompatibility.java','seed',
          work/'instructions-old.txt','-noanalysis'],'create-old-instructions')
+    for name in ('preserved', opcode_fixture.name):
+        run([ghidra/'support/analyzeHeadless',projects,'fixture','-scriptPath',scripts,
+             '-preScript','Sm83PreservationInventory.java','old-saved',work/(name+'-old.json'),name,'-noanalysis'], 'inventory-old-'+name)
 finally:
-    for name,data in backup.items(): (languages/name).write_bytes(data)
+    shutil.move(str(languages),str(work/'historical-42032f9-languages'))
+    shutil.move(str(backup),str(languages))
+# The historical project is retained; only its closed copy enters the candidate.
+from sm83_compatibility import tree, write, compare, historical_transitions
+original_projects=projects; original_hashes=tree(projects)
+write(work/'original-project-hashes.json',original_hashes)
+projects=work/'upgraded-projects';shutil.copytree(original_projects,projects)
+for name in ('preserved', opcode_fixture.name):
+    run([ghidra/'support/analyzeHeadless',projects,'fixture','-scriptPath',scripts,
+         '-preScript','Sm83PreservationInventory.java','upgrade',work/(name+'-post.json'),name,'-noanalysis'], 'core-upgrade-'+name)
+    text=(work/('core-upgrade-'+name+'.log')).read_text()
+    if 'Setting language' not in text or 'sm83-1-2.trans' not in text: raise SystemExit('Missing installed translator')
+    run([ghidra/'support/analyzeHeadless',projects,'fixture','-scriptPath',scripts,
+         '-preScript','Sm83PreservationInventory.java','immutable',work/(name+'-immutable.json'),name,'-noanalysis'], 'first-immutable-'+name)
+    if 'Setting language' in (work/('first-immutable-'+name+'.log')).read_text(): raise SystemExit('Repeated translation on immutable use')
+    import json
+    post=json.loads((work/(name+'-post.json')).read_text()); reopened=json.loads((work/(name+'-immutable.json')).read_text())
+    if post['pid']==reopened['pid'] or reopened['changeable']: raise SystemExit('Not a separate immutable process')
+    old=json.loads((work/(name+'-old.json')).read_text())
+    write(work/(name+'-preservation-diff.json'),compare(old,post,reopened,corpus=name==opcode_fixture.name,transitions=historical_transitions()))
+assert tree(original_projects)==original_hashes
+
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','preserved','-scriptPath',scripts,'-postScript','GhidraBoyPreservation.java','verify','-noanalysis'],'reopen-current')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process',opcode_fixture.name,
      '-scriptPath',scripts,'-postScript','GhidraBoyInstructionCompatibility.java','check',
@@ -74,4 +100,5 @@ if 'INSTALLED_FUNCTION_OWNERSHIP_REOPEN_REMOVE_RERUN_PASS' not in (work/'functio
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-process','synthetic.gb','-postScript','GhidraBoyAbi.java',work/'abi-request.json','persistent_bank::4000','-noanalysis'],'installed-abi-preview')
 (work/'manual-salvage.gb').write_bytes(rom+b'preserved tail')
 run([ghidra/'support/analyzeHeadless',projects,'fixture','-preScript','GhidraBoyImport.java',work/'manual-salvage.gb','SALVAGE','AUTO','CGB','-noanalysis'],'installed-manual-salvage')
+assert tree(original_projects)==original_hashes
 print('INSTALLED_ZIP_PRESERVATION_PASS')

@@ -39,3 +39,5 @@ sa/evidence-index.json
 decisions/symbolic-memory-executable-images.md
 decisions/stock-ghidra-transport.md
 decisions/stock-route-completion.md
+
+decisions/sm83-v1-v2-compatibility.md
