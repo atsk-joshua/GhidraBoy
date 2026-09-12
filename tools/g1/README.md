@@ -54,3 +54,18 @@ The maintained runner now drains normal events after the explicit proof action
 and before testing the ordinary Refresh action's enablement. This active-phase
 ordering is prepared and compilation-checked only; it has not been run. Do not
 continue automatically. The task stopped for master review at its retry boundary.
+
+## Continuation result — 2026-09-12
+
+The consolidated driver now records `P-post-proof` before ordinary Refresh and
+separates requested/enabled/invoked/dispatch-completed action states. The negative
+amendment records `NOT_AVAILABLE_ON_ERROR` without dispatch when Refresh is disabled;
+only then may labelled `ACTIVE_NAVIGATION_REFUSAL` navigate away/back in the same
+provider. This branch may never rescue P3.
+
+The exact continuation run reached real P3 E4 recovery and Q1 passive refusal,
+then stopped at the immediate open-transaction guard during Q2 navigation. The
+negative branch and reopen were not reached. The initial checker additionally
+rejects the genuine P event arriving just before its commit receipt. Do not call
+this a product defect or rerun automatically; see the
+[continuation disposition](../../docs/sa/G1-STOCK-NORMAL-WINDOW-CONTINUATION.md).

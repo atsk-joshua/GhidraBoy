@@ -437,5 +437,18 @@
     "tested_extension_sha256": "ee272247a60d1ff7d95733641a303bde587c60da8a4f93cc6b580c185d2da965",
     "ready_runner": "Final post-proof event drain is compile-only, not GUI-qualified",
     "stop": "Master review; no next batch"
+  },
+  "g1_stock_normal_window_continuation": {
+    "status": "HARNESS_OR_CHECKER_BLOCKED",
+    "candidate_commit": "7dfb576f2f8fe8e8995faf6dd66922569c86033c",
+    "candidate_tree": "08865e43b1447ae910576c484b1e89b04bdf967d",
+    "report": "evidence/batches/G1-STOCK-NORMAL-WINDOW-CONTINUATION/delivery/REPORT-G1-STOCK-NORMAL-WINDOW-CONTINUATION.md",
+    "archive": "evidence/batches/G1-STOCK-NORMAL-WINDOW-CONTINUATION/delivery/CHANGES-G1-STOCK-NORMAL-WINDOW-CONTINUATION.zip",
+    "archive_digest": "evidence/batches/G1-STOCK-NORMAL-WINDOW-CONTINUATION/delivery/CHANGES-G1-STOCK-NORMAL-WINDOW-CONTINUATION.zip.sha256",
+    "replay": "evidence/batches/G1-STOCK-NORMAL-WINDOW-CONTINUATION/candidate01/disaggregated-replay.json",
+    "scope": "P3 E4 and Q1 passive refusal captured; transaction guard at Q2, checker event/commit receipt race; no qualified closure or reopen",
+    "negative_action_branch": "NOT_REACHED",
+    "production_corrections": 0,
+    "stop": "Master review; no automatic next batch"
   }
 }

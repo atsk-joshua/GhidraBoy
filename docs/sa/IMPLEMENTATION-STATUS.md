@@ -1,5 +1,22 @@
 # Implementation status
 
+## G1-STOCK-NORMAL-WINDOW-CONTINUATION — HARNESS_OR_CHECKER_BLOCKED
+
+The consolidated candidate executes natural post-proof recovery and actual ordinary
+Refresh in the same visible CodeBrowser; both displayed results satisfy the E4
+all-input relation. Canonical isolation, Q I1 and passive physical-replacement
+refusal are captured. The driver stops at Q2 navigation because its immediate
+transaction guard finds an open transaction after generation-2 topology creation.
+No settled Q2 result or production lifecycle defect is demonstrated.
+
+The current initial/full checker also rejects the captured P event ordering: the
+real revision-4 event arrived just before the commit receipt. Per-record integrity,
+specific refusals and disaggregated semantic replay pass; whole-workflow acceptance
+does not. All 819 default instances remain passing, with lint/build and tooling.
+Missing-registration branches, qualified closure and second-JVM read-only reopen
+remain unrun. See the [continuation disposition](G1-STOCK-NORMAL-WINDOW-CONTINUATION.md).
+STOP for master review; no further GUI retry or automatic next batch.
+
 ## G1-STOCK-NORMAL-WINDOW — BLOCKED; STOP for master review
 
 Genuine visible stock CodeBrowser access is verified. Current-language P0/P1
