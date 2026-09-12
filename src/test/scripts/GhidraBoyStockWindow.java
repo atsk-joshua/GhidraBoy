@@ -104,14 +104,43 @@ public class GhidraBoyStockWindow extends GhidraBoyMemoryImages {
     script.execute(new ghidra.app.script.GhidraState(state.getTool(),state.getProject(),currentProgram,selected[0],null,null),monitor,new java.io.PrintWriter(System.out,true));
     if(currentProgram.getCurrentTransactionInfo()!=null)throw new IllegalStateException("Provider action transaction not closed");
   }
-  void ordinaryRefresh() throws Exception {
-    event("ordinary-window-refresh",currentProgram.getName());
+  boolean ordinaryRefresh(String phase,boolean allowUnavailable) throws Exception {
+    var receipt=new LinkedHashMap<String,Object>();
+    receipt.put("phase",phase);receipt.put("requested",true);receipt.put("enabled",false);
+    receipt.put("invoked",false);receipt.put("completed",false);
+    receipt.put("program_id",currentProgram.getUniqueProgramID());receipt.put("revision",currentProgram.getModificationNumber());
+    receipt.put("controller_identity",System.identityHashCode(window.getController()));
+    event("ordinary-refresh-requested",new LinkedHashMap<>(receipt));
     SwingUtilities.invokeAndWait(()->{
-      var action=state.getTool().getAllActions().stream().filter(a->a.getName().equals("Refresh")&&a.getOwner().equals("DecompilePlugin")).findFirst().orElseThrow();
-      var context=window.getActionContext(null);
-      if(!action.isEnabledForContext(context))throw new IllegalStateException("Ordinary Refresh disabled");
-      action.actionPerformed(context);
-    });drain();
+      try {
+        var action=state.getTool().getAllActions().stream().filter(a->a.getName().equals("Refresh")&&a.getOwner().equals("DecompilePlugin")).findFirst().orElseThrow();
+        var context=window.getActionContext(null);
+        receipt.put("action",action.getName());receipt.put("owner",action.getOwner());
+        receipt.put("action_class",action.getClass().getName());receipt.put("provider_class",window.getClass().getName());
+        receipt.put("context_class",context.getClass().getName());receipt.put("context_provider_matches",context.getComponentProvider()==window);
+        boolean enabled=action.isEnabledForContext(context);receipt.put("enabled",enabled);
+        event("ordinary-refresh-enablement",new LinkedHashMap<>(receipt));
+        if(enabled) {
+          receipt.put("invoked",true);event("ordinary-refresh-invoked",new LinkedHashMap<>(receipt));
+          action.actionPerformed(context);receipt.put("completed",true);
+          receipt.put("status","DISPATCH_COMPLETED");
+        } else receipt.put("status",allowUnavailable?"NOT_AVAILABLE_ON_ERROR":"NOT_AVAILABLE");
+        save(phase+"-refresh-action.json",receipt);event("ordinary-refresh-disposition",new LinkedHashMap<>(receipt));
+      }catch(Exception e){throw new RuntimeException(e);}
+    });
+    if(!(boolean)receipt.get("enabled")) {
+      if(!allowUnavailable)throw new IllegalStateException("Ordinary Refresh disabled after settled proof recovery");
+      return false;
+    }
+    drain();return true;
+  }
+  void requireMissingRefusal() throws Exception {
+    SwingUtilities.invokeAndWait(()->{
+      var data=window.getController().getDecompileData();
+      if(data==null||data.getHighFunction()!=null||data.hasDecompileResults()||
+          data.getErrorMessage()==null||!data.getErrorMessage().contains("Missing or foreign ordinary-entry registration"))
+        throw new IllegalStateException("Missing-registration passive refusal not established");
+    });
   }
   String authority(Program p)throws Exception {
     var result=new TreeMap<String,Object>();
@@ -161,12 +190,18 @@ public class GhidraBoyStockWindow extends GhidraBoyMemoryImages {
   }
   void fullAfterPassive(Function pf)throws Exception {
     var p=currentProgram;var pa=pf.getEntryPoint();
+    Files.writeString(out.resolve("P-pre-proof-authority.json"),authority(p));
     toolAction("stock-ordinary-preview",out.resolve("reviewed-P-proof.json"));
+    int beforeProofEvents=eventCount;long beforeProofRevision=p.getModificationNumber();
     toolAction("stock-ordinary-refresh",out.resolve("reviewed-P-proof.json"));
-    // Active phase only: let the proof-write event recover from the prior error before
-    // requesting the ordinary toolbar action, which requires decompile results.
-    // Prepared after the bounded run stopped; this ordering still requires qualification.
-    drain();ordinaryRefresh();observe(pf,"P3");
+    long proofRevision=p.getModificationNumber();
+    Files.writeString(out.resolve("P-post-proof-authority.json"),authority(p));
+    event("proof-write-completed",Map.of("program_id",p.getUniqueProgramID(),"before_revision",beforeProofRevision,"revision",proofRevision,"before_events",beforeProofEvents));
+    try{drain();}catch(Exception e){observe(pf,"P-post-proof");throw e;}
+    observe(pf,"P-post-proof");
+    if(proofRevision<=beforeProofRevision||eventCount<=beforeProofEvents)
+      throw new IllegalStateException("No committed proof-write/event delivery");
+    ordinaryRefresh("P3",false);observe(pf,"P3");
     save("P-source-after.json",canonical(getFunctionAt(toAddr(0x150))));
     navigate(getFunctionAt(toAddr(0x150)),"canonical-control");observe(getFunctionAt(toAddr(0x150)),"canonical-control");
     var q=openFixture("W4_MEMORY_IMAGE.gb",false);currentProgram=q;
@@ -213,7 +248,13 @@ public class GhidraBoyStockWindow extends GhidraBoyMemoryImages {
       try{variant.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS).removeOption(pa.toString());}finally{variant.endTransaction(vtx,true);}
       event("registration-removed",Map.of("transaction",vtx,"program_id",variant.getUniqueProgramID()));
       drain();observe(getFunctionAt(variant.getAddressFactory().getAddress(pa.toString())),"missing-passive");
-      ordinaryRefresh();observe(getFunctionAt(variant.getAddressFactory().getAddress(pa.toString())),"missing-active");
+      requireMissingRefusal();
+      var invalid=getFunctionAt(variant.getAddressFactory().getAddress(pa.toString()));
+      if(!ordinaryRefresh("missing-active",true)) {
+        event("ACTIVE_NAVIGATION_REFUSAL",Map.of("program_id",variant.getUniqueProgramID(),"controller_identity",System.identityHashCode(window.getController()),"toolbar_refresh",false));
+        navigate(getFunctionAt(toAddr(0x150)),"missing-away");navigate(invalid,"missing-back");
+      }
+      observe(invalid,"missing-active");requireMissingRefusal();
       variant.removeListener(vl);closePrograms(variant,p,q);
     }finally{q.removeListener(qListener);}
   }

@@ -13,8 +13,10 @@ import check_w2e_native as finite
 
 def check_initial(root, records=None, timeline=None, highs=None):
     require = finite.require
-    records = records or {p: finite.read(root / f'{p}-request.json') for p in ('P0', 'P1', 'P2')}
     timeline = timeline if timeline is not None else finite.read(root / 'timeline.json')
+    records = records or {p: checked_record(root, p, timeline) for p in ('P0', 'P1', 'P2')}
+    for phase, record in records.items():
+        checked_record(root, phase, timeline, record)
     highs = highs or {p: finite.read(root / f'{p}-high.json') for p in ('P0', 'P1')}
     mutation = finite.read(root / 'P-mutation.json')
     require(mutation['changed_file_offsets'] == [0xe000] and mutation['old'] == 0xd3 and mutation['new'] == 0xe4 and mutation['old_registration_retained'] and mutation['read_only_ROM'], 'invalid consumed-byte witness')
@@ -46,30 +48,46 @@ def check_initial(root, records=None, timeline=None, highs=None):
     require(p2['revision'] > first['revision'] and p2['events'] > first['events'], 'mutation not delivered')
     # This driver does not manufacture a stale badge. Retained output needs separately
     # captured unmistakable shipped stale UI; absent that, valid old output is a failure.
-    require(not p2['highfunction_available'] and not p2['completed'] and 'c_sha256' not in p2, 'passive stale result still apparently current')
+    refusal(p2)
     return {'status':'PARTIAL','primary_passive_safety':'PASS','positive_relations':stages,
             'remaining':['explicit proof/window refresh','image generations','Program switching','missing registration','actual process-exit/read-only reopen','final candidate full tests']}
 
 
 def sensitivity(root):
-    base={p:finite.read(root/f'{p}-request.json') for p in ('P0','P1','P2')}
-    highs={p:finite.read(root/f'{p}-high.json') for p in ('P0','P1')}
-    timeline=finite.read(root/'timeline.json'); results={}
-    if any(x['kind']=='initial-witness-complete' for x in timeline):timeline=timeline[:next(i for i,x in enumerate(timeline) if x['kind']=='initial-witness-complete')+1]
-    for name in ('replay','foreign-program','missing-passive','duplicate-passive','active-before-passive','missing-high','malformed-high'):
-        rs=copy.deepcopy(base);ts=copy.deepcopy(timeline);hs=copy.deepcopy(highs)
-        if name=='replay': rs['P2'].update(completed=True,highfunction_available=True)
-        elif name=='foreign-program':rs['P1']['display_program_id']+=1
-        elif name=='missing-passive':ts=[x for x in ts if not (x['kind']=='passive-capture' and x['detail']['phase']=='P2')]
-        elif name=='duplicate-passive':ts.append(next(x for x in ts if x['kind']=='passive-capture' and x['detail']['phase']=='P2'))
-        elif name=='active-before-passive':ts.insert(next(i for i,x in enumerate(ts) if x['kind']=='P-mutation-committed')+1,{'kind':'refresh'})
-        elif name=='missing-high':rs['P0']['highfunction_available']=False
-        elif name=='malformed-high':
-            op=next(op for b in hs['P0'] for op in b['ops'] if op['mnemonic']=='CALLOTHER')
-            op['inputs'][2]=dict(id=-100,space='const',offset=0,size=1,constant=True,address=False,register=False)
-        try:check_initial(root,rs,ts,hs)
-        except finite.Refusal as exc:results[name]={'status':'REJECTED','reason':str(exc)}
-        else:raise finite.Refusal('sensitivity failed '+name)
+    import tempfile, shutil
+    results={}
+    names=('replay','foreign-program','missing-passive','duplicate-passive','active-before-passive','missing-high','malformed-high',
+           'foreign-P2','unrelated-native-error','missing-desktop','changed-request-hash')
+    for name in names:
+        with tempfile.TemporaryDirectory(prefix='g1-initial-control-') as tmp:
+            dst=Path(tmp)/'captures';shutil.copytree(root,dst)
+            ts=finite.read(dst/'timeline.json')
+            if any(x['kind']=='initial-witness-complete' for x in ts):ts=ts[:next(i for i,x in enumerate(ts) if x['kind']=='initial-witness-complete')+1]
+            phase='P1' if name=='foreign-program' else 'P0' if name in ('missing-high','malformed-high') else 'P2'
+            rs=finite.read(dst/f'{phase}-request.json')
+            if name=='replay':rs.update(completed=True,highfunction_available=True)
+            elif name=='foreign-program':rs['display_program_id']+=1
+            elif name=='foreign-P2':rs.update(display_program_id=-1,display_entry='ram:1234',display_program_matches=False,display_function_matches=False)
+            elif name=='unrelated-native-error':rs['error']='Native process terminated unexpectedly'
+            elif name=='missing-desktop':rs.pop('desktop_sha256',None)
+            elif name=='changed-request-hash':rs['revision']+=1
+            elif name=='missing-passive':ts=[x for x in ts if not (x['kind']=='passive-capture' and x['detail']['phase']=='P2')]
+            elif name=='duplicate-passive':ts.append(next(x for x in ts if x['kind']=='passive-capture' and x['detail']['phase']=='P2'))
+            elif name=='active-before-passive':ts.insert(next(i for i,x in enumerate(ts) if x['kind']=='P-mutation-committed')+1,{'kind':'refresh'})
+            elif name=='missing-high':rs['highfunction_available']=False
+            elif name=='malformed-high':
+                hs=finite.read(dst/'P0-high.json')
+                op=next(op for b in hs for op in b['ops'] if op['mnemonic']=='CALLOTHER')
+                op['inputs'][2]=dict(id=-100,space='const',offset=0,size=1,constant=True,address=False,register=False)
+                (dst/'P0-high.json').write_text(json.dumps(hs));rs['high_sha256']=finite.sha(dst/'P0-high.json')
+            (dst/f'{phase}-request.json').write_text(json.dumps(rs))
+            if name!='changed-request-hash':
+                for x in ts:
+                    if x['kind']=='passive-capture' and x['detail']['phase']==phase:x['detail']['record_sha256']=finite.sha(dst/f'{phase}-request.json')
+            (dst/'timeline.json').write_text(json.dumps(ts))
+            try:check_initial(dst)
+            except finite.Refusal as exc:results[name]={'status':'REJECTED','reason':str(exc)}
+            else:raise finite.Refusal('sensitivity failed '+name)
     return results
 
 
@@ -84,8 +102,12 @@ def main():
 
 
 
-def checked_record(root,phase):
-    r=finite.read(root/f'{phase}-request.json')
+def checked_record(root,phase,timeline=None,record=None):
+    r=record if record is not None else finite.read(root/f'{phase}-request.json')
+    timeline=timeline if timeline is not None else finite.read(root/'timeline.json')
+    receipts=[x for x in timeline if x['kind']=='passive-capture' and x['detail']['phase']==phase]
+    finite.require(len(receipts)==1 and receipts[0]['detail']['record_sha256']==finite.sha(root/f'{phase}-request.json'),'missing/changed request receipt '+phase)
+    finite.require(r==finite.read(root/f'{phase}-request.json'),'unbound supplied request '+phase)
     finite.require(r['phase']==phase and r['surface']=='normal-CodeBrowser-DecompilerProvider' and r['visible'],'foreign/invisible phase')
     finite.require('desktop_sha256' in r,'missing actual screenshot')
     if r['highfunction_available']:finite.require('high_sha256' in r and 'c_sha256' in r,'missing positive artifacts')
@@ -98,7 +120,44 @@ def checked_record(root,phase):
 
 
 def refusal(r):
-    finite.require(not r['completed'] and not r['highfunction_available'] and 'c_sha256' not in r,'invalid authority exposed current native output')
+    finite.require(not r['completed'] and not r['highfunction_available'] and 'c_sha256' not in r and 'high_sha256' not in r,'invalid authority exposed current native output')
+    reasons={'P2':('Stale ordinary-entry registration; preview and refresh required',), 'Q1':('Established RAM bytes replaced; explicit establishment required',),
+             'Q-old-generation':('Noncurrent executable generation ',), 'reopen-Q-old':('Noncurrent executable generation ',),
+             'missing-passive':('Missing or foreign ordinary-entry registration',), 'missing-active':('Missing or foreign ordinary-entry registration',)}
+    expected=reasons.get(r['phase'],())
+    finite.require(expected and any(reason in (r.get('error') or '') for reason in expected),'wrong authority refusal reason '+r['phase'])
+
+
+def check_actions(root,timeline,records):
+    require=finite.require
+    def index(kind,phase=None):
+        items=[i for i,x in enumerate(timeline) if x['kind']==kind and (phase is None or x.get('detail',{}).get('phase')==phase)]
+        require(len(items)==1,'missing/duplicate action event '+kind+str(phase));return items[0]
+    for phase in ('P3','missing-active'):
+        r=finite.read(root/f'{phase}-refresh-action.json')
+        require(r['phase']==phase and r['requested'] and r['owner']=='DecompilePlugin' and r['action']=='Refresh' and r['context_provider_matches'],'foreign action/context')
+        require(r['program_id']==records[phase]['program_id'] and r['controller_identity']==records[phase]['controller_identity'],'foreign action owner')
+        d=index('ordinary-refresh-disposition',phase)
+        require(timeline[d]['detail']==r,'unbound action receipt')
+        require(index('ordinary-refresh-requested',phase)<index('ordinary-refresh-enablement',phase)<d<index('passive-capture',phase),'wrong action chronology')
+        if r['enabled']:
+            require(r['invoked'] and r['completed'] and r['status']=='DISPATCH_COMPLETED','attempted without dispatch')
+            require(index('ordinary-refresh-enablement',phase)<index('ordinary-refresh-invoked',phase)<d,'missing dispatch')
+        else:
+            require(phase=='missing-active' and not r['invoked'] and not r['completed'] and r['status']=='NOT_AVAILABLE_ON_ERROR','unavailable positive refresh')
+            require(not any(x['kind']=='ordinary-refresh-invoked' and x['detail']['phase']==phase for x in timeline),'forced disabled action')
+            require(d<index('ACTIVE_NAVIGATION_REFUSAL')<index('navigate','missing-away')<index('navigate','missing-back')<index('passive-capture',phase),'missing labelled active navigation')
+        if phase=='missing-active':
+            require(index('passive-capture','missing-passive')<index('ordinary-refresh-requested',phase),'active negative before passive')
+            require(records[phase]['data_identity']!=records['missing-passive']['data_identity'],'negative reused passive result')
+    proof=index('proof-write-completed');post=index('passive-capture','P-post-proof');request=index('ordinary-refresh-requested','P3')
+    require(proof<post<request,'post-proof snapshot not before toolbar')
+    p3=index('passive-capture','P3')
+    require(all(x['kind'] in {'program-event','settled','passive-capture','ordinary-refresh-requested','ordinary-refresh-enablement','ordinary-refresh-invoked','ordinary-refresh-disposition'} for x in timeline[post+1:p3+1]),'intervention rescuing P3')
+    write=timeline[proof]['detail']
+    require(write['revision']>write['before_revision'] and records['P-post-proof']['events']>write['before_events'],'no proof write/event')
+    require(any(x['kind']=='settled' for x in timeline[proof+1:post]),'post-proof not settled')
+    require(all(x['kind'] in {'program-event','settled','passive-capture'} for x in timeline[proof+1:post+1]),'intervention before post-proof snapshot')
 
 
 def image_relation(root,phase,source_root,source_label,value):
@@ -124,12 +183,13 @@ def check_full(root,reopen_root):
     timeline=finite.read(root/'timeline.json')
     cutoff=next(i for i,x in enumerate(timeline) if x['kind']=='initial-witness-complete')
     initial=check_initial(root,timeline=timeline[:cutoff+1])
-    phases=['P0','P1','P2','P3','canonical-control','Q0','Q1','Q2','Q-old-generation','switch-P','switch-Q','switch-P-return','quick-P-settled','missing-warm','missing-passive','missing-active']
+    phases=['P0','P1','P2','P-post-proof','P3','canonical-control','Q0','Q1','Q2','Q-old-generation','switch-P','switch-Q','switch-P-return','quick-P-settled','missing-warm','missing-passive','missing-active']
     records={phase:checked_record(root,phase) for phase in phases}
     require([x['detail']['phase'] for x in timeline if x['kind']=='passive-capture']==phases,'skipped/duplicated workflow phase')
     for item in timeline:
         if item['kind']=='passive-capture':
             require(item['detail']['record_sha256']==finite.sha(root/(item['detail']['phase']+'-request.json')),'changed phase receipt')
+    check_actions(root, timeline, records)
     p=records['P0'];q=records['Q0'];require(p['program_id']!=q['program_id'],'P/Q not distinct Programs')
     require(len({r['controller_identity'] for r in records.values()})==1 and len({r['owner_java_pid'] for r in records.values()})==1,'window/controller replaced')
     result={'initial':initial,'ordinary':{},'images':{}}
@@ -181,13 +241,34 @@ def check_full(root,reopen_root):
 def full_sensitivity(root,reopened):
     import tempfile,shutil
     outcomes={}
-    for kind in ('old-generation-substitution','fake-same-process-reopen','skipped-reopen-phase','foreign-refusal'):
+    for kind in ('old-generation-substitution','fake-same-process-reopen','skipped-reopen-phase','foreign-refusal','attempted-without-dispatch','P3-navigation-rescue'):
         with tempfile.TemporaryDirectory(prefix='g1-window-mutant-') as tmp:
             dst=Path(tmp)
             for name,source in [('full',root),('reopen',reopened)]:
                 shutil.copytree(source,dst/name/'captures')
                 shutil.copy2(source.parent/'process-exit.json',dst/name/'process-exit.json')
             full=dst/'full/captures';second=dst/'reopen/captures'
+            if kind=='P3-navigation-rescue':
+                ts=finite.read(full/'timeline.json')
+                pos=next(i for i,x in enumerate(ts) if x['kind']=='ordinary-refresh-requested' and x['detail']['phase']=='P3')
+                ts.insert(pos,{'kind':'navigate','detail':{'phase':'rescue-P3'}})
+                (full/'timeline.json').write_text(json.dumps(ts))
+                try:check_full(full,second)
+                except finite.Refusal as exc:outcomes[kind]={'status':'REJECTED','reason':str(exc)}
+                else:raise finite.Refusal('full sensitivity failed '+kind)
+                continue
+            if kind=='attempted-without-dispatch':
+                action=finite.read(full/'P3-refresh-action.json');action.update(invoked=False,completed=False)
+                (full/'P3-refresh-action.json').write_text(json.dumps(action))
+                ts=finite.read(full/'timeline.json')
+                ts=[x for x in ts if not (x['kind']=='ordinary-refresh-invoked' and x['detail']['phase']=='P3')]
+                for x in ts:
+                    if x['kind']=='ordinary-refresh-disposition' and x['detail']['phase']=='P3':x['detail']=action
+                (full/'timeline.json').write_text(json.dumps(ts))
+                try:check_full(full,second)
+                except finite.Refusal as exc:outcomes[kind]={'status':'REJECTED','reason':str(exc)}
+                else:raise finite.Refusal('full sensitivity failed '+kind)
+                continue
             target=full if kind in ('old-generation-substitution','foreign-refusal') else second
             phase='Q2' if kind=='old-generation-substitution' else 'Q-old-generation' if kind=='foreign-refusal' else 'reopen-P'
             record=finite.read(target/f'{phase}-request.json')
