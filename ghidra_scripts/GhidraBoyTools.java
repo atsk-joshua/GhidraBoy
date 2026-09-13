@@ -248,13 +248,25 @@ public class GhidraBoyTools extends GhidraScript {
       case "conditional-call-explain", "conditional-call-target", "conditional-call-continuation" -> {
         var at=value==null?currentAddress:currentProgram.getAddressFactory().getAddress(value);
         var function=getFunctionContaining(at);if(function==null)throw new IllegalArgumentException("Select owned conditional entry");
-        var boundaries=ConditionalCallSites.explain(currentProgram,function.getEntryPoint(),monitor);
-        if(action.equals("conditional-call-explain"))println(ConditionalCallSites.explainText(currentProgram,function.getEntryPoint(),monitor));
+        var program=currentProgram;
+        var explanation=ConditionalCallSites.explanation(program,function.getEntryPoint(),monitor);
+        var boundaries=explanation.boundaries();
+        var manager=state.getTool()==null?null:state.getTool().getService(ghidra.app.services.ProgramManager.class);
+        if(manager!=null&&manager.getCurrentProgram()!=program)throw new IllegalArgumentException("Program switched during conditional operation");
+        explanation.requireCurrent(program);
+        if(action.equals("conditional-call-explain"))println(explanation.text());
         else {
           String kind=action.endsWith("target")?"RET_DISPATCH":"MATCHED_CALL_COMPLETION";
           var choices=boundaries.stream().filter(b->b.kind().equals(kind)).map(ConditionalCallSites.Boundary::physical).distinct().toList();
           if(choices.size()!=1)throw new IllegalArgumentException("Navigation requires one proved physical boundary: "+choices);
-          goTo(currentProgram.getAddressFactory().getAddress(choices.get(0)));
+          explanation.requireCurrent(program);
+          var destination=program.getAddressFactory().getAddress(choices.get(0));
+          if(manager==null)goTo(destination);
+          else ghidra.util.Swing.runNow(()->{
+            if(manager.getCurrentProgram()!=program)throw new IllegalArgumentException("Program switched before conditional navigation");
+            explanation.requireCurrent(program);
+            state.getTool().getService(ghidra.app.services.GoToService.class).goTo(new ghidra.program.util.ProgramLocation(program,destination));
+          });
         }
       }
       case "stock-predicate-preview" -> {

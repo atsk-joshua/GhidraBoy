@@ -25,7 +25,7 @@ def main(a):
     (w/'project-after-reopen.json').write_text(json.dumps(snapshot(w/'projects'),indent=2))
     if (w/'original/original-registration.json').read_bytes()!=(w/'reopen/reopen-registration.json').read_bytes():raise RuntimeError('Stored authority changed on immutable reopen')
     if a.faults:
-        for suffix,mode in [('fault','stale-refresh'),('remove','remove')]:
+        for suffix,mode in [('fault','stale-refresh'),('mapper-fault','mapper-stale'),('remove','remove')]:
             project=name+'-'+suffix;shutil.copy2(w/'projects'/(name+'.gpr'),w/'projects'/(project+'.gpr'));shutil.copytree(w/'projects'/(name+'.rep'),w/'projects'/(project+'.rep'))
             run(suffix,[project,'-process',name+'.gb','-noanalysis','-postScript','GhidraBoyConditionalLifecycle.java',w/suffix,mode],'CONDITIONAL_LIFECYCLE_COMPLETE '+mode)
     print('CONDITIONAL_REHEARSAL_PASS')

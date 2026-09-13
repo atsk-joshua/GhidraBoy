@@ -89,13 +89,22 @@ public final class ConditionalCallSites {
     text.append("Native endpoint is a real source RET. ").append(request.continuationSteps()>0?"The subsequent load/state is linked; the remaining tail is unanalysed.":"Continuation is included through its proved incoming-word RET.");
     text.append("\nPreserved interpretation records: ").append(interpretations(p,proof));return text.toString();
   }
+  /** A historical operation result; recheck its session revision before UI publication. */
+  public record Explanation(Program sourceProgram,long programId,long revision,String entry,List<Boundary> boundaries,String text) {
+    public Explanation {boundaries=List.copyOf(boundaries);}
+    public void requireCurrent(Program p) {
+      if(p!=sourceProgram||p.isClosed()||programId!=p.getUniqueProgramID()||revision!=p.getModificationNumber())
+        throw new IllegalArgumentException("Conditional explanation is stale or belongs to another Program");
+    }
+  }
+  public static Explanation explanation(Program p,ghidra.program.model.address.Address entry,TaskMonitor monitor) throws Exception {
+    return PredicatedCalls.explanation(p,entry,monitor);
+  }
   public static String explainText(Program p,ghidra.program.model.address.Address entry,TaskMonitor monitor) throws Exception {
-    explain(p,entry,monitor);return describe(p,PredicatedCalls.registeredProof(p,entry));
+    return explanation(p,entry,monitor).text();
   }
   public static List<Boundary> explain(Program p,ghidra.program.model.address.Address entry,TaskMonitor monitor) throws Exception {
-    PredicatedCalls.emit(p,entry,0x200000,monitor);
-    var proof=PredicatedCalls.registeredProof(p,entry);if(proof.callSite()==null)throw new IllegalArgumentException("Not conditional call-site authority");
-    return proof.boundaries();
+    return explanation(p,entry,monitor).boundaries();
   }
   static void validate(Program p,Request request,TaskMonitor monitor) throws Exception {
     if(request.programId()!=p.getUniqueProgramID()||!request.imageSha256().equals(ProgramMapping.inspect(p).originalSha256()))throw new IllegalArgumentException("Foreign conditional Program/image authority");

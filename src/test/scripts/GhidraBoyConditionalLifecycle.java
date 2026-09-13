@@ -29,6 +29,15 @@ public class GhidraBoyConditionalLifecycle extends GhidraBoyPredicatedCalls {
     save("request.json",proof.callSite());runScript("GhidraBoyTools.java",new String[]{"conditional-call-preview",out.resolve("request.json").toString(),out.resolve("fresh.json").toString()},state);
     runScript("GhidraBoyTools.java",new String[]{"stock-predicate-refresh",out.resolve("fresh.json").toString(),entry.toString()},state);
     owner.flushCache();stage("refreshed",entry,owner);
+   } else if(mode.equals("mapper-stale")) {
+    var node=proof.nodes().stream().filter(n->n.bytes().equals("ea0020")).findFirst().orElseThrow();
+    var at=ProgramMapping.staticAddress(currentProgram,node.source());
+    save("mapper-before.json",Map.of("source",node.source(),"bytes",node.bytes(),"low",proof.callSite().mapper().low(),"high",proof.callSite().mapper().high()));
+    int tx=currentProgram.startTransaction("Self-authored low to high mapper port negative");boolean success=false;
+    try{currentProgram.getListing().clearCodeUnits(at,at.add(2),false);currentProgram.getMemory().setByte(at.add(2),(byte)0x30);Disassembler.getDisassembler(currentProgram,monitor,null).disassemble(at,new AddressSet(at),false);success=true;}finally{currentProgram.endTransaction(tx,success);}
+    owner.flushCache();request(getFunctionAt(entry),owner,"mapper-stale");
+    var stale=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("mapper-stale-request.json"))).getAsJsonObject();
+    if(stale.get("completed").getAsBoolean()||stale.get("highfunction_available").getAsBoolean()||!stale.get("error").getAsString().contains("Stale"))throw new IllegalStateException("Changed mapper port native use was not refused");
    } else if(mode.equals("remove")) {
     save("before.json",Sm83PreservationInventory.inventory(currentProgram));runScript("GhidraBoyTools.java",new String[]{"stock-predicate-remove",entry.toString()},state);if(PredicatedCalls.registered(currentProgram,entry))throw new IllegalStateException("Public removal retained authority");save("after.json",Sm83PreservationInventory.inventory(currentProgram));
    } else throw new IllegalArgumentException("Unknown lifecycle mode");

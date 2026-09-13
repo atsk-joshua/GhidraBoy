@@ -333,4 +333,138 @@ class ConditionalCallSitesTest : IntegrationTest() {
             )
         }
     }
+
+    @Test
+    fun committedSourceChangeAtInstallBoundaryCannotBecomeCurrentAuthority() =
+        fixture { p, request ->
+            val proof = ConditionalCallSites.preview(p, request, monitor)
+            val before = p.memory.blocks.map { it.name }
+            var changed = false
+            val proxy =
+                java.lang.reflect.Proxy.newProxyInstance(
+                    javaClass.classLoader,
+                    arrayOf(ghidra.program.model.listing.Program::class.java),
+                ) { _, method, args ->
+                    if (!changed && method.name == "startTransaction") {
+                        changed = true
+                        p.withTransaction { p.memory.setByte(ProgramMapping.staticAddress(p, "rom2::5212"), 0x3d) }
+                    }
+                    try {
+                        method.invoke(p, *(args ?: emptyArray()))
+                    } catch (e: java.lang.reflect.InvocationTargetException) {
+                        throw e.cause!!
+                    }
+                } as ghidra.program.model.listing.Program
+            assertThrows(IllegalArgumentException::class.java) { PredicatedCalls.install(proxy, proof, monitor) }
+            assertTrue(changed)
+            assertEquals(0x3d.toByte(), p.memory.getByte(ProgramMapping.staticAddress(p, "rom2::5212")))
+            assertEquals(before, p.memory.blocks.map { it.name })
+        }
+
+    @Test
+    fun explanationNeverPublishesAnUnvalidatedSecondRegistration() =
+        fixture { p, request ->
+            val entry = PredicatedCalls.install(p, ConditionalCallSites.preview(p, request, monitor), monitor)
+            var changed = false
+            val proxy =
+                java.lang.reflect.Proxy.newProxyInstance(
+                    javaClass.classLoader,
+                    arrayOf(ghidra.program.model.listing.Program::class.java),
+                ) { _, method, args ->
+                    if (!changed && method.name == "getOptions" &&
+                        Thread.currentThread().stackTrace.any { it.methodName == "registeredProof" }
+                    ) {
+                        changed = true
+                        p.withTransaction {
+                            val options = p.getOptions(PredicatedCalls.STOCK_OPTIONS)
+                            val record =
+                                com.google.gson.JsonParser
+                                    .parseString(options.getString(entry.toString(), null))
+                                    .asJsonObject
+                            record
+                                .getAsJsonObject("proof")
+                                .getAsJsonArray("boundaries")
+                                .first {
+                                    it.asJsonObject.get("kind").asString == "MATCHED_CALL_COMPLETION"
+                                }.asJsonObject
+                                .addProperty("physical", "rom2::4301")
+                            options.setString(entry.toString(), record.toString())
+                        }
+                    }
+                    try {
+                        method.invoke(p, *(args ?: emptyArray()))
+                    } catch (e: java.lang.reflect.InvocationTargetException) {
+                        throw e.cause!!
+                    }
+                } as ghidra.program.model.listing.Program
+            try {
+                val boundaries = ConditionalCallSites.explain(proxy, entry, monitor)
+                assertEquals("rom1::4301", boundaries.single { it.kind() == "MATCHED_CALL_COMPLETION" }.physical())
+            } catch (e: IllegalArgumentException) {
+                assertTrue(changed)
+            }
+        }
+
+    @Test
+    fun committedLaterAnnotationAtRefreshBoundaryIsPreserved() =
+        fixture { p, request ->
+            val entry = PredicatedCalls.install(p, ConditionalCallSites.preview(p, request, monitor), monitor)
+            val proof = ConditionalCallSites.preview(p, request, monitor)
+            val saved = p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(), null)
+            var changed = false
+            val proxy =
+                java.lang.reflect.Proxy.newProxyInstance(
+                    javaClass.classLoader,
+                    arrayOf(ghidra.program.model.listing.Program::class.java),
+                ) { _, method, args ->
+                    if (!changed && method.name == "startTransaction") {
+                        changed = true
+                        p.withTransaction { p.functionManager.getFunctionAt(entry).comment = "Later user annotation" }
+                    }
+                    try {
+                        method.invoke(p, *(args ?: emptyArray()))
+                    } catch (e: java.lang.reflect.InvocationTargetException) {
+                        throw e.cause!!
+                    }
+                } as ghidra.program.model.listing.Program
+            assertThrows(IllegalArgumentException::class.java) { PredicatedCalls.refresh(proxy, entry, proof, monitor) }
+            assertTrue(changed)
+            assertEquals("Later user annotation", p.functionManager.getFunctionAt(entry).comment)
+            assertEquals(saved, p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(), null))
+        }
+
+    @Test
+    fun operationSnapshotRejectsChangedAndForeignProgramsAndUndoRedoUsesDurableAuthority() =
+        fixture { p, request ->
+            val entry = PredicatedCalls.install(p, ConditionalCallSites.preview(p, request, monitor), monitor)
+            val snapshot = ConditionalCallSites.explanation(p, entry, monitor)
+            snapshot.requireCurrent(p)
+            fixture { other, _ ->
+                assertThrows(IllegalArgumentException::class.java) { snapshot.requireCurrent(other) }
+            }
+            p.undo()
+            assertFalse(PredicatedCalls.registered(p, entry))
+            assertThrows(IllegalArgumentException::class.java) { snapshot.requireCurrent(p) }
+            p.redo()
+            assertTrue(PredicatedCalls.registered(p, entry))
+            assertTrue(PredicatedCalls.emit(p, entry, 0x200000, monitor).isNotEmpty())
+            assertThrows(IllegalArgumentException::class.java) { snapshot.requireCurrent(p) }
+        }
+
+    @Test
+    fun fullAffineFrameAndPhysicalAliasEndpointsAreValidatedIndependently() =
+        fixture { p, request ->
+            for (cpu in listOf(0xc000, 0xcfff, 0xe000, 0xefff, 0xff80, 0xfffe)) {
+                val declared = SymbolicMemory.declare(p, listOf(cpu), emptyList(), null, null, request.footprint())
+                SymbolicMemory.validate(p, declared)
+            }
+            for (cpu in listOf(0xd000, 0xf000, 0xfdff, 0xffff, 0xc100, 0xe100, 0xc7f9)) {
+                assertThrows(IllegalArgumentException::class.java) {
+                    SymbolicMemory.declare(p, listOf(cpu), emptyList(), null, null, request.footprint())
+                }
+            }
+            for (delta in -16..1) ConditionalCallSites.frame(p, request.footprint(), delta, monitor)
+            assertThrows(IllegalArgumentException::class.java) { ConditionalCallSites.frame(p, request.footprint(), -17, monitor) }
+            assertThrows(IllegalArgumentException::class.java) { ConditionalCallSites.frame(p, request.footprint(), 2, monitor) }
+        }
 }

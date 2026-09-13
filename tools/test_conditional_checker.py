@@ -27,4 +27,32 @@ class BoundaryAuthorityTest(unittest.TestCase):
         b=dict(spDelta=0,cpu=0x1234,mapper=dict(low=1,high=0),registers=[dict(offset=1,origin=const(3))],stack=[],memory=[])
         observed=dict(sp=0,cpu=0x1234,low=1,high=0,reg={1:4},mem={})
         with self.assertRaisesRegex(core.Refusal,'register origin differs'):check.validate_boundary(b,observed,None,{})
+
+class MapperObservationTest(unittest.TestCase):
+    def machine(self, events=(), low=1, high=0, reads=()):
+        return SimpleNamespace(low=low,high_bit=high,bank=1,events=list(events),bus_reads=list(reads))
+    def test_masked_bank_does_not_hide_changed_high_latch(self):
+        raw=self.machine([('mapper',0x2000,2),('mapper',0x2000,1)])
+        with self.assertRaisesRegex(core.Refusal,'latch restoration'):
+            check.validate_mapper_observation(raw,raw,self.machine(raw.events,high=1))
+    def test_wrong_register_missing_restore_and_extra_latch_effect(self):
+        raw=self.machine([('mapper',0x2000,2),('mapper',0x2000,1)])
+        for events in [[('mapper',0x3000,2),('mapper',0x2000,1)],raw.events[:1],raw.events+[('mapper',0x3000,0)]]:
+            with self.assertRaisesRegex(core.Refusal,'ordered mapper bus effects'):
+                check.validate_mapper_observation(raw,raw,self.machine(events))
+    def test_write_before_use_order_survives_same_final_state_and_value(self):
+        raw=self.machine([('mapper',0x2000,2),('write',0xca20,1),('mapper',0x2000,1)])
+        check.validate_mapper_observation(raw,raw,raw)
+        with self.assertRaisesRegex(core.Refusal,'write moved across mapper'):
+            check.validate_mapper_observation(raw,raw,self.machine([*raw.events[::2],raw.events[1]]))
+    def test_physical_read_epoch_bytes_and_bank_are_separate(self):
+        events=[('mapper',0x2000,2),('mapper',0x2000,1)]
+        raw=self.machine(events,reads=[(1,2,0x4000,0x17)])
+        check.validate_mapper_observation(raw,raw,raw)
+        # Immutable constant folding is permitted; invented retained reads are not.
+        check.validate_mapper_observation(raw,raw,self.machine(events))
+        for read in [(0,2,0x4000,0x17),(1,1,0x4000,0x17),(1,2,0x4000,0x18)]:
+            with self.assertRaisesRegex(core.Refusal,'physical read moved'):
+                check.validate_mapper_observation(raw,raw,self.machine(events,reads=[read]))
+
 if __name__=='__main__':unittest.main()

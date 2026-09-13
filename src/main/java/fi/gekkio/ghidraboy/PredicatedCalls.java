@@ -97,11 +97,13 @@ public final class PredicatedCalls {
     return install(p,proof,monitor,true);
   }
   private static Address install(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor,boolean stock) throws Exception {
+    long previewRevision=p.getModificationNumber();
     currentPreview(p,proof,monitor);
     String nativeIdentity=stock?null:SoftwareCallStateEntryInjection.nativeIdentity();
     String convention=stock?StockEntryInjection.CONVENTION:SoftwareCallStateEntryInjection.CONVENTION;
     int tx=p.startTransaction("Install reviewed predicate-qualified ordinary call graph");boolean success=false;
     try {
+      require(previewRevision==p.getModificationNumber(),"Program changed before predicate installation; preview again");
       if(proof.callSite()==null)SoftwareCallInstructionDiscovery.apply(p,proof.discovery(),monitor);
 
       var invocations=new ArrayList<String>();invocations.add("root");invocations.addAll(proof.invocations().stream().map(PredicatedCallGraph.Invocation::id).toList());
@@ -150,8 +152,14 @@ public final class PredicatedCalls {
         monitor.checkCancelled();
         views.add(new View(invocation,entry.toString(),pieces,contract,inputBytes));if(invocation.equals("root"))root=entry;
       }
+      // Own topology/listing writes change the durable fingerprint. Re-establish
+      // the graph on that state before binding the new fingerprint to authority.
+      long publicationRevision=p.getModificationNumber();
+      var publicationProof=PredicatedCallGraph.rederive(p,proof,monitor);
+      require(publicationProof.complete()&&sameGraph(publicationProof,proof),"Source changed during predicate installation");
       var registration=new Registration(stock?(proof.callSite()==null?STOCK_VERSION:CONDITIONAL_STOCK_VERSION):VERSION,p.getUniqueProgramID(),root.toString(),proof,views,
           OrdinaryProofDependencies.fingerprint(p,monitor),nativeIdentity,stock?StockEntryInjection.VERSION:null,ownership);
+      require(publicationRevision==p.getModificationNumber(),"Program changed before predicate authority publication");
       for(var view:views)p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(registration));
       validateViews(p,registration);monitor.checkCancelled();success=true;return root;
     } finally {p.endTransaction(tx,success);}
@@ -219,6 +227,7 @@ public final class PredicatedCalls {
     }
   }
   public static void refresh(Program p,Address root,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {
+    long revision=p.getModificationNumber();
     var old=read(p,root);currentPreview(p,proof,monitor);
     require(old.proof().entry().equals(proof.entry())&&old.proof().end().equals(proof.end()),"Refresh changed predicate root extent");
     require(Objects.equals(old.proof().callSite(),proof.callSite())&&Objects.equals(old.proof().memory(),proof.memory())&&old.proof().domain().equals(proof.domain()),"Refresh changed explicit input/domain authority");
@@ -231,7 +240,7 @@ public final class PredicatedCalls {
     }
     var next=new Registration(old.version(),p.getUniqueProgramID(),old.root(),proof,views,OrdinaryProofDependencies.fingerprint(p,monitor),stock?null:SoftwareCallStateEntryInjection.nativeIdentity(),old.transport(),old.ownership());
     validateViews(p,next);int tx=p.startTransaction("Explicit predicate graph refresh");boolean success=false;
-    try{for(var view:next.views())p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(next));success=true;}finally{p.endTransaction(tx,success);}
+    try{require(revision==p.getModificationNumber(),"Program changed before predicate refresh; preview again");monitor.checkCancelled();for(var view:next.views())p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(next));success=true;}finally{p.endTransaction(tx,success);}
   }
   public static List<String> remove(Program p,Address entry,TaskMonitor monitor) throws Exception {
     var registration=read(p,entry);
@@ -245,7 +254,7 @@ public final class PredicatedCalls {
     } finally {p.endTransaction(tx,success);}
   }
   public static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor) throws Exception {
-    return emit(p,entry,uniqueBase,monitor,read(p,entry).transport()!=null);
+    return validated(p,entry,uniqueBase,monitor,null,null).operations();
   }
   public static PcodeOp[] emitLegacyComparison(Program p, Address entry, long uniqueBase, TaskMonitor monitor) throws Exception {
     return emit(p, entry, uniqueBase, monitor, false);
@@ -255,15 +264,20 @@ public final class PredicatedCalls {
   }
   public record EmissionCost(long validationNs,long derivationNs,long loweringNs,long serializationNs,int proofBytes,int registrationBytes,int operations) {}
   public static EmissionCost measure(Program p,Address entry,TaskMonitor monitor) throws Exception {
-    var times=new HashMap<String,Long>();var record=read(p,entry);var ops=emit(p,entry,0x200000,monitor,record.transport()!=null,times);
+    var times=new HashMap<String,Long>();var snapshot=validated(p,entry,0x200000,monitor,null,times);var record=snapshot.record();var ops=snapshot.operations();
     long start=System.nanoTime();int proofBytes=ProgramMapping.JSON.toJson(record.proof()).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
     int registrationBytes=ProgramMapping.JSON.toJson(record).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
     return new EmissionCost(times.get("validation"),times.get("derivation"),times.get("lowering"),System.nanoTime()-start,proofBytes,registrationBytes,ops.length);
   }
   private static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor,boolean stock) throws Exception {return emit(p,entry,uniqueBase,monitor,stock,null);}
   private static PcodeOp[] emit(Program p,Address entry,long uniqueBase,TaskMonitor monitor,boolean stock,Map<String,Long> times) throws Exception {
+    return validated(p,entry,uniqueBase,monitor,stock,times).operations();
+  }
+  private record Validated(Registration record,PcodeOp[] operations,List<Placement> placements,long revision) {}
+  private static Validated validated(Program p,Address entry,long uniqueBase,TaskMonitor monitor,Boolean requestedStock,Map<String,Long> times) throws Exception {
     long validationStart=System.nanoTime();
     long revision=p.getModificationNumber();var record=read(p,entry);
+    boolean stock=requestedStock==null?record.transport()!=null:requestedStock;
     require(stock?StockEntryInjection.VERSION.equals(record.transport()):record.transport()==null,"Entry transport mismatch; no record conversion is implicit");
     SymbolicMemory.validate(p,record.proof().memory());
     if(!stock)require(record.nativeIdentity().equals(SoftwareCallStateEntryInjection.nativeIdentity()),"Predicate native companion changed");
@@ -277,19 +291,23 @@ public final class PredicatedCalls {
     require(actual.memory()==null||actual.memory().mayWrites().isEmpty(),"Native transport of declared interference is unresolved");
     if(times!=null)times.put("validation",System.nanoTime()-validationStart);
     long loweringStart=System.nanoTime();
-    var result=lower(p,entry,record.proof(),record.views(),view.invocation(),uniqueBase);
+    var placements=new ArrayList<Placement>();
+    var result=lower(p,entry,record.proof(),record.views(),view.invocation(),uniqueBase,placements);
     if(times!=null)times.put("lowering",System.nanoTime()-loweringStart);
-    require(revision==p.getModificationNumber(),"Program changed during predicated native callback");return result;
+    require(!p.isClosed()&&revision==p.getModificationNumber(),"Program changed during predicated native callback");return new Validated(record,result,List.copyOf(placements),revision);
   }
   public record Placement(String node,String source,int start,int end) {}
   public static List<Placement> inspectEmission(Program p,Address entry,long uniqueBase,TaskMonitor monitor) throws Exception {
-    var emitted=emit(p,entry,uniqueBase,monitor);var record=read(p,entry);
-    var view=record.views().stream().filter(v->v.entry().equals(entry.toString())).findFirst().orElseThrow();
-    var placements=new ArrayList<Placement>();
-    var inspected=lower(p,entry,record.proof(),record.views(),view.invocation(),uniqueBase,placements);
-    require(Arrays.toString(emitted).equals(Arrays.toString(inspected)),"Emission changed during source-placement inspection");
-    return List.copyOf(placements);
+    return validated(p,entry,uniqueBase,monitor,null,null).placements();
   }
+  static ConditionalCallSites.Explanation explanation(Program p,Address entry,TaskMonitor monitor) throws Exception {
+    var snapshot=validated(p,entry,0x200000,monitor,null,null);var proof=snapshot.record().proof();
+    require(proof.callSite()!=null,"Not conditional call-site authority");
+    var text=ConditionalCallSites.describe(p,proof);
+    require(!p.isClosed()&&snapshot.revision()==p.getModificationNumber(),"Program changed during conditional explanation");
+    return new ConditionalCallSites.Explanation(p,p.getUniqueProgramID(),snapshot.revision(),entry.toString(),proof.boundaries(),text);
+  }
+
   private static Set<String> nativeNodes(PredicatedCallGraph.Proof proof) {
     var included=new HashSet<String>();var pending=new ArrayDeque<String>();pending.add(proof.root());
     var nodes=new HashMap<String,PredicatedCallGraph.Node>();for(var n:proof.nodes())nodes.put(n.id(),n);

@@ -17,7 +17,7 @@ class Machine(core.Machine):
         self.bank=request['mapper']['low'];self.low=self.bank;self.high_bit=request['mapper']['high']
         self.conditional_site=True;self.matched_only=matched
         self.spaces={v&0xffffffff:k for k,v in core.read(cap.root/f'{cap.label}-before-identity.json')['spaces'].items()}
-        self.initial_allowed=set();self.written=set();self.physical_reads=[];self.boundary_states=[]
+        self.initial_allowed=set();self.written=set();self.physical_reads=[];self.boundary_states=[];self.bus_reads=[];self.mapper_epoch=0
         for delta in request['incomingStackBytes']:self.initial_allowed.add(sp+delta)
         for at in list(self.mem):
             if at not in self.initial_allowed:del self.mem[at]
@@ -41,7 +41,11 @@ class Machine(core.Machine):
         cpu=self.canonical(cpu)
         for at in range(cpu,cpu+size):
             if at>=0x8000:core.require(at in self.initial_allowed or at in self.written,'undeclared entry memory read '+hex(at))
-            elif trace:self.physical_reads.append((0 if at<0x4000 else self.bank,at))
+            elif trace:
+                bank=0 if at<0x4000 else self.bank
+                core.require(bank is not None and 0<=bank<len(self.image)//0x4000,'physical read outside image')
+                self.physical_reads.append((bank,at))
+                self.bus_reads.append((self.mapper_epoch,bank,at,self.image[bank*0x4000+(at&0x3fff)]))
         return super().load(cpu,size,trace)
     def store(self,cpu,size,value,trace=True):
         cpu=self.canonical(cpu)
@@ -50,7 +54,7 @@ class Machine(core.Machine):
             if cpu<0x3000:self.low=value
             else:self.high_bit=value&1
             banks=len(self.image)//0x4000;core.require(banks&(banks-1)==0,'non-power-of-two fixture geometry')
-            self.bank=((self.high_bit<<8)|self.low)&(banks-1);self.events.append(('mapper',cpu,value));return
+            self.bank=((self.high_bit<<8)|self.low)&(banks-1);self.events.append(('mapper',cpu,value));self.mapper_epoch+=1;return
         core.require(0xc000<=cpu and cpu+size<=0xd000 or 0xff80<=cpu and cpu+size<=0xffff,'unsupported actual write storage')
         self.written.update(range(cpu,cpu+size));return super().store(cpu,size,value,trace)
     def get(self,v,env=None,entry=None):
@@ -70,13 +74,36 @@ class Machine(core.Machine):
             self.put(out,value,env,write=value!=self.mem.get(at));return
         if code=='CALLOTHER':
             core.require(op.get('userop_name') in {'gb_direct_write8','gb_cartridge_write8'},'foreign native userop')
-            self.store(self.get(nodes[1],env,entry),nodes[2]['size'],self.get(nodes[2],env,entry));return
+            core.require(len(nodes)==3 and nodes[1]['size']==2 and nodes[2]['size']==1,'unexpected bus effect widths')
+            cpu=self.get(nodes[1],env,entry)
+            # Raw direct bus writes lower to the cartridge userop for mapper ports.
+            if env is not None and cpu<0x8000:core.require(op['userop_name']=='gb_cartridge_write8','wrong actual bus userop')
+            self.store(cpu,nodes[2]['size'],self.get(nodes[2],env,entry));return
         if code in {'LOAD','STORE'}:
             space=self.spaces.get(self.get(nodes[0],env,entry)&0xffffffff)
             core.require(space is not None,'unbound actual address-space operand')
             if space.startswith('rom'):core.require(int(space[3:])==self.bank,'wrong physical LOAD bank')
             else:core.require(space=='ram','unsupported actual memory space')
         return super().ordinary(op,env,entry)
+
+def validate_mapper_observation(raw,emitted,native):
+    # Selector latches are hardware state even when unconnected address lines
+    # make two values resolve to the same physical bank on this fixture board.
+    state=lambda m:(m.low,m.high_bit,m.bank)
+    core.require(state(raw)==state(emitted)==state(native),'mapper latch restoration differs')
+    mapper=lambda m:[e for e in m.events if e[0]=='mapper']
+    core.require(mapper(raw)==mapper(emitted)==mapper(native),'ordered mapper bus effects differ')
+    # Native may fold immutable reads and eliminate disjoint local frame storage.
+    # Every retained physical read must still occur in its source mapper epoch.
+    core.require(not collections.Counter(native.bus_reads)-collections.Counter(raw.bus_reads),
+                 'native physical read moved across mapper effect or selected wrong bytes')
+    def writes(m):
+        epoch=0;result=collections.Counter()
+        for event in m.events:
+            if event[0]=='mapper':epoch+=1
+            elif event[0]=='write':result[(epoch,*event[1:])]+=1
+        return result
+    core.require(not writes(native)-writes(raw),'native write moved across mapper effect or extra actual write')
 
 def evaluate(origin,initial,names,memo):
     key=id(origin)
@@ -138,7 +165,7 @@ def validate_post_link(proof):
     core.require(next(b['origin'] for b in post['registers'] if b['offset']==0)==next(b['origin'] for b in completed['registers'] if b['offset']==0),'post-load flags not linked')
     return post,node
 
-def check(root,label='original',private=False,exhaust=True,delta=1):
+def check(root,label='original',private=False,exhaust=True,delta=1,register_sweep=False):
     cap=core.Capture(root,label);image=(root/'fixture.gb').read_bytes();proof=cap.proof
     core.require(proof['version'] in {'conditional-call-site-1','conditional-call-site-2','conditional-call-site-3'} and proof['coverageComplete'] and not proof['frontier'],'incomplete conditional proof')
     validate_initial(proof)
@@ -152,12 +179,13 @@ def check(root,label='original',private=False,exhaust=True,delta=1):
     core.require(core.sha(debug)==request['debug']['sha256'],'changed debug artifact');core.base.debug_identity(debug,cap.requested['root'],request['entry'],'gb_analysis_entry_v1',spaces)
     frames=[proof['callSite']['footprint']['stackMin'],0xc200,proof['callSite']['footprint']['stackMax']];patterns=[(0x12,0x34,0x56ab,0x89cd),(0xab,0xff,0x00ff,0xff00),(0xff,0,0xab55,0x1020)]
     rows=0
-    for index,sp in enumerate(frames):
+    contexts=[(index,sp,pattern) for index,sp in enumerate(frames) for pattern in (patterns+[(0,0,0,0),(255,255,65535,65535),(0x55,0xaa,0x8000,0x7fff),(0x80,0x7f,0xff00,0x00ff)] if register_sweep else [patterns[index]])]
+    for index,sp,pattern in contexts:
         for flags in range(0,256,16):
             for u in range(256) if exhaust else [0,1,254,255]:
                 a=[0,0x53,255][index] if private else u
-                raw=Machine(cap,image,a,u,flags,sp,patterns[index],private);emitted=Machine(cap,image,a,u,flags,sp,patterns[index],private);native=Machine(cap,image,a,u,flags,sp,patterns[index],private)
-                initial=Machine(cap,image,a,u,flags,sp,patterns[index],private)
+                raw=Machine(cap,image,a,u,flags,sp,pattern,private);emitted=Machine(cap,image,a,u,flags,sp,pattern,private);native=Machine(cap,image,a,u,flags,sp,pattern,private)
+                initial=Machine(cap,image,a,u,flags,sp,pattern,private)
                 raw.raw(cap);emitted.emitted(cap);result=native.high(cap)
                 for boundary in proof['boundaries'][1:]:
                     if boundary['kind']=='ANALYSIS_BOUNDARY':continue
@@ -170,7 +198,8 @@ def check(root,label='original',private=False,exhaust=True,delta=1):
                 core.require(raw.reg==emitted.reg,'raw/emitted registers differ')
                 effects=lambda m:[e for e in m.events if e[0] in {'read','write','mapper'}]
                 core.require(effects(raw)==effects(emitted),'raw/emitted ordered memory differs')
-                core.require(raw.bank==emitted.bank==native.bank==proof['callSite']['mapper']['low'],'mapper restoration differs')
+                validate_mapper_observation(raw,emitted,native)
+                core.require((raw.low,raw.high_bit)==(proof['callSite']['mapper']['low'],proof['callSite']['mapper']['high']),'mapper restoration differs')
                 core.require(raw.physical_reads==emitted.physical_reads,'physical immutable read ordering differs')
                 core.require(raw.mem==emitted.mem,'residual architectural stack/scratch differs')
                 allowed=collections.Counter(e for e in raw.events if e[0]=='write');actual=collections.Counter(e for e in native.events if e[0]=='write')
@@ -195,12 +224,16 @@ def check(root,label='original',private=False,exhaust=True,delta=1):
                 else:
                     expected=(u+delta)&255
                     core.require(raw.mem[0xca20]==expected and raw.register(1)==expected,'nonconstant callee result differs')
+                    # Independent SM83 INC/DEC specification: Z from the byte result,
+                    # N for DEC, H from nibble carry/borrow; preceding ADC A,0 clears C.
+                    expected_f=(0x80 if expected==0 else 0)|(0x40 if delta<0 else 0)|(0x20 if (u&15)==(0 if delta<0 else 15) else 0)
+                    core.require(raw.register(0)==expected_f,'callee INC/DEC hardware flag relation differs')
                     if expected:core.require(raw.mem[0xca21]==expected,'returned flag/register continuation differs')
                 rows+=1
-    return dict(status='PASS',cases=rows,frames=frames,flags=list(range(0,256,16)),register_patterns=patterns,nodes=len(proof['nodes']),proof_bytes=(root/f'{label}-proof.json').stat().st_size)
+    return dict(status='PASS',cases=rows,frames=frames,flags=list(range(0,256,16)),register_patterns=sorted(set(pattern for _,_,pattern in contexts)),independent_register_sweep=register_sweep,nodes=len(proof['nodes']),proof_bytes=(root/f'{label}-proof.json').stat().st_size)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('root',type=Path);p.add_argument('--private',action='store_true');p.add_argument('--quick',action='store_true');p.add_argument('--label',default='original');p.add_argument('--delta',type=int,choices=[-1,1],default=1);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
-    try:r=check(a.root,a.label,a.private,not a.quick,a.delta)
+    p=argparse.ArgumentParser();p.add_argument('root',type=Path);p.add_argument('--private',action='store_true');p.add_argument('--register-sweep',action='store_true');p.add_argument('--quick',action='store_true');p.add_argument('--label',default='original');p.add_argument('--delta',type=int,choices=[-1,1],default=1);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+    try:r=check(a.root,a.label,a.private,not a.quick,a.delta,a.register_sweep)
     except Exception as e:a.output.write_text(json.dumps(dict(status='FAIL',type=type(e).__name__,error=str(e)),indent=2));raise
     a.output.write_text(json.dumps(r,indent=2)+'\n');print('PASS',r['cases'])
