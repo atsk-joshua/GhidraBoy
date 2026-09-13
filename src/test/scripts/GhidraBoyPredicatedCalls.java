@@ -43,6 +43,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
         var ops=new ArrayList<Object>();var iterator=block.getIterator();while(iterator.hasNext())ops.add(operation(iterator.next()));
         blocks.add(Map.of("index",block.getIndex(),"in",ins,"out",outs,"ops",ops));
       }
+      request.put("jump_tables",Arrays.stream(result.getHighFunction().getJumpTables()).map(t->Map.of("at",t.getSwitchAddress().toString(),"cases",Arrays.stream(t.getCases()).map(Object::toString).toList())).toList());
       save(label+"-high.json",blocks);var proto=result.getHighFunction().getFunctionPrototype();var params=new ArrayList<Object>();
       for(int i=0;i<proto.getNumParams();i++){var param=proto.getParam(i);params.add(Map.of("name",param.getName(),"storage",Arrays.stream(param.getStorage().getVarnodes()).map(this::varnode).toList()));}
       request.put("parameters",params);request.put("return_type",proto.getReturnType().getName());

@@ -12,7 +12,7 @@ import java.util.*;
 /** Predicate adapter over the shared value core, production fetch evidence and ordinary frame effects. */
 public final class PredicatedCallGraph {
   private PredicatedCallGraph() {}
-  public static final String VERSION = "predicated-ordinary-graph-4";
+  public static final String VERSION = "predicated-ordinary-graph-5";
   public record Limits(int nodes, int operations, int calls) {
     public static final Limits PRIMARY = new Limits(256, 262144, 1);
     public Limits { if (nodes < 1 || nodes > 512 || operations < 1 || operations > 1048576 || calls < 1 || calls > 2)
@@ -25,7 +25,14 @@ public final class PredicatedCallGraph {
       + "one internal call depth, bounded relational root CFG and straight-line ordinary callees with effect-derived native byte-register inputs. "
       + "Outputs below C080 are disjoint from live frame bytes C080..CFFD.");
   public static final Domain MEMORY_DOMAIN = new Domain(0xc800, 0xcffc,
-      "Explicit unknown fixed WRAM inputs and established executable generation; synchronous MBC5, boot bypassed; no async/untracked writers except declared may-writes. Symbolic outer frame C800..CFFD disjoint from data/code C000..C7FF.");
+      "Explicit unknown fixed WRAM0 or ordinary synchronous HRAM inputs; optional established executable generation; synchronous MBC5, boot bypassed; no async/untracked writers except declared may-writes. Symbolic outer frame C800..CFFD disjoint from data/code C000..C7FF.");
+  public record ReadAlternative(int cpu, List<OrdinaryEntryAccess.SourceByte> sources, AbstractValues.Condition predicate) {
+    public ReadAlternative { sources=List.copyOf(sources); }
+  }
+  public record Read(int operation,int operand,int width,AbstractValues.Origin pointer,MapperKnowledge mapper,List<ReadAlternative> alternatives) {
+    public Read { alternatives=List.copyOf(alternatives); }
+  }
+  public record StackByte(int delta,AbstractValues.Origin value) {}
   public record Binding(long offset, AbstractValues.Origin origin, List<Long> cover) {}
   public record Edge(String kind, String target, AbstractValues.Condition condition) {}
   public record Effect(int operation, int cpu, AbstractValues.Origin value, boolean mapperControl) {}
@@ -38,8 +45,8 @@ public final class PredicatedCallGraph {
       MapperKnowledge incoming, MapperKnowledge outgoing, List<Binding> before, List<Binding> after,
       int beforeSpDelta, int afterSpDelta, List<AbstractValues.Origin> unavailableNativeFlags, List<SoftwareCallEffects.RelativeFrame> frames,
       List<SoftwareCallEffects.RelativeAccess> frameAccesses, List<Effect> effects,
-      String transfer, int transferOperation, List<Edge> edges, String callee, List<SymbolicMemory.Access> memoryAccesses) {
-    public Node { fetch=List.copyOf(fetch);rawPcode=List.copyOf(rawPcode);before=List.copyOf(before);after=List.copyOf(after);
+      String transfer, int transferOperation, List<Edge> edges, String callee, List<SymbolicMemory.Access> memoryAccesses, List<Read> reads,List<StackByte> stackBefore,List<StackByte> stackAfter) {
+    public Node { stackBefore=List.copyOf(stackBefore);stackAfter=List.copyOf(stackAfter);reads=List.copyOf(reads);fetch=List.copyOf(fetch);rawPcode=List.copyOf(rawPcode);before=List.copyOf(before);after=List.copyOf(after);
       memoryAccesses=List.copyOf(memoryAccesses);unavailableNativeFlags=List.copyOf(unavailableNativeFlags);frames=List.copyOf(frames);frameAccesses=List.copyOf(frameAccesses);effects=List.copyOf(effects);edges=List.copyOf(edges); }
   }
   public record Invocation(String id, String caller, String callNode, String target, String entry,
@@ -55,9 +62,19 @@ public final class PredicatedCallGraph {
     public JoinRow {before=List.copyOf(before);after=List.copyOf(after);effects=List.copyOf(effects);successors=List.copyOf(successors);}
   }
   public record Convergence(int transfers,int rounds,int worklistMaximum,int rows,int replayTransfers,boolean postFixedPoint,boolean possibleNontermination,int operations) {}
+  public record RootResult(String type,int width,long registerOffset) {}
+  static RootResult rootResult(Function function) {
+    if(!function.hasCustomVariableStorage())return null;
+    var storage=function.getReturn().getVariableStorage().getVarnodes();
+    if(function.getParameterCount()!=0||storage.length!=1||!storage[0].isRegister())throw new IllegalArgumentException("Unsupported explicit root result contract");
+    var v=storage[0];var p=function.getProgram();
+    if(!(v.getSize()==1&&v.getAddress().equals(p.getRegister("A").getAddress())||v.getSize()==2&&v.getAddress().equals(p.getRegister("HL").getAddress()))
+        ||function.getReturnType().getLength()!=v.getSize())throw new IllegalArgumentException("Root result must be explicit byte A or word HL storage");
+    return new RootResult(function.getReturnType().getPathName(),v.getSize(),v.getOffset());
+  }
   public record Proof(String version, long programId, String entry, String end, Domain domain, Limits limits,
       String dependencies, String root, List<Node> nodes, List<Invocation> invocations,
-      List<Frontier> frontier, boolean coverageComplete, SoftwareCallInstructionDiscovery.Plan discovery, List<JoinRow> joins, Convergence convergence,List<OriginNode> origins,List<PredicatedJoin.Domain> joinDomains,SymbolicMemory.Declaration memory) {
+      List<Frontier> frontier, boolean coverageComplete, SoftwareCallInstructionDiscovery.Plan discovery, List<JoinRow> joins, Convergence convergence,List<OriginNode> origins,List<PredicatedJoin.Domain> joinDomains,SymbolicMemory.Declaration memory,RootResult result) {
     public Proof { nodes=List.copyOf(nodes);invocations=List.copyOf(invocations);frontier=List.copyOf(frontier);joins=joins==null?List.of():List.copyOf(joins);origins=List.copyOf(origins);joinDomains=List.copyOf(joinDomains); }
     public boolean complete() { return coverageComplete && frontier.isEmpty() && root!=null && !nodes.isEmpty(); }
   }
@@ -66,6 +83,7 @@ public final class PredicatedCallGraph {
     return storage.registers.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e ->
         new Binding(e.getKey(),e.getValue().origin(),e.getValue().values()==null?null:new ArrayList<>(e.getValue().values()))).toList();
   }
+  private static List<StackByte> stack(State state) {return state.stack.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e->new StackByte(e.getKey(),e.getValue().origin())).toList();}
   private record Slot(String space,long offset,int size) {
     boolean overlaps(Slot other) {return space.equals(other.space)&&offset<other.offset+other.size&&other.offset<offset+size;}
   }
@@ -95,7 +113,7 @@ public final class PredicatedCallGraph {
     final Map<Integer,AbstractValues.Value> stack=new HashMap<>();
     final List<SoftwareCallEffects.RelativeFrame> frames=new ArrayList<>();
     final List<AbstractValues.Origin> unavailableFlags=new ArrayList<>();
-    State(String scope) {storage=new AbstractValues.Storage(scope);}
+    State(String scope) {storage=new AbstractValues.Storage(scope,true);}
     State copy() {
       var n=new State(storage.scope);n.cpu=cpu;n.calls=calls;n.invocation=invocation;n.mapper=mapper;n.predicate=predicate;
       n.memory=memory==null?null:memory.copy();n.storage.registers.putAll(storage.registers);n.storage.uniques.putAll(storage.uniques);n.storage.site=storage.site;
@@ -118,7 +136,7 @@ public final class PredicatedCallGraph {
     boolean image=memory!=null&&memory.image()!=null;
     if(root==null || root.getProgram()!=p || (!image&&(root.getEntryPoint().getOffset()>=0x4000
         || !root.getEntryPoint().getAddressSpace().equals(p.getAddressFactory().getDefaultAddressSpace())
-        || root.getBody().getMaxAddress().getOffset()>=0x4000)) || root.getBody().getNumAddressRanges()!=1
+        ))
         || root.getBody().getNumAddresses()>1024 || root.hasNoReturn() || root.getCallFixup()!=null || root.isThunk())
       throw new IllegalArgumentException("Predicate root requires bounded canonical ROM0 Function");
     if(image&&!root.getEntryPoint().toString().equals(ExecutableImages.resolve(p,memory.image()).entry()))throw new IllegalArgumentException("Root is not requested executable generation");
@@ -134,6 +152,7 @@ public final class PredicatedCallGraph {
     try(var discovery=SoftwareCallInstructionDiscovery.begin(p,monitor)) {
       var builder=new Builder(p,root,limits,memory,monitor);var state=new State(p.getUniqueProgramID()+":"+root.getEntryPoint());
       state.memory=SymbolicMemory.initial(p,memory,state.storage.scope);
+      if(memory!=null&&memory.entryHL()!=null)state.storage.put(new Varnode(p.getRegister("HL").getAddress(),2),AbstractValues.constant(memory.entryHL(),2));
       state.cpu=(int)root.getEntryPoint().getOffset();state.affine.put(slot(builder.sp),0);
       state.stack.put(0,AbstractValues.input(state.storage.scope,"outer-return-byte",0,1));
       state.stack.put(1,AbstractValues.input(state.storage.scope,"outer-return-byte",1,1));
@@ -146,9 +165,12 @@ public final class PredicatedCallGraph {
       if(revision!=p.getModificationNumber()||!dependencies.equals(OrdinaryProofDependencies.fingerprint(p,monitor)))
         throw new IllegalArgumentException("Program changed during predicate graph proof");
       return new Proof(VERSION,p.getUniqueProgramID(),root.getEntryPoint().toString(),root.getBody().getMaxAddress().toString(),
-          memory==null?DOMAIN:MEMORY_DOMAIN,limits,dependencies,entry,new ArrayList<>(builder.nodes.values()),
-          builder.invocations.values().stream().map(PendingInvocation::freeze).toList(),builder.frontier,coverage,discovery.plan(monitor),new ArrayList<>(builder.rows.values()),builder.statistics(),builder.origins,builder.domains,memory);
+          executionDomain(memory),limits,dependencies,entry,new ArrayList<>(builder.nodes.values()),
+          builder.invocations.values().stream().map(PendingInvocation::freeze).toList(),builder.frontier,coverage,discovery.plan(monitor),new ArrayList<>(builder.rows.values()),builder.statistics(),builder.origins,builder.domains,memory,rootResult(root));
     }
+  }
+  private static Domain executionDomain(SymbolicMemory.Declaration memory) {
+    return memory==null?DOMAIN:memory.entryHL()==null?MEMORY_DOMAIN:new Domain(0xc802,0xcffc,MEMORY_DOMAIN.conditions()+" Checked constant entry HL; PUSH/POP frame extends two bytes below entry SP.");
   }
   private static final class Builder {
     final SymbolicMemory.Declaration memory;final Domain executionDomain;
@@ -257,10 +279,10 @@ public final class PredicatedCallGraph {
     }
     Node replace(Node n,List<Edge> edges) {
       return new Node(n.id(),n.invocation(),n.cpu(),n.source(),n.bytes(),n.fetch(),n.rawPcode(),n.predicate(),n.incoming(),n.outgoing(),
-          List.of(),List.of(),n.beforeSpDelta(),n.afterSpDelta(),n.unavailableNativeFlags(),n.frames(),n.frameAccesses(),List.of(),n.transfer(),n.transferOperation(),edges,n.callee(),n.memoryAccesses());
+          List.of(),List.of(),n.beforeSpDelta(),n.afterSpDelta(),n.unavailableNativeFlags(),n.frames(),n.frameAccesses(),List.of(),n.transfer(),n.transferOperation(),edges,n.callee(),n.memoryAccesses(),n.reads(),n.stackBefore(),n.stackAfter());
     }
 
-    Builder(Program p,Function root,Limits limits,SymbolicMemory.Declaration memory,TaskMonitor monitor){this.memory=memory;this.executionDomain=memory==null?DOMAIN:MEMORY_DOMAIN;this.p=p;this.root=root;this.limits=limits;this.monitor=monitor;
+    Builder(Program p,Function root,Limits limits,SymbolicMemory.Declaration memory,TaskMonitor monitor){this.memory=memory;this.executionDomain=executionDomain(memory);this.p=p;this.root=root;this.limits=limits;this.monitor=monitor;
       cartridge=ProgramMapping.cartridge(p);sp=new Varnode(p.getRegister("SP").getAddress(),2);}
     int sp(State s){var result=s.affine.get(slot(sp));if(result==null)throw new IllegalArgumentException("Unproved symbolic SP delta");return result;}
     Address address(State s) throws Exception {
@@ -281,20 +303,20 @@ public final class PredicatedCallGraph {
     }
     String transfer(State incoming,Set<String> path) throws Exception {
       monitor.checkCancelled();var s=incoming.copy();String source="unresolved";
-      String id=hash(Arrays.asList(s.cpu,s.invocation,s.mapper,s.predicate,bindings(s.storage),sp(s),s.frames,s.unavailableFlags));
-      var memoryAccesses=new ArrayList<SymbolicMemory.Access>();
+      String id=hash(Arrays.asList(s.cpu,s.invocation,s.mapper,s.predicate,bindings(s.storage),sp(s),s.frames,s.unavailableFlags,stack(s)));
+      var memoryAccesses=new ArrayList<SymbolicMemory.Access>();var reads=new ArrayList<Read>();
       try {
         if(cyclic.isEmpty()&&++attempted>limits.nodes())throw new IllegalArgumentException("Predicate node work budget exhausted");
         if(memory!=null)for(var write:memory.mayWrites())if(write.beforeCpu()==s.cpu)
           s.memory.write(p,s.mapper,write.cpu(),AbstractValues.input(s.storage.scope,"declared-interference",0,1),write.reason()+":"+s.invocation+":"+s.cpu,-1,true,memoryAccesses);
         Address at=address(s);source=at.toString();
-        id=hash(Arrays.asList(s.cpu,source,ProgramMapping.staticToPhysical(p,at),s.invocation,s.mapper,s.predicate,bindings(s.storage),sp(s),s.frames,s.unavailableFlags));
+        id=hash(Arrays.asList(s.cpu,source,ProgramMapping.staticToPhysical(p,at),s.invocation,s.mapper,s.predicate,bindings(s.storage),sp(s),s.frames,s.unavailableFlags,stack(s)));
         if(memory!=null)id=hash(List.of(id,s.memory.identity(),s.memory.killed.stream().map(Object::toString).sorted().toList()));
         if(!cyclic.isEmpty()){id=control(s);if(!nodes.containsKey(id)&&nodes.size()>=limits.nodes())throw new IllegalArgumentException("Predicate control-node budget exhausted");}
         if(cyclic.isEmpty()&&nodes.containsKey(id))return id;
         String cycle=s.invocation+":"+source;
         if(cyclic.isEmpty()&&!path.add(cycle))throw new IllegalArgumentException("Acyclic predicate scope: backedge retained as frontier");
-        if(s.invocation.equals("root")&&!root.getBody().contains(at))throw new IllegalArgumentException("Root flow escaped declared body");
+
         var ins=SoftwareCallInstructionDiscovery.instructionAt(p,at,"predicate-qualified graph edge "+id,monitor);
         if(ins==null)throw new IllegalArgumentException("Missing justified instruction");
         var fetch=memory!=null&&memory.image()!=null?ExecutableImages.fetch(p,memory.image(),s.memory,ins):BankAnalysis.predicatedFetch(p,s.mapper,ins);
@@ -356,6 +378,10 @@ public final class PredicatedCallGraph {
               if(s.frames.isEmpty()) {
                 if(beforeSp!=0||sp(s)!=2||frameAccesses.size()!=2||frameAccesses.get(0).delta()!=0||frameAccesses.get(1).delta()!=1)
                   throw new IllegalArgumentException("Outer symbolic return frame mismatch");
+                for(int byteIndex=0;byteIndex<2;byteIndex++) {
+                  var original=AbstractValues.input(s.storage.scope,"outer-return-byte",byteIndex,1).origin();
+                  if(!s.stack.containsKey(byteIndex)||!s.stack.get(byteIndex).origin().equals(original))throw new IllegalArgumentException("Outer return word was replaced by source effects");
+                }
                 transfer="EXTERNAL_RETURN";exits.add(s.predicate);
               } else {
                 var frame=s.frames.remove(s.frames.size()-1);var destination=exact(s.storage.get(op.getInput(0)));
@@ -378,19 +404,36 @@ public final class PredicatedCallGraph {
             }
             break;
           }
-          if(code==PcodeOp.BRANCHIND||code==PcodeOp.CALLIND)throw new IllegalArgumentException("Unresolved indirect target retained as frontier");
+          if(code==PcodeOp.BRANCHIND) {
+            if(index!=raw.length-1||op.getInput(0).getSize()!=2||!s.frames.isEmpty()||!cyclic.isEmpty())throw new IllegalArgumentException("Unresolved indirect invocation/width/cyclic target");
+            var destination=s.storage.get(op.getInput(0));
+            var relation=AbstractValues.relation(List.of(destination.origin()),s.predicate);
+            if(!relation.complete()||relation.reachable().isEmpty())throw new IllegalArgumentException("Incomplete finite target relation: "+relation.reason());
+            transfer="BRANCHIND";transferOperation=index;
+            for(var tuple:relation.reachable()) {
+              var next=s.copy();next.cpu=(int)(long)tuple.values().get(0);
+              next.predicate=and(s.predicate,new AbstractValues.Term(destination.origin(),next.cpu));
+              edges.add(new Edge("DISPATCH",visit(next,new HashSet<>(path)),next.predicate));
+            }
+            break;
+          }
+          if(code==PcodeOp.CALLIND)throw new IllegalArgumentException("Unresolved indirect target retained as frontier");
           var readInputs=new ArrayList<AbstractValues.Value>();
-          for(var operand:op.getInputs())readInputs.add(memory!=null&&operand.isAddress()?readMemory(s,operand,source,index,memoryAccesses):s.storage.get(operand));
+          for(int operand=0;operand<op.getNumInputs();operand++){var v=op.getInput(operand);readInputs.add(v.isAddress()?readData(s,AbstractValues.constant(memoryCpu(v),2),source,index,operand,v.getSize(),memoryAccesses,reads):s.storage.get(v));}
           var inputs=readInputs.stream().map(v->cyclic.isEmpty()||untransported(s,v)?v:PredicatedJoin.restrict(v,s.domain)).toList();
           if(code==PcodeOp.LOAD) {
             var delta=s.affine.get(slot(op.getInput(1)));
-            if(delta==null||op.getOutput().getSize()!=1||!ins.getMnemonicString().equals("RET"))
-              throw new IllegalArgumentException("Only justified ordinary frame reads in this graph slice");
-            frameAddress(delta);var value=s.stack.get(delta);if(value==null)throw new IllegalArgumentException("Unresolved symbolic frame byte");
-            s.storage.put(op.getOutput(),value);frameAccesses.add(new SoftwareCallEffects.RelativeAccess(index,delta,false,exact(value)));
+            if(delta==null) {
+              if(op.getInput(0).getOffset()!=p.getAddressFactory().getDefaultAddressSpace().getSpaceID())throw new IllegalArgumentException("Unsupported LOAD address space");
+              s.storage.put(op.getOutput(),readData(s,inputs.get(1),source,index,1,op.getOutput().getSize(),memoryAccesses,reads));
+            } else {
+              if(op.getOutput().getSize()!=1||!(ins.getMnemonicString().equals("RET")||ins.getMnemonicString().equals("POP")&&p.getRegister("HL").equals(ins.getRegister(0))))throw new IllegalArgumentException("Only justified frame reads");
+              frameAddress(delta);var value=s.stack.get(delta);if(value==null)throw new IllegalArgumentException("Unresolved symbolic frame byte");
+              s.storage.put(op.getOutput(),value);frameAccesses.add(new SoftwareCallEffects.RelativeAccess(index,delta,false,exact(value)));
+            }
           } else if(code==PcodeOp.STORE) {
             var delta=s.affine.get(slot(op.getInput(1)));var value=inputs.get(2);
-            if(delta==null||op.getInput(2).getSize()!=1||!ins.getMnemonicString().equals("CALL"))
+            if(delta==null||op.getInput(2).getSize()!=1||!(ins.getMnemonicString().equals("CALL")||ins.getMnemonicString().equals("PUSH")&&p.getRegister("HL").equals(ins.getRegister(0))))
               throw new IllegalArgumentException("Unproved/non-CALL stack write");
             frameAddress(delta);s.stack.put(delta,value);frameAccesses.add(new SoftwareCallEffects.RelativeAccess(index,delta,true,exact(value)));
           } else if(code==PcodeOp.CALLOTHER) {
@@ -410,7 +453,7 @@ public final class PredicatedCallGraph {
               throw new IllegalArgumentException("Non-affine SP change");
             var computed=AbstractValues.evaluate(code,op.getOutput().getSize(),inputs,source+":"+index);
             if(memory!=null&&op.getOutput().isAddress())s.memory.write(p,s.mapper,memoryCpu(op.getOutput()),computed,source,index,false,memoryAccesses);
-            s.storage.put(op.getOutput(),cyclic.isEmpty()||untransported(s,computed)?computed:PredicatedJoin.fold(computed));
+            s.storage.put(op.getOutput(),untransported(s,computed)?computed:PredicatedJoin.fold(computed));
             var outputSlot=slot(op.getOutput());s.affine.keySet().removeIf(k->k.overlaps(outputSlot));
             if(affine!=null)s.affine.put(outputSlot,affine);
           } else throw new IllegalArgumentException("Unmodeled operation "+op.getMnemonic());
@@ -421,7 +464,7 @@ public final class PredicatedCallGraph {
         }
         var made=new Node(id,incoming.invocation,incoming.cpu,source,HexFormat.of().formatHex(ins.getBytes()),fetch,
             Arrays.stream(raw).map(Object::toString).toList(),incoming.predicate,beforeMapper,s.mapper,before,bindings(s.storage),beforeSp,sp(s),
-            incoming.unavailableFlags,frameBefore,frameAccesses,effects,transfer,transferOperation,edges,callee,memoryAccesses);
+            incoming.unavailableFlags,frameBefore,frameAccesses,effects,transfer,transferOperation,edges,callee,memoryAccesses,reads,stack(incoming),stack(s));
         if(!cyclic.isEmpty()) {
           var beforeNode=nodes.get(id);var combined=new ArrayList<Edge>(edges);
           if(beforeNode!=null) {
@@ -448,6 +491,25 @@ public final class PredicatedCallGraph {
     AbstractValues.Value readMemory(State state,Varnode value,String source,int operation,List<SymbolicMemory.Access> accesses) throws Exception {
       return state.memory.read(p,state.mapper,memoryCpu(value),source,operation,accesses);
     }
+    AbstractValues.Value readData(State state,AbstractValues.Value pointer,String source,int operation,int operand,int width,List<SymbolicMemory.Access> accesses,List<Read> reads) throws Exception {
+      if(untransported(state,pointer))throw new IllegalArgumentException("Native call contract cannot carry live returned flags into read pointer");
+      if(pointer.width()!=2||width!=1)throw new IllegalArgumentException("Finite read requires byte access through 16-bit pointer");
+      var relation=AbstractValues.relation(List.of(pointer.origin()),state.predicate);
+      if(!relation.complete()||relation.reachable().isEmpty())throw new IllegalArgumentException("Incomplete path-qualified read: "+relation.reason());
+      var rows=new ArrayList<AbstractValues.TableRow>();var alternatives=new ArrayList<ReadAlternative>();
+      for(var tuple:relation.reachable()) {
+        int cpu=(int)(long)tuple.values().get(0);
+        if(cpu>=0x8000) {
+          if(relation.reachable().size()!=1||state.memory==null)throw new IllegalArgumentException("Unproved mutable table/read pointer");
+          return state.memory.read(p,state.mapper,cpu,source,operation,accesses);
+        }
+        var octet=FiniteEntryProducer.source(p,state.mapper,cartridge,cpu,0,width,ProgramMapping.staticAddress(p,source),operation,operand);
+        alternatives.add(new ReadAlternative(cpu,List.of(octet),and(state.predicate,new AbstractValues.Term(pointer.origin(),cpu))));
+        rows.add(new AbstractValues.TableRow(List.of((long)cpu),octet.value(),octet.toString()));
+      }
+      reads.add(new Read(operation,operand,width,pointer.origin(),state.mapper,alternatives));
+      return AbstractValues.table(width,List.of(pointer.origin()),rows,source+":"+operation);
+    }
     void frameAddress(int delta) {
       if(executionDomain.stackMin()+delta<(memory==null?0xc080:0xc800)||executionDomain.stackMax()+delta>0xcffd)
         throw new IllegalArgumentException("Frame access escapes disjoint fixed WRAM domain");
@@ -465,7 +527,7 @@ public final class PredicatedCallGraph {
     boolean coverage() throws Exception {
       if(!frontier.isEmpty()||exits.isEmpty()||(!cyclic.isEmpty()&&!postFixedPoint))return false;
       for(var node:nodes.values())for(String kind:node.edges().stream().map(Edge::kind).distinct().toList()) {
-        if(node.edges().stream().filter(e->e.kind().equals(kind)).map(Edge::target).distinct().count()>1) {
+        if(!kind.equals("DISPATCH")&&node.edges().stream().filter(e->e.kind().equals(kind)).map(Edge::target).distinct().count()>1) {
           frontier.add(new Frontier(node.id(),node.cpu(),node.invocation(),"Joined edge needs explicit runtime successor selection: "+kind));return false;
         }
       }
@@ -496,12 +558,8 @@ public final class PredicatedCallGraph {
         invocation.byteAContract=wroteA&&invocation.returnNode!=null;
         if(!invocation.byteAContract)return false;
       }
-      var origins=exits.stream().flatMap(c->c.terms().stream()).map(AbstractValues.Term::origin).distinct().toList();
-      var relation=AbstractValues.relation(origins);
-      if(!relation.complete()){frontier.add(new Frontier("coverage",(int)root.getEntryPoint().getOffset(),"root",relation.reason()));return false;}
-      for(var tuple:relation.reachable()) {
-        boolean covered=exits.stream().anyMatch(c->c.terms().stream().allMatch(t->tuple.values().get(origins.indexOf(t.origin()))==t.value()));
-        if(!covered){frontier.add(new Frontier("coverage",(int)root.getEntryPoint().getOffset(),"root","Uncovered feasible input predicate"));return false;}
+      if(!AbstractValues.covers(exits)) {
+        frontier.add(new Frontier("coverage",(int)root.getEntryPoint().getOffset(),"root","Uncovered feasible input predicate or coverage work budget exhausted"));return false;
       }
       return true;
     }

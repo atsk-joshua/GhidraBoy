@@ -482,5 +482,16 @@
     "legacy": "Genuine registry4 and later-edit preservation with scoped read-only public/native refusal; general proof migration and G4 master disposition remain open",
     "platforms": "Mac arm64 and Docker/Rosetta Linux x86-64 local installed/migration; not hosted Actions acceptance",
     "stop": "STOP for master review; G1 status unchanged"
+  },
+  "stock_finite_dispatch": {
+    "status": "FINAL_QUALIFICATION_IN_PROGRESS",
+    "starting_commit": "045e16a76f52f5f93a1555c511d65772e71b05c6",
+    "report": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/REPORT-STOCK-FINITE-DISPATCH.md",
+    "archive": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/CHANGES-STOCK-FINITE-DISPATCH.zip",
+    "archive_digest": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/CHANGES-STOCK-FINITE-DISPATCH.zip.sha256",
+    "replay": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/contents/replay.py",
+    "baseline_instances": 820,
+    "scope": "Bounded source-derived finite indirect jumps through stock CALLOTHER; normalized HRAM/default, nibble128/16 with checked HL/frame, focused controls and current-record lifecycle",
+    "stop": "STOP for master review; no next batch or release claim"
   }
 }

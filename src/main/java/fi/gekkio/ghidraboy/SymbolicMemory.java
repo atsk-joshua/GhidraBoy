@@ -9,13 +9,18 @@ public final class SymbolicMemory {
   private SymbolicMemory() {}
   public record Input(int cpu, MapperState.Physical physical, String storage, int width) {}
   public record MayWrite(int beforeCpu, int cpu, String reason) {}
-  public record Declaration(long programId, List<Input> inputs, List<MayWrite> mayWrites, String image, String imageAuthority) {
+  public record Declaration(long programId, List<Input> inputs, List<MayWrite> mayWrites, String image, String imageAuthority, Integer entryHL) {
+    public Declaration(long programId,List<Input> inputs,List<MayWrite> mayWrites,String image,String imageAuthority){this(programId,inputs,mayWrites,image,imageAuthority,null);}
     public Declaration { inputs=List.copyOf(inputs);mayWrites=List.copyOf(mayWrites); }
   }
   public record Access(String kind,int cpu,MapperState.Physical physical,String storage,int operation,
       AbstractValues.Origin value,String reason) {}
   public record Fact(MapperState.Physical physical,AbstractValues.Origin value) {}
   public static Declaration declare(Program p,List<Integer> inputs,List<MayWrite> mayWrites,String image) throws Exception {
+    return declare(p,inputs,mayWrites,image,null);
+  }
+  public static Declaration declare(Program p,List<Integer> inputs,List<MayWrite> mayWrites,String image,Integer entryHL) throws Exception {
+    if(entryHL!=null&&(entryHL<0||entryHL>65535||!inputs.contains(entryHL)))throw new IllegalArgumentException("Entry HL must point to a declared mutable input byte");
     if(inputs.size()>64||mayWrites.size()>16||new HashSet<>(inputs).size()!=inputs.size())
       throw new IllegalArgumentException("Memory declaration budget/duplicate input");
     var bindings=new ArrayList<Input>();
@@ -24,24 +29,24 @@ public final class SymbolicMemory {
       if(write.beforeCpu()<0||write.beforeCpu()>65535||write.reason()==null||write.reason().isBlank())throw new IllegalArgumentException("Unqualified may-write");
       address(p,MapperKnowledge.unknown(),write.cpu(),ScalarAccess.Kind.WRITE);
     }
-    return new Declaration(p.getUniqueProgramID(),bindings,mayWrites,image,image==null?null:PredicatedCallGraph.hash(ExecutableImages.resolve(p,image)));
+    return new Declaration(p.getUniqueProgramID(),bindings,mayWrites,image,image==null?null:PredicatedCallGraph.hash(ExecutableImages.resolve(p,image)),entryHL);
   }
   static void validate(Program p,Declaration d) throws Exception {
     if(d==null)return;
     if(d.image()!=null)ExecutableImages.resolve(p,d.image());
-    if(d.programId()!=p.getUniqueProgramID()||!d.equals(declare(p,d.inputs().stream().map(Input::cpu).toList(),d.mayWrites(),d.image())))
+    if(d.programId()!=p.getUniqueProgramID()||!d.equals(declare(p,d.inputs().stream().map(Input::cpu).toList(),d.mayWrites(),d.image(),d.entryHL())))
       throw new IllegalArgumentException("Changed/foreign symbolic memory declaration");
   }
   static MapperState.Physical physical(Program p,MapperKnowledge mapper,int cpu,ScalarAccess.Kind kind) {
     var result=ScalarAccess.resolve(ProgramMapping.cartridge(p),mapper,new ScalarAccess.Request(cpu,kind,1,0,"physical memory authority",-1,-1,null));
     var physical=result.resolution().orElseThrow().physical();
-    if(physical==null||!physical.region().equals("WRAM")||physical.bank()!=0||physical.offset()<0||physical.offset()>=0x800)
+    if(physical==null||physical.bank()!=0||physical.offset()<0||!(physical.region().equals("WRAM")&&physical.offset()<0x800||physical.region().equals("HRAM")&&physical.offset()<0x7f))
       throw new IllegalArgumentException("Memory cell outside fixed WRAM/disjoint frame domain");
     return physical;
   }
   static Address address(Program p,MapperKnowledge mapper,int cpu,ScalarAccess.Kind kind) throws Exception {
     var physical=physical(p,mapper,cpu,kind);
-    var at=p.getAddressFactory().getDefaultAddressSpace().getAddress(0xc000+physical.offset());
+    var at=p.getAddressFactory().getDefaultAddressSpace().getAddress((physical.region().equals("HRAM")?0xff80:0xc000)+physical.offset());
     var block=p.getMemory().getBlock(at);
     if(block==null||block.isMapped()||!block.isInitialized()||!block.isRead()||!block.isWrite()||block.isVolatile()
         ||block.getSourceInfos().stream().anyMatch(i->i.getFileBytes().isPresent())

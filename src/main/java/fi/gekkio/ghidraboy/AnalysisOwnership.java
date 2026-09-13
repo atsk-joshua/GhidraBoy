@@ -297,7 +297,7 @@ public final class AnalysisOwnership {
     return List.copyOf(diagnostics);
   }
 
-  private static void undo(Program p, Group group, TaskMonitor monitor, List<String> diagnostics)
+  static void undo(Program p, Group group, TaskMonitor monitor, List<String> diagnostics)
       throws Exception {
     var removableViews = new ArrayList<String>();
     for (var view : group.views) {
@@ -486,7 +486,7 @@ public final class AnalysisOwnership {
           // address-space identity or canceling unrelated queued analysis.
           p.getListing().clearCodeUnits(block.getStart(), block.getEnd(), false);
           block.setExecute(false);
-          block.setComment("software-call-retired-view-1; retained shared mapping for saved address and analysis-queue identity");
+          if(!StockEntryInjection.presentationStorage(block))block.setComment("software-call-retired-view-1; retained shared mapping for saved address and analysis-queue identity");
         }
       }
       diagnostics.add("Retired execution view; shared mapping retained " + name);
@@ -554,7 +554,7 @@ public final class AnalysisOwnership {
   }
 
   static String viewStamp(Program p, String name, TaskMonitor monitor) throws Exception {
-    if (!name.startsWith(SoftwareCallExecutionView.PREFIX)) return null;
+    if (!name.startsWith(SoftwareCallExecutionView.PREFIX) && !name.startsWith(OrdinaryEntryAccess.PREFIX)) return null;
     var fields = new ArrayList<String>();
     fields.add("software-call-view-3");
     boolean exists = false;

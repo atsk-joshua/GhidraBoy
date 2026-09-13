@@ -144,7 +144,10 @@ final class AbstractValues {
   }
   /** Complete evaluation only over bounded byte input definitions and supported pure operations. */
   static Relation relation(List<Origin> origins) {
-    var roots = new LinkedHashSet<Origin>(); for (var o : origins) roots(o, roots);
+    return relation(origins, new Condition(List.of()));
+  }
+  static Relation relation(List<Origin> origins, Condition guard) {
+    var roots = new LinkedHashSet<Origin>(); for (var t : guard.terms()) roots(t.origin(), roots); for (var o : origins) roots(o, roots);
     long cases = 1;
     for (var root : roots) {
       if (root.width() != 1 || cases > MAX_INPUT_CASES / 256) return new Relation(false, "input enumeration budget/width incomplete", 0, List.of());
@@ -158,6 +161,9 @@ final class AbstractValues {
       var assignment = new HashMap<Origin,Long>(); long digits = index;
       for (var root : ordered) { assignment.put(root, digits & 255); digits >>>= 8; }
       var memo = new HashMap<Origin,Long>(); var tuple = new ArrayList<Long>();
+      var allowed = matches(guard, assignment, memo, work);
+      if (allowed == null) return new Relation(false, "guard evaluation unsupported or work budget exhausted", index, List.of());
+      if (!allowed) continue;
       for (var origin : origins) {
         Long v = concrete(origin, assignment, memo, work);
         if (v == null) return new Relation(false, "condition evaluation unsupported or work budget exhausted", index, List.of());
@@ -174,10 +180,39 @@ final class AbstractValues {
     return new Relation(true, "complete bounded structural input evaluation", cases, reachable);
   }
   static Compatibility compatible(Condition condition) {
-    var relation = relation(condition.terms().stream().map(Term::origin).toList());
+    var relation = relation(List.of(), condition);
     if (!relation.complete()) return Compatibility.UNKNOWN;
-    var wanted = condition.terms().stream().map(Term::value).toList();
-    return relation.reachable().stream().anyMatch(t -> t.values().equals(wanted)) ? Compatibility.SAT : Compatibility.UNSAT;
+    return relation.reachable().isEmpty() ? Compatibility.UNSAT : Compatibility.SAT;
+  }
+  private static Boolean matches(Condition condition, Map<Origin,Long> assignment, Map<Origin,Long> memo, long[] work) {
+    for (var term : condition.terms()) {
+      var value = concrete(term.origin(), assignment, memo, work);
+      if (value == null) return null;
+      if (value != term.value()) return false;
+    }
+    return true;
+  }
+  static boolean covers(List<Condition> conditions) {
+    var roots = new LinkedHashSet<Origin>();
+    for (var condition : conditions) for (var term : condition.terms()) roots(term.origin(), roots);
+    long cases = 1;
+    for (var root : roots) {
+      if (root.width() != 1 || cases > MAX_INPUT_CASES / 256) return false;
+      cases *= 256;
+    }
+    long[] work = {0};
+    for (long index = 0; index < cases; index++) {
+      long digits = index; var assignment = new HashMap<Origin,Long>();
+      for (var root : roots) { assignment.put(root, digits & 255); digits >>>= 8; }
+      boolean covered = false; var memo = new HashMap<Origin,Long>();
+      for (var condition : conditions) {
+        var matched = matches(condition, assignment, memo, work);
+        if (matched == null) return false;
+        if (matched) { covered = true; break; }
+      }
+      if (!covered) return false;
+    }
+    return true;
   }
   static void roots(Origin o, Set<Origin> roots) {
     if (o.kind() == OriginKind.INPUT) roots.add(o); else for (var child : o.inputs()) roots(child, roots);
@@ -199,8 +234,9 @@ final class AbstractValues {
   /** Byte-slice storage. Unknown unique definitions are scoped to their instruction, not reused. */
   static final class Storage {
     final Map<Long,Value> registers = new HashMap<>(), uniques = new HashMap<>();
-    final String scope; String site = "entry";
-    Storage(String scope) { this.scope = scope; }
+    final String scope; final boolean compactWords; String site = "entry";
+    Storage(String scope) { this(scope,false); }
+    Storage(String scope,boolean compactWords) { this.scope = scope;this.compactWords=compactWords; }
     void instruction(String at) { site=at; uniques.clear(); }
     Value get(Varnode node) {
       if (node.isConstant()) return constant(node.getOffset(),node.getSize());
@@ -209,6 +245,28 @@ final class AbstractValues {
       if (storage==null) return input(scope, "unsupported-storage:"+node.getAddress().getAddressSpace().getName(),node.getOffset(),node.getSize());
       var octets=new ArrayList<Value>();
       for(int b=0;b<node.getSize();b++) octets.add(storage.getOrDefault(node.getOffset()+b,input(scope,slice,node.getOffset()+b,1)));
+      // Reassemble slices of one unchanged word without duplicating its provenance tree.
+      if(compactWords&&octets.size()>1) {
+        var first=octets.getFirst().origin();
+        if(first.kind()==OriginKind.OPERATION&&first.opcode()==PcodeOp.SUBPIECE&&first.inputs().size()==2) {
+          var whole=first.inputs().getFirst();boolean intact=whole.width()==node.getSize();
+          for(int b=0;b<octets.size()&&intact;b++) {
+            var part=octets.get(b).origin();
+            intact=part.kind()==OriginKind.OPERATION&&part.opcode()==PcodeOp.SUBPIECE&&part.inputs().size()==2
+                &&part.inputs().getFirst().equals(whole)&&part.inputs().get(1).kind()==OriginKind.CONSTANT&&part.inputs().get(1).constant()==b;
+          }
+          if(intact) {
+            TreeSet<Long> cover=new TreeSet<>(List.of(0L));
+            for(int b=0;b<octets.size()&&cover!=null;b++) {
+              if(octets.get(b).values()==null){cover=null;break;}
+              var next=new TreeSet<Long>();
+              for(long prefix:cover)for(long octet:octets.get(b).values())next.add(prefix|(octet<<(8*b)));
+              cover=next.size()>MAX_VALUES?null:next;
+            }
+            return value(node.getSize(),cover,whole,sites(octets,site),"reassembled unchanged storage slices");
+          }
+        }
+      }
       Value combined=octets.get(octets.size()-1);
       for(int b=octets.size()-2;b>=0;b--) combined=evaluate(PcodeOp.PIECE,combined.width()+1,List.of(combined,octets.get(b)),site);
       return combined;

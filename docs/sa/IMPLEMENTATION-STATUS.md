@@ -1,5 +1,19 @@
 # Implementation status
 
+## STOCK-FINITE-DISPATCH — implementation complete; final qualification in progress
+
+Source-derived guarded immutable reads and finite physical indirect-jump edges use
+the maintained graph and stock carrier. The normalized and full-table nibble
+witnesses pass early raw/emitted/native replay; explicit stale refusal, refresh
+and first immutable separate-JVM reopen have been rehearsed. Integrated review
+corrections bind root result storage and original outer-return bytes.
+
+The exact final checkpoint, native terminal provenance, controls and platform
+results are recorded separately in the forthcoming task report. This does not
+change G1 archive review, scoped language compatibility or general migration
+status. See the [dispatch decision](../decisions/static-dispatch-model.md).
+
+
 ## SM83-V1-V2-COMPATIBILITY — scoped local PASS; master review pending
 
 The installed simple translator upgrades genuine final-language-1 annotated work

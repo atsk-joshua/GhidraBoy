@@ -196,3 +196,28 @@ required after a consumed dependency changes. See the
 
 These development routes do not qualify existing annotated language-1 Programs.
 Keep those Programs on their original provider until separate migration approval.
+
+## Explicit finite-dispatch views
+
+For a bounded synchronous MBC5 root, use `GhidraBoyTools.java` with
+`stock-predicate-preview` and an explicit premise JSON file, for example
+`{"root":"0100","inputs":[65408],"entryHL":null}`. An optional fixed entry HL must
+name one declared input cell; its byte remains unknown. The source Function may
+explicitly expose byte A or word HL as its custom result, with no custom parameters.
+The qualified entry checks that result storage against the source.
+
+In headless/script use, the preview arguments are the premise file and a new proof
+output path. `stock-predicate-apply <proof.json>` installs a reviewed complete
+preview. `stock-contexts`, `stock-current` and `stock-source` provide existing
+navigation and currentness inspection. After a consumed byte edit, preview again
+from the original premises and use `stock-predicate-refresh <proof.json> <carrier>`;
+then refresh the Decompiler window. There is no automatic proof replacement.
+`stock-predicate-remove <carrier>` removes unchanged owned artifacts and preserves
+later edits and canonical source listing.
+
+This qualified stock view supports proved finite indirect jumps, ordered immutable
+ROM reads and the declared input/frame domain. Unknown mutable target tables,
+incomplete paths, unsupported effects and exhausted budgets refuse installation.
+It does not fix canonical automatic switch recovery or validate a public override.
+See [the dispatch contract](decisions/static-dispatch-model.md) for limits and
+experimental record compatibility.

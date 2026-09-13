@@ -57,7 +57,7 @@ public final class FiniteEntryProducer {
     if (!condition) throw new IllegalArgumentException("Finite producer: " + message);
   }
 
-  private static OrdinaryEntryAccess.SourceByte source(Program p, MapperKnowledge state,
+  static OrdinaryEntryAccess.SourceByte source(Program p, MapperKnowledge state,
       Cartridge cartridge, int cpu, int byteIndex, int width, Address instruction,
       int operation, int operand) throws Exception {
     var access = ScalarAccess.resolve(cartridge, state, new ScalarAccess.Request(cpu,

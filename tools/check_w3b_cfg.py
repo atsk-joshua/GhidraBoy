@@ -97,7 +97,7 @@ def loop_observations(machine,cap,acc,bank,value):
     require(definitions and definitions[-1][2]==acc and loop_high_sinks(cap)[call_block]==definitions[-1][1],'C064 sink is not the actual pre-mapper accumulator definition')
 
 def loop_structure(cap,native=True):
-    p=cap.proof;require(p['version'] in {'predicated-ordinary-graph-3','predicated-ordinary-graph-4'} and p['coverageComplete'] and not p['frontier'],'incomplete cyclic proof')
+    p=cap.proof;require(p['version'] in {'predicated-ordinary-graph-3','predicated-ordinary-graph-4','predicated-ordinary-graph-5'} and p['coverageComplete'] and not p['frontier'],'incomplete cyclic proof')
     c=p['convergence'];require(c['postFixedPoint'] and c['transfers']==c['replayTransfers']==len(p['joins']) and not c['possibleNontermination'],'unchecked fixed point or possible divergence')
     nodes={n['id']:n for n in p['nodes']};require(len(nodes)==len(p['nodes']),'duplicate graph identity')
     require(any(n['cpu']==0x15b and any(e['kind']=='TAKEN' and nodes[e['target']]['cpu']==0x159 for e in n['edges']) for n in nodes.values()),'dropped actual graph backedge')
