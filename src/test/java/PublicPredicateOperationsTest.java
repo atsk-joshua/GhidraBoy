@@ -149,18 +149,26 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
   }
   @Test public void T6_failedRemovalRestoresAuthorityThenPreservesLaterEdit() throws Exception {
     var p=fixture();try {
+      var failedProof=preview(p);
+      var creationFailure=new TaskMonitorAdapter(true) {
+        @Override public void checkCancelled() throws CancelledException {if(p.getFunctionManager().getFunctionCount()>0)throw new IllegalStateException("Failure after real carrier creation");super.checkCancelled();}
+      };
+      assertThrows(IllegalStateException.class,()->execute(p,creationFailure,"stock-predicate-apply",failedProof.toString()));
+      assertEquals(0,p.getFunctionManager().getFunctionCount());
+      int later=p.startTransaction("unrelated edit after failed creation");p.getOptions("sentinel").setString("later-create","retain");p.endTransaction(later,true);
       var apply=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",preview(p).toString());done(apply);
       apply.lastPresentation.get(30,TimeUnit.SECONDS);var entry=apply.lastOperation.entry();
       String before=p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null);
       var monitor=new TaskMonitorAdapter(true) {
-        @Override public void checkCancelled() throws CancelledException {if(p.getFunctionManager().getFunctionCount()==0)cancel();super.checkCancelled();}
+        @Override public void checkCancelled() throws CancelledException {if(p.getFunctionManager().getFunctionCount()==0)throw new IllegalStateException("Failure after real owned deletion");super.checkCancelled();}
       };
-      assertThrows(CancelledException.class,()->execute(p,monitor,"stock-predicate-remove",entry.toString()));
+      assertThrows(IllegalStateException.class,()->execute(p,monitor,"stock-predicate-remove",entry.toString()));
       assertEquals(before,p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null));
       int tx=p.startTransaction("later committed user edit after failed removal");p.getFunctionManager().getFunctionAt(entry).setComment("later user annotation");p.endTransaction(tx,true);
       var remove=execute(p,TaskMonitor.DUMMY,"stock-predicate-remove",entry.toString());done(remove);
       assertEquals("later user annotation",p.getFunctionManager().getFunctionAt(entry).getComment());
       assertFalse(PredicatedCalls.registered(p,entry));
+      assertEquals("retain",p.getOptions("sentinel").getString("later-create",null));
     }finally{p.release(this);}
   }
   @Test public void T8_observeAdHocWriterSharedTransactionUnsupportedIsolation() throws Exception {
@@ -251,6 +259,20 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
         assertEquals("CANCELLED_PUBLICATION",script.lastPresentation.get(30,TimeUnit.SECONDS));
       }finally{p.release(this);}
     }
+  }
+  @Test public void headlessNavigationPublishesAfterWrapperStateUpdate() throws Exception {
+    var p=fixture();try {
+      var apply=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",preview(p).toString());done(apply);apply.lastPresentation.get(30,TimeUnit.SECONDS);
+      var entry=apply.lastOperation.entry();var proof=PredicatedCalls.registeredProof(p,entry);
+      for(String action:List.of("conditional-call-target","conditional-call-continuation")) {
+        var state=new GhidraState(null,null,p,new ghidra.program.util.ProgramLocation(p,entry),null,null);
+        var script=new GhidraBoyTools();script.setScriptArgs(new String[]{action,entry.toString()});
+        script.execute(state,new TaskMonitorAdapter(true),new PrintWriter(System.out,true));
+        assertEquals("PUBLISHED",script.lastPresentation.get(30,TimeUnit.SECONDS));
+        String kind=action.endsWith("target")?"RET_DISPATCH":"MATCHED_CALL_COMPLETION";
+        assertEquals(proof.boundaries().stream().filter(b->b.kind().equals(kind)).findFirst().orElseThrow().physical(),state.getCurrentAddress().toString());
+      }
+    }finally{p.release(this);}
   }
   @Test public void T9_cancelAfterCommitKeepsLaterCommittedEdit() throws Exception {
     var p=fixture();var publicationReached=new CountDownLatch(1);var releasePublication=new CountDownLatch(1);

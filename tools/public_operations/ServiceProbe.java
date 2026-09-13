@@ -52,7 +52,7 @@ public class ServiceProbe implements GhidraLaunchable {
       tool.getToolFrame().addNotify();
     });
     var tool=holder[0];var pm=tool.getService(ProgramManager.class);var writer=new PrintWriter(System.out,true);
-    var rows=new ArrayList<Object>();
+    var rows=new ArrayList<Object>();var toolClosed=new java.util.concurrent.atomic.AtomicBoolean();
     try {
       Swing.runNow(()->{pm.openProgram(p);pm.openProgram(q);pm.setCurrentProgram(p);});
       var actual=new java.util.concurrent.atomic.AtomicReference<ghidra.framework.model.TransactionInfo>();
@@ -108,13 +108,13 @@ public class ServiceProbe implements GhidraLaunchable {
       Swing.runNow(()->{pm.openProgram(p);pm.setCurrentProgram(p);});
       var disposedGate=new GateWriter();var disposed=run(tool,p,new TaskMonitorAdapter(true),disposedGate,"conditional-call-explain",entry.toString());
       require(disposedGate.reached.await(30,TimeUnit.SECONDS),"tool disposal gate");
-      Swing.runNow(()->{pm.closeAllPrograms(true);tool.close();});disposedGate.release.countDown();
+      Swing.runNow(()->{pm.closeAllPrograms(true);tool.close();toolClosed.set(true);});disposedGate.release.countDown();
       require(!"PUBLISHED".equals(disposed.lastPresentation.get(30,TimeUnit.SECONDS)),"disposed consumer published");
       require(PredicatePublication.inventory().get("requests")==0,"tool-owned request resources");
       rows.add(Map.of("row","REPEATED_CLOSE_AND_TOOL_DISPOSE","iterations",8,"requests",PredicatePublication.inventory(),"operations",PredicateOperations.inventory()));
       Files.writeString(out.resolve("service-results.json"),ProgramMapping.JSON.toJson(Map.of("kind","HIDDEN_HEADED_SERVICE_NOT_GUI_ACCEPTANCE","rows",rows)));
     }finally{
-      Swing.runNow(()->{pm.closeAllPrograms(true);tool.close();});p.release(this);q.release(this);project.close();
+      if(!toolClosed.get())Swing.runNow(()->{pm.closeAllPrograms(true);tool.close();});p.release(this);q.release(this);project.close();
     }
     System.out.println("PUBLIC_SERVICE_PROBE_PASS");System.exit(0);
   }

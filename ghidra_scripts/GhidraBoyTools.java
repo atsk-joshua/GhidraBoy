@@ -6,6 +6,7 @@ import java.nio.file.*;
 import java.util.*;
 
 public class GhidraBoyTools extends GhidraScript {
+  private final java.util.concurrent.CompletableFuture<Void> wrapperFinished=new java.util.concurrent.CompletableFuture<>();
   private PredicateOperations.Gate gate;
   private ghidra.program.model.listing.Program finalVoteProgram;
   private int finalVote=-1;
@@ -19,6 +20,7 @@ public class GhidraBoyTools extends GhidraScript {
     return action.startsWith("conditional-call-") || action.startsWith("stock-predicate-");
   }
   @Override public AnalysisMode getScriptAnalysisMode() {
+    if(currentProgram==null)return AnalysisMode.ENABLED;
     String[] args=getScriptArgs();
     if(args.length>0 && !publicPredicate(args[0]))return AnalysisMode.ENABLED;
     if(!admissionChecked){try{gate=PredicateOperations.scheduleScript(currentProgram,monitor);}catch(Exception failure){throw new IllegalStateException("Public operation not admitted",failure);}
@@ -27,7 +29,7 @@ public class GhidraBoyTools extends GhidraScript {
   }
   @Override public void cleanup(boolean success){
     try {if(finalVote!=-1){int owned=finalVote;finalVote=-1;finalVoteProgram.endTransaction(owned,success && !monitor.isCancelled());}}
-    finally{if(gate!=null)gate.close();}
+    finally{if(gate!=null)gate.close();wrapperFinished.complete(null);}
   }
   private void observe(PredicateOperations.Operation operation,boolean navigate) {
     lastOperation=operation;deferredPublication=true;
@@ -35,7 +37,7 @@ public class GhidraBoyTools extends GhidraScript {
     println(ProgramMapping.JSON.toJson(operation.provisional()));
     operation.diagnostics().forEach(this::println);
     request.onClosed(operation::abandonObservation);
-    operation.completion().thenAcceptAsync(outcome->{
+    operation.completion().thenCombine(wrapperFinished,(outcome,ignored)->outcome).thenAcceptAsync(outcome->{
       try {
         println(ProgramMapping.JSON.toJson(outcome));
         if(outcome.current() && outcome.mutation()!=PredicateOperations.Mutation.ABORTED) {
@@ -302,7 +304,7 @@ public class GhidraBoyTools extends GhidraScript {
         lastOperation=operation;deferredPublication=true;
         println(ProgramMapping.JSON.toJson(operation.provisional()));
         request.onClosed(operation::abandonObservation);
-    operation.completion().thenAcceptAsync(outcome->{
+    operation.completion().thenCombine(wrapperFinished,(outcome,ignored)->outcome).thenAcceptAsync(outcome->{
           try {
             println(ProgramMapping.JSON.toJson(outcome));
             if(!outcome.current()){request.suppress(outcome.mutation()==PredicateOperations.Mutation.ABORTED?"OUTER_ABORTED":"SOURCE_STALE_OR_UNOBSERVED");return;}

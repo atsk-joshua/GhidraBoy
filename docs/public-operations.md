@@ -53,7 +53,9 @@ it. `NOT_DONE_BUT_ABORTED` remains pending until rollback has finished.
 
 After a committed outcome, the observer checks the expected registration and
 surviving semantics at a stable Program revision off the EDT. The actual EDT
-publication checks that revision again. No second registration is substituted
+publication checks that revision again. Publication also waits nonblockingly for
+the host wrapper to finish its state update and cleanup, so that update cannot
+overwrite a completed headless navigation. No second registration is substituted
 into the previously validated result. Receipts distinguish mutation, database
 checkpoint, cancellation, currentness and source revision. Database commit means
 changes in the open Program. It does not mean the domain file was saved or passed
