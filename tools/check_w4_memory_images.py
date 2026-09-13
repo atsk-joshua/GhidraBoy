@@ -72,7 +72,7 @@ def evaluate(root,label,mode,fixture,bindings,cap=None):
         req=cap.requests[view['tag']];require(req['completed'] and req['highfunction_available'] and not req['error'],'native request failed')
         require(req['entry']==view['view']['entry'],'wrong requested native Function')
         cap.verify_native(view['tag'])
-    require(cap.proof['version']=='predicated-ordinary-graph-4' and cap.proof['coverageComplete'] and not cap.proof['frontier'],'incomplete production proof')
+    require(cap.proof['version'] in {'predicated-ordinary-graph-4','predicated-ordinary-graph-5'} and cap.proof['coverageComplete'] and not cap.proof['frontier'],'incomplete production proof')
     declaration=cap.proof['memory'];require(declaration is not None,'missing production memory authority')
     if mode=='A':
         require(len(declaration['inputs'])==1 and declaration['inputs'][0]['cpu']==0xc060 and declaration['inputs'][0]['storage']=='c060' and declaration['inputs'][0]['width']==1,'wrong production memory input binding')

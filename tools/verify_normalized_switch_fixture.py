@@ -30,6 +30,8 @@ def main():
 typedef uint8_t byte;
 static byte DAT_ff80;
 static byte memory[0x400];
+// Preserve the native bad-data path as a fatal trap; never invent a default value.
+static _Noreturn void halt_baddata(void) { fputs("reached native bad-data path\n",stderr); exit(3); }
 #define CONCAT11(high,low) ((uint16_t)(((uint16_t)(uint8_t)(high)<<8)|(uint8_t)(low)))
 static char read_char(uint16_t address) {
     if(address<0x200 || address>0x202) {fprintf(stderr,"unexpected lookup %x\n",address);exit(2);}

@@ -13,6 +13,9 @@ successor and its live state. Reads retain operation/operand, CPU pointer origin
 mapper, width, ordered physical source bytes and predicates. Graph identity includes
 saved stack bytes; original outer-return bytes must survive to an ordinary return.
 A source body does not establish the set of possible indirect destinations.
+Finite jumps are currently limited to acyclic root graphs; indirect callees and
+cyclic dispatch remain frontiers. Incumbent ordinary-call/cyclic families retain
+their separate domains.
 Discovery follows actual proved edges, including discontiguous and banked ROM.
 
 Structural relations evaluate guards before partial lookups. Missing feasible rows,
@@ -58,7 +61,8 @@ may update source segments after a changed finite relation while preserving the
 one-byte carrier and invocation/domain identity. Legacy mapped-fragment refresh
 retains its stricter topology condition.
 
-Registration contains the existing Function/view ownership receipts. Removal uses
+Global dependency fingerprints are conservative: unrelated edits may require
+explicit refresh. Registration contains the existing Function/view ownership receipts. Removal uses
 the incumbent edit-preserving undo helper and retains canonical source listing.
 Later user edits survive. Carrier storage retains its identity on retirement so
 export cannot confuse it with cartridge bytes. Application and removal are

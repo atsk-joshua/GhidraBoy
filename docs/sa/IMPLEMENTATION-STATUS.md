@@ -1,18 +1,31 @@
 # Implementation status
 
-## STOCK-FINITE-DISPATCH — implementation complete; final qualification in progress
+## STOCK-FINITE-DISPATCH — scoped local PASS; STOP for master review
 
 Source-derived guarded immutable reads and finite physical indirect-jump edges use
-the maintained graph and stock carrier. The normalized and full-table nibble
-witnesses pass early raw/emitted/native replay; explicit stale refusal, refresh
-and first immutable separate-JVM reopen have been rehearsed. Integrated review
-corrections bind root result storage and original outer-return bytes.
+one maintained graph and the stock carrier. Normalized FF80/default and nibble
+128-entry/sixteen-target witnesses pass raw/emitted/native replay across all 256
+inputs and three frame/carry contexts. Two fixed nibble pointers include C7FF→C800.
+Relocation/permutation, physical-bank identity, zero/shift, incomplete authority,
+actual stale native refusal, explicit public refresh and first immutable separate-JVM
+current-record reopen pass. Source and qualified return storage, original return
+bytes, canonical mutable LOAD binding and unsupported returned flags are checked.
 
-The exact final checkpoint, native terminal provenance, controls and platform
-results are recorded separately in the forthcoming task report. This does not
-change G1 archive review, scoped language compatibility or general migration
-status. See the [dispatch decision](../decisions/static-dispatch-model.md).
+The final clean checkpoint passes **838 instances in 84 classes**, retaining all
+820 baseline identities/multiplicities with no failures/errors/skips. Mac and local
+Docker/Rosetta Linux positives/lifecycle, affected conditional-call/cyclic/alias/image
+witnesses and maintained installed/migration workflow regressions pass on the exact
+qualified extension. The final source commit is `7a6807f`; the extension SHA-256 is
+`0240e40577a0af12df39a0e1c260d9f998113eee57d441f8cad964942e4d0272`.
+Final documentation/checker receipts are separate from those executable bytes.
 
+Canonical automatic recovery still overpublishes targets; public normalized
+override still fails inputs 3/4/5. No upstream, general W3/W4, migration or stock-release
+claim is made. Native terminal provenance is qualified for the retained distinct-RET
+witnesses, not arbitrary optimizer restructuring. Proof JSON remains verbose.
+See the [dispatch decision](../decisions/static-dispatch-model.md) and
+[evidence index](evidence-index.json). G1 archive review and prior accepted semantic/
+language scope are unchanged. STOP for master review; no automatic next batch.
 
 ## SM83-V1-V2-COMPATIBILITY — scoped local PASS; master review pending
 

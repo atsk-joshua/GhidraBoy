@@ -25,7 +25,7 @@ def run(runtime,jdk,work,suite):
     profile=work/'profile';profile.mkdir();projects=work/'projects';projects.mkdir()
     env=dict(os.environ,JAVA_HOME=str(jdk),JAVA_TOOL_OPTIONS='-Duser.home='+str(profile),XDG_CACHE_HOME=str(profile))
     extension=runtime/'Ghidra/Extensions/GhidraBoy'
-    write(work/'identities.json',dict(extension=snapshot(extension),scripts=snapshot(scripts),fixtures=snapshot(fixtures),suite=suite))
+    write(work/'identities.json',dict(extension=snapshot(extension),scripts=snapshot(scripts),fixtures=snapshot(fixtures),suite=suite,checkers={name:sha(repo/'tools'/name) for name in ['run_finite_dispatch.py','check_finite_dispatch.py','check_finite_dispatch_sensitivity.py','check_predicated_calls.py','check_w2e_native.py']}))
     commands=[];results={}
     def command(label,args,marker):
         write(work/'progress.json',dict(active=label,completed=list(results)))
@@ -37,7 +37,7 @@ def run(runtime,jdk,work,suite):
         write(work/'commands.json',commands)
         if child.returncode or marker not in text:raise RuntimeError('Failed child '+label)
     cases=[('normalized-lifecycle','normalized','normalized-lifecycle',None),('nibble','nibble','nibble',0xc060)]
-    if suite=='mac':cases += [('nibble-h2','nibble','nibble',0xc17f),('normalized-relocated','normalized-relocated','normalized',None),('nibble-relocated','nibble-relocated','nibble',0xc060),('physical-banks','physical-banks','physical-banks',None),('physical-banks-reverse','physical-banks','physical-banks-reverse',None),('zero','zero','zero',None)]
+    if suite=='mac':cases += [('nibble-h2','nibble','nibble',0xc7ff),('normalized-relocated','normalized-relocated','normalized',None),('nibble-relocated','nibble-relocated','nibble',0xc060),('physical-banks','physical-banks','physical-banks',None),('physical-banks-reverse','physical-banks','physical-banks-reverse',None),('zero','zero','zero',None)]
     for label,fixture,mode,h in cases:
         output=work/label
         command(label,[label,'-scriptPath',scripts,'-preScript','GhidraBoyFiniteDispatchImport.java',fixtures/(fixture+'.gb'),output,mode,*([hex(h)] if h is not None else [])],'FINITE_DISPATCH_SAVED')

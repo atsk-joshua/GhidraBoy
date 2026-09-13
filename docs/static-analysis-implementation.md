@@ -123,7 +123,8 @@ into self-authored generic fixtures before becoming generic qualification inputs
 Create source decision records under `docs/decisions/` as work proceeds.
 `static-call-model.md` now records the partial SA-01 model and mechanism evidence.
 `static-bank-model.md` now records the scoped continuation candidate and its
-qualification failures; `static-dispatch-model.md` remains a future deliverable.
+qualification failures; [static-dispatch-model.md](decisions/static-dispatch-model.md) records the bounded
+finite-dispatch slice; broader dispatch obligations remain open.
 Each record must include:
 
 - requirement IDs and exact candidate/source revisions;

@@ -484,7 +484,7 @@
     "stop": "STOP for master review; G1 status unchanged"
   },
   "stock_finite_dispatch": {
-    "status": "FINAL_QUALIFICATION_IN_PROGRESS",
+    "status": "SCOPED_LOCAL_PASS_MASTER_REVIEW_PENDING",
     "starting_commit": "045e16a76f52f5f93a1555c511d65772e71b05c6",
     "report": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/REPORT-STOCK-FINITE-DISPATCH.md",
     "archive": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/CHANGES-STOCK-FINITE-DISPATCH.zip",
@@ -492,6 +492,18 @@
     "replay": "evidence/batches/STOCK-FINITE-DISPATCH/delivery/contents/replay.py",
     "baseline_instances": 820,
     "scope": "Bounded source-derived finite indirect jumps through stock CALLOTHER; normalized HRAM/default, nibble128/16 with checked HL/frame, focused controls and current-record lifecycle",
-    "stop": "STOP for master review; no next batch or release claim"
+    "stop": "STOP for master review; no next batch or release claim",
+    "candidate_commit": "7a6807fed3f727e89b24755c36fd055154ad62cc",
+    "candidate_tree": "e4d3996906e3b8acc529fbde3bd7573887e0be05",
+    "extension_sha256": "0240e40577a0af12df39a0e1c260d9f998113eee57d441f8cad964942e4d0272",
+    "provider_sha256": "5975b86dee539d149b3fd6b1155b70894167b7f29e29ae26b0a6b6d323f2a011",
+    "default_instances": 838,
+    "baseline_instances_retained": 820,
+    "platforms": "Mac arm64 and local Docker/Rosetta Linux x86-64; not hosted or bare Linux",
+    "sensitivity_controls": {
+      "mac": 22,
+      "linux": 15
+    },
+    "reopen": "First immutable separate JVM; full registration and bytes identical; only index/journal backup housekeeping changed"
   }
 }
