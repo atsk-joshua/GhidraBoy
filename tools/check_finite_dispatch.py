@@ -79,7 +79,16 @@ def check(root,label='original',nibble=False,h=0xc060,order=None,physical=False,
     proof=cap.proof
     shared.require(proof['version']=='predicated-ordinary-graph-5' and proof['coverageComplete'] and not proof['frontier'],'incomplete proof')
     request=cap.requests['root'];shared.require(request['completed'] and request['highfunction_available'],'actual native request failed')
-    shared.require(any(p.get('parent')==request['owner_java_pid'] and p.get('binary_sha256') in {'c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d','4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d'} for p in request['processes_after']),'unverified actual native')
+    def actual_process(process):
+        if process.get('parent')!=request['owner_java_pid']:return False
+        if process.get('binary_sha256') in {'c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d','4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d'}:return True
+        # Same strict Rosetta boundary as the maintained stock checker: argv, file hash and executable mapping.
+        for native in process.get('argv_native_files',[]):
+            if native.get('sha256')!='4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d':continue
+            path=native['path']
+            if process.get('proc_cmdline','').split(' ')[0]==path and any('r-xp' in line and line.endswith(' '+path) for line in process.get('proc_maps','').splitlines()):return True
+        return False
+    shared.require(any(actual_process(p) for p in request['processes_after']),'unverified actual native')
     shared.require(shared.sha(root/f'{label}-root-debug.xml')==request['debug']['sha256'],'changed debug capture')
     if capture is None:shared.base.debug_identity(root/f'{label}-root-debug.xml',cap.requested['root'],request['entry'],'gb_analysis_entry_v1')
     nodes={n['id']:n for n in proof['nodes']}

@@ -407,6 +407,7 @@ public final class PredicatedCallGraph {
           if(code==PcodeOp.BRANCHIND) {
             if(index!=raw.length-1||op.getInput(0).getSize()!=2||!s.frames.isEmpty()||!cyclic.isEmpty())throw new IllegalArgumentException("Unresolved indirect invocation/width/cyclic target");
             var destination=s.storage.get(op.getInput(0));
+            if(untransported(s,destination))throw new IllegalArgumentException("Native byte-A call contract cannot carry live returned flags into indirect control");
             var relation=AbstractValues.relation(List.of(destination.origin()),s.predicate);
             if(!relation.complete()||relation.reachable().isEmpty())throw new IllegalArgumentException("Incomplete finite target relation: "+relation.reason());
             transfer="BRANCHIND";transferOperation=index;

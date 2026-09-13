@@ -338,4 +338,37 @@ class FiniteDispatchTest : IntegrationTest() {
             assertFalse(proof.complete())
             assertTrue(proof.frontier().any { it.reason().contains("Outer return word was replaced") }, proof.frontier().toString())
         }
+
+    @Test
+    fun declaredEchoPointerLoadsCanonicalStorage() =
+        fixture("nibble", 0xe060) { p, f, declaration ->
+            val proof = PredicatedCallGraph.preview(p, f, PredicatedCallGraph.Limits.PRIMARY, declaration, monitor)
+            assertTrue(proof.complete(), proof.frontier().toString())
+            assertEquals("c060", declaration.inputs().single().storage())
+            val entry = PredicatedCalls.install(p, proof, monitor)
+            val payload = PredicatedCalls.emit(p, entry, 0x200000, monitor)
+            assertEquals(2, payload.count { it.opcode == PcodeOp.LOAD && it.getInput(1).isConstant && it.getInput(1).offset == 0xc060L })
+            assertFalse(payload.any { it.opcode == PcodeOp.LOAD && it.getInput(1).isConstant && it.getInput(1).offset == 0xe060L })
+        }
+
+    @Test
+    fun indirectControlCannotConsumeUntransportedCallFlags() =
+        fixture("physical-banks") { p, f, declaration ->
+            p.withTransaction {
+                p.listing.clearCodeUnits(address(0x100), address(0x113), false)
+                val code =
+                    java.util.HexFormat
+                        .of()
+                        .parseHex("3e01ea0020cd00402100037dce006fe9")
+                p.memory.setBytes(address(0x100), code)
+                val range = AddressSet(address(0x100), address(0x100L + code.size - 1))
+                Disassembler.getDisassembler(p, monitor, null).disassemble(address(0x100), range, false)
+            }
+            val proof = PredicatedCallGraph.preview(p, f, PredicatedCallGraph.Limits.PRIMARY, monitor)
+            assertFalse(proof.complete())
+            assertTrue(
+                proof.frontier().any { it.reason().contains("live returned flags into indirect control") },
+                proof.frontier().toString(),
+            )
+        }
 }

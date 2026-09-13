@@ -327,6 +327,13 @@ public final class PredicatedCalls {
           ops.add(new PcodeOp(site,ops.size(),PcodeOp.CALL,new Varnode[]{new Varnode(ProgramMapping.staticAddress(p,target.entry()),2)}));
         } else {
           if(proof.memory()!=null) {
+            if(code==PcodeOp.LOAD) {
+              var access=node.memoryAccesses().stream().filter(a->a.operation()==operationIndex&&a.kind().equals("READ")).findFirst().orElse(null);
+              if(access!=null) {
+                var at=ProgramMapping.staticAddress(p,access.storage());
+                inputs=new Varnode[]{constant(p,at.getAddressSpace().getSpaceID(),4),constant(p,at.getOffset(),2)};
+              }
+            }
             if(code==PcodeOp.CALLOTHER&&CartridgeBus.isDirectWrite(p.getLanguage(),op)&&op.getInput(1).getOffset()>=0x8000) {
               var at=SymbolicMemory.address(p,node.incoming(),(int)op.getInput(1).getOffset(),ScalarAccess.Kind.WRITE);
               code=PcodeOp.STORE;inputs=new Varnode[]{constant(p,at.getAddressSpace().getSpaceID(),4),constant(p,at.getOffset(),2),inputs[2]};
