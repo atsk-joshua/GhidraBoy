@@ -26,3 +26,9 @@ class MemoryBindingTests(unittest.TestCase):
         m=self.machine();n=self.node('unique',123);n['high_global']={'space':'ram','offset':0xc060,'size':1}
         m.put(n,0xa7,{})
         self.assertEqual(m.mem[0xc060],0x53)
+
+    def test_partial_write_is_insufficient_before_mutation(self):
+        m=self.machine();n=self.node('ram',0xc061);n['high_global']={'space':'ram','offset':0xc060,'size':2}
+        before=dict(m.mem);cache={}
+        with self.assertRaises(core.Insufficient):m.put(n,0x53,cache)
+        self.assertEqual(before,m.mem);self.assertEqual({},cache)

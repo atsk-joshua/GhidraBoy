@@ -177,3 +177,22 @@ supporting evidence; hardware-backed references and independent expectations
 remain necessary. Observed edges establish occurrence, not exhaustive coverage.
 Warning-free C, a complete bounded run, or a successful build cannot close this
 matrix. Any required unresolved case keeps full static qualification open.
+
+## Conditional call-site relation
+
+A conditional call-site result must bind its physical source and Program identity
+to explicit execution premises. Unknown registers, valid flag relationships,
+memory values and constrained affine SP must remain symbolic. It must derive
+hardware successors from raw semantics, preserve byte/pair origins and ordered
+frame/data effects, and distinguish dispatch RET, callee return, matched call
+completion and analysis exit. The continuation consumes the matched outgoing
+state under the same invocation authority. A scope endpoint does not authorize a
+fabricated source return or a claim about an unanalysed tail.
+
+An owned stock native view may end at an actual proved cleanup RET while exposing
+the following bounded state through a validated linked explanation and physical
+navigation. Existing canonical annotations remain preserved. Memory identity and
+runtime values are distinct; explicit stack/data physical disjointness is required.
+Unsupported accesses, nonlocal frames or stale authority remain obligations.
+The [effectful call decision](decisions/effectful-call-continuation.md) specifies
+the implemented bounded subset and its observation/compatibility contract.

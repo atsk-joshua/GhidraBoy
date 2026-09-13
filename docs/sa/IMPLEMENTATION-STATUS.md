@@ -1,16 +1,37 @@
 # Implementation status
 
-## EFFECTFUL-CALL-CONTINUATION — partial; requested capability unfinished
+## EFFECTFUL-CALL-CONTINUATION — scoped local PASS; STOP for master review
 
-Actual read-only admission preserved unknown inputs and exposed concrete-SP and
-missing-mapping boundaries. Direct immutable ROM operands now use operation-and-
-operand physical provenance; native collateral checking is strengthened. These
-corrections do not implement the requested effectful helper/callee/continuation.
-The provider correction passes the clean stock checkpoint with all baseline
-instances retained and a new physical-read regression. Four installed stock Mac
-direct/indirect cases distinguish physical banks. The symbolic frame/input/
-returned-state and owned-view work remains in scope and unqualified. See the [decision](../decisions/effectful-call-continuation.md).
+Revision 2 implements conditional instruction-site derivation in the incumbent
+graph and stock CALLOTHER transport. Symbolic registers/valid flags, constrained
+affine SP, checked physical memory and mapper/shadow premises flow through real
+helper/callee/cleanup effects into the matched outgoing-state continuation.
+Faithful bounded inlining preserves the live effects without the ordinary byte-A
+call ABI. A native view ends at an actual source return; a following slice remains
+a linked explanation with an explicit unanalysed tail. Canonical interpretations
+are preserved, and the exact concrete software-call API remains unchanged.
 
+The independent nonconstant/flag-sensitive carry, relocated and indirect-alias
+family and the private conditional case pass full raw/emitted/native replay.
+Public apply, actual stale refusal/explicit changed-result refresh, owned removal,
+real-write cancellation/later-edit controls, immutable second-JVM current-record
+reopen and bounded normal-window navigation pass. Preparation and existing
+canonical knowledge are separately inventoried. The final clean checkpoint passes
+**852 instances in 86 classes**, retaining all **839 baseline identities and
+multiplicities**, with no failures/errors/skips. The final tooling requalification
+passes 118 tests with one retained optional skip; build-inputs passes seven.
+
+The qualified provider source is `52215b3`; extension SHA-256 is
+`967ab05134feaec49c1557081f3797facb261ef10d8ffbb1b21c4110b4f37ddc`.
+Pristine Mac and local Docker/Rosetta official Linux native checks pass on those
+bytes, along with selected incumbent physical-read/call/memory regressions.
+A subsequent checker-only partial-symbol ordering correction is separately tested;
+provider bytes are unchanged. New conditional records are version 3; earlier
+experimental forms remain quarantined. The original partial report is preserved.
+General summaries, looping helpers, wider devices/interference, migration,
+canonical repair, deployment equivalence and release qualification remain open.
+See the [decision](../decisions/effectful-call-continuation.md) and
+[evidence index](evidence-index.json). STOP for master review; no next batch.
 
 ## STOCK-FINITE-DISPATCH — scoped local PASS; STOP for master review
 

@@ -507,7 +507,7 @@
     "reopen": "First immutable separate JVM; full registration and bytes identical; only index/journal backup housekeeping changed"
   },
   "effectful_call_continuation": {
-    "status": "PARTIAL_REQUESTED_CAPABILITY_UNFINISHED",
+    "status": "SCOPED_LOCAL_PASS_MASTER_REVIEW_PENDING",
     "starting_commit": "445426b1c500e2bdbcec52bcc696b6c67db9e157",
     "provider_commit": "34f53e0b4f47ad0c1eef5c5125f4c1bb03bfb604",
     "report": "evidence/batches/EFFECTFUL-CALL-CONTINUATION/delivery/REPORT-EFFECTFUL-CALL-CONTINUATION.md",
@@ -517,6 +517,21 @@
     "extension_sha256": "e9a5f9697a55df30038ded38e897f1a434e33e01415b6f62f914490ca79dc7d9",
     "provider_sha256": "7061451b9daf1e32b5dcedb031f2b79e62878d0b88bd8406a93733c90a28d995",
     "verified": "Physical direct/indirect bank binding on stock Mac; bounded collateral checker; clearer admission diagnostic",
-    "unimplemented": "Effectful symbolic software call, linked continuation, private owned view and required family/lifecycle/GUI qualification"
+    "initial_status": "PARTIAL_REQUESTED_CAPABILITY_UNFINISHED",
+    "revision2": {
+      "starting_commit": "e6fca5e5e60308516db087d6061672b60fa48c7e",
+      "provider_commit": "52215b3350fa04567a9d98a812f7b362e59d6f9b",
+      "provider_tree": "0b3b8bd7befb6d3f1130db099dffd26b6e5fac9b",
+      "default_instances": 852,
+      "baseline_instances_retained": 839,
+      "extension_sha256": "967ab05134feaec49c1557081f3797facb261ef10d8ffbb1b21c4110b4f37ddc",
+      "provider_sha256": "1336bf6543031d9f4d1a46adf59268883623d042a70d4c61b451c1942c68c137",
+      "report": "evidence/batches/EFFECTFUL-CALL-CONTINUATION/revision2/delivery/REPORT-EFFECTFUL-CALL-CONTINUATION.md",
+      "archive": "evidence/batches/EFFECTFUL-CALL-CONTINUATION/revision2/delivery/CHANGES-EFFECTFUL-CALL-CONTINUATION-R2.zip",
+      "private_annex": "Separately private in the same external continuation delivery; excluded from generic source/distribution",
+      "verified": "Source-derived conditional calls, linked outgoing-state continuation, full generic/private raw/emitted/native family, public lifecycle/preservation, first immutable reopen, bounded GUI and focused official Linux native; selected incumbent regressions",
+      "limits": "Bounded faithful inlining; explicit synchronous MBC5/WRAM0/HRAM premises; no general summaries/loops/interference/migration/canonical repair/release claim"
+    },
+    "initial_unimplemented": "Effectful symbolic software call, linked continuation, private owned view and required family/lifecycle/GUI qualification"
   }
 }
