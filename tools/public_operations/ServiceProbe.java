@@ -55,6 +55,24 @@ public class ServiceProbe implements GhidraLaunchable {
     var rows=new ArrayList<Object>();
     try {
       Swing.runNow(()->{pm.openProgram(p);pm.openProgram(q);pm.setCurrentProgram(p);});
+      var actual=new java.util.concurrent.atomic.AtomicReference<ghidra.framework.model.TransactionInfo>();
+      var commandReturned=new CompletableFuture<String>();var commandCommitted=new CompletableFuture<String>();
+      var listener=new ghidra.framework.model.TransactionListener(){
+        public void transactionStarted(ghidra.framework.data.DomainObjectAdapterDB object,ghidra.framework.model.TransactionInfo info){}
+        public void transactionEnded(ghidra.framework.data.DomainObjectAdapterDB object){var retained=actual.get();if(retained!=null && retained.getStatus()==ghidra.framework.model.TransactionInfo.Status.COMMITTED)commandCommitted.complete(retained.getStatus().toString());}
+        public void undoStackChanged(ghidra.framework.data.DomainObjectAdapterDB object){}
+        public void undoRedoOccurred(ghidra.framework.data.DomainObjectAdapterDB object){}
+      };
+      p.addTransactionListener(listener);
+      try {
+        Swing.runNow(()->tool.executeBackgroundCommand(new ghidra.framework.cmd.BackgroundCommand<ghidra.program.model.listing.Program>("Actual stock scheduler probe",true,true,false){
+          public boolean applyTo(ghidra.program.model.listing.Program program,TaskMonitor monitor){actual.set(program.getCurrentTransactionInfo());program.getOptions("public-probe").setString("command-sentinel","committed");return true;}
+          @Override public void taskCompleted(){commandReturned.complete(actual.get().getStatus().toString());}
+        },p));
+        require("NOT_DONE".equals(commandReturned.get(30,TimeUnit.SECONDS)),"Command completion must precede commit");
+        require("COMMITTED".equals(commandCommitted.get(30,TimeUnit.SECONDS)),"Actual correlated tool commit");
+        rows.add(Map.of("row","REAL_TOOL_BACKGROUND_COMMAND","transaction",actual.get().getID(),"commandCompletionStatus","NOT_DONE","outerStatus",actual.get().getStatus().toString()));
+      }finally{p.removeTransactionListener(listener);}
       var request=new ConditionalCallSites.Request(p.getUniqueProgramID(),ProgramMapping.inspect(p).originalSha256(),"rom1::42fd",new MapperKnowledge(1,0,null,null,null,null,null,null),0xffa1,1,List.of(),new SymbolicMemory.Footprint(0xc110,0xc7f8,-16,1),List.of(0,1),0,true,true,"Self-authored synchronous premises");
       var requestPath=out.resolve("request.json");var proofPath=out.resolve("proof.json");Files.writeString(requestPath,ProgramMapping.JSON.toJson(request));
       run(tool,p,TaskMonitor.DUMMY,writer,"conditional-call-preview",requestPath.toString(),proofPath.toString());
@@ -78,6 +96,22 @@ public class ServiceProbe implements GhidraLaunchable {
       require("TARGET_CLOSED".equals(a.lastPresentation.get(30,TimeUnit.SECONDS)),"closed target publication");
       require(PredicatedCalls.registered(p,entry),"Closing does not undo committed authority");
       rows.add(Map.of("row","CLOSE_PENDING_PUBLICATION","disposition","TARGET_CLOSED","committedAuthorityRetained",true));
+      for(int i=0;i<8;i++) {
+        Swing.runNow(()->{pm.openProgram(p);pm.setCurrentProgram(p);});
+        var repeatedGate=new GateWriter();var repeated=run(tool,p,new TaskMonitorAdapter(true),repeatedGate,"conditional-call-explain",entry.toString());
+        require(repeatedGate.reached.await(30,TimeUnit.SECONDS),"repeated request gate");
+        Swing.runNow(()->pm.closeProgram(p,true));repeatedGate.release.countDown();
+        require("TARGET_CLOSED".equals(repeated.lastPresentation.get(30,TimeUnit.SECONDS)),"repeated close publication");
+        repeated.lastOperation.released().get(30,TimeUnit.SECONDS);
+        require(PredicatePublication.inventory().get("requests")==0 && PredicateOperations.inventory().get("observations")==0,"owned registrations after close");
+      }
+      Swing.runNow(()->{pm.openProgram(p);pm.setCurrentProgram(p);});
+      var disposedGate=new GateWriter();var disposed=run(tool,p,new TaskMonitorAdapter(true),disposedGate,"conditional-call-explain",entry.toString());
+      require(disposedGate.reached.await(30,TimeUnit.SECONDS),"tool disposal gate");
+      Swing.runNow(()->{pm.closeAllPrograms(true);tool.close();});disposedGate.release.countDown();
+      require(!"PUBLISHED".equals(disposed.lastPresentation.get(30,TimeUnit.SECONDS)),"disposed consumer published");
+      require(PredicatePublication.inventory().get("requests")==0,"tool-owned request resources");
+      rows.add(Map.of("row","REPEATED_CLOSE_AND_TOOL_DISPOSE","iterations",8,"requests",PredicatePublication.inventory(),"operations",PredicateOperations.inventory()));
       Files.writeString(out.resolve("service-results.json"),ProgramMapping.JSON.toJson(Map.of("kind","HIDDEN_HEADED_SERVICE_NOT_GUI_ACCEPTANCE","rows",rows)));
     }finally{
       Swing.runNow(()->{pm.closeAllPrograms(true);tool.close();});p.release(this);q.release(this);project.close();

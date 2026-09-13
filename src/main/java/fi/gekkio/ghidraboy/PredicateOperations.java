@@ -51,8 +51,8 @@ public final class PredicateOperations {
     private final Program program;private final GateState state;private boolean acquired,closed;
     private Gate(Program p,TaskMonitor monitor) throws Exception {
       program=p;
-      if(CALLER.get()!=null){admitScript(p);state=null;return;}
       if(javax.swing.SwingUtilities.isEventDispatchThread())throw new IllegalStateException("Public derivation must run off EDT");
+      if(CALLER.get()!=null){admitScript(p);state=null;return;}
       synchronized(GATES){state=GATES.computeIfAbsent(p,k->new GateState());state.users++;}
       try {
         monitor.checkCancelled();
@@ -87,6 +87,7 @@ public final class PredicateOperations {
     private boolean writes=true;
     private List<String> diagnostics=List.of();
     private Operation(Program p,TaskMonitor m) {
+      if(javax.swing.SwingUtilities.isEventDispatchThread())throw new IllegalStateException("Public derivation must run off EDT");
       program=p;monitor=m;admitScript(p);transaction=p.getCurrentTransactionInfo();
       if(transaction==null || transaction.getStatus()!=TransactionInfo.Status.NOT_DONE)
         throw new IllegalStateException("Public mutation requires an admitted pending owner");

@@ -43,4 +43,4 @@ decisions/stock-route-completion.md
 decisions/sm83-v1-v2-compatibility.md
 
 decisions/static-dispatch-model.md
-docs/public-operations.md
+public-operations.md

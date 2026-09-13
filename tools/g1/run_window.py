@@ -54,6 +54,6 @@ def main():
     receipt['tool_closure_marker']=(cap/'tool-closed.json').exists()
     (a.out/'process-exit.json').write_text(json.dumps(receipt,indent=2))
     print(json.dumps({k:v for k,v in receipt.items() if k!='argv'},indent=2))
-    return 0 if (a.mode!='conditional' or (cap/'conditional-complete.json').exists()) and receipt['exit']==0 and receipt['tool_closure_marker'] and not receipt.get('timeout') else 1
+    return 0 if (a.mode!='conditional' or (cap/('public-window-complete.json' if a.public_lifecycle else 'conditional-complete.json')).exists()) and receipt['exit']==0 and receipt['tool_closure_marker'] and not receipt.get('timeout') else 1
 
 if __name__=='__main__':raise SystemExit(main())

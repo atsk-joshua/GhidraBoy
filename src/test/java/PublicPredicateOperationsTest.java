@@ -108,10 +108,10 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
   @Test public void T3_supportedSubmissionsSerializeAndRejectSupersededProof() throws Exception {
     var p=fixture();var executor=Executors.newFixedThreadPool(2);var entered=new CountDownLatch(1);var release=new CountDownLatch(1);
     try {
-      var proof=preview(p);var once=new java.util.concurrent.atomic.AtomicInteger();
+      var proof=preview(p);var once=new java.util.concurrent.atomic.AtomicBoolean();
       var firstMonitor=new TaskMonitorAdapter(true) {
         @Override public void checkCancelled() throws CancelledException {
-          if(once.incrementAndGet()==2) {
+          if(p.getCurrentTransactionInfo()!=null && once.compareAndSet(false,true)) {
             entered.countDown();try{assertTrue(release.await(30,TimeUnit.SECONDS));}catch(InterruptedException e){throw new AssertionError(e);}
           }super.checkCancelled();
         }
