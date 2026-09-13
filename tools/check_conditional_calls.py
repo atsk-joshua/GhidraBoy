@@ -177,6 +177,17 @@ def check(root,label='original',private=False,exhaust=True,delta=1,register_swee
     core.require(any(core.actual_native_process(p,request['owner_java_pid'],native_hashes) for p in request['processes_after']),'unverified actual native')
     spaces=core.read(root/f'{label}-before-identity.json')['spaces'];debug=root/f'{label}-root-debug.xml'
     core.require(core.sha(debug)==request['debug']['sha256'],'changed debug artifact');core.base.debug_identity(debug,cap.requested['root'],request['entry'],'gb_analysis_entry_v1',spaces)
+    return replay(cap,image,private,exhaust,delta,register_sweep)
+
+
+def replay(cap,image,private=False,exhaust=True,delta=1,register_sweep=False):
+    """Shared semantic kernel; callers separately bind their actual native consumer evidence."""
+    root=cap.root;label=cap.label;proof=cap.proof
+    core.require(proof['version'] in {'conditional-call-site-1','conditional-call-site-2','conditional-call-site-3'} and proof['coverageComplete'] and not proof['frontier'],'incomplete conditional proof')
+    validate_initial(proof)
+    names={o['opcode']:o['mnemonic'] for ins in cap.raw.values() for o in ins['ops']};names.update({62:'PIECE',63:'SUBPIECE'})
+    if private:validate_post_link(proof)
+    core.require(len([b for b in proof["boundaries"] if b["kind"]=="MATCHED_CALL_COMPLETION"])==1,"ambiguous call completion")
     frames=[proof['callSite']['footprint']['stackMin'],0xc200,proof['callSite']['footprint']['stackMax']];patterns=[(0x12,0x34,0x56ab,0x89cd),(0xab,0xff,0x00ff,0xff00),(0xff,0,0xab55,0x1020)]
     rows=0
     contexts=[(index,sp,pattern) for index,sp in enumerate(frames) for pattern in (patterns+[(0,0,0,0),(255,255,65535,65535),(0x55,0xaa,0x8000,0x7fff),(0x80,0x7f,0xff00,0x00ff)] if register_sweep else [patterns[index]])]

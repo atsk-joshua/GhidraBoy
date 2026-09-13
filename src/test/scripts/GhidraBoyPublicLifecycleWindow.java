@@ -4,66 +4,237 @@ import ghidra.app.plugin.core.decompile.DecompilerProvider;
 import ghidra.app.services.*;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
+import ghidra.program.util.ProgramLocation;
+import ghidra.util.Swing;
+import ghidra.util.task.*;
+import java.io.PrintWriter;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-/** Attended normal-provider workflow. Uses inherited passive captures; no test-only reset. */
+/** Attended normal-provider workflow. No controller reset, fabricated event or replacement interface. */
 public class GhidraBoyPublicLifecycleWindow extends GhidraBoyStockWindow {
-  GhidraBoyTools action(String... args)throws Exception {
+  static void require(boolean ok,String message){if(!ok)throw new IllegalStateException(message);}
+  static class GateWriter extends PrintWriter {
+    final CountDownLatch reached=new CountDownLatch(1),release=new CountDownLatch(1);
+    GateWriter(){super(System.out,true);}
+    @Override public void println(String text){super.println(text);
+      if(text.contains("\"mutation\": \"NO_DATABASE_CHANGE\"")) {
+        require(!javax.swing.SwingUtilities.isEventDispatchThread(),"Never hold EDT on worker gate");reached.countDown();
+        try{require(release.await(30,TimeUnit.SECONDS),"Worker gate timed out");}catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalStateException(e);}
+      }
+    }
+  }
+  GhidraBoyTools start(PrintWriter writer,String... args)throws Exception {return startWithMonitor(writer,new TaskMonitorAdapter(true),args);}
+  GhidraBoyTools startWithMonitor(PrintWriter writer,TaskMonitor operationMonitor,String... args)throws Exception {
+    event("public-action-invoke",Map.of("action",args[0],"program",identity(currentProgram)));
     var script=new GhidraBoyTools();script.setScriptArgs(args);
     script.setPropertiesFileLocation(getScriptArgs()[1],"GhidraBoyTools");
     script.execute(new ghidra.app.script.GhidraState(state.getTool(),state.getProject(),currentProgram,
-        new ghidra.program.util.ProgramLocation(currentProgram,target.getEntryPoint()),null,null),monitor,new java.io.PrintWriter(System.out,true));
+        (target!=null && target.getProgram()==currentProgram?new ProgramLocation(currentProgram,target.getEntryPoint()):null),null,null),operationMonitor,writer);
+    event("public-action-return",Map.of("action",args[0],"program",identity(currentProgram),"operation",script.lastOperation==null?"read-preview":script.lastOperation.id(),"arguments",List.of(args)));
+    return script;
+  }
+  GhidraBoyTools action(String... args)throws Exception {
+    var script=start(new PrintWriter(System.out,true),args);
     if(script.lastOperation!=null) {
       var result=script.lastOperation.completion().get(60,TimeUnit.SECONDS);
       save("operation-"+script.lastOperation.id()+".json",result);
-      script.lastPresentation.get(60,TimeUnit.SECONDS);
-      if(!result.current())throw new IllegalStateException("Public action did not produce current outcome: "+result);
+      event("public-action-outcome",result);
+      script.lastPresentation.get(60,TimeUnit.SECONDS);script.lastOperation.released().get(60,TimeUnit.SECONDS);
+      require(result.current(),"Public action did not produce current outcome: "+result);
     }
     return script;
   }
   Path preview(ConditionalCallSites.Request request,String label)throws Exception {
-    Path in=out.resolve(label+"-request.json"),proof=out.resolve(label+"-proof.json");save(label+"-request.json",request);
-    action("conditional-call-preview",in.toString(),proof.toString());return proof;
+    Path input=out.resolve(label+"-request.json"),proof=out.resolve(label+"-proof.json");save(label+"-request.json",request);
+    action("conditional-call-preview",input.toString(),proof.toString());return proof;
+  }
+  ConditionalCallSites.Request domain(ConditionalCallSites.Request r,int min,int max) {
+    return new ConditionalCallSites.Request(r.programId(),r.imageSha256(),r.site(),r.mapper(),r.shadowCpu(),r.shadowValue(),r.memoryInputs(),
+        new SymbolicMemory.Footprint(min,max,-16,1),r.incomingStackBytes(),r.continuationSteps(),true,true,r.provenance());
+  }
+  void refreshAll(String label)throws Exception {
+    for(String name:new ArrayList<>(currentProgram.getOptions(PredicatedCalls.STOCK_OPTIONS).getOptionNames())) {
+      var entry=ProgramMapping.staticAddress(currentProgram,name);var request=PredicatedCalls.registeredProof(currentProgram,entry).callSite();
+      action("stock-predicate-refresh",preview(request,label+"-"+Integer.toHexString(name.hashCode())).toString(),name);
+    }
+  }
+  void requestOrdering(Program p,Address at,Program q,Address other,boolean switchAway)throws Exception {
+    currentProgram=p;navigate(p.getFunctionManager().getFunctionAt(at),"ordering-start-"+switchAway);
+    var gate=new GateWriter();var a=start(gate,"conditional-call-explain",at.toString());
+    try {
+      require(gate.reached.await(30,TimeUnit.SECONDS),"A publication not reached");long revision=p.getModificationNumber();
+      if(switchAway) {
+        currentProgram=q;navigate(q.getFunctionManager().getFunctionAt(other),"ordering-Q");observe(target,"ordering-Q");
+        currentProgram=p;navigate(p.getFunctionManager().getFunctionAt(at),"ordering-back-P");
+      }
+      var b=action("conditional-call-explain",at.toString());
+      require("PUBLISHED".equals(b.lastPresentation.get(30,TimeUnit.SECONDS)),"B must publish first");
+      require(p.getModificationNumber()==revision,"Ordering witness must leave P unchanged");
+      event("request-B-published",Map.of("A",a.lastOperation.completion().get(30,TimeUnit.SECONDS),"B",b.lastOperation.completion().get(30,TimeUnit.SECONDS),"revision",revision,"switchAway",switchAway));
+      gate.release.countDown();String disposition=a.lastPresentation.get(30,TimeUnit.SECONDS);
+      require(disposition.equals(switchAway?"ACTIVATION_SUPERSEDED":"REQUEST_SUPERSEDED"),"A replaced B: "+disposition);
+      event("request-A-disposition",Map.of("operation",a.lastOperation.id(),"disposition",disposition,"revision",p.getModificationNumber(),"switchAway",switchAway));
+      save("ordering-"+switchAway+".json",Map.of("program",identity(p),"revision",revision,"A",disposition,"B","PUBLISHED","unchanged",true,"A_operation",a.lastOperation.id(),"B_operation",b.lastOperation.id()));
+    }finally{gate.release.countDown();}
+  }
+  void outstandingNativeSwitch(Program q,Address entry)throws Exception {
+    Program p=currentProgram;var record=new LinkedHashMap<String,Object>();
+    Swing.runNow(()->{
+      var refresh=state.getTool().getAllActions().stream().filter(a->a.getName().equals("Refresh")&&a.getOwner().equals("DecompilePlugin")).findFirst().orElseThrow();
+      var context=window.getActionContext(null);boolean enabled=context!=null&&refresh.isEnabledForContext(context);
+      record.put("enabled",enabled);require(enabled,"Normal native Refresh disabled before cancellation witness");
+      refresh.actionPerformed(context);record.put("invoked",true);record.put("queued_or_running",window.getController().isDecompiling());
+      state.getTool().getService(ProgramManager.class).setCurrentProgram(q);
+      state.getTool().getService(GoToService.class).goTo(new ProgramLocation(q,entry));
+    });
+    record.put("P",identity(p));record.put("Q",identity(q));record.put("boundary","Normal ProgramManager activation; stock provider owns native cancellation");
+    save("native-outstanding-switch.json",record);
+    require(Boolean.TRUE.equals(record.get("queued_or_running")),"Native outstanding work was not observed; this row is unrun");
+    currentProgram=q;target=q.getFunctionManager().getFunctionAt(entry);drain();observe(target,"native-after-switch-Q");
+  }
+  void closeDuringComputation(Program program,Address entry)throws Exception {
+    currentProgram=program;var manager=state.getTool().getService(ProgramManager.class);Swing.runNow(()->{manager.openProgram(program);manager.setCurrentProgram(program);});
+    target=program.getFunctionManager().getFunctionAt(entry);var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var first=new java.util.concurrent.atomic.AtomicBoolean();
+    String authorityBefore=program.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null);
+    var control=new TaskMonitorAdapter(true){@Override public void checkCancelled()throws ghidra.util.exception.CancelledException {
+      if(PredicatePublication.inventory().get("requests")>0 && first.compareAndSet(false,true)) {
+        entered.countDown();try{require(release.await(30,TimeUnit.SECONDS),"Computational close gate timeout");}catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalStateException(e);}
+      }super.checkCancelled();
+    }};
+    var executor=Executors.newSingleThreadExecutor();
+    try {
+      var work=executor.submit(()->startWithMonitor(new PrintWriter(System.out,true),control,"conditional-call-explain",entry.toString()));
+      require(entered.await(30,TimeUnit.SECONDS),"Actual computation gate not observed");boolean[] closed={false};Swing.runNow(()->closed[0]=manager.closeProgram(program,true));
+      control.cancel();release.countDown();
+      try{var script=work.get(30,TimeUnit.SECONDS);require(!"PUBLISHED".equals(script.lastPresentation.get(30,TimeUnit.SECONDS)),"Closed/cancelled computation published");}
+      catch(ExecutionException expected){require(expected.getCause() instanceof ghidra.util.exception.CancelledException,"Unexpected computation failure: "+expected.getCause());}
+      if(!closed[0])Swing.runNow(()->require(manager.closeProgram(program,true),"Normal close did not recover after cancellation"));
+      require(authorityBefore.equals(program.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null)),"Closing computation changed committed authority");
+      require(PredicateOperations.inventory().get("observations")==0&&PredicatePublication.inventory().get("requests")==0,"Running operation resources remain");
+      save("close-during-computation.json",Map.of("initial_close_accepted",closed[0],"cancelled_by_owner",true,"committed_authority_unchanged",true,"operations",PredicateOperations.inventory(),"publication",PredicatePublication.inventory()));
+    }finally{release.countDown();executor.shutdownNow();executor.awaitTermination(30,TimeUnit.SECONDS);}
+  }
+  @Override void observe(ghidra.program.model.listing.Function expected,String label)throws Exception {
+    super.observe(expected,label); // Required passive observation always precedes extra read-only evidence.
+    if(!Files.exists(out.resolve(label+"-high.json")))return;
+    Program program=currentProgram;long revision=program.getModificationNumber();Address entry=expected.getEntryPoint();
+    String registration=program.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null);
+    var proof=PredicatedCalls.registeredProof(program,entry);var views=PredicatedCalls.views(program,entry);
+    require(views.size()==1&&views.getFirst().invocation().equals("root"),"Normal collector expects the bounded inline conditional root");
+    identity(label+"-before",entry);save(label+"-proof.json",proof);var raw=new TreeMap<String,Object>();
+    try(var discovery=SoftwareCallInstructionDiscovery.begin(program,monitor)) {
+      for(var node:proof.nodes())if(!raw.containsKey(node.source())) {
+        var instruction=SoftwareCallInstructionDiscovery.instructionAt(program,ProgramMapping.staticAddress(program,node.source()),"Validated conditional source root",monitor);ids.clear();
+        raw.put(node.source(),Map.of("address",node.source(),"bytes",HexFormat.of().formatHex(instruction.getBytes()),"physical",ProgramMapping.staticToPhysical(program,instruction.getAddress()),"ops",Arrays.stream(instruction.getPcode(false)).map(this::operation).toList()));
+      }
+    }
+    save(label+"-raw.json",raw);ids.clear();save(label+"-root-requested.json",Arrays.stream(PredicatedCalls.emitStock(program,entry,0x200000,monitor)).map(this::operation).toList());
+    save(label+"-views.json",List.of(Map.of("tag","root","view",views.getFirst())));
+    Files.copy(out.resolve(label+"-high.json"),out.resolve(label+"-root-high.json"));
+    var record=com.google.gson.JsonParser.parseString(Files.readString(out.resolve(label+"-request.json"))).getAsJsonObject();
+    record.addProperty("entry",entry.toString());record.add("processes_after",com.google.gson.JsonParser.parseString(Files.readString(out.resolve(label+"-processes.json"))));
+    record.addProperty("normal_window_capture",true);save(label+"-root-request.json",record);
+    Files.write(out.resolve(label+"-fixture.gb"),ProgramMapping.exportBytes(program,true,false,monitor));
+    require(revision==program.getModificationNumber() && registration.equals(program.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null)),"Source changed during passive evidence binding");
+    save(label+"-source-binding.json",Map.of("revision",revision,"program",identity(program),"record_sha256",hash(out.resolve(label+"-request.json")),
+        "high_sha256",hash(out.resolve(label+"-root-high.json")),"raw_sha256",hash(out.resolve(label+"-raw.json")),"proof_sha256",hash(out.resolve(label+"-proof.json")),
+        "emitted_sha256",hash(out.resolve(label+"-root-requested.json")),"image_sha256",hash(out.resolve(label+"-fixture.gb"))));
   }
   @Override public void run()throws Exception {
     out=Path.of(getScriptArgs()[0]);Files.createDirectories(out);
-    // The launcher starts this script with no current Program, so no enclosing wrapper transaction is held.
-    currentProgram=state.getTool().getService(ProgramManager.class).getCurrentProgram();
-    var p=currentProgram;window=(DecompilerProvider)state.getTool().getComponentProvider("Decompiler");
-    var entry=StockEntries.entries(p).stream().filter(e->e.generation()==null).findFirst().orElseThrow();
-    Address at=ProgramMapping.staticAddress(p,entry.carrier());target=getFunctionAt(at);listen(p);
+    // Launcher starts with no current Program: no enclosing script transaction is held here.
+    var manager=state.getTool().getService(ProgramManager.class);currentProgram=manager.getCurrentProgram();
+    var p=currentProgram;p.addConsumer(this);Program q=null;
     try {
-      String authorityBefore=authority(p);save("before-inventory.json",Sm83PreservationInventory.inventory(p));
+    window=(DecompilerProvider)state.getTool().getComponentProvider("Decompiler");
+    var seed=StockEntries.entries(p).stream().filter(e->e.generation()==null).findFirst().orElseThrow();
+    Address seedAt=ProgramMapping.staticAddress(p,seed.carrier());target=getFunctionAt(seedAt);listen(p);
+      if(Boolean.getBoolean("ghidraboy.publicReopen")) {
+        require(!p.isChangeable(),"Second-session immutable Program required");String before=authority(p);long revision=p.getModificationNumber();
+        int index=0;for(String name:p.getOptions(PredicatedCalls.STOCK_OPTIONS).getOptionNames()) {
+          navigate(getFunctionAt(ProgramMapping.staticAddress(p,name)),"immutable-"+index);observe(target,"immutable-"+index++);
+          require(window.getController().getDecompileData().getHighFunction()!=null,"Immutable normal native use failed");
+        }
+        require(before.equals(authority(p))&&revision==p.getModificationNumber(),"Immutable use changed authority");
+        String saved=ProgramMapping.JSON.fromJson(Files.readString(Path.of(System.getProperty("ghidraboy.publicBaseline"))),String.class);
+        require(before.equals(saved),"First immutable session differs from the actual saved authority");
+        save("public-window-complete.json",Map.of("immutable",true,"authority",before,"unchanged",true,"program",identity(p)));return;
+      }
+      String before=authority(p);save("before-inventory.json",Sm83PreservationInventory.inventory(p));
       Files.write(out.resolve("before-original.gb"),ProgramMapping.exportBytes(p,false,false,monitor));
       Files.write(out.resolve("before-current.gb"),ProgramMapping.exportBytes(p,true,false,monitor));
-      navigate(target,"public-initial");observe(target,"public-initial");
-      var proof=PredicatedCalls.registeredProof(p,at);var request=proof.callSite();
+      // Use existing saved premises only as preparation; measured creation takes the real public apply route.
+      var request=domain(PredicatedCalls.registeredProof(p,seedAt).callSite(),0xc180,0xc600);
+      var initial=action("stock-predicate-apply",preview(request,"initial-public").toString());Address at=initial.lastOperation.entry();
+      refreshAll("initial-domain-coherence");navigate(getFunctionAt(at),"public-initial");observe(target,"public-initial");
       action("conditional-call-explain",at.toString());action("conditional-call-target",at.toString());action("conditional-call-continuation",at.toString());
-      navigate(target,"back-to-owned-before-source-edit");
-      var callee=proof.boundaries().stream().filter(b->b.kind().equals("RET_DISPATCH")).findFirst().orElseThrow();
-      var changed=ProgramMapping.staticAddress(p,callee.physical()).add(2);
-      var mutation=new Mutation(p,"consumed-source-edit");boolean committed=false;
-      try {p.getListing().clearCodeUnits(changed,changed,false);p.getMemory().setByte(changed,(byte)0x3d);committed=true;}
-      finally{mutation.end(committed);}
-      drain();observe(target,"public-passive-stale");
-      var data=window.getController().getDecompileData();
-      if(data.getHighFunction()!=null || !String.valueOf(data.getErrorMessage()).contains("Stale"))throw new IllegalStateException("Passive stale refusal missing");
+      navigate(getFunctionAt(at),"back-to-owned-before-source-edit");
+      var proof=PredicatedCalls.registeredProof(p,at);var callee=proof.boundaries().stream().filter(b->b.kind().equals("RET_DISPATCH")).findFirst().orElseThrow();
+      var changed=ProgramMapping.staticAddress(p,callee.physical()).add(2);require((p.getMemory().getByte(changed)&255)==0x3c,"Use a fresh self-authored INC fixture");
+      String oldRegistration=p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(at.toString(),null);var mutation=new Mutation(p,"consumed-source-edit");boolean committed=false;mutation.affectedStart=changed.toString();
+      try{p.getListing().clearCodeUnits(changed,changed,false);p.getMemory().setByte(changed,(byte)0x3d);committed=true;}finally{mutation.end(committed);}
+      require(oldRegistration.equals(p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(at.toString(),null)),"Source edit replaced old authority");
+      save("source-edit.json",Map.of("program",identity(p),"source",changed.toString(),"old",0x3c,"new",0x3d,"old_registration_retained",true));
+      drain();observe(target,"public-passive-stale");var data=window.getController().getDecompileData();
+      require(data.getHighFunction()==null&&String.valueOf(data.getErrorMessage()).contains("Stale"),"Passive stale refusal missing");
       action("stock-predicate-refresh",preview(request,"explicit-fresh").toString(),at.toString());
       drain();observe(target,"public-event-recovery");ordinaryRefresh("public-enabled-refresh",false);observe(target,"public-toolbar-refresh");
-      var second=new ConditionalCallSites.Request(request.programId(),request.imageSha256(),request.site(),request.mapper(),request.shadowCpu(),request.shadowValue(),request.memoryInputs(),new SymbolicMemory.Footprint(0xc200,0xc500,-16,1),request.incomingStackBytes(),request.continuationSteps(),true,true,request.provenance());
-      var applied=action("stock-predicate-apply",preview(second,"second-domain").toString());
-      var other=applied.lastOperation.entry();
-      action("stock-predicate-refresh",preview(request,"first-after-topology").toString(),at.toString());
-      navigate(getFunctionAt(other),"public-domain-two");observe(target,"public-domain-two");
-      navigate(getFunctionAt(at),"public-domain-one");observe(target,"public-domain-one");
-      save("after-inventory.json",Sm83PreservationInventory.inventory(p));
-      Files.write(out.resolve("after-original.gb"),ProgramMapping.exportBytes(p,false,false,monitor));
+      var second=domain(request,0xc200,0xc500);var applied=action("stock-predicate-apply",preview(second,"second-domain").toString());
+      Address other=applied.lastOperation.entry();refreshAll("explicit-after-topology");
+      for(var address:List.of(other,at,at,other)){navigate(getFunctionAt(address),"domain-order-"+(++operationSequence));observe(target,"domain-order-"+operationSequence);}
+      save("positive-inventory.json",Sm83PreservationInventory.inventory(p));p.save("Public lifecycle positive candidate",monitor);save("saved-authority.json",authority(p));
+      // Q is a new self-authored image/Program, not copied foreign executable authority.
+      var image=ProgramMapping.exportBytes(p,true,false,monitor);
+      q=new ghidra.program.database.ProgramDB("public-removal-variant",p.getLanguage(),p.getLanguage().getDefaultCompilerSpec(),this);
+      try(var bytes=new ghidra.app.util.bin.ByteArrayProvider(image)) {
+        CartridgeLayout.load(q,bytes,"CARTRIDGE","AUTO",GameBoyKind.GB,true,false,monitor,new ghidra.app.util.importer.MessageLog());
+      }
+      int preparation=q.startTransaction("Explicit self-authored second-Program fixture preparation");
+      try{ghidra.program.util.GhidraProgramUtilities.markProgramAnalyzed(q);}finally{q.endTransaction(preparation,true);}
+      // Same established fixture-startup policy as GhidraBoyStockWindowPrepare: future analysis events remain enabled.
+      var folder=state.getProject().getProjectData().getRootFolder().createFolder("public-removal-variant");folder.createFile("variant.gb",q,monitor);
+      final Program variant=q;listen(q);Swing.runNow(()->manager.openProgram(variant));currentProgram=q;target=null;
+      save("Q-preparation.json",Map.of("source",identity(p),"source_export","current","image_sha256",Sha256.of(image),"target",identity(q),
+          "foreign_authority_copied",false,"startup_prompt_policy","Explicit self-authored fixture prepared flag; future analysis events remain enabled"));
+      save("Q-before-public.json",Sm83PreservationInventory.inventory(q));
+      var qRequest=new ConditionalCallSites.Request(q.getUniqueProgramID(),ProgramMapping.inspect(q).originalSha256(),request.site(),request.mapper(),request.shadowCpu(),request.shadowValue(),request.memoryInputs(),request.footprint(),request.incomingStackBytes(),request.continuationSteps(),true,true,request.provenance());
+      var qApply=action("stock-predicate-apply",preview(qRequest,"explicit-Q-premises").toString());Address qEntry=qApply.lastOperation.entry();
+      target=q.getFunctionManager().getFunctionAt(qEntry);navigate(target,"Q-positive");observe(target,"Q-positive");q.save("Prepared self-authored variant",monitor);
+      requestOrdering(p,at,q,qEntry,false);requestOrdering(p,at,q,qEntry,true);
+      currentProgram=p;navigate(p.getFunctionManager().getFunctionAt(at),"before-native-switch");outstandingNativeSwitch(q,qEntry);
+      for(int i=0;i<8;i++) {
+        currentProgram=p;Swing.runNow(()->{manager.openProgram(p);manager.setCurrentProgram(p);});target=p.getFunctionManager().getFunctionAt(at);
+        var gate=new GateWriter();var operation=start(gate,"conditional-call-explain",at.toString());
+        try {
+          require(gate.reached.await(30,TimeUnit.SECONDS),"Close publication gate");Swing.runNow(()->manager.closeProgram(p,true));
+          require(!p.isClosed(),"Logical close must be distinguished from owned consumers");gate.release.countDown();
+          require("TARGET_CLOSED".equals(operation.lastPresentation.get(30,TimeUnit.SECONDS)),"Closed target published");
+          operation.lastOperation.released().get(30,TimeUnit.SECONDS);
+          save("close-resources-"+i+".json",Map.of("operations",PredicateOperations.inventory(),"publication",PredicatePublication.inventory(),"programConsumers",p.getConsumerList().size()));
+          require(PredicateOperations.inventory().get("observations")==0&&PredicatePublication.inventory().get("requests")==0,"Owned registrations after close");
+        }finally{gate.release.countDown();}
+      }
+      closeDuringComputation(p,at);
+      currentProgram=q;navigate(q.getFunctionManager().getFunctionAt(qEntry),"removal-variant");
+      Files.write(out.resolve("removal-current-before.gb"),ProgramMapping.exportBytes(q,true,false,monitor));
+      int tx=q.startTransaction("Later user explanation in disposable removal variant");try{q.getFunctionManager().getFunctionAt(qEntry).setComment("Later user explanation");}finally{q.endTransaction(tx,true);}
+      save("removal-before.json",Sm83PreservationInventory.inventory(q));action("stock-predicate-remove",qEntry.toString());
+      require(!PredicatedCalls.registered(q,qEntry)&&"Later user explanation".equals(q.getFunctionManager().getFunctionAt(qEntry).getComment()),"Removal lost later edit or retained authority");
+      save("removal-after.json",Sm83PreservationInventory.inventory(q));drain();observe(target,"removal-passive");requireMissingRefusal();Files.write(out.resolve("removal-current-after.gb"),ProgramMapping.exportBytes(q,true,false,monitor));q.save("Removed authority; later user edit preserved",monitor);
+      require(Arrays.equals(Files.readAllBytes(out.resolve("removal-current-before.gb")),Files.readAllBytes(out.resolve("removal-current-after.gb"))),"Removal changed ROM export");
+      currentProgram=p;Swing.runNow(()->{manager.openProgram(p);manager.setCurrentProgram(p);});target=p.getFunctionManager().getFunctionAt(at);
+      var gate=new GateWriter();var operation=start(gate,"conditional-call-explain",at.toString());
+      try {
+        require(gate.reached.await(30,TimeUnit.SECONDS),"Tool disposal publication gate");Swing.runNow(()->state.getTool().close());gate.release.countDown();
+        require(!"PUBLISHED".equals(operation.lastPresentation.get(30,TimeUnit.SECONDS)),"Disposed consumer published");
+        operation.lastOperation.released().get(30,TimeUnit.SECONDS);require(PredicatePublication.inventory().get("requests")==0,"Tool request resources remain");
+        save("public-tool-disposed.json",Map.of("publication",PredicatePublication.inventory(),"operations",PredicateOperations.inventory()));
+      }finally{gate.release.countDown();}
+      require(before!=null&&Arrays.equals(Files.readAllBytes(out.resolve("before-original.gb")),ProgramMapping.exportBytes(p,false,false,monitor)),"Original export changed");
       Files.write(out.resolve("after-current.gb"),ProgramMapping.exportBytes(p,true,false,monitor));
-      p.save("Public lifecycle positive candidate",monitor);save("saved-authority.json",authority(p));
-      save("public-window-complete.json",Map.of("program",identity(p),"saved",true,"visible_confirmation_only",true,
-          "outstanding_request_service_probe_required",true,"immutable_second_session_required",true,"initial_authority_hash",Sha256.of(authorityBefore.getBytes(java.nio.charset.StandardCharsets.UTF_8))));
-    }finally{unlisten(p);}
+      save("public-window-complete.json",Map.of("program",identity(p),"saved",true,"normal_second_session_required",true,"initial_authority_hash",Sha256.of(before.getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+    }finally{if(q!=null){if(listeners.containsKey(q))unlisten(q);q.release(this);}if(listeners.containsKey(p))unlisten(p);p.release(this);}
   }
 }

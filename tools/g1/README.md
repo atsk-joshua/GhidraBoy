@@ -90,3 +90,32 @@ Second-JVM saved-Program reads use the public immutable-open API: Ghidra's API n
 read-only still permits in-memory writes. Raw authority snapshots are retained;
 comparison checks every parsed JSON value and array order while ignoring only JSON
 object-key serialization order. Historical failed receipts remain unchanged.
+
+## Public operation lifecycle runner
+
+`--mode conditional --public-lifecycle --compile-only` prepares the maintained
+public apply/explain/navigation, passive source-stale, explicit refresh, ordinary
+Refresh, topology, P/Q/P, pending work, closure and separate removal-variant route.
+The second Program is constructed from the task's self-authored current image and
+receives fresh public authority with its own Program/image identity. It does not
+refresh copied foreign records. Fixture startup uses the existing prepared-Program
+prompt policy; future analysis events remain enabled.
+
+The compile receipt includes source and class hashes. After attended desktop and
+capture permission is confirmed, use `run_prepared.py COMMAND_JSON --attended` to
+execute that exact prepared command with bounded process receipts. Do not run it
+as a workaround for denied desktop access. Compilation and capture completion
+are not semantic acceptance.
+
+Prepare a second normal session with `--public-reopen --saved-captures FIRST_CAPTURES`
+and a new profile/output directory. It opens the saved Program through
+`getImmutableDomainObject`, performs first native use without proof refresh, and
+compares the full stored authority with the first session's saved receipt.
+
+`../public_operations/check_window.py ROOT --label PHASE --delta 1 --output RESULT`
+replays an actual positive normal-provider HighFunction with the maintained
+conditional arithmetic/mapper/memory oracle. Use delta -1 after the explicit
+source mutation. Run `--ordering` separately for actual unchanged-P/P-Q-P request
+traces and their rejection controls. It requires an executed positive base; missing
+captures are not semantic mutant rejections. The general G1 and public lifecycle
+workflows remain separately qualified.
