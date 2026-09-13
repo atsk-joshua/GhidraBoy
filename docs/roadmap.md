@@ -52,6 +52,12 @@ P1 work is part of this milestone, not a permanent exclusion. Cartridge geometry
 compiler conventions and game patterns must inform the P0 design immediately;
 their broader implementations follow the core dependencies.
 
+The effectful-call continuation work remains within SA-01/02/03 and W3/W4/W5.
+Its [partial correction](decisions/effectful-call-continuation.md) strengthens
+physical read binding and native effect checks; symbolic helper composition and
+owned continuation presentation remain the next unresolved work in that task.
+No retained requirement or predecessor qualification is replaced.
+
 ## Architectural decisions before broad implementation
 
 1. **Software calls:** compare supported callfixups, validated flow/reference

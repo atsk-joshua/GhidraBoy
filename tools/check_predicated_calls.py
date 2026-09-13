@@ -74,7 +74,7 @@ class Machine:
         sp,ret,f,c,de,hl=frame;require(0xc082<=sp<=0xcffc,'frame outside declared domain')
         self.image=image;self.root_sp=sp;self.outer_ret=ret;self.bank=None;self.steps=0
         self.reg={0:f,1:0x95,2:c,3:b,4:de&255,5:de>>8,6:hl&255,7:hl>>8,8:0x50,9:1,10:sp&255,11:sp>>8}
-        self.mem={sp:ret&255,sp+1:ret>>8};self.unique={};self.events=[];self.emitted_trace=[];self.high_trace=[];self.outputs={};self.fetches=[];self.calls=[]
+        self.mem={sp:ret&255,sp+1:ret>>8};self.unique={};self.events=[];self.emitted_trace=[];self.high_trace=[];self.outputs={};self.fetches=[];self.calls=[];self.forwarded_copies=set()
     def register(self,offset,size=1):return sum(self.reg[offset+i]<<(8*i) for i in range(size))
     def set_register(self,offset,size,value):
         for i in range(size):self.reg[offset+i]=(value>>(8*i))&255
@@ -113,7 +113,8 @@ class Machine:
         else:require(value is not None,'unknown defined output')
         value&=(1<<(8*v['size']))-1
         if env is not None:env[v['id']]=value
-        global_storage=v.get('high_global') if env is not None else None
+        # A UNIQUE SSA temporary may be associated with a global without writing it.
+        global_storage=v.get('high_global') if env is not None and v['space']=='ram' else None
         if global_storage is not None:
             supported(global_storage['space']=='ram' and global_storage['size']==v['size']==1 and global_storage['offset'] in getattr(self,'GLOBAL_RANGE',self.OUTPUT_RANGE),'unobserved HighGlobal storage binding')
             if write:self.store(global_storage['offset'],1,value)
@@ -144,7 +145,7 @@ class Machine:
             same_global=out.get('high_global') is not None and out.get('high_global')==nodes[0].get('high_global')
             same_cell=out['space']=='ram' and nodes[0]['space']=='ram' and out['offset']==nodes[0]['offset'] and out['size']==nodes[0]['size']
             rooted_offset=out['high_global']['offset'] if same_global else out['offset']
-            terminal_copy=env is not None and code=='COPY' and (same_global or same_cell) and nodes[0]['id'] in env and self.outputs.get(rooted_offset)==value
+            terminal_copy=env is not None and id(op) in self.forwarded_copies and code=='COPY' and (same_global or same_cell) and self.mem.get(rooted_offset)==value
             self.put(out,value,env,not terminal_copy)
     def raw(self,cap):
         cpu=self.ROOT_CPU;frames=[]
@@ -204,6 +205,22 @@ class Machine:
             supported(all(x['mnemonic'] not in {'STORE','CALLOTHER','CALL'} and not (x.get('output',{}).get('space')=='ram') for x in raw_ops),'INDIRECT memory not preserved by actual callee p-code')
     def high(self,cap,tag='root',parameters=None,depth=0):
         require(depth<=1,'unobserved native call depth');blocks={b['index']:b for b in cap.high[tag]};env={};entry=dict(self.reg) if depth==0 else {};pred=None;current=0
+        # Stock adds terminal SSA re-exposure copies after original operation times.
+        # Exempt only a same-cell COPY in the final COPY suffix before a RETURN,
+        # outside the complete emitted payload plus its two carrier operations.
+        requested=getattr(cap,'requested',{}).get(tag)
+        if requested is not None:
+            for block in blocks.values():
+                suffix=block['ops']
+                if not suffix or suffix[-1]['mnemonic']!='RETURN':continue
+                for candidate in reversed(suffix[:-1]):
+                    out=candidate.get('output');inputs=candidate['inputs']
+                    match=re.search(r', (\d+), \d+\)',candidate.get('sequence',''))
+                    if not (candidate['mnemonic']=='COPY' and out and len(inputs)==1
+                            and out['space']==inputs[0]['space']=='ram'
+                            and out['offset']==inputs[0]['offset'] and out['size']==inputs[0]['size']
+                            and match and int(match[1])>=len(requested)+2):break
+                    self.forwarded_copies.add(id(candidate))
         declared=cap.requests[tag].get('parameters',[])
         if parameters is not None:
             parameters=self.native_arguments(cap,tag,parameters,declared)

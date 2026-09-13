@@ -38,7 +38,9 @@ public final class SymbolicMemory {
       throw new IllegalArgumentException("Changed/foreign symbolic memory declaration");
   }
   static MapperState.Physical physical(Program p,MapperKnowledge mapper,int cpu,ScalarAccess.Kind kind) {
-    var result=ScalarAccess.resolve(ProgramMapping.cartridge(p),mapper,new ScalarAccess.Request(cpu,kind,1,0,"physical memory authority",-1,-1,null));
+    var cartridge=ProgramMapping.cartridge(p);
+    if(cartridge==null)throw new IllegalArgumentException("Explicit cartridge mapping authority required for symbolic memory; saved bytes alone do not establish it");
+    var result=ScalarAccess.resolve(cartridge,mapper,new ScalarAccess.Request(cpu,kind,1,0,"physical memory authority",-1,-1,null));
     var physical=result.resolution().orElseThrow().physical();
     if(physical==null||physical.bank()!=0||physical.offset()<0||!(physical.region().equals("WRAM")&&physical.offset()<0x800||physical.region().equals("HRAM")&&physical.offset()<0x7f))
       throw new IllegalArgumentException("Memory cell outside fixed WRAM/disjoint frame domain");

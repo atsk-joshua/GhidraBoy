@@ -34,6 +34,14 @@ def run(root,nibble=False,physical=False):
     def frame(cap):
         op=next(o for o in requested(cap) if o['mnemonic']=='INT_ADD' and o.get('output',{}).get('space')=='register' and o['output']['offset']==10)
         op['inputs'][1]['offset']+=1
+    def collateral(cap,restore=False):
+        def const(value,size):return dict(id=-1,space='const',offset=value,size=size,constant=True,address=False,register=False)
+        space=oracle.shared.read(root/'spaces.json')['ram']['id']
+        writes=[dict(mnemonic='STORE',opcode=3,sequence='review collateral write',output=None,
+                     inputs=[const(space,4),const(0xc001,2),const(value,1)]) for value in ([0x55,0] if restore else [0x55])]
+        cap.high['root'][0]['ops'][0:0]=writes
+    trial('native-collateral-write',collateral)
+    trial('native-collateral-write-then-restore',lambda cap:collateral(cap,True))
     trial('wrong-actual-memory-space',wrong_space)
     trial('missing-feasible-edge',missing);trial('extra-feasible-edge',extra)
     trial('native-foreign-terminal-with-unchanged-result',native_foreign)

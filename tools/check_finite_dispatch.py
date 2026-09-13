@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Independent dispatch replay through maintained raw, emitted and HighFunction evaluators."""
 import argparse
+from collections import Counter
 import json
 from pathlib import Path
 import check_predicated_calls as shared
@@ -23,6 +24,25 @@ class Machine(shared.Machine):
             nodes=op['inputs'];space=self.spaces.get(self.get(nodes[0],env,entry))
             shared.require(space=='ram','wrong actual LOAD/STORE space '+str(space))
         return super().ordinary(op,env,entry)
+
+def require_native_effects(raw,native,frame_bytes=()):
+    """Check observable writes separately from raw/emitted architectural ordering.
+
+    Optimized native code may forward values or eliminate frame temporaries; it may
+    not invent writes, including writes that later restore a cell's prior value.
+    Only actual STORE/address outputs enter events; HighGlobal-associated UNIQUE
+    values are SSA computation, not architectural writes.
+    """
+    permitted=Counter(e for e in raw.events if e[0]=='write')
+    actual=Counter(e for e in native.events if e[0]=='write')
+    shared.require(not (actual-permitted),'extra native architectural write: '+str(actual-permitted))
+    for _,at,_ in actual:
+        shared.require(native.mem.get(at)==raw.mem.get(at),'native collateral storage differs at '+hex(at))
+    for _,at,_ in permitted:
+        if at not in frame_bytes:
+            shared.require(native.mem.get(at)==raw.mem.get(at),'missing native collateral storage at '+hex(at))
+    for at in raw.outputs:
+        shared.require(native.outputs.get(at)==raw.outputs[at],'missing native observable output at '+hex(at))
 
 def proof_trace(cap,initial):
     names={op['opcode']:op['mnemonic'] for ins in cap.raw.values() for op in ins['ops']}
@@ -131,6 +151,7 @@ def check(root,label='original',nibble=False,h=0xc060,order=None,physical=False,
             raw=Machine(image,u,spaces,nibble,h,frame);emitted=Machine(image,u,spaces,nibble,h,frame);native=Machine(image,u,spaces,nibble,h,frame)
             trace,reads=proof_trace(cap,Machine(image,u,spaces,nibble,h,frame))
             raw.raw(cap);emitted.emitted(cap);result=native.high(cap)
+            require_native_effects(raw,native,range(raw.root_sp-2,raw.root_sp+2))
             shared.require(trace==raw.fetches,f'wrong physical graph path U={u}')
             if placements is not None:
                 starts={r['start']:r for r in placements}

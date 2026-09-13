@@ -1,5 +1,15 @@
 # Implementation status
 
+## EFFECTFUL-CALL-CONTINUATION — partial; requested capability unfinished
+
+Actual read-only admission preserved unknown inputs and exposed concrete-SP and
+missing-mapping boundaries. Direct immutable ROM operands now use operation-and-
+operand physical provenance; native collateral checking is strengthened. These
+corrections do not implement the requested effectful helper/callee/continuation.
+The symbolic frame/input/returned-state and owned-view work remains in scope and
+unqualified. See the [decision](../decisions/effectful-call-continuation.md).
+
+
 ## STOCK-FINITE-DISPATCH — scoped local PASS; STOP for master review
 
 Source-derived guarded immutable reads and finite physical indirect-jump edges use

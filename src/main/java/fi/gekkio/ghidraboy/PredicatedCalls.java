@@ -283,7 +283,25 @@ public final class PredicatedCalls {
         for(int i=0;i<inputs.length;i++)inputs[i]=relocate(p,inputs[i],temporaries,unique);
         var output=op.getOutput()==null?null:relocate(p,op.getOutput(),temporaries,unique);int code=op.getOpcode();
         final int operationIndex=rawIndex;
-        var read=node.reads().stream().filter(r->r.operation()==operationIndex).findFirst().orElse(null);
+        // Bind each direct ROM operand from its own source operation/operand evidence.
+        // CPU equality or the carrier's displayed bank is not physical read authority.
+        for(int operand=0;operand<op.getNumInputs();operand++) {
+          var original=op.getInput(operand);
+          if(!original.isAddress()||original.getOffset()>=0x8000||code==PcodeOp.BRANCH||code==PcodeOp.CBRANCH||code==PcodeOp.CALL||code==PcodeOp.RETURN)continue;
+          final int operandIndex=operand;
+          var qualified=node.reads().stream().filter(r->r.operation()==operationIndex&&r.operand()==operandIndex).toList();
+          require(qualified.size()==1,"Missing/ambiguous direct ROM operand authority");
+          var binding=qualified.get(0);
+          require(binding.width()==original.getSize()&&binding.alternatives().size()==1,"Unsupported direct ROM operand alternatives");
+          var alternative=binding.alternatives().get(0);
+          require(alternative.cpu()==original.getOffset()&&alternative.sources().size()==original.getSize(),"Direct ROM operand provenance mismatch");
+          var physical=ProgramMapping.staticAddress(p,alternative.sources().get(0).address());
+          require(physical!=null,"Missing physical direct ROM operand");
+          inputs[operand]=new Varnode(physical,original.getSize());
+        }
+        var qualifiedLoads=node.reads().stream().filter(r->r.operation()==operationIndex&&r.operand()==1).toList();
+        require(code!=PcodeOp.LOAD||qualifiedLoads.size()<=1,"Ambiguous ROM LOAD operand authority");
+        var read=qualifiedLoads.isEmpty()?null:qualifiedLoads.get(0);
         if(code==PcodeOp.LOAD&&read!=null) {
           var done=new ArrayList<Integer>();
           for(int index=0;index<read.alternatives().size();index++) {

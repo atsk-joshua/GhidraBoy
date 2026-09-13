@@ -87,6 +87,68 @@ class FiniteDispatchTest : IntegrationTest() {
     }
 
     @Test
+    fun directAndIndirectOperandsUseSelectedPhysicalBank() {
+        for (bank in listOf(1, 2)) {
+            for (direct in listOf(true, false)) {
+                fixture("physical-banks") { p, f, declaration ->
+                    p.withTransaction {
+                        p.listing.clearCodeUnits(address(0x100), address(0x113), false)
+                        val code =
+                            java.util.HexFormat
+                                .of()
+                                .parseHex("3e0${bank}ea0020" + if (direct) "fa2341c9" else "2123417ec9")
+                        p.memory.setBytes(address(0x100), code)
+                        p.memory.setByte(ProgramMapping.staticAddress(p, "rom1::4123"), 0x35)
+                        p.memory.setByte(ProgramMapping.staticAddress(p, "rom2::4123"), 0xca.toByte())
+                        Disassembler.getDisassembler(p, monitor, null).disassemble(address(0x100), f.body, false)
+                    }
+                    val proof = PredicatedCallGraph.preview(p, f, PredicatedCallGraph.Limits.PRIMARY, declaration, monitor)
+                    assertTrue(proof.complete(), proof.frontier().toString())
+                    val read = proof.nodes().flatMap { it.reads() }.single()
+                    assertEquals(
+                        bank,
+                        read
+                            .alternatives()
+                            .single()
+                            .sources()
+                            .single()
+                            .physical()
+                            .bank(),
+                    )
+                    assertEquals(
+                        if (bank == 1) 0x35 else 0xca,
+                        read
+                            .alternatives()
+                            .single()
+                            .sources()
+                            .single()
+                            .value(),
+                    )
+                    val entry = PredicatedCalls.install(p, proof, monitor)
+                    val emitted = PredicatedCalls.emit(p, entry, 0x200000, monitor)
+                    if (direct) {
+                        val operand = emitted.flatMap { it.inputs.toList() }.single { it.isAddress && it.offset == 0x4123L }
+                        assertEquals("rom$bank", operand.address.addressSpace.name)
+                    } else {
+                        val load =
+                            emitted.single {
+                                it.opcode == PcodeOp.LOAD && it.getInput(1).isConstant &&
+                                    it.getInput(1).offset == 0x4123L
+                            }
+                        assertEquals(
+                            p.addressFactory
+                                .getAddressSpace("rom$bank")
+                                .spaceID
+                                .toLong(),
+                            load.getInput(0).offset,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun normalized() =
         fixture("normalized") { p, f, declaration ->
             val revision = p.modificationNumber
