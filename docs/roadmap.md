@@ -53,9 +53,10 @@ compiler conventions and game patterns must inform the P0 design immediately;
 their broader implementations follow the core dependencies.
 
 The effectful-call continuation work remains within SA-01/02/03 and W3/W4/W5.
-Its [partial correction](decisions/effectful-call-continuation.md) strengthens
-physical read binding and native effect checks; symbolic helper composition and
-owned continuation presentation remain the next unresolved work in that task.
+Its [conditional implementation](decisions/effectful-call-continuation.md) adds
+source-derived symbolic helper/callee inlining, matched outgoing-state continuation
+and owned stock presentation for the bounded family. General summaries, loops,
+interference and wider device domains remain open.
 No retained requirement or predecessor qualification is replaced.
 
 ## Architectural decisions before broad implementation

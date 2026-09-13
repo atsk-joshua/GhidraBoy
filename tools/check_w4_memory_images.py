@@ -25,6 +25,7 @@ class Machine(core.Machine):
         cpu=cpu-0x2000 if cpu is not None and 0xe000<=cpu<=0xefff else cpu
         return super().store(cpu,size,value,trace)
     def get(self,v,env=None,entry=None):
+        core.validate_storage(v)
         if self.distinct and v['space']==self.distinct['space']:
             require(v['offset']==self.distinct['offset'] and v['size']==1,'wrong distinct storage slice');return self.distinct['value']
         if not v['constant'] and v['space'] not in {'ram','unique','register'}:

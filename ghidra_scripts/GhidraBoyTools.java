@@ -24,7 +24,7 @@ public class GhidraBoyTools extends GhidraScript {
                     "stock-ordinary-refresh",
                     "stock-source",
                     "stock-predicate-install",
-                    "stock-predicate-preview",
+                    "conditional-call-preview", "conditional-call-explain", "conditional-call-target", "conditional-call-continuation", "stock-predicate-preview",
                     "stock-predicate-apply",
                     "stock-predicate-refresh",
                     "stock-predicate-remove",
@@ -237,6 +237,26 @@ public class GhidraBoyTools extends GhidraScript {
         var entry=StockEntries.entries(currentProgram).stream().filter(e->function!=null&&e.carrier().equals(function.getEntryPoint().toString())).findFirst().orElseThrow();
         goTo(currentProgram.getAddressFactory().getAddress(entry.source()));
       }
+      case "conditional-call-preview" -> {
+        Path file=value==null?askFile("Conditional call-site premises JSON","Preview").toPath():Path.of(value);
+        var premises=ConditionalCallSites.readRequest(Files.readString(file));
+        var proof=ConditionalCallSites.preview(currentProgram,premises,monitor);
+        Path output=args.length>2?Path.of(args[2]):askFile("New conditional proof JSON","Save").toPath();
+        Files.writeString(output,ProgramMapping.JSON.toJson(proof),StandardOpenOption.CREATE_NEW);
+        println("Conditional call complete="+proof.complete()+"; frontiers="+proof.frontier().size());
+      }
+      case "conditional-call-explain", "conditional-call-target", "conditional-call-continuation" -> {
+        var at=value==null?currentAddress:currentProgram.getAddressFactory().getAddress(value);
+        var function=getFunctionContaining(at);if(function==null)throw new IllegalArgumentException("Select owned conditional entry");
+        var boundaries=ConditionalCallSites.explain(currentProgram,function.getEntryPoint(),monitor);
+        if(action.equals("conditional-call-explain"))println(ConditionalCallSites.explainText(currentProgram,function.getEntryPoint(),monitor));
+        else {
+          String kind=action.endsWith("target")?"RET_DISPATCH":"MATCHED_CALL_COMPLETION";
+          var choices=boundaries.stream().filter(b->b.kind().equals(kind)).map(ConditionalCallSites.Boundary::physical).distinct().toList();
+          if(choices.size()!=1)throw new IllegalArgumentException("Navigation requires one proved physical boundary: "+choices);
+          goTo(currentProgram.getAddressFactory().getAddress(choices.get(0)));
+        }
+      }
       case "stock-predicate-preview" -> {
         Path file=value==null?askFile("Explicit predicate input premises JSON", "Preview").toPath():Path.of(value);
         var premises=ProgramMapping.JSON.fromJson(Files.readString(file),PredicatedCalls.Premises.class);
@@ -247,7 +267,7 @@ public class GhidraBoyTools extends GhidraScript {
       }
       case "stock-predicate-apply", "stock-predicate-refresh" -> {
         Path file=value==null?askFile("Reviewed predicate proof JSON", "Apply").toPath():Path.of(value);
-        var proof=ProgramMapping.JSON.fromJson(Files.readString(file),PredicatedCallGraph.Proof.class);
+        var proof=PredicatedCalls.readProof(Files.readString(file));
         if(action.equals("stock-predicate-apply"))goTo(PredicatedCalls.install(currentProgram,proof,monitor));
         else {
           var selected=args.length>2?currentProgram.getAddressFactory().getAddress(args[2]):currentAddress;

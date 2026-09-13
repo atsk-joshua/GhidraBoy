@@ -16,6 +16,7 @@ class Machine(shared.Machine):
         self.mem[h if nibble else 0xff80]=u
         if nibble:self.set_register(6,2,h)
     def get(self,v,env=None,entry=None):
+        shared.validate_storage(v)
         if not v['constant'] and v['space']=='ram' and (env is None or v['id'] not in env):
             return self.load(v['offset'],v['size'],env is None)
         return super().get(v,env,entry)

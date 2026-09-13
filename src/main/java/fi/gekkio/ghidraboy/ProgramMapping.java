@@ -85,7 +85,8 @@ public final class ProgramMapping {
           case "WRAM" -> 0x1000;
           case "VRAM", "SRAM" -> 0x2000;
           case "MBC2_RAM" -> 512;
-          default -> throw new IllegalArgumentException("Expected WRAM, VRAM, SRAM or MBC2_RAM");
+          case "HRAM" -> 0x7f;
+          default -> throw new IllegalArgumentException("Expected WRAM, VRAM, SRAM, MBC2_RAM or HRAM");
         };
     int maxBank =
         switch (region) {
@@ -96,6 +97,8 @@ public final class ProgramMapping {
         };
     if (length <= 0 || offset < 0 || offset + length > bankSize || bank < 0 || bank > maxBank)
       throw new IllegalArgumentException("Invalid physical RAM interval");
+    if (region.equals("HRAM") && (!start.getAddressSpace().equals(p.getAddressFactory().getDefaultAddressSpace())
+        || start.getOffset()!=0xff80+offset)) throw new IllegalArgumentException("HRAM identity must match FF80..FFFE");
     var end = start.addNoWrap(length - 1);
     var block = p.getMemory().getBlock(start);
     if (block == null

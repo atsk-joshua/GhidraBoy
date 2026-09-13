@@ -33,7 +33,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
   void request(Function function,DecompInterface owner,String label)throws Exception{
     var request=new LinkedHashMap<String,Object>();request.put("entry",function.getEntryPoint().toString());request.put("function_name",function.getName());
     request.put("function_id",function.getID());request.put("native_interface_identity",System.identityHashCode(owner));request.put("owner_java_pid",ProcessHandle.current().pid());request.put("revision",currentProgram.getModificationNumber());
-    Path debug=out.resolve(label+"-debug.xml");owner.enableDebug(debug.toFile());var result=owner.decompileFunction(function,90,monitor);
+    Path debug=out.resolve(label+"-debug.xml");owner.enableDebug(debug.toFile());long nativeStart=System.nanoTime();var result=owner.decompileFunction(function,90,monitor);request.put("decompile_ns",System.nanoTime()-nativeStart);
     request.put("completed",result.decompileCompleted());request.put("error",result.getErrorMessage());request.put("highfunction_available",result.getHighFunction()!=null);
     request.put("processes_after",processes());if(Files.exists(debug))request.put("debug",Map.of("sha256",hash(debug),"path",debug.toString()));
     if(result.getHighFunction()!=null){
@@ -53,6 +53,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
   }
   void identity(String label,Address root)throws Exception{
     var record=new LinkedHashMap<String,Object>();record.put("program_id",currentProgram.getUniqueProgramID());
+    var spaces=new TreeMap<String,Integer>();for(var space:currentProgram.getAddressFactory().getAddressSpaces())spaces.put(space.getName(),space.getSpaceID());record.put("spaces",spaces);
     record.put("domain_file",currentProgram.getDomainFile().getPathname());record.put("domain_file_id",currentProgram.getDomainFile().getFileID());
     record.put("java_pid",ProcessHandle.current().pid());record.put("java_start",ProcessHandle.current().info().startInstant().map(Object::toString).orElse("unknown"));
     record.put("live_modification_number",currentProgram.getModificationNumber());record.put("live_object_identity",System.identityHashCode(currentProgram));
@@ -75,6 +76,7 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
     String registration=currentProgram.getOptions(predicateOptions(root)).getString(root.toString(),null);
     Files.writeString(out.resolve(label+"-registration.json"),registration);identity(label+"-before",root);
     var proof=PredicatedCalls.registeredProof(currentProgram,root);save(label+"-proof.json",proof);
+    if(proof.callSite()!=null)save(label+"-cost.json",PredicatedCalls.measure(currentProgram,root,monitor));
     var raw=new TreeMap<String,Object>();for(var node:proof.nodes())if(!raw.containsKey(node.source())){
       var instruction=currentProgram.getListing().getInstructionAt(currentProgram.getAddressFactory().getAddress(node.source()));ids.clear();
       raw.put(node.source(),Map.of("address",node.source(),"bytes",HexFormat.of().formatHex(instruction.getBytes()),"physical",ProgramMapping.staticToPhysical(currentProgram,instruction.getAddress()),"ops",Arrays.stream(instruction.getPcode(false)).map(this::operation).toList()));
@@ -86,6 +88,8 @@ public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
       var context=new InjectContext();context.baseAddr=at;context.nextAddr=at;ids.clear();save(label+"-"+name+"-requested.json",Arrays.stream(payload.getPcode(currentProgram,context)).map(this::operation).toList());
       request(getFunctionAt(at),owner,label+"-"+name);
     }
+    save(label+"-placements.json",PredicatedCalls.inspectEmission(currentProgram,root,0x200000,monitor));
+    ids.clear();save(label+"-carrier-raw.json",Arrays.stream(currentProgram.getListing().getInstructionAt(root).getPcode(false)).map(this::operation).toList());
     save(label+"-views.json",mapping);identity(label+"-after",root);
     String after=currentProgram.getOptions(predicateOptions(root)).getString(root.toString(),null);Files.writeString(out.resolve(label+"-registration-after.json"),after);
     if(!registration.equals(after))throw new IllegalStateException("Native read mutated graph registration");

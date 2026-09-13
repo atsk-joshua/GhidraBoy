@@ -37,7 +37,9 @@ class DomainCallEffectsTest(unittest.TestCase):
         data['offset']=0xc0fe
         with self.assertRaises(core.Insufficient):machine.require_indirect_preservation(frame,[],child)
         data['high_global']={'space':'ram','offset':0xc210,'size':1}
-        with self.assertRaises(core.Insufficient):machine.require_indirect_preservation(frame,[],child)
+        # Same-width metadata contradiction is now an integrity failure, not
+        # an unsupported oracle relationship (revision-2 storage contract).
+        with self.assertRaisesRegex(core.Refusal,'actual storage contradicts'):machine.require_indirect_preservation(frame,[],child)
     def test_only_closed_callee_can_ignore_inferred_actual_arguments(self):
         machine=DomainMachine(bytes(65536),0,0x190)
         cap=SimpleNamespace(high={'leaf':[{'ops':[op('COPY',[node(40,constant=0x33)],node(41))]}]})

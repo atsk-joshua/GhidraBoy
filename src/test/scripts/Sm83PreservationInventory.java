@@ -52,14 +52,28 @@ public class Sm83PreservationInventory extends GhidraScript {
       var f=it.next();var params=new ArrayList<Object>();for(var v:f.getParameters())params.add(storage(v));var locals=new ArrayList<Object>();for(var v:f.getLocalVariables())locals.add(storage(v));
       functions.add(row("entry",addr(f.getEntryPoint()),"name",f.getName(true),"body",ranges(f.getBody()),"signature",f.getSignature().toString(),"signatureSource",f.getSignatureSource().toString(),"convention",f.getCallingConventionName(),"custom",f.hasCustomVariableStorage(),"return",storage(f.getReturn()),"parameters",params,"locals",locals,"thunk",f.isThunk()?addr(f.getThunkedFunction(false).getEntryPoint()):null,"inline",f.isInline(),"noReturn",f.hasNoReturn(),"varargs",f.hasVarArgs(),"purge",f.getStackPurgeSize(),"fixup",f.getCallFixup(),"comment",f.getComment(),"repeatableComment",f.getRepeatableComment()));
     }root.put("functions",functions);
-    var symbols=new ArrayList<Object>();for(var it=p.getSymbolTable().getAllSymbols(true);it.hasNext();) {var s=it.next();symbols.add(row("id",s.getID(),"address",addr(s.getAddress()),"name",s.getName(true),"type",s.getSymbolType().toString(),"source",s.getSource().toString(),"primary",s.isPrimary(),"pinned",s.isPinned()));}root.put("symbols",symbols);
+    var symbols=new ArrayList<Object>();for(var it=p.getSymbolTable().getAllSymbols(true);it.hasNext();) {var s=it.next();symbols.add(row("id",s.getID(),"address",addr(s.getAddress()),"name",s.getName(true),"type",s.getSymbolType().toString(),"source",s.getSource().toString(),"primary",s.isPrimary(),"pinned",s.isPinned(),"namespaceId",s.getParentNamespace().getID(),"namespace",s.getParentNamespace().getName(true)));}root.put("symbols",symbols);
     var refs=new ArrayList<Object>();for(var it=p.getReferenceManager().getReferenceSourceIterator(p.getMemory(),true);it.hasNext();)for(var r:p.getReferenceManager().getReferencesFrom(it.next()))refs.add(row("from",addr(r.getFromAddress()),"to",addr(r.getToAddress()),"operand",r.getOperandIndex(),"type",r.getReferenceType().toString(),"source",r.getSource().toString(),"primary",r.isPrimary(),"symbolId",r.getSymbolID()));root.put("references",refs);
     var comments=new ArrayList<Object>();for(int type=0;type<=4;type++)for(var it=p.getListing().getCommentAddressIterator(type,p.getMemory(),true);it.hasNext();) {var a=it.next();comments.add(row("address",addr(a),"type",type,"text",p.getListing().getComment(type,a)));}root.put("comments",comments);
     var bookmarks=new ArrayList<Object>();for(var it=p.getBookmarkManager().getBookmarksIterator();it.hasNext();) {var b=it.next();bookmarks.add(row("address",addr(b.getAddress()),"type",b.getTypeString(),"category",b.getCategory(),"comment",b.getComment()));}root.put("bookmarks",bookmarks);
-    var types=new ArrayList<Object>();for(var it=p.getDataTypeManager().getAllDataTypes();it.hasNext();) {var d=it.next();types.add(row("path",d.getPathName(),"length",d.getLength(),"definition",d.toString()));}root.put("types",types);
+    var types=new ArrayList<Object>();for(var it=p.getDataTypeManager().getAllDataTypes();it.hasNext();) {var d=it.next();types.add(row("path",d.getPathName(),"length",d.getLength(),"definition",d.toString(),"typeId",p.getDataTypeManager().getID(d),"universalId",String.valueOf(d.getUniversalID()),"sourceArchiveId",d.getSourceArchive()==null?null:String.valueOf(d.getSourceArchive().getSourceArchiveID()),"lastChange",d.getLastChangeTime(),"sourceLastChange",d.getLastChangeTimeInSourceArchive()));}root.put("types",types);
     var data=new ArrayList<Object>();for(var it=p.getListing().getDefinedData(true);it.hasNext();) {var d=it.next();var settings=new TreeMap<String,Object>();for(var n:d.getNames())settings.put(n,String.valueOf(d.getValue(n)));data.add(row("address",addr(d.getAddress()),"type",d.getDataType().getPathName(),"length",d.getLength(),"settings",settings));}root.put("data",data);
     var facts=new ArrayList<Object>();for(var r:p.getProgramContext().getRegisters())for(var it=p.getProgramContext().getRegisterValueAddressRanges(r);it.hasNext();) {var a=it.next();facts.add(row("register",r.getName(),"start",addr(a.getMinAddress()),"end",addr(a.getMaxAddress()),"value",String.valueOf(p.getProgramContext().getRegisterValue(r,a.getMinAddress()))));}root.put("registerFacts",facts);
     var options=new TreeMap<String,Object>();for(var name:p.getOptionsNames()) {var opt=p.getOptions(name);var values=new TreeMap<String,Object>();for(var n:opt.getOptionNames())values.put(n,row("type",opt.getType(n).toString(),"value",String.valueOf(opt.getObject(n,null))));options.put(name,values);}root.put("options",options);
+    var properties=new TreeMap<String,Object>();var manager=p.getUsrPropertyManager();
+    for(var names=manager.propertyManagers();names.hasNext();) {
+      String name=names.next();var map=manager.getPropertyMap(name);var entries=new ArrayList<Object>();
+      for(var it=map.getPropertyIterator();it.hasNext();) {
+        var at=it.next();Object value=map.get(at);Object stored=value;
+        if(value instanceof ghidra.util.Saveable saved) {
+          var bytes=new java.io.ByteArrayOutputStream();try(var stream=new java.io.ObjectOutputStream(bytes)){saved.save(new ghidra.util.ObjectStorageStreamAdapter(stream));}
+          stored=row("schema",saved.getSchemaVersion(),"private",saved.isPrivate(),"fields",Arrays.stream(saved.getObjectStorageFields()).map(Class::getName).toList(),"serialized",hex(bytes.toByteArray()));
+        } else if(value!=null&&!(value instanceof String||value instanceof Number||value instanceof Boolean))throw new IllegalArgumentException("Unsupported property value: "+name+" "+value.getClass());
+        entries.add(row("address",addr(at),"value",stored));
+      }
+      properties.put(name,row("class",map.getValueClass().getName(),"entries",entries));
+    }
+    root.put("properties",properties);
     return root;
   }
   @Override public void run() throws Exception {

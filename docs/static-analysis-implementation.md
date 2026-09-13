@@ -256,3 +256,18 @@ require the exact optional native companion; absence is not evidence of success.
 Normal GUI comparisons must use a separately identified disposable Program and
 installation. The original SA-01/SA-02 requirement audit remains authoritative
 for completion; broader SA-03/04/06/07 scope is retained.
+
+
+## Conditional effectful call sites
+
+`ConditionalCallSites.preview` adapts explicit call-site premises into the incumbent
+`PredicatedCallGraph`; `PredicatedCalls` owns stock lowering/currentness. No canonical
+Function is needed. See the [effectful call decision](decisions/effectful-call-continuation.md)
+for the physical frame contract, linked boundaries, observation limits and versioning.
+Use `conditional-call-preview` with a strict request JSON, then `stock-predicate-apply`
+with its complete proof. At the owned entry use `conditional-call-explain`,
+`conditional-call-target` and `conditional-call-continuation`. A source/premise change
+requires a new preview and explicit `stock-predicate-refresh`; removal uses
+`stock-predicate-remove`. Neither action repairs canonical annotations. Maintained
+self-authored examples and replay live in `tools/make_conditional_fixtures.py`,
+`tools/run_conditional_calls.py` and `tools/check_conditional_calls.py`.

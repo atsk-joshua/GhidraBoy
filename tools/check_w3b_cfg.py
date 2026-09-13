@@ -25,6 +25,9 @@ class DomainMachine(core.Machine):
         self.set_register(1,1,2);self.set_register(8,2,0x200);self.bank=1
 
     def require_indirect_preservation(self,out,raw_ops,child_ops):
+        core.validate_storage(out)
+        for operation in raw_ops+child_ops:
+            for v in [operation.get('output'),*operation['inputs']]:core.validate_storage(v)
         supported(out['space']=='ram' and out['size']==1 and out['offset'] in range(0xc0fe,0xc102),'unobserved configured frame INDIRECT')
         # Prove disjointness against actual requested and HighFunction effects, per cell.
         for op in raw_ops+child_ops:

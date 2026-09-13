@@ -137,6 +137,90 @@ final class AbstractValues {
     }
     return value(width, result, origin, provenance, "complete byte cover");
   }
+  /** Local expression normalization for conditional frames; retains input identities and sites. */
+  static Value canonical(Value v) {
+    Origin o=canonicalOrigin(v.origin());
+    if(o.kind()==OriginKind.CONSTANT)return new Value(v.width(),new Exact(o.constant()),o,v.role(),new TreeSet<>(List.of(o.constant())),v.sites());
+    if(o.kind()==OriginKind.INPUT&&o.width()==1){var cover=new TreeSet<Long>();for(long n=0;n<256;n++)cover.add(n);return new Value(v.width(),new Top("preserved input byte",false),o,v.role(),cover,v.sites());}
+    return new Value(v.width(),v.domain(),o,v.role(),v.values(),v.sites());
+  }
+  private static Origin canonicalOrigin(Origin o) {
+    if(o.kind()!=OriginKind.OPERATION)return o;
+    var in=o.inputs().stream().map(AbstractValues::canonicalOrigin).toList();
+    if(o.opcode()==PcodeOp.SUBPIECE&&in.get(1).kind()==OriginKind.CONSTANT) {
+      Origin whole=in.get(0);int offset=(int)in.get(1).constant();
+      if(offset==0&&o.width()==whole.width())return whole;
+      if(whole.kind()==OriginKind.OPERATION&&(whole.opcode()==PcodeOp.INT_OR||whole.opcode()==PcodeOp.INT_AND)) {
+        var pieces=whole.inputs().stream().map(x->canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.SUBPIECE,List.of(x,constant(offset,1).origin()),List.of()))).toList();
+        return canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,whole.opcode(),pieces,List.of()));
+      }
+      if((whole.opcode()==PcodeOp.INT_LEFT||whole.opcode()==PcodeOp.INT_RIGHT)&&whole.inputs().get(1).kind()==OriginKind.CONSTANT&&whole.inputs().get(1).constant()%8==0) {
+        int bytes=(int)whole.inputs().get(1).constant()/8;var child=whole.inputs().get(0);
+        if(whole.opcode()==PcodeOp.INT_LEFT&&offset+o.width()<=bytes)return constant(0,o.width()).origin();
+        int relative=whole.opcode()==PcodeOp.INT_LEFT?offset-bytes:offset+bytes;
+        if(relative>=0&&relative+o.width()<=child.width())return canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.SUBPIECE,List.of(child,constant(relative,1).origin()),List.of()));
+      }
+      if(whole.opcode()==PcodeOp.INT_ZEXT) {
+        var child=whole.inputs().getFirst();if(offset>=child.width())return constant(0,o.width()).origin();
+        if(offset+o.width()<=child.width())return canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.SUBPIECE,List.of(child,constant(offset,1).origin()),List.of()));
+      }
+      if(whole.opcode()==PcodeOp.PIECE) {
+        int low=whole.inputs().get(1).width();Origin selected=null;int relative=offset;
+        if(offset+o.width()<=low)selected=whole.inputs().get(1);
+        else if(offset>=low){selected=whole.inputs().get(0);relative-=low;}
+        if(selected!=null)return canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.SUBPIECE,List.of(selected,constant(relative,1).origin()),List.of()));
+      }
+    }
+    if(in.size()==2&&(o.opcode()==PcodeOp.INT_AND||o.opcode()==PcodeOp.INT_OR)) {
+      Origin x=in.get(0),mask=in.get(1);if(x.kind()==OriginKind.CONSTANT){var swap=x;x=mask;mask=swap;}
+      if(mask.kind()==OriginKind.CONSTANT) {
+        if(o.opcode()==PcodeOp.INT_AND&&mask.constant()==0)return constant(0,o.width()).origin();
+        if(o.opcode()==PcodeOp.INT_OR&&mask.constant()==0)return x;
+        if(o.opcode()==PcodeOp.INT_AND&&mask.constant()==truncate(-1,o.width()))return x;
+        if(o.opcode()==PcodeOp.INT_AND&&x.opcode()==PcodeOp.INT_AND&&x.inputs().get(1).kind()==OriginKind.CONSTANT)
+          return canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.INT_AND,List.of(x.inputs().get(0),constant(mask.constant()&x.inputs().get(1).constant(),o.width()).origin()),List.of()));
+        if(o.opcode()==PcodeOp.INT_AND&&x.opcode()==PcodeOp.INT_OR) {
+          final Origin m=mask;var parts=x.inputs().stream().map(child->canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.INT_AND,List.of(child,m),List.of()))).toList();
+          return canonicalOrigin(new Origin(OriginKind.OPERATION,o.width(),null,0,PcodeOp.INT_OR,parts,List.of()));
+        }
+      }
+    }
+    if(in.size()==2&&in.get(0).equals(in.get(1))&&(o.opcode()==PcodeOp.INT_XOR||o.opcode()==PcodeOp.INT_SUB))return constant(0,o.width()).origin();
+    if(o.opcode()==-1&&in.stream().allMatch(x->x.kind()==OriginKind.CONSTANT)) {
+      var keys=in.stream().map(Origin::constant).toList();var rows=o.table().stream().filter(r->r.keys().equals(keys)).toList();
+      if(rows.size()==1)return constant(rows.get(0).value(),o.width()).origin();
+    }
+    if(o.opcode()!=-1&&in.stream().allMatch(x->x.kind()==OriginKind.CONSTANT)) {
+      Long value=apply(o.opcode(),o.width(),in,in.stream().map(Origin::constant).toList());if(value!=null)return constant(value,o.width()).origin();
+    }
+    var result=new Origin(o.kind(),o.width(),o.input(),o.constant(),o.opcode(),in,o.table());
+    var bits=knownBits(result);if((bits[0]|bits[1])==truncate(-1,o.width()))return constant(bits[0],o.width()).origin();
+    return result;
+  }
+  /** Sound bit facts used only by conditional expression normalization. */
+  private static long[] knownBits(Origin o) {
+    long mask=truncate(-1,o.width());
+    if(o.kind()==OriginKind.CONSTANT)return new long[]{o.constant(),mask^o.constant()};
+    if(o.kind()!=OriginKind.OPERATION)return new long[]{0,0};
+    if(Set.of(PcodeOp.INT_EQUAL,PcodeOp.INT_NOTEQUAL,PcodeOp.INT_LESS,PcodeOp.INT_LESSEQUAL,PcodeOp.INT_SLESS,PcodeOp.INT_SLESSEQUAL,PcodeOp.INT_CARRY,PcodeOp.INT_SCARRY,PcodeOp.INT_SBORROW,PcodeOp.BOOL_NEGATE,PcodeOp.BOOL_AND,PcodeOp.BOOL_OR,PcodeOp.BOOL_XOR).contains(o.opcode()))return new long[]{0,mask&~1L};
+    var a=knownBits(o.inputs().getFirst());
+    if(o.opcode()==PcodeOp.INT_ZEXT)return new long[]{a[0],a[1]|(mask^truncate(-1,o.inputs().getFirst().width()))};
+    if(o.inputs().size()==2) {
+      var b=knownBits(o.inputs().get(1));
+      if(o.opcode()==PcodeOp.INT_AND)return new long[]{a[0]&b[0],(a[1]|b[1])&mask};
+      if(o.opcode()==PcodeOp.INT_OR)return new long[]{(a[0]|b[0])&mask,a[1]&b[1]};
+      if(o.inputs().get(1).kind()==OriginKind.CONSTANT) {
+        long count=o.inputs().get(1).constant();
+        if(o.opcode()==PcodeOp.SUBPIECE){int shift=(int)count*8;return new long[]{(a[0]>>>shift)&mask,(a[1]>>>shift)&mask};}
+        if(count<o.width()*8) {
+          int n=(int)count;
+          if(o.opcode()==PcodeOp.INT_LEFT)return new long[]{(a[0]<<n)&mask,((a[1]<<n)|((1L<<n)-1))&mask};
+          if(o.opcode()==PcodeOp.INT_RIGHT)return new long[]{a[0]>>>n,(a[1]>>>n)|(mask^(mask>>>n))};
+        }
+      }
+    }
+    return new long[]{0,0};
+  }
   static Value table(int width, List<Origin> inputs, List<TableRow> rows, String site) {
     if (rows.isEmpty() || rows.size() > MAX_CANDIDATES) throw new IllegalArgumentException("Abstract table condition budget exhausted");
     var values = new TreeSet<Long>(); for (var row : rows) values.add(row.value());

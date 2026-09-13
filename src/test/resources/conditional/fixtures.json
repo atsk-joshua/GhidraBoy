@@ -1,0 +1,140 @@
+{
+  "carry": {
+    "site": "rom1::42fd",
+    "helper": 2048,
+    "stub": 2176,
+    "cleanup": 2107,
+    "target": "rom2::5210",
+    "continuation": "rom1::4301",
+    "spans": [
+      {
+        "bank": 0,
+        "cpu": 48,
+        "bytes": "c30008"
+      },
+      {
+        "bank": 0,
+        "cpu": 2048,
+        "bytes": "e0a0f0a1f5c5d5e5f8082a5f7e577bc6032b227ace00771ae0a2131ae0a3131ae0a4e1d1c17de0a57ce0a6f0a2e0a1ea0020f0a36ff0a467cd8008f5e5f8057ee0a1ea0020e1f13333c9"
+      },
+      {
+        "bank": 0,
+        "cpu": 2176,
+        "bytes": "e5f0a56ff0a667f0a0c9"
+      },
+      {
+        "bank": 1,
+        "cpu": 17149,
+        "bytes": "f7021052"
+      },
+      {
+        "bank": 1,
+        "cpu": 17153,
+        "bytes": "280478ea21cac9"
+      },
+      {
+        "bank": 2,
+        "cpu": 21008,
+        "bytes": "ce003cea20ca47c9"
+      },
+      {
+        "bank": 1,
+        "cpu": 21008,
+        "bytes": "3e99c9"
+      }
+    ],
+    "sha256": "a2c3f3604def2c13292876bc73a4b9b7843c4ec4b8dbf607f741676d578b8df8"
+  },
+  "relocated": {
+    "site": "rom1::4600",
+    "helper": 2304,
+    "stub": 2432,
+    "cleanup": 2363,
+    "target": "rom2::5300",
+    "continuation": "rom1::4604",
+    "spans": [
+      {
+        "bank": 0,
+        "cpu": 48,
+        "bytes": "c30009"
+      },
+      {
+        "bank": 0,
+        "cpu": 2304,
+        "bytes": "e0a0f0a1f5c5d5e5f8082a5f7e577bc6032b227ace00771ae0a2131ae0a3131ae0a4e1d1c17de0a57ce0a6f0a2e0a1ea0020f0a36ff0a467cd8009f5e5f8057ee0a1ea0020e1f13333c9"
+      },
+      {
+        "bank": 0,
+        "cpu": 2432,
+        "bytes": "e5f0a56ff0a667f0a0c9"
+      },
+      {
+        "bank": 1,
+        "cpu": 17920,
+        "bytes": "f7020053"
+      },
+      {
+        "bank": 1,
+        "cpu": 17924,
+        "bytes": "280478ea21cac9"
+      },
+      {
+        "bank": 2,
+        "cpu": 21248,
+        "bytes": "ce003cea20ca47c9"
+      },
+      {
+        "bank": 1,
+        "cpu": 21248,
+        "bytes": "3e99c9"
+      }
+    ],
+    "sha256": "0cbab1b8eebc4684757492a9ab2149806cbee8ed932df8b16c1ec6630cd77c96"
+  },
+  "indirect": {
+    "site": "rom1::42fd",
+    "helper": 2048,
+    "stub": 2176,
+    "cleanup": 2107,
+    "target": "rom2::5210",
+    "continuation": "rom1::4301",
+    "spans": [
+      {
+        "bank": 0,
+        "cpu": 48,
+        "bytes": "c30008"
+      },
+      {
+        "bank": 0,
+        "cpu": 2048,
+        "bytes": "e0a0f0a1f5c5d5e5f8082a5f7e577bc6032b227ace00771ae0a2131ae0a3131ae0a4e1d1c17de0a57ce0a6f0a2e0a1ea0020f0a36ff0a467cd8008f5e5f8057ee0a1ea0020e1f13333c9"
+      },
+      {
+        "bank": 0,
+        "cpu": 2176,
+        "bytes": "e5f0a56ff0a667f0a0c9"
+      },
+      {
+        "bank": 1,
+        "cpu": 17149,
+        "bytes": "f7021052"
+      },
+      {
+        "bank": 1,
+        "cpu": 17153,
+        "bytes": "280478ea21cac9"
+      },
+      {
+        "bank": 2,
+        "cpu": 21008,
+        "bytes": "ce003c472120ea77c9"
+      },
+      {
+        "bank": 1,
+        "cpu": 21008,
+        "bytes": "3e99c9"
+      }
+    ],
+    "sha256": "3f42f8e55234814b05e93293aa801e573a236f61cc7c8ba384ce62ae9580f335"
+  }
+}

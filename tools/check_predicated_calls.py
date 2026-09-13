@@ -18,6 +18,28 @@ require, read, sha = base.require, base.read, base.sha
 def supported(ok,reason):
     if not ok: raise Insufficient(reason)
 
+def validate_storage(v):
+    if v is None:return
+    g=v.get('high_global')
+    if g is None or v.get('constant') or v['space'] in {'unique','register'}:return
+    supported(g.get('size')==v['size']==1,'partial/wide HighGlobal storage relationship not captured')
+    require((g.get('space'),g.get('offset'))==(v['space'],v['offset']),
+            'actual storage contradicts HighGlobal metadata')
+
+def same_storage(a,b):
+    validate_storage(a);validate_storage(b)
+    return a is not None and b is not None and (a['space'],a['offset'],a['size'])==(b['space'],b['offset'],b['size'])
+
+def actual_native_process(process,owner,hashes):
+    if process.get('parent')!=owner:return False
+    if process.get('binary_sha256') in hashes:return True
+    # Existing qualified Rosetta lane: bind ELF bytes, argv and executable mapping.
+    for native in process.get('argv_native_files',[]):
+        if native.get('sha256') not in hashes:continue
+        path=native['path']
+        if process.get('proc_cmdline','').split(' ')[0]==path and any('r-xp' in line and line.endswith(' '+path) for line in process.get('proc_maps','').splitlines()):return True
+    return False
+
 def arithmetic(code, nodes, args, width):
     if any(a is None for a in args): raise Insufficient('unresolved arithmetic input '+code)
     a=args[0];b=args[1] if len(args)>1 else None
@@ -98,6 +120,7 @@ class Machine:
             if trace:self.events.append(('write',at,v))
             if at in self.OUTPUT_RANGE:self.outputs[at]=v
     def get(self,v,env=None,entry=None):
+        validate_storage(v)
         if v['constant']:return v['offset']&((1<<(v['size']*8))-1)
         if env is not None and v['id'] in env:return env[v['id']]
         space,offset,size=v['space'],v['offset'],v['size']
@@ -109,6 +132,7 @@ class Machine:
         else:raise Insufficient('unobserved value storage '+space)
         return None if any(x is None for x in octets) else sum(v<<(8*i) for i,v in enumerate(octets))
     def put(self,v,value,env=None,write=True):
+        validate_storage(v)
         if env is not None:supported(value is not None,'unknown defined native SSA output')
         else:require(value is not None,'unknown defined output')
         value&=(1<<(8*v['size']))-1
@@ -117,7 +141,7 @@ class Machine:
         global_storage=v.get('high_global') if env is not None and v['space']=='ram' else None
         if global_storage is not None:
             supported(global_storage['space']=='ram' and global_storage['size']==v['size']==1 and global_storage['offset'] in getattr(self,'GLOBAL_RANGE',self.OUTPUT_RANGE),'unobserved HighGlobal storage binding')
-            if write:self.store(global_storage['offset'],1,value)
+            if write:self.store(v['offset'],v['size'],value)
         if v['space']=='register':self.set_register(v['offset'],v['size'],value)
         elif v['space']=='unique':
             if env is None:
@@ -129,7 +153,7 @@ class Machine:
         else:raise Insufficient('unobserved output storage '+v['space'])
     def ordinary(self,op,env=None,entry=None):
         self.steps+=1;require(self.steps<20000,'oracle bounded execution exhausted')
-        code=op['mnemonic'];nodes=op['inputs'];out=op.get('output');args=[self.get(v,env,entry) for v in nodes]
+        code=op['mnemonic'];nodes=op['inputs'];out=op.get('output');validate_storage(out);args=[self.get(v,env,entry) for v in nodes]
         if code=='CALLOTHER':
             supported(op.get('userop_name') in {'gb_direct_write8','gb_cartridge_write8'},'unknown userop')
             require(len(args)==3 and nodes[1]['size']==2 and nodes[2]['size']==1,'unexpected bus effect widths')
@@ -142,9 +166,9 @@ class Machine:
             supported(len(args)==3 and nodes[1]['size']==2,'unsupported CPU store form');self.store(args[1],nodes[2]['size'],args[2])
         else:
             value=arithmetic(code,nodes,args,out['size'])
-            same_global=out.get('high_global') is not None and out.get('high_global')==nodes[0].get('high_global')
+            same_global=same_storage(out,nodes[0]) and out.get('high_global') is not None and out.get('high_global')==nodes[0].get('high_global')
             same_cell=out['space']=='ram' and nodes[0]['space']=='ram' and out['offset']==nodes[0]['offset'] and out['size']==nodes[0]['size']
-            rooted_offset=out['high_global']['offset'] if same_global else out['offset']
+            rooted_offset=out['offset']
             terminal_copy=env is not None and id(op) in self.forwarded_copies and code=='COPY' and (same_global or same_cell) and self.mem.get(rooted_offset)==value
             self.put(out,value,env,not terminal_copy)
     def raw(self,cap):
@@ -167,9 +191,15 @@ class Machine:
                     target=op['inputs'][0]['offset']&65535;sp=self.register(10,2);word=self.load(sp,2,False)
                     require(word==next_cpu,'actual CALL return word incorrect')
                     self.calls.append((cpu,self.bank,target,word));self.events.append(('call',self.bank,target,word,sp));frames.append(word);next_cpu=target
+                    if hasattr(self,'record_transfer'):self.record_transfer('CALL',target,cpu,bank)
                 elif code=='RETURN':
                     target=self.get(op['inputs'][0]);self.events.append(('return',target,self.register(10,2)))
-                    if frames:require(target==frames.pop(),'raw unmatched return continuation');next_cpu=target
+                    if hasattr(self,'record_transfer'):self.record_transfer('RETURN',target,cpu,bank)
+                    if getattr(self,'conditional_site',False):
+                        next_cpu=target
+                        if getattr(self,'matched_only',False) and self.register(10,2)==self.root_sp:return
+                        if self.register(10,2)==self.root_sp+2:require(target==self.outer_ret,'wrong source return');return
+                    elif frames:require(target==frames.pop(),'raw unmatched return continuation');next_cpu=target
                     else:require(target==self.outer_ret,'wrong outer return');return
                 else:self.ordinary(op)
             cpu=next_cpu
@@ -190,13 +220,16 @@ class Machine:
                 self.emitted(cap,target['tag'],depth+1);require(self.register(8,2)==word,'emitted callee resumes wrong continuation')
             elif code=='RETURN':
                 destination=self.get(op['inputs'][0]);self.events.append(('return',destination,self.register(10,2)))
-                if depth==0:require(destination==self.outer_ret,'emitted outer return word')
+                if depth==0:require(destination==getattr(self,'emitted_return',self.outer_ret),'emitted source return word')
                 return
             else:self.ordinary(op)
             index+=1
         raise Refusal('emitted invocation fell off without RETURN')
     def native_arguments(self,cap,tag,parameters,declared):return parameters
     def require_indirect_preservation(self,out,raw_ops,child_ops):
+        validate_storage(out)
+        for op in raw_ops+child_ops:
+            for v in [op.get('output'),*op['inputs']]:validate_storage(v)
         supported(all(x['mnemonic'] not in {'STORE','CALLOTHER','CALL'} and not (x.get('output',{}).get('space')=='ram') for x in child_ops),'unproved memory clobber across call')
         if out['space']=='register':
             def overlaps(v):return v and v['space']=='register' and v['offset']<out['offset']+out['size'] and out['offset']<v['offset']+v['size']
@@ -205,6 +238,15 @@ class Machine:
             supported(all(x['mnemonic'] not in {'STORE','CALLOTHER','CALL'} and not (x.get('output',{}).get('space')=='ram') for x in raw_ops),'INDIRECT memory not preserved by actual callee p-code')
     def high(self,cap,tag='root',parameters=None,depth=0):
         require(depth<=1,'unobserved native call depth');blocks={b['index']:b for b in cap.high[tag]};env={};entry=dict(self.reg) if depth==0 else {};pred=None;current=0
+        identities={}
+        for block in blocks.values():
+            for operation in block['ops']:
+                for v in [operation.get('output'),*operation['inputs']]:
+                    validate_storage(v)
+                    if v is not None and not v.get('constant'):
+                        actual=(v['space'],v['offset'],v['size'])
+                        require(v['id'] not in identities or identities[v['id']]==actual,'SSA identity has conflicting actual storage')
+                        identities[v['id']]=actual
         # Stock adds terminal SSA re-exposure copies after original operation times.
         # Exempt only a same-cell COPY in the final COPY suffix before a RETURN,
         # outside the complete emitted payload plus its two carrier operations.
@@ -228,7 +270,7 @@ class Machine:
             for value,param in zip(parameters,declared):
                 supported(value is not None,'unresolved native argument')
                 storage=param['storage'];supported(len(storage)==1 and storage[0]['space']=='register','unobserved native parameter storage')
-                v=storage[0]
+                v=storage[0];validate_storage(v)
                 for i in range(v['size']):entry[v['offset']+i]=(value>>(8*i))&255
         for _ in range(128):
             require(current in blocks,'native CFG edge missing');block=blocks[current];next_block=None;phi_env=dict(env)
@@ -240,9 +282,9 @@ class Machine:
                     self.put(out,self.get(nodes[block['in'].index(pred)],phi_env,entry),env)
                 elif code=='INDIRECT':
                     # A preserved storage value around a captured CALL; never an arbitrary INDIRECT interpretation.
-                    same_storage=out and out['space']==nodes[0]['space'] and out['offset']==nodes[0]['offset'] and out['size']==nodes[0]['size']
-                    same_global=out and out.get('high_global') is not None and out.get('high_global')==nodes[0].get('high_global')
-                    supported(out and out['space'] in {'ram','register'} and (same_storage or same_global),'unobserved INDIRECT storage')
+                    same_actual=same_storage(out,nodes[0])
+                    same_global=same_actual and out.get('high_global') is not None and out.get('high_global')==nodes[0].get('high_global')
+                    supported(out and out['space'] in {'ram','register'} and (same_actual or same_global),'unobserved INDIRECT storage')
                     reference=nodes[1]['offset'];calls=[x for x in block['ops'] if x['mnemonic']=='CALL' and int(re.search(r', (\d+), \d+\)',x['sequence'])[1])==reference]
                     supported(len(calls)==1,'INDIRECT not tied to actual call')
                     child=cap.target(calls[0]['inputs'][0]);child_ops=[x for b in cap.high[child['tag']] for x in b['ops']]
