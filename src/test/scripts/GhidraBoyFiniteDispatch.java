@@ -48,8 +48,8 @@ public class GhidraBoyFiniteDispatch extends GhidraBoyPredicatedCalls {
       var proof=PredicatedCallGraph.preview(currentProgram,getFunctionAt(toAddr(0x100)),PredicatedCallGraph.Limits.PRIMARY,declaration,monitor);
       save("preview.json",proof);
       if(revision!=currentProgram.getModificationNumber()||!proof.complete())throw new IllegalStateException("Incomplete/mutating preview: "+proof.frontier());
-      runScript("GhidraBoyTools.java",new String[]{"stock-predicate-preview",out.resolve("public-premises.json").toString(),out.resolve("public-preview.json").toString()},state);
-      runScript("GhidraBoyTools.java",new String[]{"stock-predicate-apply",out.resolve("public-preview.json").toString()},state);
+      publicPredicateAction(new String[]{"stock-predicate-preview",out.resolve("public-premises.json").toString(),out.resolve("public-preview.json").toString()});
+      publicPredicateAction(new String[]{"stock-predicate-apply",out.resolve("public-preview.json").toString()});
       var roots=currentProgram.getOptions(PredicatedCalls.STOCK_OPTIONS).getOptionNames().stream().filter(n->n.contains("_root::")).toList();
       if(roots.size()!=1)throw new IllegalStateException("Public application did not install one root");
       entry=currentProgram.getAddressFactory().getAddress(roots.get(0));
@@ -77,8 +77,8 @@ public class GhidraBoyFiniteDispatch extends GhidraBoyPredicatedCalls {
         owner.flushCache();request(getFunctionAt(entry),owner,"stale-root");
         var stale=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("stale-root-request.json"))).getAsJsonObject();
         if(stale.get("completed").getAsBoolean()||stale.get("highfunction_available").getAsBoolean()||!stale.get("error").getAsString().contains("Stale predicated graph"))throw new IllegalStateException("Actual stale use was not specifically refused");
-        runScript("GhidraBoyTools.java",new String[]{"stock-predicate-preview",out.resolve("public-premises.json").toString(),out.resolve("refresh-preview.json").toString()},state);
-        runScript("GhidraBoyTools.java",new String[]{"stock-predicate-refresh",out.resolve("refresh-preview.json").toString(),entry.toString()},state);
+        publicPredicateAction(new String[]{"stock-predicate-preview",out.resolve("public-premises.json").toString(),out.resolve("refresh-preview.json").toString()});
+        publicPredicateAction(new String[]{"stock-predicate-refresh",out.resolve("refresh-preview.json").toString(),entry.toString()});
         owner.flushCache();stage("refreshed",entry,owner);
         save("refreshed-placements.json",PredicatedCalls.inspectEmission(currentProgram,entry,0x200000,monitor));
         Files.write(out.resolve("refreshed-fixture.gb"),ProgramMapping.exportBytes(currentProgram,true,false,monitor));

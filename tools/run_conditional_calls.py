@@ -9,6 +9,7 @@ def main(a):
     for name in ['projects','profile','scripts']:(w/name).mkdir()
     for name in ['GhidraBoyConditionalCalls','GhidraBoyConditionalLifecycle','GhidraBoyPredicatedCalls','GhidraBoyW2eFinite','Sm83PreservationInventory']:
         shutil.copy2(repo/'src/test/scripts'/(name+'.java'),w/'scripts'/(name+'.java'))
+    shutil.copy2(a.runtime/'Ghidra/Extensions/GhidraBoy/ghidra_scripts/GhidraBoyTools.java',w/'scripts/GhidraBoyTools.java')
     env=dict(os.environ,JAVA_HOME=str(a.jdk),JAVA_TOOL_OPTIONS=f'-Xmx2g -Duser.home={w}/profile -Dapplication.settingsdir={w}/profile -Djava.io.tmpdir={w}')
     commands=[]
     def run(name,arguments,marker):

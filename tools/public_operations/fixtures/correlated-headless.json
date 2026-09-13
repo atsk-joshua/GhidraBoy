@@ -1,0 +1,149 @@
+[
+  {
+    "kind": "RETURN_PENDING",
+    "outcome": {
+      "operationId": "c2d270fc-e1f7-474f-b51e-8ba08e1536da",
+      "programId": 3752512217761659671,
+      "programObject": 1293326171,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_df9478bcf47b6::42fd",
+      "transactionId": 4,
+      "mutation": "PENDING_IN_OWNER",
+      "databaseCommit": false,
+      "cancelled": false,
+      "current": false,
+      "sourceRevision": 459,
+      "detail": "Applied provisionally; outer owner pending; file save unverified"
+    },
+    "publication": "PENDING",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "NOT_DONE",
+    "sequence": 1
+  },
+  {
+    "kind": "LATER_EDIT_COMMITTED",
+    "outcome": {
+      "operationId": "c2d270fc-e1f7-474f-b51e-8ba08e1536da",
+      "programId": 3752512217761659671,
+      "programObject": 1293326171,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_df9478bcf47b6::42fd",
+      "transactionId": 4,
+      "mutation": "COMMITTED",
+      "databaseCommit": true,
+      "cancelled": false,
+      "current": true,
+      "sourceRevision": 459,
+      "detail": "Committed in open Program; file save unverified"
+    },
+    "publication": "PENDING",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "COMMITTED",
+    "sequence": 2
+  },
+  {
+    "kind": "OUTER_RESOLVED",
+    "outcome": {
+      "operationId": "c2d270fc-e1f7-474f-b51e-8ba08e1536da",
+      "programId": 3752512217761659671,
+      "programObject": 1293326171,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_df9478bcf47b6::42fd",
+      "transactionId": 4,
+      "mutation": "COMMITTED",
+      "databaseCommit": true,
+      "cancelled": false,
+      "current": true,
+      "sourceRevision": 459,
+      "detail": "Committed in open Program; file save unverified"
+    },
+    "publication": "CANCELLED_PUBLICATION",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "COMMITTED",
+    "sequence": 3
+  },
+  {
+    "kind": "RETURN_PENDING",
+    "outcome": {
+      "operationId": "0ec79ad5-fae0-435b-8b4b-d4b989934e04",
+      "programId": 3752512224290093835,
+      "programObject": 1798272295,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d992d61566359::42fd",
+      "transactionId": 4,
+      "mutation": "PENDING_IN_OWNER",
+      "databaseCommit": false,
+      "cancelled": false,
+      "current": false,
+      "sourceRevision": 459,
+      "detail": "Applied provisionally; outer owner pending; file save unverified"
+    },
+    "publication": "PENDING",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "NOT_DONE",
+    "sequence": 4
+  },
+  {
+    "kind": "OUTER_RESOLVED",
+    "outcome": {
+      "operationId": "0ec79ad5-fae0-435b-8b4b-d4b989934e04",
+      "programId": 3752512224290093835,
+      "programObject": 1798272295,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d992d61566359::42fd",
+      "transactionId": 4,
+      "mutation": "COMMITTED",
+      "databaseCommit": true,
+      "cancelled": false,
+      "current": true,
+      "sourceRevision": 459,
+      "detail": "Committed in open Program; file save unverified"
+    },
+    "publication": "PUBLISHED",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "COMMITTED",
+    "sequence": 5
+  },
+  {
+    "kind": "RETURN_PENDING",
+    "outcome": {
+      "operationId": "5d7896b9-aa00-40b3-bd3d-cf087c09e3a3",
+      "programId": 3752512226383051527,
+      "programObject": 1993877759,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_dcb8e3b4dafeb::42fd",
+      "transactionId": 4,
+      "mutation": "PENDING_IN_OWNER",
+      "databaseCommit": false,
+      "cancelled": false,
+      "current": false,
+      "sourceRevision": 459,
+      "detail": "Applied provisionally; outer owner pending; file save unverified"
+    },
+    "publication": "PENDING",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "NOT_DONE",
+    "sequence": 6
+  },
+  {
+    "kind": "OUTER_RESOLVED",
+    "outcome": {
+      "operationId": "5d7896b9-aa00-40b3-bd3d-cf087c09e3a3",
+      "programId": 3752512226383051527,
+      "programObject": 1993877759,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_dcb8e3b4dafeb::42fd",
+      "transactionId": 4,
+      "mutation": "ABORTED",
+      "databaseCommit": false,
+      "cancelled": false,
+      "current": false,
+      "sourceRevision": 460,
+      "detail": "Outer owner aborted; no active result"
+    },
+    "publication": "OUTER_ABORTED",
+    "run": "9d2a1aa5-d5a6-4c42-ad7e-3d3787599207",
+    "actualTransaction": 4,
+    "actualStatus": "ABORTED",
+    "sequence": 7
+  }
+]

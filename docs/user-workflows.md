@@ -221,3 +221,7 @@ incomplete paths, unsupported effects and exhausted budgets refuse installation.
 It does not fix canonical automatic switch recovery or validate a public override.
 See [the dispatch contract](decisions/static-dispatch-model.md) for limits and
 experimental record compatibility.
+
+Public conditional/predicate actions use the [operation lifecycle contract](public-operations.md).
+An applied-in-owner receipt is provisional until the encompassing transaction resolves;
+commit, UI publication and file save are separate facts.

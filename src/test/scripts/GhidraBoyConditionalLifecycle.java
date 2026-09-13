@@ -26,8 +26,8 @@ public class GhidraBoyConditionalLifecycle extends GhidraBoyPredicatedCalls {
     owner.flushCache();request(getFunctionAt(entry),owner,"stale");
     var stale=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("stale-request.json"))).getAsJsonObject();
     if(stale.get("completed").getAsBoolean()||stale.get("highfunction_available").getAsBoolean()||!stale.get("error").getAsString().contains("Stale"))throw new IllegalStateException("Native stale use was not refused");
-    save("request.json",proof.callSite());runScript("GhidraBoyTools.java",new String[]{"conditional-call-preview",out.resolve("request.json").toString(),out.resolve("fresh.json").toString()},state);
-    runScript("GhidraBoyTools.java",new String[]{"stock-predicate-refresh",out.resolve("fresh.json").toString(),entry.toString()},state);
+    save("request.json",proof.callSite());publicPredicateAction(new String[]{"conditional-call-preview",out.resolve("request.json").toString(),out.resolve("fresh.json").toString()});
+    publicPredicateAction(new String[]{"stock-predicate-refresh",out.resolve("fresh.json").toString(),entry.toString()});
     owner.flushCache();stage("refreshed",entry,owner);
    } else if(mode.equals("mapper-stale")) {
     var node=proof.nodes().stream().filter(n->n.bytes().equals("ea0020")).findFirst().orElseThrow();
@@ -39,7 +39,7 @@ public class GhidraBoyConditionalLifecycle extends GhidraBoyPredicatedCalls {
     var stale=com.google.gson.JsonParser.parseString(Files.readString(out.resolve("mapper-stale-request.json"))).getAsJsonObject();
     if(stale.get("completed").getAsBoolean()||stale.get("highfunction_available").getAsBoolean()||!stale.get("error").getAsString().contains("Stale"))throw new IllegalStateException("Changed mapper port native use was not refused");
    } else if(mode.equals("remove")) {
-    save("before.json",Sm83PreservationInventory.inventory(currentProgram));runScript("GhidraBoyTools.java",new String[]{"stock-predicate-remove",entry.toString()},state);if(PredicatedCalls.registered(currentProgram,entry))throw new IllegalStateException("Public removal retained authority");save("after.json",Sm83PreservationInventory.inventory(currentProgram));
+    save("before.json",Sm83PreservationInventory.inventory(currentProgram));publicPredicateAction(new String[]{"stock-predicate-remove",entry.toString()});if(PredicatedCalls.registered(currentProgram,entry))throw new IllegalStateException("Public removal retained authority");save("after.json",Sm83PreservationInventory.inventory(currentProgram));
    } else throw new IllegalArgumentException("Unknown lifecycle mode");
    Files.write(out.resolve("fixture.gb"),ProgramMapping.exportBytes(currentProgram,true,false,monitor));
   }finally{owner.dispose();if(immutable){currentProgram.release(this);currentProgram=originalProgram;state.setCurrentProgram(currentProgram);}}

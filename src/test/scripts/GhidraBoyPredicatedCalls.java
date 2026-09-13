@@ -12,6 +12,18 @@ import java.util.*;
 
 /** One unknown root graph; actual requested child functions, current bytes and stored authority. */
 public class GhidraBoyPredicatedCalls extends GhidraBoyW2eFinite {
+  // This runner owns its enclosing script transaction and accepts whole-owner rollback.
+  void publicPredicateAction(String[] args) throws Exception {
+    var script=new GhidraBoyTools();script.setScriptArgs(args);
+    boolean callerManaged=currentProgram.getCurrentTransactionInfo()!=null;
+    if(callerManaged)try(var caller=PredicateOperations.participate(currentProgram)){script.execute(state,monitor,new java.io.PrintWriter(System.out,true));}
+    else script.execute(state,monitor,new java.io.PrintWriter(System.out,true));
+    if(!callerManaged && script.lastOperation!=null) {
+      var result=script.lastOperation.completion().get(60,java.util.concurrent.TimeUnit.SECONDS);
+      script.lastPresentation.get(60,java.util.concurrent.TimeUnit.SECONDS);
+      if(!result.current())throw new IllegalStateException("Public operation unavailable: "+result);
+    }
+  }
   @Override Object varnode(Varnode node) {
     if(node==null)return null;
     @SuppressWarnings("unchecked") var result=new LinkedHashMap<String,Object>((Map<String,Object>)super.varnode(node));

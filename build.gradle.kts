@@ -59,6 +59,8 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+sourceSets["test"].java.srcDir("ghidra_scripts")
+
 val ghidraJars =
     fileTree("$ghidraDir/Ghidra/Framework") { include("**/*.jar") } +
         fileTree("$ghidraDir/Ghidra/Features") { include("**/*.jar") }

@@ -28,13 +28,13 @@ public class GhidraBoyConditionalCalls extends GhidraBoyPredicatedCalls {
    var file=state.getProject().getProjectData().getRootFolder().createFile(name+".gb",p,monitor);
    var request=new ConditionalCallSites.Request(p.getUniqueProgramID(),ProgramMapping.inspect(p).originalSha256(),info.get("site").getAsString(),new MapperKnowledge(1,0,null,null,null,null,null,null),0xffa1,1,List.of(),new SymbolicMemory.Footprint(0xc110,0xc7f8,-16,1),List.of(0,1),0,true,true,"Self-authored synchronous fixture; boot inactive; no external interference; explicitly constrained affine frame");
    save("request.json",request);long start=System.nanoTime();
-   runScript("GhidraBoyTools.java",new String[]{"conditional-call-preview",out.resolve("request.json").toString(),out.resolve("preview.json").toString()},state);
+   publicPredicateAction(new String[]{"conditional-call-preview",out.resolve("request.json").toString(),out.resolve("preview.json").toString()});
    var proof=ProgramMapping.JSON.fromJson(Files.readString(out.resolve("preview.json")),PredicatedCallGraph.Proof.class);save("cost-derive.json",Map.of("ns",System.nanoTime()-start,"usedHeap",Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory()));
    if(!proof.complete())throw new IllegalStateException("Incomplete conditional source: "+proof.frontier());
-   runScript("GhidraBoyTools.java",new String[]{"stock-predicate-apply",out.resolve("preview.json").toString()},state);
+   publicPredicateAction(new String[]{"stock-predicate-apply",out.resolve("preview.json").toString()});
    var roots=p.getOptions(PredicatedCalls.STOCK_OPTIONS).getOptionNames();if(roots.size()!=1)throw new IllegalStateException("Missing public owned result");var entry=ProgramMapping.staticAddress(p,roots.getFirst());
    var owner=owner();try{stage("original",entry,owner);}finally{owner.dispose();}
-   runScript("GhidraBoyTools.java",new String[]{"conditional-call-explain",entry.toString()},state);
+   publicPredicateAction(new String[]{"conditional-call-explain",entry.toString()});
    Files.write(out.resolve("fixture.gb"),Files.readAllBytes(input));
    p.save("Current conditional call-site authority",monitor);
    file.packFile(out.resolve("current.gzf").toFile(),monitor);

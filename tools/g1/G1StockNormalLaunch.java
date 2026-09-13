@@ -109,6 +109,14 @@ public class G1StockNormalLaunch implements GhidraLaunchable {
       stable = good[0] ? stable + 1 : 0;
       Thread.sleep(250);
     }
+    if(mode.equals("conditional") && Boolean.getBoolean("ghidraboy.publicLifecycle")) {
+      var script=new GhidraBoyPublicLifecycleWindow();script.setPropertiesFileLocation(args[4],"GhidraBoyPublicLifecycleWindow");
+      script.setScriptArgs(new String[]{out.toString(),args[5]});
+      script.execute(new ghidra.app.script.GhidraState(tool,project.getProject(),null,null,null,null),new ghidra.util.task.TaskMonitorAdapter(true),new java.io.PrintWriter(System.out,true));
+      SwingUtilities.invokeAndWait(()->{tool.getService(ProgramManager.class).closeAllPrograms(true);tool.close();frontend[0].setActiveProject(null);});
+      project.close();Files.writeString(out.resolve("tool-closed.json"),"{\"publicLifecycle\":true}");
+      SwingUtilities.invokeAndWait(()->frontend[0].dispose());return;
+    }
     var record = new LinkedHashMap<String,Object>();
     final int stableSamples = stable;
     SwingUtilities.invokeAndWait(() -> {

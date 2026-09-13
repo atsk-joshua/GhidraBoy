@@ -15,7 +15,7 @@ def main():
     p=argparse.ArgumentParser()
     for name in ('runtime','profile','project-dir','out','jdk'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--project-name',required=True);p.add_argument('--mode',choices=['readiness','initial','full','reopen','suffix-rehearsal','conditional'],required=True)
-    p.add_argument('--rehearsal',action='store_true');p.add_argument('--program')
+    p.add_argument('--compile-only',action='store_true');p.add_argument('--public-lifecycle',action='store_true');p.add_argument('--rehearsal',action='store_true');p.add_argument('--program')
     p.add_argument('--saved-captures',type=Path);a=p.parse_args()
     if a.mode=='conditional' and not a.program:p.error('conditional mode requires --program')
     if a.mode=='suffix-rehearsal' and (not a.rehearsal or a.saved_captures is None):p.error('suffix requires rehearsal and saved captures')
@@ -38,8 +38,11 @@ def main():
     vm=[l.split('=',1)[1] for l in (a.runtime/'support/launch.properties').read_text().splitlines() if l.startswith('VMARGS=')]
     vm += [f'-Duser.home={a.profile}/home',f'-Dapplication.settingsdir={a.profile}/settings',f'-Dapplication.cachedir={a.profile}/cache',f'-Dapplication.tempdir={a.profile}/temp',f'-Djava.io.tmpdir={a.profile}/temp','-Xdock:name='+('GhidraBoy Conditional Call' if a.mode=='conditional' else 'G1 Stock Normal Window')]
     if a.rehearsal:vm+=['-Dg1.rehearsal=true']
+    if a.public_lifecycle:vm+=['-Dghidraboy.publicLifecycle=true']
     cap=a.out/'captures';cap.mkdir()
     cmd=[str(a.jdk/'bin/java'),*vm,'-cp',str(utility)+os.pathsep+str(boot),'ghidra.Ghidra','G1StockBootstrap',str(classes),str(a.project_dir),a.project_name,str(cap),a.mode,str(repo/'src/test/scripts'),str(scripts),str(a.program if a.mode=='conditional' else a.saved_captures or '')]
+    (a.out/'attended-command.json').write_text(json.dumps(cmd,indent=2))
+    if a.compile_only:return 0
     receipt={'argv':cmd,'start_ns':time.time_ns(),'mode':a.mode,'rehearsal':a.rehearsal,'no_setup_in_launcher':True}
     with (a.out/'launch.log').open('w') as log:
         process=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT);receipt['pid']=process.pid
