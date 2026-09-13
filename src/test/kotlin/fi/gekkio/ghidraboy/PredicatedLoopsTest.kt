@@ -228,11 +228,18 @@ class PredicatedLoopsTest : IntegrationTest() {
                     "predecessor" ->
                         json
                             .getAsJsonArray("joins")
-                            .first()
-                            .asJsonObject
+                            .first {
+                                it.asJsonObject.get("node").asString == loop.get("id").asString &&
+                                    it.asJsonObject.getAsJsonArray("successors").size() > 0
+                            }.asJsonObject
                             .getAsJsonArray("successors")
                             .remove(0)
-                    "path" -> json.getAsJsonArray("joins").remove(10)
+                    "path" ->
+                        json.getAsJsonArray("joins").remove(
+                            json.getAsJsonArray("joins").first {
+                                it.asJsonObject.get("node").asString == loop.get("id").asString
+                            },
+                        )
                     "physical" -> loop.addProperty("source", "rom1::015b")
                     "mapper" -> nodes.first { it.get("transfer").asString == "CALL" }.getAsJsonArray("edges").remove(0)
                     "convergence" -> json.getAsJsonObject("convergence").addProperty("replayTransfers", 0)
