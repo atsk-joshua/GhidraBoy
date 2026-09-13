@@ -533,5 +533,28 @@
       "limits": "Bounded faithful inlining; explicit synchronous MBC5/WRAM0/HRAM premises; no general summaries/loops/interference/migration/canonical repair/release claim"
     },
     "initial_unimplemented": "Effectful symbolic software call, linked continuation, private owned view and required family/lifecycle/GUI qualification"
+  },
+  "core_contract_hardening_overnight": {
+    "status": "PARTIAL_MASTER_REVIEW_PENDING",
+    "starting_commit": "1709ae16060030bbbbd7e457d7285b544741ace2",
+    "implementation_commit": "c9603da0b1cc2ca6228bff2f7c2d5157ae81de47",
+    "qualified_commit": "3853f5f65f53e6c590655f1738ce1dc3ae8a2416",
+    "qualified_tree": "adc1ca88b53b779a14a529beb49e59b277f1fd32",
+    "extension_sha256": "990b2996f332c8677353013eb4c562a29885d8797b3bfcc24db09fa84b08ee9e",
+    "provider_sha256": "3ced177a4e4f52e4e4883a7bd27713ada021d9dd55ec4a329ff26f3610df4e4b",
+    "default_instances": 859,
+    "baseline_instances_retained": 852,
+    "report": "evidence/batches/CORE-CONTRACT-HARDENING-OVERNIGHT/delivery/REPORT-CORE-CONTRACT-HARDENING-OVERNIGHT.md",
+    "archive": "evidence/batches/CORE-CONTRACT-HARDENING-OVERNIGHT/delivery/CHANGES-CORE-CONTRACT-HARDENING-OVERNIGHT.zip",
+    "checksums": "evidence/batches/CORE-CONTRACT-HARDENING-OVERNIGHT/delivery/SHA256SUMS",
+    "readiness": "evidence/batches/CORE-CONTRACT-HARDENING-OVERNIGHT/delivery/HANDOFF-READINESS.md",
+    "private_annex": "Separate private archive in the same external delivery; excluded from generic source/distribution",
+    "verified": "Supplied mapper counterexample and sensitive mutants; committed operation-boundary controls; bit-vector/physical-frame tests; exact Mac/Linux native and copied-private preservation/immutable reopen",
+    "unqualified": [
+      "Arbitrary concurrent shared-subtransaction publication and joint rollback preservation",
+      "Complete outstanding-work and normal-window lifecycle; GUI_UNRUN",
+      "Complete broader adversarial hardware matrix and device/mode support"
+    ],
+    "stop": "STOP for master review; no release, remote write, active installation or automatic next batch"
   }
 }

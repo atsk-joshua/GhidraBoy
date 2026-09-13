@@ -1,5 +1,29 @@
 # Implementation status
 
+## CORE-CONTRACT-HARDENING-OVERNIGHT — PARTIAL; STOP for master review
+
+The supplied mapper-oracle false acceptance is reproduced and corrected with
+actual latch, ordered bus-effect and retained physical-use checks. Deterministic
+Program mutations also reproduce and close validation/install and
+validation/explanation gaps. Explanation, navigation and source placements consume
+one validated operation snapshot; install/refresh recheck the tested transaction
+entry boundary. The stock mechanism and persisted conditional meaning are unchanged.
+
+The corrected clean checkpoint passes **859 instances in 87 classes**, retaining
+all **852 baseline identities and multiplicities**, with no failures/errors/skips.
+The first clean attempt's fragile loop-forgery row selection is preserved and
+corrected without removing its obligation. Exact Mac and isolated Docker/Rosetta
+Linux native checks, full primary generic/private replay, copied-private
+preservation and first immutable second-JVM use pass their bounded rows.
+
+Arbitrary concurrent shared-subtransaction publication/joint rollback, the complete
+outstanding-work lifecycle and actual normal-window workflow remain unqualified.
+Computer Use access was not approved; **GUI_UNRUN** is not headless success.
+The complete overnight task is not PASS, and broader hardware/discovery/device
+requirements remain open. See the [decision](../decisions/core-contract-hardening.md)
+and [evidence index](evidence-index.json). No release or installation is authorized.
+STOP for master review; no automatic next batch.
+
 ## EFFECTFUL-CALL-CONTINUATION — scoped local PASS; STOP for master review
 
 Revision 2 implements conditional instruction-site derivation in the incumbent
