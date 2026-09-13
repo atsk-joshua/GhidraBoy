@@ -28,12 +28,14 @@ def check(root):
             else:
                 loads=[o for o in requested if o['mnemonic']=='LOAD' and o['inputs'][1]['constant'] and o['inputs'][1]['offset']==0x4123]
                 core.require(len(loads)==1,'missing qualified indirect LOAD')
+                spaces=core.read(folder/'spaces.json')
+                core.require((loads[0]['inputs'][0]['offset'] & 0xffffffff)==(spaces[f'rom{bank}'] & 0xffffffff),'unbound indirect physical space')
             request=cap.requests['root']
             core.require(request['completed'] and request['highfunction_available'],'native request unavailable')
             core.require(any(p.get('parent')==request['owner_java_pid'] and p.get('binary_sha256') in NATIVES for p in request['processes_after']),'unverified native identity')
             debug=folder/'original-root-debug.xml'
             core.require(core.sha(debug)==request['debug']['sha256'],'changed native capture')
-            core.base.debug_identity(debug,requested,request['entry'],'gb_analysis_entry_v1')
+            core.base.debug_identity(debug,requested,request['entry'],'gb_analysis_entry_v1',core.read(folder/'spaces.json'))
             machine=core.Machine(bytes(65536),0)
             actual=machine.high(cap)
             core.require(actual==expected and machine.bank==bank,'native physical read mismatch')

@@ -505,5 +505,18 @@
       "linux": 15
     },
     "reopen": "First immutable separate JVM; full registration and bytes identical; only index/journal backup housekeeping changed"
+  },
+  "effectful_call_continuation": {
+    "status": "PARTIAL_REQUESTED_CAPABILITY_UNFINISHED",
+    "starting_commit": "445426b1c500e2bdbcec52bcc696b6c67db9e157",
+    "provider_commit": "34f53e0b4f47ad0c1eef5c5125f4c1bb03bfb604",
+    "report": "evidence/batches/EFFECTFUL-CALL-CONTINUATION/delivery/REPORT-EFFECTFUL-CALL-CONTINUATION.md",
+    "archive": "evidence/batches/EFFECTFUL-CALL-CONTINUATION/delivery/CHANGES-EFFECTFUL-CALL-CONTINUATION.zip",
+    "default_instances": 839,
+    "baseline_instances_retained": 838,
+    "extension_sha256": "e9a5f9697a55df30038ded38e897f1a434e33e01415b6f62f914490ca79dc7d9",
+    "provider_sha256": "7061451b9daf1e32b5dcedb031f2b79e62878d0b88bd8406a93733c90a28d995",
+    "verified": "Physical direct/indirect bank binding on stock Mac; bounded collateral checker; clearer admission diagnostic",
+    "unimplemented": "Effectful symbolic software call, linked continuation, private owned view and required family/lifecycle/GUI qualification"
   }
 }

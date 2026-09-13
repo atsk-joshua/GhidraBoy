@@ -32,6 +32,7 @@ public class GhidraBoyPhysicalRead extends GhidraBoyPredicatedCalls {
           var f=p.getFunctionManager().createFunction("physical_read",currentAddress,body,SourceType.USER_DEFINED);
           f.updateFunction("default",new ReturnParameterImpl(ByteDataType.dataType,p.getRegister("A"),p),Function.FunctionUpdateType.CUSTOM_STORAGE,true,SourceType.USER_DEFINED);
         }finally{p.endTransaction(tx,true);}
+        var spaces=new TreeMap<String,Integer>();for(var space:p.getAddressFactory().getAddressSpaces())spaces.put(space.getName(),space.getSpaceID());save("spaces.json",spaces);
         var times=new LinkedHashMap<String,Object>();long start=System.nanoTime();
         var proof=PredicatedCalls.preview(p,new PredicatedCalls.Premises(currentAddress.toString(),List.of(),null),monitor);times.put("deriveNs",System.nanoTime()-start);save("preview.json",proof);
         if(!proof.complete())throw new IllegalStateException("Incomplete: "+proof.frontier());

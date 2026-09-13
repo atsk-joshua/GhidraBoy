@@ -1,5 +1,7 @@
 """Native collateral effects must fail even if the selected scalar is unchanged."""
 import unittest
+import tempfile
+from pathlib import Path
 from types import SimpleNamespace
 import check_finite_dispatch as checker
 import check_predicated_calls as core
@@ -44,5 +46,17 @@ class NativeEffectsTest(unittest.TestCase):
         v.update(space='ram',offset=0xc060)
         machine.put(v,0x44,{})
         self.assertEqual([('write',0xc060,0x44)],machine.events)
+
+class PhysicalDebugBindingTest(unittest.TestCase):
+    def test_overlay_name_and_id_must_agree(self):
+        xml = '<root><injectdebug><inject name="gb_analysis_entry_v1"><addr space="owned" offset="0x100"/><payload>&lt;pcode&gt;&lt;op code="LOAD"&gt;&lt;addr space="unique" offset="0x1" size="1"/&gt;&lt;spaceid name="rom2"/&gt;&lt;addr space="const" offset="0x4123" size="2"/&gt;&lt;/op&gt;&lt;/pcode&gt;</payload></inject></injectdebug></root>'
+        emitted=[dict(mnemonic='LOAD',output=dict(space='unique',offset=1,size=1),inputs=[dict(space='const',offset=123,size=4,constant=True),dict(space='const',offset=0x4123,size=2,constant=True)])]
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'debug.xml';path.write_text(xml)
+            core.base.debug_identity(path,emitted,'owned::0100','gb_analysis_entry_v1',{'rom2':123})
+            with self.assertRaisesRegex(core.Refusal,'physical space binding'):
+                core.base.debug_identity(path,emitted,'owned::0100','gb_analysis_entry_v1',{'rom2':456,'rom1':123})
+            with self.assertRaisesRegex(core.Refusal,'physical space binding'):
+                core.base.debug_identity(path,emitted,'owned::0100','gb_analysis_entry_v1',{'rom1':123})
 
 if __name__=='__main__':unittest.main()

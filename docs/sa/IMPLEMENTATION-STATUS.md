@@ -6,8 +6,10 @@ Actual read-only admission preserved unknown inputs and exposed concrete-SP and
 missing-mapping boundaries. Direct immutable ROM operands now use operation-and-
 operand physical provenance; native collateral checking is strengthened. These
 corrections do not implement the requested effectful helper/callee/continuation.
-The symbolic frame/input/returned-state and owned-view work remains in scope and
-unqualified. See the [decision](../decisions/effectful-call-continuation.md).
+The provider correction passes the clean stock checkpoint with all baseline
+instances retained and a new physical-read regression. Four installed stock Mac
+direct/indirect cases distinguish physical banks. The symbolic frame/input/
+returned-state and owned-view work remains in scope and unqualified. See the [decision](../decisions/effectful-call-continuation.md).
 
 
 ## STOCK-FINITE-DISPATCH — scoped local PASS; STOP for master review

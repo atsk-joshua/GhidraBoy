@@ -25,7 +25,7 @@ def read(path): return json.loads(path.read_text())
 def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 def signature(v): return None if v is None else (v['space'], v['offset'], v['size'])
 
-def debug_identity(path, emitted, entry, inject_name="__ghidraboy_state_entry_v1@@inject_uponentry"):
+def debug_identity(path, emitted, entry, inject_name="__ghidraboy_state_entry_v1@@inject_uponentry", spaces=None):
     """Compare a named actual debug replay; callers must separately verify runtime identity."""
     root = ET.fromstring(path.read_text())
     matches = [n for n in root.findall('.//injectdebug/inject') if n.get('name') == inject_name]
@@ -41,7 +41,11 @@ def debug_identity(path, emitted, entry, inject_name="__ghidraboy_state_entry_v1
         for n, v in zip(nodes, expected_nodes):
             if v is None: require(n.tag == 'void', 'debug output differs')
             elif n.tag == 'spaceid':
-                require(expected['mnemonic'] in {'LOAD', 'STORE'} and n.get('name') == 'ram' and v['constant'], 'debug space differs')
+                require(expected['mnemonic'] in {'LOAD', 'STORE'} and v['constant'], 'debug space operand differs')
+                if spaces is None:
+                    require(n.get('name') == 'ram', 'debug space differs')
+                else:
+                    require(n.get('name') in spaces and (spaces[n.get('name')] & 0xffffffff) == (v['offset'] & 0xffffffff), 'debug physical space binding differs')
             else:
                 require(n.tag == 'addr' and (n.get('space'), int(n.get('offset'), 0), int(n.get('size'))) == signature(v), 'debug operand differs')
     return {'status':'PASS','operations':len(operations),'surface':'debug replay injection record, not packed wire capture'}
