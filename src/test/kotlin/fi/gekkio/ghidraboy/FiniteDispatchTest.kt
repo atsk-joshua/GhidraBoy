@@ -352,23 +352,27 @@ class FiniteDispatchTest : IntegrationTest() {
         }
 
     @Test
-    fun indirectControlCannotConsumeUntransportedCallFlags() =
-        fixture("physical-banks") { p, f, declaration ->
-            p.withTransaction {
-                p.listing.clearCodeUnits(address(0x100), address(0x113), false)
-                val code =
-                    java.util.HexFormat
-                        .of()
-                        .parseHex("3e01ea0020cd00402100037dce006fe9")
-                p.memory.setBytes(address(0x100), code)
-                val range = AddressSet(address(0x100), address(0x100L + code.size - 1))
-                Disassembler.getDisassembler(p, monitor, null).disassemble(address(0x100), range, false)
+    fun indirectControlCannotConsumeUntransportedCallFlags() {
+        for ((codeHex, reason) in listOf(
+            "3e01ea0020cd00402100037dce006fe9" to "indirect control",
+            "3e01ea0020cd0040ce00c9" to "root result",
+        )) {
+            fixture("physical-banks") { p, f, _ ->
+                p.withTransaction {
+                    p.listing.clearCodeUnits(address(0x100), address(0x113), false)
+                    val code =
+                        java.util.HexFormat
+                            .of()
+                            .parseHex(codeHex)
+                    p.memory.setBytes(address(0x100), code)
+                    val range = AddressSet(address(0x100), address(0x100L + code.size - 1))
+                    Disassembler.getDisassembler(p, monitor, null).disassemble(address(0x100), range, false)
+                }
+                val proof = PredicatedCallGraph.preview(p, f, PredicatedCallGraph.Limits.PRIMARY, monitor)
+                assertFalse(proof.complete())
+                val message = "live returned flags into $reason"
+                assertTrue(proof.frontier().any { it.reason().contains(message) }, proof.frontier().toString())
             }
-            val proof = PredicatedCallGraph.preview(p, f, PredicatedCallGraph.Limits.PRIMARY, monitor)
-            assertFalse(proof.complete())
-            assertTrue(
-                proof.frontier().any { it.reason().contains("live returned flags into indirect control") },
-                proof.frontier().toString(),
-            )
         }
+    }
 }

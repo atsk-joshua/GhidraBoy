@@ -382,6 +382,9 @@ public final class PredicatedCallGraph {
                   var original=AbstractValues.input(s.storage.scope,"outer-return-byte",byteIndex,1).origin();
                   if(!s.stack.containsKey(byteIndex)||!s.stack.get(byteIndex).origin().equals(original))throw new IllegalArgumentException("Outer return word was replaced by source effects");
                 }
+                var result=rootResult(root);
+                if(result!=null&&untransported(s,s.storage.get(new Varnode(p.getRegister("A").getAddress().getAddressSpace().getAddress(result.registerOffset()),result.width()))))
+                  throw new IllegalArgumentException("Native byte-A call contract cannot carry live returned flags into root result");
                 transfer="EXTERNAL_RETURN";exits.add(s.predicate);
               } else {
                 var frame=s.frames.remove(s.frames.size()-1);var destination=exact(s.storage.get(op.getInput(0)));

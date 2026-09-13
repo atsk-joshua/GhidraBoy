@@ -19,6 +19,11 @@ public class GhidraBoyFiniteDispatchImport extends GhidraScript {
       currentProgram=program;currentAddress=program.getAddressFactory().getDefaultAddressSpace().getAddress(0x100);state.setCurrentProgram(program);state.setCurrentAddress(currentAddress);
       runScript("GhidraBoyFiniteDispatch.java",java.util.Arrays.copyOfRange(args,1,args.length),state);
       program.save("Current finite-dispatch capture",monitor);
+      if(args[2].equals("normalized-lifecycle")) {
+        long revision=program.getModificationNumber();
+        file.packFile(Path.of(args[1],"saved-current.gzf").toFile(),monitor);
+        if(program.getModificationNumber()!=revision)throw new IllegalStateException("Program changed during packed replay export");
+      }
       println("FINITE_DISPATCH_SAVED "+file.getPathname());
     } finally {state.setCurrentProgram(null);program.release(consumer);}
   }

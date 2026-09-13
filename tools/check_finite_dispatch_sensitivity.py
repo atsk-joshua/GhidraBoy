@@ -56,6 +56,10 @@ def run(root,nibble=False,physical=False):
         def bank(cap):
             node=next(n for n in cap.proof['nodes'] if n['source']=='rom2::4000');node['fetch'][0]['physical']['bank']=1
         trial('same-CPU-wrong-physical-bank',bank)
+        def native_bank(cap):
+            op=next(o for o in high(cap) if o['mnemonic']=='CALLOTHER' and o['inputs'][1]['offset']==0x2000)
+            op['inputs'][2]['offset']=2 if op['inputs'][2]['offset']==1 else 1
+        trial('native-wrong-mapper-with-unchanged-result',native_bank)
     return dict(status='PASS',baseline_cases=baseline['cases'],cases=cases)
 
 if __name__=='__main__':

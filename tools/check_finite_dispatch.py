@@ -150,6 +150,7 @@ def check(root,label='original',nibble=False,h=0xc060,order=None,physical=False,
                 native_targets.add((bank,cpu))
             shared.require(reads==[e for e in raw.events if e[0]=='read' and e[1]<0x8000],f'ordered physical table reads U={u}')
             shared.require(raw.reg==emitted.reg,f'raw/emitted registers U={u}: {raw.reg} != {emitted.reg}')
+            shared.require(raw.bank==emitted.bank==native.bank,f'native mapper control effect U={u}')
             shared.require(raw.events==emitted.events,f'raw/emitted ordered effects U={u}: {raw.events} != {emitted.events}')
             if nibble:
                 expected=order[u>>4]
@@ -158,7 +159,7 @@ def check(root,label='original',nibble=False,h=0xc060,order=None,physical=False,
             else:
                 expected=(0x11 if u%2==0 else 0x22) if physical else 0x44 if zero else 10*(order[u]+1) if u<6 else 0
                 shared.require(raw.register(1)==emitted.register(1)==result==expected,f'phase/default result U={u}: {result} expected {expected}')
-            rows.append(dict(u=u,f=f,sp=frame[0],return_cpu=frame[1],expected=expected,native=result,raw_steps=raw.steps,emitted_steps=emitted.steps,native_steps=native.steps))
+            rows.append(dict(u=u,f=f,sp=frame[0],return_cpu=frame[1],expected=expected,native=result,native_bank=native.bank,raw_steps=raw.steps,emitted_steps=emitted.steps,native_steps=native.steps))
     return dict(status='PASS',native_terminal_sources=sorted(native_targets),native_target_provenance='PASS' if placements is not None else 'UNRUN',cases=len(rows),targets=sorted(targets),nodes=len(nodes),proof_bytes=(root/f'{label}-proof.json').stat().st_size,rows=rows)
 
 if __name__=='__main__':
