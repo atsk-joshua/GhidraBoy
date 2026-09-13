@@ -8,6 +8,8 @@ import java.util.*;
 /** Existing saved conditional record only; no import or implicit proof refresh. */
 public class GhidraBoyConditionalLifecycle extends GhidraBoyPredicatedCalls {
  public void run()throws Exception {
+  end(true); // Close only this capture wrapper before standalone public actions/native receipts.
+  if(currentProgram.getCurrentTransactionInfo()!=null)throw new IllegalStateException("Capture requires its outer owner to finish before committed qualification");
   out=Path.of(getScriptArgs()[0]);Files.createDirectories(out);String mode=getScriptArgs()[1];
   var originalProgram=currentProgram;boolean immutable=mode.equals("reopen");
   if(immutable){currentProgram=(ghidra.program.model.listing.Program)currentProgram.getDomainFile().getImmutableDomainObject(this,-1,monitor);state.setCurrentProgram(currentProgram);if(currentProgram.isChangeable())throw new IllegalStateException("Immutable reopen required");}
