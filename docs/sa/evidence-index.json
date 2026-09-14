@@ -581,5 +581,25 @@
       "Forward compatibility, broader caller cohorts, hardware/schema, package, installation and recovery release gates"
     ],
     "stop": "STOP for master review; no remote write, active installation, release or automatic next batch"
+  },
+  "public_operations_attended_completion_r3": {
+    "status": "PARTIAL_SCOPE_FROZEN",
+    "tested_source_commit": "20676c780740dd57d7920c3d1c4bc82b7881a8a2",
+    "tested_source_tree": "a68729774bd2ec58df72b77e47e73c1cb9f4b15b",
+    "extension_sha256": "21aff1832389fa28ae049cbfb82d9f279344056f79e75623da2e9aed63ca3732",
+    "provider_sha256": "b281c1705231451a087a37d3446692344b2a4ea1c53039a2169e3a3f4c409092",
+    "tools_sha256": "9129fcf0ddd5e56a60206136e0865580195aaa893e9137cf97748cdeb67ad046",
+    "default_instances": 882,
+    "starting_instances_retained": 878,
+    "report": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/R3-20260914/REPORT-PUBLIC-OPERATIONS-ATTENDED-COMPLETION.md",
+    "checksums": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/R3-20260914/SHA256SUMS",
+    "unexecuted_patch": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/R3-20260914/parked/UNEXECUTED-topology-and-checker.patch",
+    "unresolved": [
+      "Creation-time stale injection refusals require request-specific attribution",
+      "First new-carrier native use before domain-coherence refresh was not captured",
+      "Complete aggregate sensitivity and visual acceptance remain incomplete"
+    ],
+    "private_evidence": "Separate private archive; only newly exercised copied-Program evidence",
+    "stop": "User scope freeze; STOP for master review; no new implementation, GUI run, repair, deployment or installation"
   }
 }

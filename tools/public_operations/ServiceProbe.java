@@ -27,10 +27,12 @@ public class ServiceProbe implements GhidraLaunchable {
   }
   static final class GateWriter extends PrintWriter {
     final CountDownLatch reached=new CountDownLatch(1),release=new CountDownLatch(1);
-    GateWriter(){super(System.out,true);}
+    final String mutation;
+    GateWriter(){this("NO_DATABASE_CHANGE");}
+    GateWriter(String mutation){super(System.out,true);this.mutation=mutation;}
     @Override public void println(String text) {
       super.println(text);
-      if(text.contains("\"mutation\": \"NO_DATABASE_CHANGE\"")) {
+      if(text.contains("\"mutation\": \""+mutation+"\"")) {
         require(!javax.swing.SwingUtilities.isEventDispatchThread(),"Worker gate must not block EDT");reached.countDown();
         try{require(release.await(30,TimeUnit.SECONDS),"publication gate timeout");}catch(InterruptedException e){throw new AssertionError(e);}
       }
@@ -125,16 +127,28 @@ public class ServiceProbe implements GhidraLaunchable {
   }
   static void hostedWaitArm(GhidraTool tool,ProgramDB p,ghidra.program.model.address.Address entry,boolean cancel,Path out,List<Object> rows)throws Exception {
     settle(tool,p);p.save("Clean baseline before hosted wait control",TaskMonitor.DUMMY);long revision=p.getModificationNumber();
-    var monitor=new ghidra.util.task.WrappingTaskMonitor(new TaskMonitorAdapter(true));var gate=new GateWriter();var executor=Executors.newSingleThreadExecutor();
+    Path refreshProof=out.resolve("hosted-cancel-proof.json");
+    if(cancel){Path request=out.resolve("hosted-cancel-request.json");Files.writeString(request,ProgramMapping.JSON.toJson(PredicatedCalls.registeredProof(p,entry).callSite()));run(tool,p,TaskMonitor.DUMMY,new PrintWriter(System.out,true),"conditional-call-preview",request.toString(),refreshProof.toString());settle(tool,p);}
+    var monitor=new ghidra.util.task.WrappingTaskMonitor(new TaskMonitorAdapter(true));var gate=new GateWriter(cancel?"COMMITTED":"NO_DATABASE_CHANGE");var executor=Executors.newSingleThreadExecutor();
+    var laterInfo=new java.util.concurrent.atomic.AtomicReference<ghidra.framework.model.TransactionInfo>();var laterAt=p.getAddressFactory().getDefaultAddressSpace().getAddress(0xc001);
     try {
-      var future=executor.submit(()->run(tool,p,monitor,gate,"conditional-call-explain",entry.toString()));
+      var future=executor.submit(()->cancel?run(tool,p,monitor,gate,"stock-predicate-refresh",refreshProof.toString(),entry.toString()):run(tool,p,monitor,gate,"conditional-call-explain",entry.toString()));
       require(gate.reached.await(30,TimeUnit.SECONDS),"Hosted wait did not reach deferred presentation");
       require(!future.isDone()&&p.getCurrentTransactionInfo()==null,"Hosted submitting task must wait after its owner completed");
-      if(cancel)monitor.cancel();gate.release.countDown();var script=future.get(30,TimeUnit.SECONDS);
+      if(cancel){
+        Swing.runNow(()->require(tool.execute(new ghidra.app.cmd.comments.SetCommentCmd(laterAt,ghidra.program.model.listing.CodeUnit.EOL_COMMENT,"Later committed edit after operation completion"){
+          @Override public boolean applyTo(ghidra.program.model.listing.Program program){laterInfo.set(program.getCurrentTransactionInfo());return super.applyTo(program);}
+        },p),"Later foreground edit refused"));settle(tool,p);
+        require(laterInfo.get().getStatus()==ghidra.framework.model.TransactionInfo.Status.COMMITTED&&laterInfo.get().hasCommittedDBTransaction(),"Later edit was not separately committed");monitor.cancel();
+      }
+      gate.release.countDown();var script=future.get(30,TimeUnit.SECONDS);
       require(script.lastPresentation.get().equals(cancel?"CANCELLED_PUBLICATION":"PUBLISHED"),"Hosted task cancellation/presentation mismatch");
-      require(script.lastOperation.completion().get().current()&&revision==p.getModificationNumber(),"Hosted wait control changed committed source");
+      require(script.lastOperation.completion().get().current(),"Hosted wait lost its committed outcome");
+      if(cancel){require(script.lastOperation.completion().get().mutation()==PredicateOperations.Mutation.COMMITTED&&laterInfo.get().getID()!=script.lastOperation.completion().get().transactionId(),"Late cancel lacked separate commits");require("Later committed edit after operation completion".equals(p.getListing().getComment(ghidra.program.model.listing.CodeUnit.EOL_COMMENT,laterAt)),"Late cancellation lost the later edit");}
+      else require(revision==p.getModificationNumber(),"Hosted read wait changed source");
+      require(PredicatedCalls.registered(p,entry),"Late cancellation undid committed authority");
       require(PredicateOperations.inventory().get("cancellationListeners")==0,"Hosted cancellation listener leaked");
-      var row=Map.of("row",cancel?"HOSTED_WAIT_CANCEL":"HOSTED_WAIT_SUCCESS","waited_after_owner_end",true,"cancel_requested",cancel,"outcome",script.lastOperation.completion().get(),"presentation",script.lastPresentation.get(),"unchanged",true,"resources",PredicateOperations.inventory());
+      var row=Map.of("row",cancel?"HOSTED_WAIT_CANCEL":"HOSTED_WAIT_SUCCESS","waited_after_owner_end",true,"cancel_requested",cancel,"outcome",script.lastOperation.completion().get(),"presentation",script.lastPresentation.get(),"unchanged",!cancel,"later_committed_edit_preserved",cancel,"later_transaction",cancel?laterInfo.get().getID():-1,"resources",PredicateOperations.inventory());
       rows.add(row);Files.writeString(out.resolve(cancel?"hosted-wait-cancel.json":"hosted-wait-success.json"),ProgramMapping.JSON.toJson(row));
     }finally{gate.release.countDown();executor.shutdownNow();executor.awaitTermination(30,TimeUnit.SECONDS);}
   }

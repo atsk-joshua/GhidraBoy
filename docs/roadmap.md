@@ -1,7 +1,8 @@
 # Development roadmap
 
-PUBLIC-OPERATIONS-LIFECYCLE completes its bounded headless public-operation controls
-and exact local native/preservation checks; actual headed/GUI rows remain unrun.
+PUBLIC-OPERATIONS-LIFECYCLE R3 remains PARTIAL after attended service and normal-window
+execution. Scope is frozen: creation-time injection errors and first topology use
+before coherence refresh remain unresolved; later unexecuted refinement is parked.
 See [current status](sa/IMPLEMENTATION-STATUS.md) and the [operation contract](public-operations.md).
 This partial checkpoint does not close any retained release or wider SA obligation.
 

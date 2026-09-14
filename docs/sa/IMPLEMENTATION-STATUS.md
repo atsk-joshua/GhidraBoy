@@ -1,33 +1,38 @@
 # Implementation status
 
-## PUBLIC-OPERATIONS-LIFECYCLE — PARTIAL; STOP for master review
+## PUBLIC-OPERATIONS-LIFECYCLE R3 — PARTIAL; scope frozen; STOP for master review
 
-The real public script wrapper now reports provisional caller-owned work separately
-from correlated outer commit/abort, source currentness, consumer eligibility and file
-save. Wrapper-owned final voting closes the exercised precommit cancellation gap;
-late cancellation preserves committed and later user edits. Tool-local publication
-and shared headless-state generations prevent the exercised obsolete request revival.
-No persisted authority, language, mapper or native semantics were redesigned.
+The attended R3 run exercised a real normal CodeBrowser and analysis-enabled service
+lane. The tested executable checkpoint is `20676c780740dd57d7920c3d1c4bc82b7881a8a2`;
+extension SHA-256 `21aff1832389fa28ae049cbfb82d9f279344056f79e75623da2e9aed63ca3732`.
+The clean checkpoint passed **882 instances in 89 classes**, retaining all **878**
+starting instances, with zero failures/errors/skips, plus lint/package. Native and
+SLA bytes are unchanged. Scoped Mac/Linux/private native captures and immutable
+reopen ran on that candidate; private originals and prepared inputs were preserved.
 
-The final clean checkpoint passes **878 instances**, retaining all **859 baseline
-identities and multiplicities**, with zero failures/errors/skips, plus lint/package.
-Exact Mac primary/variant, isolated Docker/Rosetta Linux primary, copied-private full
-preservation and first immutable second-JVM rows pass their bounded checks. Actual
-headless B-before-A/P-Q-P-state, cancellation, failure and resource controls pass.
-A genuine ad-hoc writer still shares Ghidra's transaction; no universal isolation is
-claimed. The retained old-wrapper ordering failure and all support failures remain
-in external evidence.
+The service records actual scheduled worker execution, provisional tool-owned
+commit/abort, foreground shared edits, busy deferral, and cancellation after commit
+with a separately committed later edit preserved. Real no-argument Script Manager
+chooser/cancellation/recovery, normal-window stale/refresh, domain reversal,
+supersession, accepted-close cancellation, removal and a separate immutable normal
+JVM have executed receipts. These are bounded observations, not aggregate lifecycle
+acceptance or release approval.
 
-Actual headed service and normal-window scheduling, activation/native cancellation,
-passive stale/Refresh/topology, close/dispose and normal-session immutable reopen are
-**unrun**. Desktop permission was unconfirmed; the hidden headed launch aborted in
-AWT registration before assertions. Complete first/reopen/service runners compile,
-but compilation is not GUI acceptance. Headless variable P/Q/P without a new request
-requires caller cancellation; actual tool activation handling remains unqualified.
-See the [operation contract](../public-operations.md), [decision](../decisions/public-operations-lifecycle.md)
-and [evidence index](evidence-index.json). Broader caller, forward-compatibility,
-hardware/schema, package/installation/recovery and release gates remain separate.
-STOP for master review; no automatic next batch.
+**Open:** transient stale-registration injection errors during carrier creation are
+not fully attributed. The driver refreshed domain coherence before its later domain
+captures, so first native use of the new topology before that refresh remains
+unverified. The user froze scope. The just-started first-use capture and stricter
+checker changes are preserved externally as an uncompiled/unexecuted parked patch;
+they are excluded from the tested candidate and maintained execution path. No further
+repair or GUI run was authorized at closeout. Full independent aggregate sensitivity
+and visual acceptance remain incomplete. See the external R3 report and parked patch
+through the [evidence index](evidence-index.json).
+
+The explanation revalidation and hosted task-monitor completion boundaries are in
+the [operation contract](../public-operations.md) and
+[decision](../decisions/public-operations-attended-completion.md). Remaining caller,
+hardware/schema, compatibility, packaging/installation/recovery and release work is
+unchanged. STOP for master review; no automatic next batch or installation.
 
 
 ## CORE-CONTRACT-HARDENING-OVERNIGHT — PARTIAL; STOP for master review
