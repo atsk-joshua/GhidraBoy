@@ -1,5 +1,10 @@
 # Development roadmap
 
+PUBLIC-OPERATIONS-LIFECYCLE completes its bounded headless public-operation controls
+and exact local native/preservation checks; actual headed/GUI rows remain unrun.
+See [current status](sa/IMPLEMENTATION-STATUS.md) and the [operation contract](public-operations.md).
+This partial checkpoint does not close any retained release or wider SA obligation.
+
 Stock route completion passes its scoped local checkpoint: normal public requests
 use stock, the retained semantic tests are green, and bounded carrier/native
 refusal plus current-format installed reopen are verified. See

@@ -556,5 +556,30 @@
       "Complete broader adversarial hardware matrix and device/mode support"
     ],
     "stop": "STOP for master review; no release, remote write, active installation or automatic next batch"
+  },
+  "public_operations_lifecycle": {
+    "status": "PARTIAL_MASTER_REVIEW_PENDING",
+    "revision": 2,
+    "starting_commit": "bc3f0515442ad10f40fd6c369a81c5b2de0b3284",
+    "qualified_commit": "30494606bc04b585252ddb238027dd9d04791ba8",
+    "qualified_tree": "fe20d4027081e24388ec813b1fba276a13a53871",
+    "extension_sha256": "81be2b2a01d1332cd4dbdae7e2e0bca93c674e54fba016510d29f4a4b8098147",
+    "provider_sha256": "3e20277f8537d4fbe66958ae40ed0818c9cd259bf272f47832b3117aeefc72cb",
+    "default_instances": 878,
+    "baseline_instances_retained": 859,
+    "report": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/delivery/REPORT-PUBLIC-OPERATIONS-LIFECYCLE.md",
+    "archive": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/delivery/CHANGES-PUBLIC-OPERATIONS-LIFECYCLE.zip",
+    "checksums": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/delivery/SHA256SUMS",
+    "readiness": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/delivery/HANDOFF-READINESS.md",
+    "contract": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/delivery/OPERATION-CONTRACT.md",
+    "private_annex": "Separate private annex/archive in the same external delivery; excluded from generic source/distribution",
+    "verified": "Real headless public wrappers, provisional commit/abort and cancellation/failure preservation, headless consumer supersession, bounded resources, exact Mac/Linux native, copied-private preservation and first immutable second-JVM use",
+    "unqualified": [
+      "Actual headed tool/analysis sharing and GUI lifecycle; GUI_UNRUN_PERMISSION",
+      "Graphical native cancellation, passive stale/Refresh/topology, close/dispose and first immutable normal-session use",
+      "Universal arbitrary-writer isolation; unobserved headless P/Q/P without a new request",
+      "Forward compatibility, broader caller cohorts, hardware/schema, package, installation and recovery release gates"
+    ],
+    "stop": "STOP for master review; no remote write, active installation, release or automatic next batch"
   }
 }
