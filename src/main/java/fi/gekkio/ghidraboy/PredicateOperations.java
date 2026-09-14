@@ -102,29 +102,35 @@ public final class PredicateOperations {
     public List<String> diagnostics(){return diagnostics;}
     public CompletableFuture<Outcome> completion(){return completion;}
     /** Detach a closed consumer from a still-pending owner, without ending or undoing its transaction. */
-    public synchronized void abandonObservation() {
-      reconcile();
-      if(scheduled || closed)return;
-      completion.complete(new Outcome(id,program.getUniqueProgramID(),System.identityHashCode(program),String.valueOf(entry),transaction.getID(),Mutation.PENDING_IN_OWNER,
-          false,monitor.isCancelled(),false,program.getModificationNumber(),"Consumer closed while owner pending; outcome unobserved; no rollback claimed"));
-      close();
+    public void abandonObservation() {
+      reconcile();Outcome outcome;
+      synchronized(this) {
+        if(scheduled || closed)return;scheduled=true;
+        outcome=new Outcome(id,program.getUniqueProgramID(),System.identityHashCode(program),String.valueOf(entry),transaction.getID(),Mutation.PENDING_IN_OWNER,
+            false,monitor.isCancelled(),false,program.getModificationNumber(),"Last observed owner pending; consumer detached; final outcome unobserved; no rollback claimed");
+      }
+      close();completion.complete(outcome);
     }
     public Outcome provisional(){return new Outcome(id,program.getUniqueProgramID(),System.identityHashCode(program),String.valueOf(entry),transaction.getID(),Mutation.PENDING_IN_OWNER,false,monitor.isCancelled(),false,program.getModificationNumber(),"Applied provisionally; outer owner pending; file save unverified");}
-    private synchronized void arm(Check validation){
+    private void arm(Check validation){
       String expected=stored(program,entry);
       check=()->{
         if(!java.util.Objects.equals(expected,stored(program,entry)))
           throw new IllegalStateException("Operation authority superseded");
         validation.run();
-      };armed=true;reconcile();
+      };synchronized(this){armed=true;}reconcile();
     }
-    private synchronized void reconcile() {
-      if(!armed || closed || scheduled)return;
-      // Getter acquires the transaction-manager synchronization before reading the retained object.
+    private void reconcile() {
+      synchronized(this){if(!armed || closed || scheduled)return;}
+      // Never hold the operation monitor while entering the transaction manager:
+      // headless transaction callbacks can run synchronously under that manager.
       program.getCurrentTransactionInfo();
       var status=transaction.getStatus();
       if(status==TransactionInfo.Status.NOT_DONE || status==TransactionInfo.Status.NOT_DONE_BUT_ABORTED)return;
-      scheduled=true;
+      // A terminal status may become visible before the database end call finishes.
+      // Acquire the supported getter's synchronization again after observing it.
+      program.getCurrentTransactionInfo();
+      synchronized(this){if(closed || scheduled)return;scheduled=true;}
       CompletableFuture.runAsync(()->{
         boolean current=false;long revision=program.getModificationNumber();String detail="Outer owner aborted; no active result";
         boolean committed=status==TransactionInfo.Status.COMMITTED;
@@ -133,15 +139,18 @@ public final class PredicateOperations {
         var result=new Outcome(id,program.getUniqueProgramID(),System.identityHashCode(program),String.valueOf(entry),transaction.getID(),
             committed?(writes && transaction.hasCommittedDBTransaction()?Mutation.COMMITTED:Mutation.NO_DATABASE_CHANGE):Mutation.ABORTED,
             transaction.hasCommittedDBTransaction(),monitor.isCancelled(),current,revision,detail);
-        completion.complete(result);
         close();
+        completion.complete(result);
       });
     }
     @Override public void transactionStarted(DomainObjectAdapterDB object,TransactionInfo info){}
     @Override public void transactionEnded(DomainObjectAdapterDB object){if(object==program)reconcile();}
     @Override public void undoStackChanged(DomainObjectAdapterDB object){}
     @Override public void undoRedoOccurred(DomainObjectAdapterDB object){}
-    @Override public synchronized void close(){if(closed)return;closed=true;program.removeTransactionListener(this);observations.decrementAndGet();program.release(this);released.complete(null);}
+    @Override public void close(){
+      synchronized(this){if(closed)return;closed=true;}
+      program.removeTransactionListener(this);observations.decrementAndGet();program.release(this);released.complete(null);
+    }
   }
   public static Operation explain(Program p,Address entry,TaskMonitor monitor) throws Exception {
     var op=new Operation(p,monitor);

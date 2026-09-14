@@ -1,0 +1,150 @@
+[
+  {
+    "kind": "public-action-return",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "arguments": [
+        "conditional-call-target",
+        "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd"
+      ],
+      "operation": "acfdd57e-bfba-4da9-b166-71d26e0af633",
+      "program": {
+        "program_id": 3752532353124411655,
+        "program_object": 1867176619
+      }
+    }
+  },
+  {
+    "kind": "public-action-return",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "arguments": [
+        "conditional-call-continuation",
+        "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd"
+      ],
+      "operation": "a5220ddf-79e8-4b4a-9b24-b0f269b87682",
+      "program": {
+        "program_id": 3752532353124411655,
+        "program_object": 1867176619
+      }
+    }
+  },
+  {
+    "kind": "request-B-published",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "A": {
+        "operationId": "acfdd57e-bfba-4da9-b166-71d26e0af633",
+        "programId": 3752532353124411655,
+        "programObject": 1867176619,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd",
+        "transactionId": 5,
+        "mutation": "NO_DATABASE_CHANGE",
+        "databaseCommit": false,
+        "cancelled": false,
+        "current": true,
+        "sourceRevision": 459,
+        "detail": "Committed in open Program; file save unverified"
+      },
+      "B": {
+        "operationId": "a5220ddf-79e8-4b4a-9b24-b0f269b87682",
+        "programId": 3752532353124411655,
+        "programObject": 1867176619,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd",
+        "transactionId": 6,
+        "mutation": "NO_DATABASE_CHANGE",
+        "databaseCommit": false,
+        "cancelled": false,
+        "current": true,
+        "sourceRevision": 459,
+        "detail": "Committed in open Program; file save unverified"
+      },
+      "revision": 459,
+      "switchAway": false
+    }
+  },
+  {
+    "kind": "request-A-disposition",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "disposition": "REQUEST_SUPERSEDED",
+      "switchAway": false,
+      "revision": 459,
+      "operation": "acfdd57e-bfba-4da9-b166-71d26e0af633"
+    }
+  },
+  {
+    "kind": "public-action-return",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "arguments": [
+        "conditional-call-target",
+        "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd"
+      ],
+      "operation": "7b23e93a-b81d-4904-a031-cf9a307a867a",
+      "program": {
+        "program_id": 3752532353124411655,
+        "program_object": 1867176619
+      }
+    }
+  },
+  {
+    "kind": "public-action-return",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "arguments": [
+        "conditional-call-continuation",
+        "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd"
+      ],
+      "operation": "939236f4-d1e4-408a-90e0-7e08bdbf6598",
+      "program": {
+        "program_id": 3752532353124411655,
+        "program_object": 1867176619
+      }
+    }
+  },
+  {
+    "kind": "request-B-published",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "A": {
+        "operationId": "7b23e93a-b81d-4904-a031-cf9a307a867a",
+        "programId": 3752532353124411655,
+        "programObject": 1867176619,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd",
+        "transactionId": 7,
+        "mutation": "NO_DATABASE_CHANGE",
+        "databaseCommit": false,
+        "cancelled": false,
+        "current": true,
+        "sourceRevision": 459,
+        "detail": "Committed in open Program; file save unverified"
+      },
+      "B": {
+        "operationId": "939236f4-d1e4-408a-90e0-7e08bdbf6598",
+        "programId": 3752532353124411655,
+        "programObject": 1867176619,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_db26f95fd4a62::42fd",
+        "transactionId": 8,
+        "mutation": "NO_DATABASE_CHANGE",
+        "databaseCommit": false,
+        "cancelled": false,
+        "current": true,
+        "sourceRevision": 459,
+        "detail": "Committed in open Program; file save unverified"
+      },
+      "revision": 459,
+      "switchAway": true
+    }
+  },
+  {
+    "kind": "request-A-disposition",
+    "consumer_mode": "HEADLESS_STATE",
+    "detail": {
+      "disposition": "REQUEST_SUPERSEDED",
+      "switchAway": true,
+      "revision": 459,
+      "operation": "7b23e93a-b81d-4904-a031-cf9a307a867a"
+    }
+  }
+]

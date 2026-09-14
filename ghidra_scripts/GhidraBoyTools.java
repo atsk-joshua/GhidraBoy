@@ -23,14 +23,17 @@ public class GhidraBoyTools extends GhidraScript {
     if(currentProgram==null)return AnalysisMode.ENABLED;
     String[] args=getScriptArgs();
     if(args.length>0 && !publicPredicate(args[0]))return AnalysisMode.ENABLED;
-    if(!admissionChecked){try{gate=PredicateOperations.scheduleScript(currentProgram,monitor);}catch(Exception failure){throw new IllegalStateException("Public operation not admitted",failure);}
+    if(!admissionChecked){
+      if(args.length>0)publication=PredicatePublication.capture(state.getTool(),state,currentProgram,monitor,state::getCurrentProgram);
+      try{gate=PredicateOperations.scheduleScript(currentProgram,monitor);}catch(Exception failure){throw new IllegalStateException("Public operation not admitted",failure);}
       admittedMode=currentProgram.getCurrentTransactionInfo()==null?AnalysisMode.SUSPENDED:AnalysisMode.ENABLED;admissionChecked=true;}
     return admittedMode;
   }
   @Override public void cleanup(boolean success){
     try {if(finalVote!=-1){int owned=finalVote;finalVote=-1;finalVoteProgram.endTransaction(owned,success && !monitor.isCancelled());}}
-    finally{if(gate!=null)gate.close();wrapperFinished.complete(null);}
+    finally{if(gate!=null)gate.close();releaseUnpublished();wrapperFinished.complete(null);}
   }
+  private void releaseUnpublished(){if(publication!=null && !deferredPublication){publication.close();lastPresentation.complete(publication.disposition());}}
   private void observe(PredicateOperations.Operation operation,boolean navigate) {
     lastOperation=operation;deferredPublication=true;
     var program=currentProgram;var tool=state.getTool();var request=publication;
@@ -49,7 +52,7 @@ public class GhidraBoyTools extends GhidraScript {
         if(!outcome.current())request.suppress(outcome.mutation()==PredicateOperations.Mutation.ABORTED?"OUTER_ABORTED":"SOURCE_STALE_OR_UNOBSERVED");
         println("Presentation: "+request.disposition()+"; file save unverified");
       }catch(Exception failure){println("Committed outcome retained; presentation unavailable: "+failure.getMessage());}
-      finally{String disposition=request.disposition();request.close();lastPresentation.complete(disposition);}
+      finally{request.close();lastPresentation.complete(request.disposition());}
     });
   }
   @Override
@@ -109,7 +112,7 @@ public class GhidraBoyTools extends GhidraScript {
     if(Set.of("stock-predicate-apply","stock-predicate-refresh","stock-predicate-remove","stock-predicate-install").contains(action)) {
       finalVoteProgram=currentProgram;finalVote=currentProgram.startTransaction("Public predicate wrapper final owner vote");
     }
-    if(publicPredicate(action))publication=PredicatePublication.capture(state.getTool(),currentProgram,monitor);
+    if(publicPredicate(action) && publication==null)publication=PredicatePublication.capture(state.getTool(),state,currentProgram,monitor,state::getCurrentProgram);
     try { switch (action) {
       case "discover-functions" -> {
         String json =
@@ -324,7 +327,7 @@ public class GhidraBoyTools extends GhidraScript {
                 else tool.getService(ghidra.app.services.GoToService.class).goTo(new ghidra.program.util.ProgramLocation(program,destination));
               }
             });
-          }finally{println("Presentation: "+request.disposition());String disposition=request.disposition();request.close();lastPresentation.complete(disposition);}
+          }finally{println("Presentation: "+request.disposition());request.close();lastPresentation.complete(request.disposition());}
         });
       }
       case "stock-predicate-preview" -> {
@@ -525,7 +528,7 @@ public class GhidraBoyTools extends GhidraScript {
       }
       default -> throw new IllegalArgumentException("Unknown action " + action);
     }
-    } finally {if(publication!=null && !deferredPublication){String disposition=publication.disposition();publication.close();lastPresentation.complete(disposition);}}
+    } finally {releaseUnpublished();}
   }
 
   private String source(String value) throws Exception {

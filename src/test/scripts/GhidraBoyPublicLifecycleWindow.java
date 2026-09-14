@@ -99,7 +99,7 @@ public class GhidraBoyPublicLifecycleWindow extends GhidraBoyStockWindow {
     target=program.getFunctionManager().getFunctionAt(entry);var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var first=new java.util.concurrent.atomic.AtomicBoolean();
     String authorityBefore=program.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null);
     var control=new TaskMonitorAdapter(true){@Override public void checkCancelled()throws ghidra.util.exception.CancelledException {
-      if(PredicatePublication.inventory().get("requests")>0 && first.compareAndSet(false,true)) {
+      if(PredicatePublication.inventory().get("requests")>0 && PredicateOperations.inventory().get("observations")>0 && first.compareAndSet(false,true)) {
         entered.countDown();try{require(release.await(30,TimeUnit.SECONDS),"Computational close gate timeout");}catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalStateException(e);}
       }super.checkCancelled();
     }};

@@ -19,7 +19,9 @@ adds no persisted authority version and no native/cache replacement.
 
 Normal standalone script execution uses GhidraScript's `SUSPENDED` analysis mode.
 Ghidra schedules the actual script with AutoAnalysisManager and `analyzeChanges=true`.
-Heavy work is off the EDT. A cancellable submission gate serializes participating
+Explicit script-argument requests capture their consumer generation before waiting
+for admission or analysis scheduling. Interactive selection captures it when the
+public action is chosen. Heavy work is off the EDT. A cancellable submission gate serializes participating
 Tools requests on one Program before their script transaction starts. It does not
 exclude other Ghidra writers. Ghidra's analysis worker coordinates analysis; no
 permanent ignore flag or suppression of analysis events is introduced.
@@ -43,11 +45,16 @@ export actions. No shared ownership or persisted semantic contract is rewritten.
 
 ## Facts that must remain separate
 
-`lastOperation` on the script exposes a runtime operation handle. Its initial
+`lastOperation` on a newly created script instance exposes a runtime operation
+handle; the normal Script Manager creates one instance per execution. Its initial
 receipt is `PENDING_IN_OWNER`, never committed success. `completion()` resolves
 without blocking the caller's return. The observer attaches while its admitted
 owner remains pending, retains that exact TransactionInfo object and ID, and
-rechecks after registration/arming. A transaction-ended callback only triggers
+rechecks after registration/arming. It never holds the operation monitor while
+entering the transaction manager or removing its listener; headless notifications
+may be synchronous. A synchronization fence after observing a terminal status
+prevents status visibility from being mistaken for the completed database end.
+Owned observation resources release before completion callbacks. A transaction-ended callback only triggers
 inspection of this retained object; a later transaction's getter cannot certify
 it. `NOT_DONE_BUT_ABORTED` remains pending until rollback has finished.
 
@@ -73,7 +80,13 @@ No cancellation path calls Undo, performs blind compensation or restores a snaps
 Explicit user Undo may restore durable valid authority; it cannot revive an older
 runtime request.
 
-Every active Tools consumer context is local to one tool. A later request replaces
+Every graphical Tools consumer context is local to one tool. Headless requests
+sharing one GhidraState share a separate request generation and serialization
+point; independent states remain independent. Ghidra Swing.runNow runs inline
+headlessly, so headless bookkeeping uses a private consumer monitor and atomic
+resource accounting. Headless state selection is rechecked before publication;
+without a newer request, an unobserved headless P/Q/P variable change is not a
+graphical activation event and requires the caller to cancel its old request. A later request replaces
 that consumer's request generation. Actual Program activation events invalidate
 outstanding tokens, including P → Q → unchanged P. Other tools are independent.
 Switching never compensates a committed operation. Explicitly requested background

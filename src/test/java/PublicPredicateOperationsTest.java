@@ -54,7 +54,9 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
       var proof=PredicatedCalls.readProof(Files.readString(preview(p)));var request=output.resolve("cancel-request.json");var target=output.resolve("cancel-preview.json");
       Files.writeString(request,ProgramMapping.JSON.toJson(proof.callSite()));
       var monitor=new TaskMonitorAdapter(true){@Override public void setMessage(String message){super.setMessage(message);if(message.equals("Saving predicate preview"))cancel();}};
-      assertThrows(CancelledException.class,()->execute(p,monitor,"conditional-call-preview",request.toString(),target.toString()));
+      var script=new GhidraBoyTools();script.setScriptArgs(new String[]{"conditional-call-preview",request.toString(),target.toString()});
+      assertThrows(CancelledException.class,()->script.execute(new GhidraState(null,null,p,null,null,null),monitor,new PrintWriter(System.out,true)));
+      assertEquals("CANCELLED_PUBLICATION",script.lastPresentation.get(30,TimeUnit.SECONDS));
       assertFalse(Files.exists(target));assertNull(p.getCurrentTransactionInfo());assertEquals(0,PredicatePublication.inventory().get("requests"));
     }finally{p.release(this);}
   }
@@ -281,6 +283,58 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
         String kind=action.endsWith("target")?"RET_DISPATCH":"MATCHED_CALL_COMPLETION";
         assertEquals(proof.boundaries().stream().filter(b->b.kind().equals(kind)).findFirst().orElseThrow().physical(),state.getCurrentAddress().toString());
       }
+    }finally{p.release(this);}
+  }
+  private static void requestEvent(String kind,java.util.Map<String,Object> detail) {
+    System.out.println("LIFECYCLE_REQUEST_EVENT "+new com.google.gson.Gson().toJson(java.util.Map.of("kind",kind,"detail",detail,"consumer_mode","HEADLESS_STATE")));
+  }
+  @Test public void sameHeadlessConsumerPublishesBFirstWithoutRevivingAAfterPQP() throws Exception {
+    var p=fixture();var q=fixture();try {
+      var apply=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",preview(p).toString());done(apply);apply.lastPresentation.get(30,TimeUnit.SECONDS);
+      var entry=apply.lastOperation.entry();var proof=PredicatedCalls.registeredProof(p,entry);
+      for(boolean switched:new boolean[]{false,true}) {
+        var state=new GhidraState(null,null,p,new ghidra.program.util.ProgramLocation(p,entry),null,null);
+        var reached=new CountDownLatch(1);var release=new CountDownLatch(1);var a=new GhidraBoyTools();a.setScriptArgs(new String[]{"conditional-call-target",entry.toString()});
+        var writer=new PrintWriter(System.out,true){@Override public void println(String text){super.println(text);if(text.contains("\"mutation\": \"NO_DATABASE_CHANGE\"")) {
+          reached.countDown();try{assertTrue(release.await(30,TimeUnit.SECONDS));}catch(InterruptedException e){throw new AssertionError(e);}
+        }}};
+        try {
+          a.execute(state,new TaskMonitorAdapter(true),writer);assertTrue(reached.await(30,TimeUnit.SECONDS));long revision=p.getModificationNumber();
+          var identity=java.util.Map.of("program_id",p.getUniqueProgramID(),"program_object",System.identityHashCode(p));
+          requestEvent("public-action-return",java.util.Map.of("program",identity,"operation",a.lastOperation.id(),"arguments",List.of("conditional-call-target",entry.toString())));
+          if(switched){state.setCurrentProgram(q);state.setCurrentProgram(p);state.setCurrentAddress(entry);}
+          var b=new GhidraBoyTools();b.setScriptArgs(new String[]{"conditional-call-continuation",entry.toString()});
+          b.execute(state,new TaskMonitorAdapter(true),new PrintWriter(System.out,true));
+          requestEvent("public-action-return",java.util.Map.of("program",identity,"operation",b.lastOperation.id(),"arguments",List.of("conditional-call-continuation",entry.toString())));
+          assertEquals("PUBLISHED",b.lastPresentation.get(30,TimeUnit.SECONDS));
+          requestEvent("request-B-published",java.util.Map.of("A",a.lastOperation.completion().get(30,TimeUnit.SECONDS),"B",b.lastOperation.completion().get(30,TimeUnit.SECONDS),"revision",revision,"switchAway",switched));
+          var destination=state.getCurrentAddress();release.countDown();assertEquals("REQUEST_SUPERSEDED",a.lastPresentation.get(30,TimeUnit.SECONDS));
+          assertEquals(revision,p.getModificationNumber());assertEquals(destination,state.getCurrentAddress());
+          assertEquals(proof.boundaries().stream().filter(x->x.kind().equals("MATCHED_CALL_COMPLETION")).findFirst().orElseThrow().physical(),destination.toString());
+          requestEvent("request-A-disposition",java.util.Map.of("operation",a.lastOperation.id(),"disposition",a.lastPresentation.get(30,TimeUnit.SECONDS),"revision",p.getModificationNumber(),"switchAway",switched));
+        }finally{release.countDown();}
+      }
+    }finally{p.release(this);q.release(this);}
+  }
+  @Test public void switchedHeadlessStateDoesNotReceivePendingPNavigation() throws Exception {
+    var p=fixture();var q=fixture();try {
+      var apply=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",preview(p).toString());done(apply);apply.lastPresentation.get(30,TimeUnit.SECONDS);
+      var entry=apply.lastOperation.entry();var state=new GhidraState(null,null,p,new ghidra.program.util.ProgramLocation(p,entry),null,null);
+      int tx=p.startTransaction("deliberately pending read owner");var script=new GhidraBoyTools();script.setScriptArgs(new String[]{"conditional-call-target",entry.toString()});
+      try(var caller=PredicateOperations.participate(p)){script.execute(state,new TaskMonitorAdapter(true),new PrintWriter(System.out,true));}
+      state.setCurrentProgram(q);var selected=ProgramMapping.staticAddress(q,"rom1::42fd");state.setCurrentAddress(selected);p.endTransaction(tx,true);
+      assertEquals("TARGET_INACTIVE",script.lastPresentation.get(30,TimeUnit.SECONDS));assertSame(q,state.getCurrentProgram());assertEquals(selected,state.getCurrentAddress());
+    }finally{p.release(this);q.release(this);}
+  }
+  @Test public void closingProvisionalObserverReleasesResourcesWithoutEndingCaller() throws Exception {
+    var p=fixture();try {
+      var proof=preview(p);int tx=p.startTransaction("pending caller detach");GhidraBoyTools script;
+      try(var caller=PredicateOperations.participate(p)){script=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",proof.toString());}
+      script.lastOperation.abandonObservation();
+      assertEquals(PredicateOperations.Mutation.PENDING_IN_OWNER,script.lastOperation.completion().get(30,TimeUnit.SECONDS).mutation());
+      script.lastPresentation.get(30,TimeUnit.SECONDS);assertNotNull(p.getCurrentTransactionInfo());
+      assertEquals(0,PredicateOperations.inventory().get("observations"));assertEquals(0,PredicatePublication.inventory().get("requests"));
+      p.endTransaction(tx,true);assertTrue(PredicatedCalls.emitStock(p,script.lastOperation.entry(),0x200000,TaskMonitor.DUMMY).length>0);
     }finally{p.release(this);}
   }
   @Test public void T9_cancelAfterCommitKeepsLaterCommittedEdit() throws Exception {
