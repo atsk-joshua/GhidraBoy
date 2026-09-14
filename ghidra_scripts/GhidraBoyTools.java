@@ -290,10 +290,13 @@ public class GhidraBoyTools extends GhidraScript {
       case "conditional-call-preview" -> {
         Path file=value==null?askFile("Conditional call-site premises JSON","Preview").toPath():Path.of(value);
         var premises=ConditionalCallSites.readRequest(Files.readString(file));
+        long previewRevision=currentProgram.getModificationNumber();
         var proof=ConditionalCallSites.preview(currentProgram,premises,monitor);
+        monitor.setMessage("Saving predicate preview");monitor.checkCancelled();
+        if(previewRevision!=currentProgram.getModificationNumber())throw new IllegalStateException("Program changed during preview; request it again");
         Path output=args.length>2?Path.of(args[2]):askFile("New conditional proof JSON","Save").toPath();
         Files.writeString(output,ProgramMapping.JSON.toJson(proof),StandardOpenOption.CREATE_NEW);
-        println("Conditional call complete="+proof.complete()+"; frontiers="+proof.frontier().size());
+        publication.publish(previewRevision,()->println("Conditional preview computation complete="+proof.complete()+"; frontiers="+proof.frontier().size()+"; provisional preview, revalidated on apply."));
       }
       case "conditional-call-explain", "conditional-call-target", "conditional-call-continuation" -> {
         var at=value==null?currentAddress:currentProgram.getAddressFactory().getAddress(value);
@@ -327,10 +330,13 @@ public class GhidraBoyTools extends GhidraScript {
       case "stock-predicate-preview" -> {
         Path file=value==null?askFile("Explicit predicate input premises JSON", "Preview").toPath():Path.of(value);
         var premises=ProgramMapping.JSON.fromJson(Files.readString(file),PredicatedCalls.Premises.class);
+        long previewRevision=currentProgram.getModificationNumber();
         var proof=PredicatedCalls.preview(currentProgram,premises,monitor);
+        monitor.setMessage("Saving predicate preview");monitor.checkCancelled();
+        if(previewRevision!=currentProgram.getModificationNumber())throw new IllegalStateException("Program changed during preview; request it again");
         Path output=args.length>2?Path.of(args[2]):askFile("New predicate proof JSON", "Save").toPath();
         Files.writeString(output,ProgramMapping.JSON.toJson(proof),StandardOpenOption.CREATE_NEW);
-        println("Predicate preview complete="+proof.complete()+"; "+proof.frontier().size()+" unresolved obligations; "+output);
+        publication.publish(previewRevision,()->println("Predicate preview computation complete="+proof.complete()+"; "+proof.frontier().size()+" unresolved obligations; provisional preview, revalidated on apply; "+output));
       }
       case "stock-predicate-apply", "stock-predicate-refresh" -> {
         Path file=value==null?askFile("Reviewed predicate proof JSON", "Apply").toPath():Path.of(value);
@@ -519,7 +525,7 @@ public class GhidraBoyTools extends GhidraScript {
       }
       default -> throw new IllegalArgumentException("Unknown action " + action);
     }
-    } finally {if(publication!=null && !deferredPublication)publication.close();}
+    } finally {if(publication!=null && !deferredPublication){String disposition=publication.disposition();publication.close();lastPresentation.complete(disposition);}}
   }
 
   private String source(String value) throws Exception {

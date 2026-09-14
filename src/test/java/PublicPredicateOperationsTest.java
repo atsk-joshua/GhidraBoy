@@ -49,6 +49,15 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
     System.out.println("PUBLIC_OUTCOME "+ProgramMapping.JSON.toJson(result));
     return result;
   }
+  @Test public void cancelledPreviewDoesNotWriteOrPublishAfterDerivation() throws Exception {
+    var p=fixture();try {
+      var proof=PredicatedCalls.readProof(Files.readString(preview(p)));var request=output.resolve("cancel-request.json");var target=output.resolve("cancel-preview.json");
+      Files.writeString(request,ProgramMapping.JSON.toJson(proof.callSite()));
+      var monitor=new TaskMonitorAdapter(true){@Override public void setMessage(String message){super.setMessage(message);if(message.equals("Saving predicate preview"))cancel();}};
+      assertThrows(CancelledException.class,()->execute(p,monitor,"conditional-call-preview",request.toString(),target.toString()));
+      assertFalse(Files.exists(target));assertNull(p.getCurrentTransactionInfo());assertEquals(0,PredicatePublication.inventory().get("requests"));
+    }finally{p.release(this);}
+  }
   @Test public void T1_actualPublicApplyRefreshRemove() throws Exception {
     var p=fixture();try {
       var proof=preview(p);var apply=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",proof.toString());
