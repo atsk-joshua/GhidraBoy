@@ -13,8 +13,18 @@ import java.util.concurrent.CompletableFuture;
 /** Runtime-only public operation outcomes. Participation agrees to whole-owner rollback on failure. */
 public final class PredicateOperations {
   private PredicateOperations() {}
+  private static final java.util.concurrent.atomic.AtomicInteger cancellationListeners=new java.util.concurrent.atomic.AtomicInteger();
   private static final java.util.concurrent.atomic.AtomicInteger observations=new java.util.concurrent.atomic.AtomicInteger();
-  public static java.util.Map<String,Integer> inventory(){synchronized(GATES){return java.util.Map.of("observations",observations.get(),"programGates",GATES.size(),"gateUsers",GATES.values().stream().mapToInt(g->g.users).sum());}}
+  public static java.util.Map<String,Integer> inventory(){synchronized(GATES){return java.util.Map.of("cancellationListeners",cancellationListeners.get(),"observations",observations.get(),"programGates",GATES.size(),"gateUsers",GATES.values().stream().mapToInt(g->g.users).sum());}}
+  /** Runtime-only accounting for cancellation listeners owned by the shipped wrapper. */
+  public static final class CancellationWatch implements AutoCloseable {
+    private final TaskMonitor source;
+    private final ghidra.util.task.CancelledListener listener;
+    private final java.util.concurrent.atomic.AtomicBoolean closed=new java.util.concurrent.atomic.AtomicBoolean();
+    private CancellationWatch(TaskMonitor source,ghidra.util.task.CancelledListener listener){this.source=source;this.listener=listener;source.addCancelledListener(listener);cancellationListeners.incrementAndGet();}
+    @Override public void close(){if(closed.compareAndSet(false,true)){source.removeCancelledListener(listener);cancellationListeners.decrementAndGet();}}
+  }
+  public static CancellationWatch observeCancellation(TaskMonitor source,ghidra.util.task.CancelledListener listener){return new CancellationWatch(source,listener);}
   private static final ThreadLocal<Caller> CALLER = new ThreadLocal<>();
 
   /** Explicit authorization by the enclosing owner, not an ownership inference from a transaction name. */
@@ -155,7 +165,20 @@ public final class PredicateOperations {
   public static Operation explain(Program p,Address entry,TaskMonitor monitor) throws Exception {
     var op=new Operation(p,monitor);
     try {op.entry=entry;op.writes=false;op.explanation=ConditionalCallSites.explanation(p,entry,monitor);
-      op.arm(()->op.explanation.requireCurrent(p));return op;}
+      op.arm(()->{
+        var original=op.explanation;
+        if(original.revision()==p.getModificationNumber()){original.requireCurrent(p);return;}
+        // The host may write analysis timing metadata before ending this owner.
+        // Revalidate the SAME retained authority (arm checks it) and all rendered
+        // interpretation facts. A new registration or changed explanation cannot
+        // replace this request's result. Publication still checks the final revision.
+        var checked=ConditionalCallSites.explanation(p,entry,monitor);
+        if(original.sourceProgram()!=checked.sourceProgram()||original.programId()!=checked.programId()
+            ||!original.entry().equals(checked.entry())||!original.boundaries().equals(checked.boundaries())
+            ||!original.text().equals(checked.text()))
+          throw new IllegalStateException("Original conditional explanation changed before owner completion");
+        checked.requireCurrent(p);op.explanation=checked;
+      });return op;}
     catch(Exception failure){op.close();throw failure;}
   }
   public static Operation apply(Program p,PredicatedCallGraph.Proof proof,TaskMonitor monitor) throws Exception {

@@ -1,0 +1,171 @@
+[
+  {
+    "name": "Public operation service probe",
+    "identity": 925480437,
+    "plugins": [
+      "ghidra.app.plugin.core.progmgr.ProgramManagerPlugin",
+      "ghidra.app.plugin.core.codebrowser.CodeBrowserPlugin",
+      "ghidra.app.plugin.core.gotoquery.GoToServicePlugin",
+      "ghidra.app.plugin.core.clipboard.ClipboardPlugin",
+      "ghidra.app.plugin.core.navigation.NavigationHistoryPlugin",
+      "ghidra.app.plugin.core.table.TableServicePlugin",
+      "ghidra.app.plugin.core.analysis.AutoAnalysisPlugin"
+    ],
+    "row": "ANALYSIS_TOOL"
+  },
+  {
+    "waitingMessage": true,
+    "submission": {
+      "stack": [
+        "java.base/java.lang.Thread.getStackTrace(Thread.java:2451)",
+        "ServiceProbe.thread(ServiceProbe.java:39)",
+        "ServiceProbe$SchedulingWriter.<init>(ServiceProbe.java:42)",
+        "ServiceProbe.launch(ServiceProbe.java:107)",
+        "ServiceBootstrap.launch(ServiceBootstrap.java:7)",
+        "ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)",
+        "ghidra.Ghidra.main(Ghidra.java:54)"
+      ],
+      "id": 1,
+      "name": "main",
+      "edt": false,
+      "toolBackground": false
+    },
+    "worker": {
+      "stack": [
+        "java.base/java.lang.Thread.getStackTrace(Thread.java:2451)",
+        "ServiceProbe.thread(ServiceProbe.java:39)",
+        "ServiceProbe$SchedulingWriter.observeWorker(ServiceProbe.java:46)",
+        "ServiceProbe$2.setMessage(ServiceProbe.java:108)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager$JointTaskMonitor.setMessage(AutoAnalysisManager.java:1493)",
+        "GhidraBoyTools.run(GhidraBoyTools.java:298)",
+        "ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)",
+        "ghidra.app.script.GhidraScript$1.analysisWorkerCallback(GhidraScript.java:442)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisWorkerCommand.applyTo(AutoAnalysisManager.java:1694)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisWorkerCommand.applyTo(AutoAnalysisManager.java:1581)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)",
+        "ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)",
+        "ghidra.app.plugin.core.analysis.AnalysisBackgroundCommand.applyTo(AnalysisBackgroundCommand.java:55)",
+        "ghidra.app.plugin.core.analysis.AnalysisBackgroundCommand.applyTo(AnalysisBackgroundCommand.java:33)",
+        "ghidra.framework.plugintool.mgr.BackgroundCommandTask.run(BackgroundCommandTask.java:103)",
+        "ghidra.framework.plugintool.mgr.ToolTaskManager.run(ToolTaskManager.java:351)",
+        "java.base/java.lang.Thread.run(Thread.java:1583)"
+      ],
+      "id": 43,
+      "name": "Background-Task-Public operation service probe",
+      "edt": false,
+      "toolBackground": true,
+      "transaction": 4
+    },
+    "row": "STANDALONE_SCHEDULED_PUBLIC_SCRIPT"
+  },
+  {
+    "pending": {
+      "thread": {
+        "stack": [
+          "java.base/java.lang.Thread.getStackTrace(Thread.java:2451)",
+          "ServiceProbe.thread(ServiceProbe.java:39)",
+          "ServiceProbe$1.applyTo(ServiceProbe.java:67)",
+          "ServiceProbe$1.applyTo(ServiceProbe.java:59)",
+          "ghidra.framework.plugintool.mgr.BackgroundCommandTask.run(BackgroundCommandTask.java:103)",
+          "ghidra.framework.plugintool.mgr.ToolTaskManager.run(ToolTaskManager.java:351)",
+          "java.base/java.lang.Thread.run(Thread.java:1583)"
+        ],
+        "id": 44,
+        "name": "Background-Task-Public operation service probe",
+        "edt": false,
+        "toolBackground": true
+      },
+      "provisional": {
+        "operationId": "33a02034-fd33-497b-9ca0-b84d2392c8e9",
+        "programId": 3752566987241070336,
+        "programObject": 2097078797,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_d4745e1388cfd::42fd",
+        "transactionId": 6,
+        "mutation": "PENDING_IN_OWNER",
+        "databaseCommit": false,
+        "cancelled": false,
+        "current": false,
+        "sourceRevision": 464,
+        "detail": "Applied provisionally; outer owner pending; file save unverified"
+      },
+      "outer": 6,
+      "status": "NOT_DONE",
+      "terminalDone": false
+    },
+    "row": "TOOL_OWNER_COMMIT",
+    "priorSurvives": true,
+    "presentation": "PUBLISHED",
+    "outerStatus": "COMMITTED",
+    "insideSurvives": true,
+    "outcome": {
+      "operationId": "33a02034-fd33-497b-9ca0-b84d2392c8e9",
+      "programId": 3752566987241070336,
+      "programObject": 2097078797,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d4745e1388cfd::42fd",
+      "transactionId": 6,
+      "mutation": "COMMITTED",
+      "databaseCommit": true,
+      "cancelled": false,
+      "current": true,
+      "sourceRevision": 465,
+      "detail": "Committed in open Program; file save unverified"
+    },
+    "rollbackMechanism": "normal return"
+  },
+  {
+    "pending": {
+      "thread": {
+        "stack": [
+          "java.base/java.lang.Thread.getStackTrace(Thread.java:2451)",
+          "ServiceProbe.thread(ServiceProbe.java:39)",
+          "ServiceProbe$1.applyTo(ServiceProbe.java:67)",
+          "ServiceProbe$1.applyTo(ServiceProbe.java:59)",
+          "ghidra.framework.plugintool.mgr.BackgroundCommandTask.run(BackgroundCommandTask.java:103)",
+          "ghidra.framework.plugintool.mgr.ToolTaskManager.run(ToolTaskManager.java:351)",
+          "java.base/java.lang.Thread.run(Thread.java:1583)"
+        ],
+        "id": 49,
+        "name": "Background-Task-Public operation service probe",
+        "edt": false,
+        "toolBackground": true
+      },
+      "provisional": {
+        "operationId": "a62352fd-a110-4ad4-914e-57b3cb4838c6",
+        "programId": 3752566987241070338,
+        "programObject": 106833431,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_d04d383916998::42fd",
+        "transactionId": 6,
+        "mutation": "PENDING_IN_OWNER",
+        "databaseCommit": false,
+        "cancelled": false,
+        "current": false,
+        "sourceRevision": 464,
+        "detail": "Applied provisionally; outer owner pending; file save unverified"
+      },
+      "outer": 6,
+      "status": "NOT_DONE",
+      "terminalDone": false
+    },
+    "row": "TOOL_OWNER_ABORT",
+    "priorSurvives": true,
+    "presentation": "CANCELLED_PUBLICATION",
+    "outerStatus": "ABORTED",
+    "insideSurvives": false,
+    "outcome": {
+      "operationId": "a62352fd-a110-4ad4-914e-57b3cb4838c6",
+      "programId": 3752566987241070338,
+      "programObject": 106833431,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d04d383916998::42fd",
+      "transactionId": 6,
+      "mutation": "ABORTED",
+      "databaseCommit": false,
+      "cancelled": false,
+      "current": false,
+      "sourceRevision": 465,
+      "detail": "Outer owner aborted; no active result"
+    },
+    "rollbackMechanism": "RollbackException"
+  }
+]

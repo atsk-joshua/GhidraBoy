@@ -35,7 +35,24 @@ public class G1StockNormalLaunch implements GhidraLaunchable {
     ghidra.program.model.listing.Program[] immutableProgram={null};
     PluginTool[] holder = new PluginTool[1];
     ghidra.framework.main.FrontEndTool[] frontend = new ghidra.framework.main.FrontEndTool[1];
+    javax.swing.Timer[] startupPrompt={null};
     SwingUtilities.invokeAndWait(() -> {
+      if(Boolean.getBoolean("ghidraboy.publicLifecycle")) {
+        // Real ordinary startup choice for this prepared fixture only. No analysis
+        // flag/property is changed; later analysis events remain enabled.
+        var promptTimer=new javax.swing.Timer(50,null);startupPrompt[0]=promptTimer;
+        promptTimer.addActionListener(event->{
+          for(var w:java.awt.Window.getWindows())if(w instanceof java.awt.Dialog d&&d.isShowing()&&d.getTitle().equals("Analyze?")){
+            var children=GhidraBoyPublicLifecycleWindow.components(d);
+            boolean fixture=children.stream().anyMatch(c->c instanceof javax.swing.JLabel l&&l.getText()!=null&&l.getText().contains(file.getName()+" has not been analyzed"));
+            if(fixture){
+              try{Files.writeString(out.resolve("startup-analysis-choice.json"),ProgramMapping.JSON.toJson(Map.of("dialog",d.getTitle(),"program_file",file.getPathname(),"choice","No","mechanism","actual dialog button","analysis_settings_changed",false,"pid",ProcessHandle.current().pid())));}
+              catch(Exception failure){throw new RuntimeException(failure);}
+              promptTimer.stop();GhidraBoyPublicLifecycleWindow.button(d,"No").doClick();
+            }
+          }
+        });promptTimer.start();
+      }
       var front = new ghidra.framework.main.FrontEndTool(project.getProjectManager());
       frontend[0]=front;
       front.setActiveProject(project.getProject());
@@ -87,6 +104,7 @@ public class G1StockNormalLaunch implements GhidraLaunchable {
       immutableProgram[0]=(ghidra.program.model.listing.Program)file.getImmutableDomainObject(immutableConsumer,-1,ghidra.util.task.TaskMonitor.DUMMY);
       SwingUtilities.invokeAndWait(()->pm.openProgram(immutableProgram[0]));
     }
+    SwingUtilities.invokeAndWait(()->{if(startupPrompt[0]!=null)startupPrompt[0].stop();});
     var program = pm.getCurrentProgram();
     var entry = StockEntries.entries(program).stream().filter(e -> e.generation() == null).findFirst().orElseThrow();
     var at = program.getAddressFactory().getAddress(entry.carrier());
@@ -129,7 +147,7 @@ public class G1StockNormalLaunch implements GhidraLaunchable {
           frontend[0].setActiveProject(null);
         });
         if(immutableProgram[0]!=null)immutableProgram[0].release(immutableConsumer);
-        project.close();Files.writeString(out.resolve("tool-closed.json"),"{\"publicLifecycle\":true}");
+        project.close();Files.writeString(out.resolve("tool-closed.json"),ProgramMapping.JSON.toJson(Map.of("publicLifecycle",true,"pid",ProcessHandle.current().pid(),"program_closed",program.isClosed(),"remaining_consumers",program.getConsumerList().size(),"tool_visible",tool.isVisible())));
       }
       if(!successful){System.exit(1);return;}
       SwingUtilities.invokeAndWait(()->frontend[0].dispose());return;

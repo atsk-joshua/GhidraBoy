@@ -7,6 +7,29 @@ import java.util.*;
 
 public class GhidraBoyTools extends GhidraScript {
   private final java.util.concurrent.CompletableFuture<Void> wrapperFinished=new java.util.concurrent.CompletableFuture<>();
+  private final LifetimeMonitor lifetimeMonitor=new LifetimeMonitor();
+  private ghidra.util.task.TaskMonitor submittedMonitor;
+  private final class LifetimeMonitor extends ghidra.util.task.TaskMonitorAdapter implements AutoCloseable {
+    private volatile boolean workerFinished;
+    private PredicateOperations.CancellationWatch watch;
+    private final ghidra.util.task.CancelledListener listener=()->super.cancel();
+    LifetimeMonitor(){super(true);}
+    void submitted(){submittedMonitor=monitor;watch=PredicateOperations.observeCancellation(submittedMonitor,listener);}
+    private ghidra.util.task.TaskMonitor delegate(){return workerFinished?submittedMonitor:monitor;}
+    void finishWorker(){
+      // Preserve cancellation before dropping the analysis worker's transient joint monitor.
+      if(monitor.isCancelled()||(submittedMonitor!=null&&submittedMonitor.isCancelled()))super.cancel();
+      workerFinished=true;
+    }
+    @Override public boolean isCancelled(){var d=delegate();if(d!=null&&d.isCancelled())super.cancel();return super.isCancelled();}
+    @Override public void checkCancelled()throws ghidra.util.exception.CancelledException {var d=delegate();try{if(d!=null)d.checkCancelled();}catch(ghidra.util.exception.CancelledException failure){super.cancel();throw failure;}if(isCancelled())throw new ghidra.util.exception.CancelledException();}
+    @Override public void checkCanceled()throws ghidra.util.exception.CancelledException {checkCancelled();}
+    @Override public void cancel(){super.cancel();var d=delegate();if(d!=null)d.cancel();}
+    @Override public void setMessage(String value){var d=delegate();if(d!=null)d.setMessage(value);else super.setMessage(value);}
+    @Override public void setProgress(long value){var d=delegate();if(d!=null)d.setProgress(value);else super.setProgress(value);}
+    @Override public void initialize(long value){var d=delegate();if(d!=null)d.initialize(value);else super.initialize(value);}
+    @Override public void close(){if(watch!=null)watch.close();}
+  }
   private PredicateOperations.Gate gate;
   private ghidra.program.model.listing.Program finalVoteProgram;
   private int finalVote=-1;
@@ -24,16 +47,28 @@ public class GhidraBoyTools extends GhidraScript {
     String[] args=getScriptArgs();
     if(args.length>0 && !publicPredicate(args[0]))return AnalysisMode.ENABLED;
     if(!admissionChecked){
-      if(args.length>0)publication=PredicatePublication.capture(state.getTool(),state,currentProgram,monitor,state::getCurrentProgram);
+      lifetimeMonitor.submitted();
+      if(args.length>0)publication=PredicatePublication.capture(state.getTool(),state,currentProgram,lifetimeMonitor,state::getCurrentProgram);
       try{gate=PredicateOperations.scheduleScript(currentProgram,monitor);}catch(Exception failure){throw new IllegalStateException("Public operation not admitted",failure);}
       admittedMode=currentProgram.getCurrentTransactionInfo()==null?AnalysisMode.SUSPENDED:AnalysisMode.ENABLED;admissionChecked=true;}
     return admittedMode;
   }
   @Override public void cleanup(boolean success){
-    try {if(finalVote!=-1){int owned=finalVote;finalVote=-1;finalVoteProgram.endTransaction(owned,success && !monitor.isCancelled());}}
+    lifetimeMonitor.finishWorker();
+    try {if(finalVote!=-1){int owned=finalVote;finalVote=-1;finalVoteProgram.endTransaction(owned,success && !lifetimeMonitor.isCancelled());}}
     finally{if(gate!=null)gate.close();releaseUnpublished();wrapperFinished.complete(null);}
+    // A normal TaskRunner retires its dialog after this submitting task returns.
+    // Keep that task alive until presentation settles, after releasing our vote.
+    // The analysis owner finishes independently; explicit caller owners never wait.
+    if(deferredPublication&&admittedMode==AnalysisMode.SUSPENDED
+        &&submittedMonitor instanceof ghidra.util.task.WrappingTaskMonitor&&state.getTool()!=null
+        &&!javax.swing.SwingUtilities.isEventDispatchThread()&&!state.getTool().threadIsBackgroundTaskThread()) {
+      try{lastPresentation.get(60,java.util.concurrent.TimeUnit.SECONDS);}
+      catch(InterruptedException failure){Thread.currentThread().interrupt();lifetimeMonitor.cancel();publication.close();throw new IllegalStateException("Presentation wait interrupted; database outcome retained separately",failure);}
+      catch(java.util.concurrent.ExecutionException|java.util.concurrent.TimeoutException failure){lifetimeMonitor.cancel();publication.close();throw new IllegalStateException("Presentation did not settle before task completion; database outcome retained separately",failure);}
+    }
   }
-  private void releaseUnpublished(){if(publication!=null && !deferredPublication){publication.close();lastPresentation.complete(publication.disposition());}}
+  private void releaseUnpublished(){if(!deferredPublication){if(publication!=null)publication.close();lifetimeMonitor.close();if(publication!=null)lastPresentation.complete(publication.disposition());}}
   private void observe(PredicateOperations.Operation operation,boolean navigate) {
     lastOperation=operation;deferredPublication=true;
     var program=currentProgram;var tool=state.getTool();var request=publication;
@@ -52,7 +87,7 @@ public class GhidraBoyTools extends GhidraScript {
         if(!outcome.current())request.suppress(outcome.mutation()==PredicateOperations.Mutation.ABORTED?"OUTER_ABORTED":"SOURCE_STALE_OR_UNOBSERVED");
         println("Presentation: "+request.disposition()+"; file save unverified");
       }catch(Exception failure){println("Committed outcome retained; presentation unavailable: "+failure.getMessage());}
-      finally{request.close();lastPresentation.complete(request.disposition());}
+      finally{request.close();lifetimeMonitor.close();lastPresentation.complete(request.disposition());}
     });
   }
   @Override
@@ -112,7 +147,7 @@ public class GhidraBoyTools extends GhidraScript {
     if(Set.of("stock-predicate-apply","stock-predicate-refresh","stock-predicate-remove","stock-predicate-install").contains(action)) {
       finalVoteProgram=currentProgram;finalVote=currentProgram.startTransaction("Public predicate wrapper final owner vote");
     }
-    if(publicPredicate(action) && publication==null)publication=PredicatePublication.capture(state.getTool(),state,currentProgram,monitor,state::getCurrentProgram);
+    if(publicPredicate(action) && publication==null)publication=PredicatePublication.capture(state.getTool(),state,currentProgram,lifetimeMonitor,state::getCurrentProgram);
     try { switch (action) {
       case "discover-functions" -> {
         String json =
@@ -306,7 +341,7 @@ public class GhidraBoyTools extends GhidraScript {
         var function=getFunctionContaining(at);if(function==null)throw new IllegalArgumentException("Select owned conditional entry");
         var program=currentProgram;var tool=state.getTool();var request=publication;
         PredicateOperations.Operation operation;
-        try(var caller=PredicateOperations.participate(program)){operation=PredicateOperations.explain(program,function.getEntryPoint(),monitor);}
+        try(var caller=PredicateOperations.participate(program)){operation=PredicateOperations.explain(program,function.getEntryPoint(),lifetimeMonitor);}
         lastOperation=operation;deferredPublication=true;
         println(ProgramMapping.JSON.toJson(operation.provisional()));
         request.onClosed(operation::abandonObservation);
@@ -327,7 +362,7 @@ public class GhidraBoyTools extends GhidraScript {
                 else tool.getService(ghidra.app.services.GoToService.class).goTo(new ghidra.program.util.ProgramLocation(program,destination));
               }
             });
-          }finally{println("Presentation: "+request.disposition());request.close();lastPresentation.complete(request.disposition());}
+          }finally{println("Presentation: "+request.disposition());request.close();lifetimeMonitor.close();lastPresentation.complete(request.disposition());}
         });
       }
       case "stock-predicate-preview" -> {
@@ -345,26 +380,26 @@ public class GhidraBoyTools extends GhidraScript {
         Path file=value==null?askFile("Reviewed predicate proof JSON", "Apply").toPath():Path.of(value);
         var proof=PredicatedCalls.readProof(Files.readString(file));
         if(action.equals("stock-predicate-apply")) {
-          try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.apply(currentProgram,proof,monitor),true);}
+          try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.apply(currentProgram,proof,lifetimeMonitor),true);}
         }
         else {
           var selected=args.length>2?currentProgram.getAddressFactory().getAddress(args[2]):currentAddress;
           var function=getFunctionContaining(selected);
           if(function==null)throw new IllegalArgumentException("Select the owned predicate entry");
-          try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.refresh(currentProgram,function.getEntryPoint(),proof,monitor),false);}
+          try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.refresh(currentProgram,function.getEntryPoint(),proof,lifetimeMonitor),false);}
         }
       }
       case "stock-predicate-remove" -> {
         var selected=value==null?currentAddress:currentProgram.getAddressFactory().getAddress(value);
         var function=getFunctionContaining(selected);
         if(function==null)throw new IllegalArgumentException("Select the owned predicate entry");
-        try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.remove(currentProgram,function.getEntryPoint(),monitor),false);}
+        try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.remove(currentProgram,function.getEntryPoint(),lifetimeMonitor),false);}
       }
       case "stock-predicate-install" -> {
         var function=getFunctionContaining(currentAddress);
         if(function==null)throw new IllegalArgumentException("Select a canonical source Function");
         var proof=PredicatedCalls.preview(currentProgram,function,PredicatedCallGraph.Limits.PRIMARY,monitor);
-        try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.apply(currentProgram,proof,monitor),true);}
+        try(var caller=PredicateOperations.participate(currentProgram)){observe(PredicateOperations.apply(currentProgram,proof,lifetimeMonitor),true);}
       }
       case "inspect" -> println(ProgramMapping.JSON.toJson(ProgramMapping.inspect(currentProgram)));
       case "mapping-json" -> {

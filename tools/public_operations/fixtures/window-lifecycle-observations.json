@@ -1,0 +1,330 @@
+{
+  "scope": "PROJECTION_OF_EXECUTED_GENERIC_RECEIPTS; registry values omitted, only observed keys retained",
+  "before": {
+    "options": {
+      "GhidraBoyStockPredicatedCalls": {
+        "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd": null
+      }
+    },
+    "functions": [
+      {
+        "body": [
+          [
+            "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd",
+            "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd"
+          ]
+        ],
+        "comment": "Later user explanation",
+        "convention": "__ghidraboy_stock_entry_v1",
+        "custom": false,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd",
+        "inline": false,
+        "locals": [],
+        "name": "gb_ordinary_pred_rom1__42fd_root_d7041f05581df",
+        "noReturn": false,
+        "parameters": [],
+        "purge": 2147483647,
+        "return": {
+          "firstUse": 0,
+          "length": 1,
+          "name": "<RETURN>",
+          "source": "DEFAULT",
+          "storage": [],
+          "type": "/undefined"
+        },
+        "signature": "undefined __ghidraboy_stock_entry_v1 gb_ordinary_pred_rom1__42fd_root_d7041f05581df(void)",
+        "signatureSource": "DEFAULT",
+        "varargs": false
+      }
+    ]
+  },
+  "after": {
+    "options": {
+      "GhidraBoyStockPredicatedCalls": {}
+    },
+    "functions": [
+      {
+        "body": [
+          [
+            "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd",
+            "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd"
+          ]
+        ],
+        "comment": "Later user explanation",
+        "convention": "__ghidraboy_stock_entry_v1",
+        "custom": false,
+        "entry": "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd",
+        "inline": false,
+        "locals": [],
+        "name": "gb_ordinary_pred_rom1__42fd_root_d7041f05581df",
+        "noReturn": false,
+        "parameters": [],
+        "purge": 2147483647,
+        "return": {
+          "firstUse": 0,
+          "length": 1,
+          "name": "<RETURN>",
+          "source": "DEFAULT",
+          "storage": [],
+          "type": "/undefined"
+        },
+        "signature": "undefined __ghidraboy_stock_entry_v1 gb_ordinary_pred_rom1__42fd_root_d7041f05581df(void)",
+        "signatureSource": "DEFAULT",
+        "varargs": false
+      }
+    ]
+  },
+  "passive": {
+    "surface": "normal-CodeBrowser-DecompilerProvider",
+    "provider_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/lib/Decompiler.jar",
+    "extension_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Extensions/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar",
+    "provider_class": "ghidra.app.plugin.core.decompile.PrimaryDecompilerProvider",
+    "controller_class": "ghidra.app.decompiler.component.DecompilerController",
+    "resolved_native": "/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/os/mac_arm_64/decompile",
+    "native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+    "phase": "removal-passive",
+    "program": "public-removal-variant",
+    "program_id": 3752573565484299338,
+    "program_object": 1927671832,
+    "revision": 467,
+    "entry": "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd",
+    "function_id": 59,
+    "controller_identity": 109578853,
+    "owner_java_pid": 83144,
+    "java_start": "2026-09-14T06:11:59.202Z",
+    "display_program_id": 3752573565484299338,
+    "display_program_matches": true,
+    "display_entry": "gb_ordinary_pred_rom1__42fd_root_d7041f05581df::42fd",
+    "display_function_matches": true,
+    "completed": false,
+    "highfunction_available": false,
+    "error": "\nLow-level Error: Injection error: Unavailable stock analysis entry: Missing predicated graph registration or stock software carrier",
+    "data_identity": 194383899,
+    "events": 7,
+    "schema": 2,
+    "transaction_free": true,
+    "read_only": false,
+    "visible": true,
+    "desktop_sha256": "58ea9e77938115b01aed0e8e2b81939fbd999791963934db5a83d6a2152df07e"
+  },
+  "saved": {
+    "program_id": 3752535842067275008,
+    "GhidraBoyStockPredicatedCalls": {
+      "gb_ordinary_pred_rom1__42fd_root_d2c58ea155816::42fd": null,
+      "gb_ordinary_pred_rom1__42fd_root_d38228f0aeb40::42fd": null,
+      "gb_ordinary_pred_rom1__42fd_root_d5573968491c7::42fd": null
+    }
+  },
+  "immutable": {
+    "immutable-0": {
+      "surface": "normal-CodeBrowser-DecompilerProvider",
+      "provider_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/lib/Decompiler.jar",
+      "extension_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Extensions/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar",
+      "provider_class": "ghidra.app.plugin.core.decompile.PrimaryDecompilerProvider",
+      "controller_class": "ghidra.app.decompiler.component.DecompilerController",
+      "resolved_native": "/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/os/mac_arm_64/decompile",
+      "native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+      "phase": "immutable-0",
+      "program": "carry",
+      "program_id": 3752535842067275008,
+      "program_object": 245386411,
+      "revision": 3,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d2c58ea155816::42fd",
+      "function_id": 59,
+      "controller_identity": 1333523980,
+      "owner_java_pid": 84480,
+      "java_start": "2026-09-14T06:31:09.223Z",
+      "display_program_id": 3752535842067275008,
+      "display_program_matches": true,
+      "display_entry": "gb_ordinary_pred_rom1__42fd_root_d2c58ea155816::42fd",
+      "display_function_matches": true,
+      "completed": true,
+      "highfunction_available": true,
+      "error": "",
+      "data_identity": 668754554,
+      "events": 0,
+      "schema": 2,
+      "transaction_free": true,
+      "read_only": true,
+      "high_sha256": "855fdd160dab3d50c059d39267f1020b5459d3f37637f72aaa588f3501fe391e",
+      "parameters": [
+        {
+          "name": "param_1",
+          "storage": [
+            {
+              "id": 60,
+              "size": 2,
+              "constant": false,
+              "address": false,
+              "offset": 6,
+              "space": "register",
+              "register": true
+            }
+          ]
+        }
+      ],
+      "c_sha256": "dfb399b091103bf6cba87047e73b2f94d3115f3b6495dac6daaf0503639a2956",
+      "visible": true,
+      "desktop_sha256": "e0dd9d2d50c6a84992499d99b2dbf0a4db9c07c782d9be4f8fd273761ebbfa1c"
+    },
+    "immutable-first": {
+      "surface": "normal-CodeBrowser-DecompilerProvider",
+      "provider_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/lib/Decompiler.jar",
+      "extension_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Extensions/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar",
+      "provider_class": "ghidra.app.plugin.core.decompile.PrimaryDecompilerProvider",
+      "controller_class": "ghidra.app.decompiler.component.DecompilerController",
+      "resolved_native": "/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/os/mac_arm_64/decompile",
+      "native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+      "phase": "immutable-first",
+      "program": "carry",
+      "program_id": 3752535842067275008,
+      "program_object": 245386411,
+      "revision": 3,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d2c58ea155816::42fd",
+      "function_id": 59,
+      "controller_identity": 1333523980,
+      "owner_java_pid": 84480,
+      "java_start": "2026-09-14T06:31:09.223Z",
+      "display_program_id": 3752535842067275008,
+      "display_program_matches": true,
+      "display_entry": "gb_ordinary_pred_rom1__42fd_root_d2c58ea155816::42fd",
+      "display_function_matches": true,
+      "completed": true,
+      "highfunction_available": true,
+      "error": "",
+      "data_identity": 668754554,
+      "events": 0,
+      "schema": 2,
+      "transaction_free": true,
+      "read_only": true,
+      "high_sha256": "855fdd160dab3d50c059d39267f1020b5459d3f37637f72aaa588f3501fe391e",
+      "parameters": [
+        {
+          "name": "param_1",
+          "storage": [
+            {
+              "id": 60,
+              "size": 2,
+              "constant": false,
+              "address": false,
+              "offset": 6,
+              "space": "register",
+              "register": true
+            }
+          ]
+        }
+      ],
+      "c_sha256": "dfb399b091103bf6cba87047e73b2f94d3115f3b6495dac6daaf0503639a2956",
+      "visible": true,
+      "desktop_sha256": "e0dd9d2d50c6a84992499d99b2dbf0a4db9c07c782d9be4f8fd273761ebbfa1c"
+    },
+    "immutable-1": {
+      "surface": "normal-CodeBrowser-DecompilerProvider",
+      "provider_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/lib/Decompiler.jar",
+      "extension_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Extensions/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar",
+      "provider_class": "ghidra.app.plugin.core.decompile.PrimaryDecompilerProvider",
+      "controller_class": "ghidra.app.decompiler.component.DecompilerController",
+      "resolved_native": "/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/os/mac_arm_64/decompile",
+      "native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+      "phase": "immutable-1",
+      "program": "carry",
+      "program_id": 3752535842067275008,
+      "program_object": 245386411,
+      "revision": 3,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d38228f0aeb40::42fd",
+      "function_id": 61,
+      "controller_identity": 1333523980,
+      "owner_java_pid": 84480,
+      "java_start": "2026-09-14T06:31:09.223Z",
+      "display_program_id": 3752535842067275008,
+      "display_program_matches": true,
+      "display_entry": "gb_ordinary_pred_rom1__42fd_root_d38228f0aeb40::42fd",
+      "display_function_matches": true,
+      "completed": true,
+      "highfunction_available": true,
+      "error": "",
+      "data_identity": 1354725727,
+      "events": 0,
+      "schema": 2,
+      "transaction_free": true,
+      "read_only": true,
+      "high_sha256": "02c123bebfe20b255f915c9c8e988a0896a3979d246eb085bcccc767431e78f7",
+      "parameters": [
+        {
+          "name": "param_1",
+          "storage": [
+            {
+              "id": 60,
+              "size": 2,
+              "constant": false,
+              "address": false,
+              "offset": 6,
+              "space": "register",
+              "register": true
+            }
+          ]
+        }
+      ],
+      "c_sha256": "7a2e30682f2cf40f471775c1b97145f07e4efd7bd824772166526bc10f59fb8c",
+      "visible": true,
+      "desktop_sha256": "561356897fa96bcb84acd648686f70e07ed8040e7510ac1d4759598ec94bad77"
+    },
+    "immutable-2": {
+      "surface": "normal-CodeBrowser-DecompilerProvider",
+      "provider_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/lib/Decompiler.jar",
+      "extension_origin": "file:/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Extensions/GhidraBoy/lib/GhidraBoy-20260905-integration1.jar",
+      "provider_class": "ghidra.app.plugin.core.decompile.PrimaryDecompilerProvider",
+      "controller_class": "ghidra.app.decompiler.component.DecompilerController",
+      "resolved_native": "/private/tmp/PUBLIC-OPERATIONS-ATTENDED-R3-20260914/runtime-hosted/Ghidra/Features/Decompiler/os/mac_arm_64/decompile",
+      "native_sha256": "c5e9775345e6841c717995a85f0bc33a972acc84b0990ad0d6fbccd6db0ae77d",
+      "phase": "immutable-2",
+      "program": "carry",
+      "program_id": 3752535842067275008,
+      "program_object": 245386411,
+      "revision": 3,
+      "entry": "gb_ordinary_pred_rom1__42fd_root_d5573968491c7::42fd",
+      "function_id": 60,
+      "controller_identity": 1333523980,
+      "owner_java_pid": 84480,
+      "java_start": "2026-09-14T06:31:09.223Z",
+      "display_program_id": 3752535842067275008,
+      "display_program_matches": true,
+      "display_entry": "gb_ordinary_pred_rom1__42fd_root_d5573968491c7::42fd",
+      "display_function_matches": true,
+      "completed": true,
+      "highfunction_available": true,
+      "error": "",
+      "data_identity": 363103401,
+      "events": 0,
+      "schema": 2,
+      "transaction_free": true,
+      "read_only": true,
+      "high_sha256": "c000c9da1661ccc8a82daa6342e1b039d4f7b0fffcd717d4cc3031167f2cdcd1",
+      "parameters": [
+        {
+          "name": "param_1",
+          "storage": [
+            {
+              "id": 60,
+              "size": 2,
+              "constant": false,
+              "address": false,
+              "offset": 6,
+              "space": "register",
+              "register": true
+            }
+          ]
+        }
+      ],
+      "c_sha256": "e72ed242cf61e15b2d2777ee12fb1d6686602c06819a20159f55d9e2d3b04355",
+      "visible": true,
+      "desktop_sha256": "86abd729c6ef5f029e4824e3659a54e1326805d1896299ee0649f4667927a541"
+    }
+  },
+  "source_sha256": {
+    "removal-before.json": "8939d3c0ce7dea53dc3c6aac0a63e33a94a45454c2caa6941262f3cda200f047",
+    "removal-after.json": "d94e492ea25410d765cbb916624513440e0f95046b5caa7d4fc3020fb65c6e49",
+    "removal-passive-request.json": "383d556d9f9a4c606d07289ec121ff9a4180688c86abfd7772de92da69b52608",
+    "saved-authority.json": "79693af5050243995f5e879e3f073c8b426cf799000fcb3499baa116d7cf0cd4"
+  }
+}

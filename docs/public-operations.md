@@ -1,5 +1,8 @@
 # Public predicate operations
 
+The [normal-tool completion decision](decisions/public-operations-attended-completion.md)
+records the analysis-timing and task-monitor lifetime boundaries.
+
 The shipped `GhidraBoyTools` script routes conditional preview, explanation,
 physical target/continuation navigation and stock predicate apply/refresh/remove
 through runtime scheduling and publication adapters. The stock native consumer
@@ -63,7 +66,12 @@ surviving semantics at a stable Program revision off the EDT. The actual EDT
 publication checks that revision again. Publication also waits nonblockingly for
 the host wrapper to finish its state update and cleanup, so that update cannot
 overwrite a completed headless navigation. No second registration is substituted
-into the previously validated result. Receipts distinguish mutation, database
+into the previously validated result. If the encompassing owner changes the Program
+revision before an explanation completes (for example, Ghidra writes analysis timing
+metadata), completion revalidates that same retained registration and requires identical
+explanation text and boundary facts. Only that equivalent result receives the checked
+revision for publication. Changed proof dependencies, authority or interpretation facts
+remain a refusal; later publication still requires the exact checked revision. Receipts distinguish mutation, database
 checkpoint, cancellation, currentness and source revision. Database commit means
 changes in the open Program. It does not mean the domain file was saved or passed
 immutable reopen. Read operations do not invent a database write.
@@ -77,6 +85,16 @@ policy; participation never waits for or ends that owner. A previously
 committed user edit is outside that rollback. After commit, cancellation suppresses
 presentation and preserves both the committed operation and any later user edit.
 No cancellation path calls Undo, performs blind compensation or restores a snapshot.
+The wrapper keeps cancellation observed by either its worker or submission monitor.
+After its worker returns, it stops retaining the transient joint analysis monitor and
+uses the original submission monitor. A standalone suspended request using a wrapping
+task monitor in a real tool waits for presentation only after releasing its final vote
+and gate; the analysis owner can finish independently. This keeps the normal Script
+Manager task alive until its result settles, so dialog disposal cannot cancel unfinished
+publication. The wait is bounded and reports unresolved presentation on timeout. An
+explicit caller-owned request never waits for its owner; persistent direct caller
+monitors retain late cancellation. Owned cancellation listeners release before the
+presentation future completes and are included in the runtime inventory.
 Explicit user Undo may restore durable valid authority; it cannot revive an older
 runtime request.
 

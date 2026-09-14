@@ -49,6 +49,62 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
     System.out.println("PUBLIC_OUTCOME "+ProgramMapping.JSON.toJson(result));
     return result;
   }
+  @Test public void callerTaskDialogCancellationRemainsLiveAfterWrapperReturn() throws Exception {
+    for(boolean laterEdit:new boolean[]{false,true}) {
+      var p=fixture();var reached=new CountDownLatch(1);var release=new CountDownLatch(1);
+      var dialog=new ghidra.util.task.TaskDialog("Real standalone task monitor",true,false,false);
+      try {
+        var proof=preview(p);var script=new GhidraBoyTools();script.setScriptArgs(new String[]{"stock-predicate-apply",proof.toString()});
+        var writer=new PrintWriter(System.out,true){@Override public void println(String text){super.println(text);if(text.contains("\"mutation\": \"COMMITTED\"")){reached.countDown();try{assertTrue(release.await(30,TimeUnit.SECONDS));}catch(InterruptedException e){throw new AssertionError(e);}}}};
+        script.execute(new GhidraState(null,null,p,null,null,null),dialog,writer);assertTrue(reached.await(30,TimeUnit.SECONDS));
+        dialog.dispose();assertTrue(dialog.isCancelled(),"Pinned normal dialog disposal cancels its task monitor");
+        if(laterEdit){int tx=p.startTransaction("Later edit after retired script task");try{p.getOptions("sentinel").setString("later","retain");}finally{p.endTransaction(tx,true);}}
+        release.countDown();assertEquals("CANCELLED_PUBLICATION",script.lastPresentation.get(30,TimeUnit.SECONDS));
+        assertTrue(PredicatedCalls.registered(p,script.lastOperation.entry()));
+        if(laterEdit)assertEquals("retain",p.getOptions("sentinel").getString("later",null));
+      }finally{release.countDown();dialog.dispose();p.release(this);}
+    }
+  }
+  @Test public void cancellationExceptionWithoutPersistentHostFlagStillAbortsWrites() throws Exception {
+    var p=fixture();try {
+      var proof=preview(p);var once=new java.util.concurrent.atomic.AtomicBoolean();
+      var monitor=new TaskMonitorAdapter(true){@Override public void checkCancelled()throws CancelledException {
+        if(p.getFunctionManager().getFunctionCount()>0&&once.compareAndSet(false,true))throw new CancelledException();
+      }};
+      var script=execute(p,monitor,"stock-predicate-apply",proof.toString());
+      assertTrue(once.get());assertFalse(monitor.isCancelled());assertEquals(0,p.getFunctionManager().getFunctionCount());
+      assertTrue(p.getOptions(PredicatedCalls.STOCK_OPTIONS).getOptionNames().isEmpty());
+      assertEquals("CANCELLED_PUBLICATION",script.lastPresentation.get(30,TimeUnit.SECONDS));assertNull(p.getCurrentTransactionInfo());
+    }finally{p.release(this);}
+  }
+  @Test public void liveTaskDialogCancellationBeforeFinalVoteStillAborts() throws Exception {
+    var p=fixture();var dialog=new ghidra.util.task.TaskDialog("Live task cancellation",true,false,false);
+    try {
+      var proof=preview(p);var script=new GhidraBoyTools();script.setScriptArgs(new String[]{"stock-predicate-apply",proof.toString()});
+      var writer=new PrintWriter(System.out,true){@Override public void println(String text){super.println(text);if(text.contains("\"mutation\": \"PENDING_IN_OWNER\""))dialog.cancel();}};
+      assertThrows(CancelledException.class,()->script.execute(new GhidraState(null,null,p,null,null,null),dialog,writer));
+      assertEquals(PredicateOperations.Mutation.ABORTED,done(script).mutation());assertFalse(PredicatedCalls.registered(p,script.lastOperation.entry()));
+      assertEquals("CANCELLED_PUBLICATION",script.lastPresentation.get(30,TimeUnit.SECONDS));
+    }finally{dialog.dispose();p.release(this);}
+  }
+  @Test public void ownerTimingMetadataRevalidatesSameExplanationButConsumedEditRefuses() throws Exception {
+    for(boolean consumedEdit:new boolean[]{false,true}) {
+      var p=fixture();try {
+        var apply=execute(p,TaskMonitor.DUMMY,"stock-predicate-apply",preview(p).toString());done(apply);apply.lastPresentation.get(30,TimeUnit.SECONDS);
+        var entry=apply.lastOperation.entry();String authority=p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null);
+        int owner=p.startTransaction("Tool owner with ordinary analysis follow-on");GhidraBoyTools script;
+        try(var caller=PredicateOperations.participate(p)){script=execute(p,TaskMonitor.DUMMY,"conditional-call-explain",entry.toString());}
+        var original=script.lastOperation.explanation();assertFalse(script.lastOperation.completion().isDone());
+        if(consumedEdit){var at=ProgramMapping.staticAddress(p,"rom2::5212");p.getMemory().setByte(at,(byte)(p.getMemory().getByte(at)^1));}
+        else p.getOptions("Program Information").setString("Analysis Times.Times","3.873 seconds");
+        p.endTransaction(owner,true);
+        var outcome=done(script);assertEquals(!consumedEdit,outcome.current());
+        assertEquals(authority,p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString(entry.toString(),null));
+        assertEquals(consumedEdit?"SOURCE_STALE_OR_UNOBSERVED":"PUBLISHED",script.lastPresentation.get(30,TimeUnit.SECONDS));
+        if(!consumedEdit){assertEquals(original.text(),script.lastOperation.explanation().text());assertEquals(original.boundaries(),script.lastOperation.explanation().boundaries());assertEquals(outcome.sourceRevision(),script.lastOperation.explanation().revision());}
+      }finally{p.release(this);}
+    }
+  }
   @Test public void cancelledPreviewDoesNotWriteOrPublishAfterDerivation() throws Exception {
     var p=fixture();try {
       var proof=PredicatedCalls.readProof(Files.readString(preview(p)));var request=output.resolve("cancel-request.json");var target=output.resolve("cancel-preview.json");
@@ -212,7 +268,7 @@ public class PublicPredicateOperationsTest extends IntegrationTest {
         explain.lastPresentation.get(30,TimeUnit.SECONDS);explain.lastOperation.released().get(30,TimeUnit.SECONDS);
         var remove=execute(p,TaskMonitor.DUMMY,"stock-predicate-remove",apply.lastOperation.entry().toString());done(remove);
         remove.lastPresentation.get(30,TimeUnit.SECONDS);remove.lastOperation.released().get(30,TimeUnit.SECONDS);
-        assertEquals(0,PredicateOperations.inventory().get("observations"));assertEquals(0,PredicateOperations.inventory().get("gateUsers"));
+        assertEquals(0,PredicateOperations.inventory().get("observations"));assertEquals(0,PredicateOperations.inventory().get("gateUsers"));assertEquals(0,PredicateOperations.inventory().get("cancellationListeners"));
         assertEquals(0,PredicatePublication.inventory().get("requests"));assertEquals(1,p.getConsumerList().size());
       }finally{p.release(this);}
     }

@@ -4,6 +4,6 @@ import java.util.Arrays;
 public class ServiceBootstrap implements GhidraLaunchable {
   public void launch(GhidraApplicationLayout layout,String[] args)throws Exception {
     ((GhidraClassLoader)ClassLoader.getSystemClassLoader()).addPath(args[0]);
-    ((GhidraLaunchable)Class.forName("ServiceProbe").getConstructor().newInstance()).launch(layout,Arrays.copyOfRange(args,1,args.length));
+    ((GhidraLaunchable)Class.forName("ServiceProbe",true,ClassLoader.getSystemClassLoader()).getConstructor().newInstance()).launch(layout,Arrays.copyOfRange(args,1,args.length));
   }
 }
