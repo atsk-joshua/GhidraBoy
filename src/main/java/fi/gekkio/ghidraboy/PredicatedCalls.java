@@ -34,17 +34,30 @@ public final class PredicatedCalls {
     if(root.has("callSite")&&!root.get("callSite").isJsonNull())ConditionalCallSites.readRequest(root.get("callSite").toString());
     return ProgramMapping.JSON.fromJson(root,PredicatedCallGraph.Proof.class);
   }
+  private static AuthorityOptions.Family authority(Program p,Address entry) {
+    return AuthorityOptions.family(p,STOCK_OPTIONS,entry.toString(),OPTIONS,entry.toString());
+  }
   public static boolean registered(Program p,Address entry) {
-    return entry!=null&&((p.getOptionsNames().contains(OPTIONS)&&p.getOptions(OPTIONS).contains(entry.toString()))
-        ||(p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(entry.toString())));
+    return entry!=null&&authority(p,entry).present("predicated graph");
+  }
+  static boolean stockRegistered(Program p,Address entry) {
+    return entry!=null&&authority(p,entry).stock("predicated graph");
+  }
+  static boolean companionRegistered(Program p,Address entry) {
+    if(entry==null)return false;var authority=authority(p,entry);
+    authority.requireCoherent("predicated graph");
+    return authority.state()==AuthorityOptions.FamilyState.COMPANION;
+  }
+  static String stockRecord(Program p,Address entry) {
+    if(entry==null)return null;var authority=authority(p,entry);
+    return authority.stock("predicated graph")?authority.stock():null;
   }
   private static Registration read(Program p,Address entry) {
-    if(!registered(p,entry))throw new IllegalArgumentException("Missing predicated graph registration");
-    require(!(p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(entry.toString())
-        && p.getOptionsNames().contains(OPTIONS) && p.getOptions(OPTIONS).contains(entry.toString())),
-        "Conflicting stock and companion authority; records retained");
-    boolean stock=p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(entry.toString());
-    var json=com.google.gson.JsonParser.parseString(p.getOptions(stock?STOCK_OPTIONS:OPTIONS).getString(entry.toString(),null)).getAsJsonObject();
+    if(entry==null)throw new IllegalArgumentException("Missing predicated graph registration");
+    var authority=authority(p,entry);String saved=authority.value("predicated graph");
+    if(saved==null)throw new IllegalArgumentException("Missing predicated graph registration");
+    boolean stock=authority.stock("predicated graph");
+    var json=com.google.gson.JsonParser.parseString(saved).getAsJsonObject();
     if(!json.has("version")||!((stock?STOCK_VERSION:VERSION).equals(json.get("version").getAsString())||stock&&CONDITIONAL_STOCK_VERSION.equals(json.get("version").getAsString())))
       throw new IllegalArgumentException("Unsupported predicated graph version; record retained without migration");
     if(json.getAsJsonObject("proof").has("callSite")&&!json.getAsJsonObject("proof").get("callSite").isJsonNull())ConditionalCallSites.readRequest(json.getAsJsonObject("proof").get("callSite").toString());
@@ -160,7 +173,9 @@ public final class PredicatedCalls {
       var registration=new Registration(stock?(proof.callSite()==null?STOCK_VERSION:CONDITIONAL_STOCK_VERSION):VERSION,p.getUniqueProgramID(),root.toString(),proof,views,
           OrdinaryProofDependencies.fingerprint(p,monitor),nativeIdentity,stock?StockEntryInjection.VERSION:null,ownership);
       require(publicationRevision==p.getModificationNumber(),"Program changed before predicate authority publication");
-      for(var view:views)p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(registration));
+      String encoded=ProgramMapping.JSON.toJson(registration);
+      for(var view:views)AuthorityOptions.requireFamilyWrite(p,STOCK_OPTIONS,view.entry(),OPTIONS,view.entry(),stock,encoded,"predicated graph");
+      for(var view:views)AuthorityOptions.setFamilyString(p,STOCK_OPTIONS,view.entry(),OPTIONS,view.entry(),stock,encoded,"predicated graph");
       validateViews(p,registration);monitor.checkCancelled();success=true;return root;
     } finally {p.endTransaction(tx,success);}
   }
@@ -240,16 +255,18 @@ public final class PredicatedCalls {
     }
     var next=new Registration(old.version(),p.getUniqueProgramID(),old.root(),proof,views,OrdinaryProofDependencies.fingerprint(p,monitor),stock?null:SoftwareCallStateEntryInjection.nativeIdentity(),old.transport(),old.ownership());
     validateViews(p,next);int tx=p.startTransaction("Explicit predicate graph refresh");boolean success=false;
-    try{require(revision==p.getModificationNumber(),"Program changed before predicate refresh; preview again");monitor.checkCancelled();for(var view:next.views())p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(view.entry(),ProgramMapping.JSON.toJson(next));success=true;}finally{p.endTransaction(tx,success);}
+    try{require(revision==p.getModificationNumber(),"Program changed before predicate refresh; preview again");monitor.checkCancelled();String encoded=ProgramMapping.JSON.toJson(next);for(var view:next.views())AuthorityOptions.requireFamilyWrite(p,STOCK_OPTIONS,view.entry(),OPTIONS,view.entry(),stock,encoded,"predicated graph");for(var view:next.views())AuthorityOptions.setFamilyString(p,STOCK_OPTIONS,view.entry(),OPTIONS,view.entry(),stock,encoded,"predicated graph");success=true;}finally{p.endTransaction(tx,success);}
   }
   public static List<String> remove(Program p,Address entry,TaskMonitor monitor) throws Exception {
     var registration=read(p,entry);
     require(registration.ownership()!=null,"Missing current predicate ownership; records retained");
+    boolean stock=registration.transport()!=null;
+    for(var view:registration.views())AuthorityOptions.requireFamilyRemoval(p,STOCK_OPTIONS,view.entry(),OPTIONS,view.entry(),stock,"predicated graph");
     int tx=p.startTransaction("Remove owned predicate view; preserve edited artifacts and source listing");boolean success=false;
     try {
       var diagnostics=new ArrayList<String>();
       AnalysisOwnership.undo(p,registration.ownership(),monitor,diagnostics);
-      for(var view:registration.views())p.getOptions(registration.transport()!=null?STOCK_OPTIONS:OPTIONS).removeOption(view.entry());
+      for(var view:registration.views())AuthorityOptions.removeFamilyString(p,STOCK_OPTIONS,view.entry(),OPTIONS,view.entry(),stock,"predicated graph");
       monitor.checkCancelled();success=true;return List.copyOf(diagnostics);
     } finally {p.endTransaction(tx,success);}
   }

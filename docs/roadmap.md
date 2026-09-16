@@ -1,8 +1,35 @@
 # Development roadmap
 
-PUBLIC-OPERATIONS-LIFECYCLE R3 remains PARTIAL after attended service and normal-window
-execution. Scope is frozen: creation-time injection errors and first topology use
-before coherence refresh remain unresolved; later unexecuted refinement is parked.
+AUTH-R1's local candidate is rejected by AUTH-R2 review. Its post-write verification
+could discover failure only after an exact-default write had removed a genuine
+database property, and its shallow paired predicates could select one family without
+classifying ambiguity in the other.
+
+AUTH-R3 repairs both blockers. Writes and removals prove safety before mutation;
+caller-caught refusal plus outer commit cannot change authority. One shared paired
+classifier drives membership, transport selection, creation, replacement and removal
+for stock and companion records. Both ambiguity orientations and genuine conflicts
+fail closed, while a clean reopen restores readable genuine authority. Local provider
+qualification passes and the resulting artifact is an **AUTH-R3 source-qualified
+candidate only**; its SHA-256 is recorded in the AUTH-R3 completion response to avoid a
+packaged-document self-reference. Candidate-specific headed/native W2 is `NOT_RUN`;
+V remains `UNOBSERVED` and aggregate lifecycle/release readiness remains blocked. No
+installation, remote publication or release is authorized.
+
+The W2 root-cause follow-up closes bounded W2 without a production change. The
+recorded early call is `PRE_NATIVE_CANCELLED` at Ghidra's pinned pre-dispatch guard;
+the next request is the first actual native execution and succeeds. The physical
+refusals were caused by the JDI support observer registering missing physical keys
+through a typed `Options.getString` read. A guarded lookup and bounded normal-provider
+replay pass at both physical destinations. V and aggregate lifecycle acceptance remain
+blocked by unobserved desktop review and incomplete aggregate sensitivity. See
+[current status](sa/IMPLEMENTATION-STATUS.md) and the W2-R2 evidence entry. No release
+or wider SA obligation is closed by this correction.
+
+The pre-W2-R2 PUBLIC-OPERATIONS-LIFECYCLE R3 checkpoint was PARTIAL after attended
+service and normal-window execution. Its historical scope was frozen with creation-time
+injection errors and first topology use unresolved; W2-R2 above supersedes those two
+findings. Later unexecuted refinement remains parked.
 See [current status](sa/IMPLEMENTATION-STATUS.md) and the [operation contract](public-operations.md).
 This partial checkpoint does not close any retained release or wider SA obligation.
 

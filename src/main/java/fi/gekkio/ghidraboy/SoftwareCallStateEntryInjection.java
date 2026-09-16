@@ -37,11 +37,11 @@ public final class SoftwareCallStateEntryInjection extends InjectPayloadSleigh {
   @Override public PcodeOp[] getPcode(Program program, InjectContext context) {
     return SoftwareCallInjection.revalidated(program, () -> {
       try {
-        if (SoftwareCallDomains.registered(program, context.baseAddr))
+        if (SoftwareCallDomains.companionRegistered(program, context.baseAddr))
           return SoftwareCallDomains.emitLegacyComparison(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
-        if (PredicatedCalls.registered(program, context.baseAddr))
+        if (PredicatedCalls.companionRegistered(program, context.baseAddr))
           return PredicatedCalls.emitLegacyComparison(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
-        if (OrdinaryEntryAccess.registered(program, context.baseAddr))
+        if (OrdinaryEntryAccess.companionRegistered(program, context.baseAddr))
           return OrdinaryEntryAccess.emitLegacyComparison(program, context.baseAddr, uniqueBase, ghidra.util.task.TaskMonitor.DUMMY);
         if (SoftwareCallRegistry.stock(program)) throw new IllegalArgumentException("Stock registry cannot use legacy native entry convention");
         long before = program.getModificationNumber();

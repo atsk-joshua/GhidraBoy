@@ -46,6 +46,34 @@ the incumbent validated snapshot/currentness contract. Unmigrated Tools actions
 include ordinary-entry, software-call, far-call, symbol, analysis, discovery and
 export actions. No shared ownership or persisted semantic contract is rewritten.
 
+Persisted executable authority never uses `Options.contains()` by itself. Ghidra
+12.1.3 inserts missing typed reads into its in-memory option map, so membership can
+exist without a database property or Program revision. Authority readers use the
+shared `AuthorityOptions` contract: a null-default/null-value cache entry is absent;
+a non-null default equal to the current value, or a non-string default, is ambiguous
+and refuses before stock/companion selection. Normal persisted values loaded with a
+null or distinct default remain readable and retain their existing record validation.
+The exact-equal saved/default case also refuses because supported public Options APIs
+cannot distinguish it from an absent cache default. This is a bounded denial, never
+permission to infer authority.
+
+Authority writers reject null and classify the current value before mutation. A write
+whose proposed value equals a non-null cached default refuses before `setString`, even
+when a distinct genuine value is currently persisted; otherwise Ghidra would remove
+the database property as a default-valued write. Removal similarly refuses before
+mutation when a non-null cached default would make the resulting absence unprovable.
+These guarantees do not depend on transaction rollback: a caller may catch the
+refusal and commit its surrounding transaction without changing authority.
+
+Stock and companion records are classified together as absent, stock, companion,
+conflict or ambiguous. Every public membership result and transport selection checks
+both endpoints without short-circuiting. Conflict and either ambiguity orientation
+refuse; writes never convert families implicitly, and removal requires the exact
+established family. Successful mutations verify the complete paired postcondition.
+Record versions and persisted formats are unchanged; no implicit migration is
+performed. A clean reopen/cache reconstruction is the recovery path for exact-equal
+default ambiguity.
+
 ## Facts that must remain separate
 
 `lastOperation` on a newly created script instance exposes a runtime operation

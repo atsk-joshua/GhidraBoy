@@ -54,9 +54,7 @@ public final class SoftwareCallApplication {
     return preview(p, configurations, monitor, false);
   }
   public static Review previewStock(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor) throws Exception {
-    if (p.getOptions(ProgramMapping.OPTIONS).contains(SoftwareCallRegistry.KEY))
-      throw new IllegalArgumentException("Legacy software-call record retained; stock conversion is not implicit");
-    SoftwareCallRegistry.configurationIdentity(p); // Reject incompatible saved stock authority before reapply.
+    SoftwareCallRegistry.requireStockPreview(p);
     return preview(p, configurations, monitor, true);
   }
   private static Review preview(Program p, List<SoftwareCallValidation.Configuration> configurations, TaskMonitor monitor, boolean stock) throws Exception {

@@ -13,8 +13,9 @@ public final class SoftwareCallDomains {
   private SoftwareCallDomains() {}
   public static final String VERSION="software-call-domains-2", OPTIONS="GhidraBoySoftwareCallDomains";
   public static final String STOCK_OPTIONS="GhidraBoyStockSoftwareCallDomains", STOCK_VERSION="stock-software-call-domains-2";
-  private static String options(Program p) { require(!(p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(RECORD)&&p.getOptionsNames().contains(OPTIONS)&&p.getOptions(OPTIONS).contains(RECORD)),"Conflicting stock and companion domain authority; records retained"); return p.getOptionsNames().contains(STOCK_OPTIONS)&&p.getOptions(STOCK_OPTIONS).contains(RECORD)?STOCK_OPTIONS:OPTIONS; }
   private static final String RECORD="registration", DISPLAY="selected-display";
+  private static AuthorityOptions.Family authority(Program p) {return AuthorityOptions.family(p,STOCK_OPTIONS,RECORD,OPTIONS,RECORD);}
+  private static String options(Program p) {return authority(p).stock("software domain")?STOCK_OPTIONS:OPTIONS;}
   public record Domain(String id,String physicalSite,SoftwareCallValidation.Configuration configuration,
       SoftwareCallModel.Frame frame,SoftwareCallEffects.Summary effects,SoftwareCallEffects.ContinuationSummary callee,
       SoftwareCallEffects.ContinuationSummary continuation) {}
@@ -112,7 +113,7 @@ public final class SoftwareCallDomains {
     return install(p,proof,monitor,true);
   }
   private static List<View> install(Program p,Proof proof,TaskMonitor monitor,boolean stock)throws Exception {
-    current(p,proof,monitor,true);require(!p.getOptionsNames().contains(options(p))||!p.getOptions(options(p)).contains(RECORD),"Software domain group already installed");
+    current(p,proof,monitor,true);var before=authority(p);before.requireCoherent("software domain");require(before.state()==AuthorityOptions.FamilyState.ABSENT,"Software domain group already installed");
     String nativeIdentity=stock?null:SoftwareCallStateEntryInjection.nativeIdentity();int tx=p.startTransaction("Install reviewed same-site software invocation domains");boolean success=false;
     try {
       SoftwareCallInstructionDiscovery.apply(p,proof.discovery(),monitor);var views=new ArrayList<View>();
@@ -128,17 +129,26 @@ public final class SoftwareCallDomains {
         views.add(new View(domain.id(),kind,entry.toString(),pieces));
       }
       var registration=new Registration(stock?STOCK_VERSION:VERSION,p.getUniqueProgramID(),proof.domains().stream().map(Domain::configuration).toList(),semantics(proof.domains()),views,fingerprint(p,monitor),nativeIdentity,stock?StockEntryInjection.VERSION:null);
-      p.getOptions(stock?STOCK_OPTIONS:OPTIONS).setString(RECORD,ProgramMapping.JSON.toJson(registration));validateViews(p,registration,proof);success=true;return views;
+      AuthorityOptions.setFamilyString(p,STOCK_OPTIONS,RECORD,OPTIONS,RECORD,stock,ProgramMapping.JSON.toJson(registration),"software domain");validateViews(p,registration,proof);success=true;return views;
     }finally{p.endTransaction(tx,success);}
   }
   private static Registration read(Program p) {
-    require(p.getOptionsNames().contains(options(p))&&p.getOptions(options(p)).contains(RECORD),"Missing software domain group");
-    var json=com.google.gson.JsonParser.parseString(p.getOptions(options(p)).getString(RECORD,null)).getAsJsonObject();
-    require(json.has("version")&&(options(p).equals(STOCK_OPTIONS)?STOCK_VERSION:VERSION).equals(json.get("version").getAsString()),"Unsupported software domain record version");
-    var record=ProgramMapping.JSON.fromJson(json,Registration.class);require(options(p).equals(STOCK_OPTIONS)?StockEntryInjection.VERSION.equals(record.transport())&&record.nativeIdentity()==null:record.transport()==null,"Incompatible domain transport authority");require(record.programId()==p.getUniqueProgramID(),"Foreign software domain Program");return record;
+    var authority=authority(p);String selected=authority.stock("software domain")?STOCK_OPTIONS:OPTIONS;String saved=authority.value("software domain");require(saved!=null,"Missing software domain group");
+    var json=com.google.gson.JsonParser.parseString(saved).getAsJsonObject();
+    require(json.has("version")&&(selected.equals(STOCK_OPTIONS)?STOCK_VERSION:VERSION).equals(json.get("version").getAsString()),"Unsupported software domain record version");
+    var record=ProgramMapping.JSON.fromJson(json,Registration.class);require(selected.equals(STOCK_OPTIONS)?StockEntryInjection.VERSION.equals(record.transport())&&record.nativeIdentity()==null:record.transport()==null,"Incompatible domain transport authority");require(record.programId()==p.getUniqueProgramID(),"Foreign software domain Program");return record;
   }
   public static boolean registered(Program p,Address entry) {
-    return entry!=null&&p.getOptionsNames().contains(options(p))&&p.getOptions(options(p)).contains(RECORD)
+    return entry!=null&&authority(p).present("software domain")
+        &&read(p).views().stream().anyMatch(view->view.entry().equals(entry.toString()));
+  }
+  static boolean stockRegistered(Program p,Address entry) {
+    return entry!=null&&authority(p).stock("software domain")
+        &&read(p).views().stream().anyMatch(view->view.entry().equals(entry.toString()));
+  }
+  static boolean companionRegistered(Program p,Address entry) {
+    if(entry==null)return false;var authority=authority(p);authority.requireCoherent("software domain");
+    return authority.state()==AuthorityOptions.FamilyState.COMPANION
         &&read(p).views().stream().anyMatch(view->view.entry().equals(entry.toString()));
   }
   static Address source(Program p, Address entry) {

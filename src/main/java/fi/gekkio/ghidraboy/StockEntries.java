@@ -15,14 +15,14 @@ public final class StockEntries {
     for(var function:p.getFunctionManager().getFunctions(true)) {
       if(!StockEntryInjection.CONVENTION.equals(function.getCallingConventionName()))continue;
       var at=function.getEntryPoint();
-      if(PredicatedCalls.registered(p,at)) {
+      if(PredicatedCalls.stockRegistered(p,at)) {
         var proof=PredicatedCalls.registeredProof(p,at);
         var view=PredicatedCalls.views(p,at).stream().filter(v->v.entry().equals(at.toString())).findFirst().orElseThrow();
         String source=view.invocation().equals("root")?proof.entry():proof.invocations().stream().filter(i->i.id().equals(view.invocation())).findFirst().orElseThrow().target();
         result.add(new Entry(at.toString(),source,view.invocation(),proof.memory()==null?null:proof.memory().image()));
-      } else if(OrdinaryEntryAccess.registered(p,at)) {
+      } else if(OrdinaryEntryAccess.stockRegistered(p,at)) {
         var proof=OrdinaryEntryAccess.registeredProof(p,at);result.add(new Entry(at.toString(),proof.entry(),ProgramMapping.JSON.toJson(proof.domain()),null));
-      } else if(SoftwareCallDomains.registered(p,at)) {
+      } else if(SoftwareCallDomains.stockRegistered(p,at)) {
         var view=SoftwareCallDomains.views(p).stream().filter(v->v.entry().equals(at.toString())).findFirst().orElseThrow();
         result.add(new Entry(at.toString(),SoftwareCallDomains.source(p,at).toString(),view.domain(),null));
       } else if(SoftwareCallRegistry.stockCarrier(p,at)) {
@@ -40,9 +40,9 @@ public final class StockEntries {
   }
   public static String current(Program p, Address entry, TaskMonitor monitor) throws Exception {
     monitor.checkCancelled();StockEntryInjection.validate(p,entry);
-    if(PredicatedCalls.registered(p,entry))PredicatedCalls.emitStock(p,entry,0x200000,monitor);
-    else if(OrdinaryEntryAccess.registered(p,entry))OrdinaryEntryAccess.emitStock(p,entry,0x200000,monitor);
-    else if(SoftwareCallDomains.registered(p,entry))SoftwareCallDomains.emitStock(p,entry,0x200000,monitor);
+    if(PredicatedCalls.stockRegistered(p,entry))PredicatedCalls.emitStock(p,entry,0x200000,monitor);
+    else if(OrdinaryEntryAccess.stockRegistered(p,entry))OrdinaryEntryAccess.emitStock(p,entry,0x200000,monitor);
+    else if(SoftwareCallDomains.stockRegistered(p,entry))SoftwareCallDomains.emitStock(p,entry,0x200000,monitor);
     else if(SoftwareCallRegistry.stockCarrier(p,entry)) {
       long revision=p.getModificationNumber();
       var input=SoftwareCallRegistry.resolveStateEntry(p,entry);

@@ -601,5 +601,96 @@
     ],
     "private_evidence": "Separate private archive; only newly exercised copied-Program evidence",
     "stop": "User scope freeze; STOP for master review; no new implementation, GUI run, repair, deployment or installation"
+  },
+  "public_operations_overnight_w2_v_20260914": {
+    "status": "W2_PASS_V_BLOCKED",
+    "scope": "Support-only continuation; no production correction or release approval",
+    "starting_head": "a54b5ca203c125d4e9821aa96fa8836cf24108ca",
+    "intervening_support_commit": "f95e613f630fb437792a804f2a0d4a5957aed1f3",
+    "tested_production_commit": "20676c780740dd57d7920c3d1c4bc82b7881a8a2",
+    "extension_sha256": "21aff1832389fa28ae049cbfb82d9f279344056f79e75623da2e9aed63ca3732",
+    "report": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/CONTINUATION-REPORT.md",
+    "run_state": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/RUN-STATE.md",
+    "w2_disposition": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/W2-DISPOSITION.md",
+    "v_disposition": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/V-DISPOSITION.md",
+    "w2_r2_report": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/W2-R2-20260915/ROOT-CAUSE-REPORT.md",
+    "w2_r2_negative_control": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/W2-R2-20260915/diagnostic-old-observer",
+    "w2_r2_corrected_replay": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/W2-R2-20260915/diagnostic-corrected",
+    "checksums": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/OVERNIGHT-20260914/SHA256SUMS",
+    "unresolved": [
+      "Actual desktop visual review remains UNOBSERVED",
+      "Complete positive aggregate sensitivity remains NOT_RUN"
+    ],
+    "resolution": "native-3 PRE_NATIVE_CANCELLED; native-4 first actual native execution; physical refusals were support-observer-created stock option keys (P7), corrected without production change",
+    "stop": "Aggregate lifecycle remains BLOCKED; no remote writes, active installation or Wyatt contact"
+  },
+  "authority_membership_auth_r1_20260915": {
+    "status": "REJECTED_BY_AUTH_R2",
+    "scope": "Production authority membership/read/write/remove correction; no schema or record-version change",
+    "starting_head": "f95e613f630fb437792a804f2a0d4a5957aed1f3",
+    "starting_tree": "659544deae915dbfa00489a40be694b0ea07cb91",
+    "prior_qualified_production": "20676c780740dd57d7920c3d1c4bc82b7881a8a2",
+    "prior_extension_sha256": "21aff1832389fa28ae049cbfb82d9f279344056f79e75623da2e9aed63ca3732",
+    "local_extension_identity": "Recorded in the external AUTH-R1 report to avoid a packaged-document self-reference",
+    "report": "evidence/batches/AUTHORITY-MEMBERSHIP/AUTH-R1-20260915/ROOT-CAUSE-REPORT.md",
+    "classification": "Rejected: post-write verification allowed exact-default deletion before refusal, and shallow paired predicates did not always classify the opposite family",
+    "validation": {
+      "provider_tests": 885,
+      "provider_failures": 0,
+      "provider_skips": 0,
+      "build_inputs": 7,
+      "tools": 143,
+      "tools_optional_skips": 1,
+      "ktlint": "PASS",
+      "build_extension": "PASS",
+      "independent_review": "AUTH-R2_BLOCKING_FINDINGS"
+    },
+    "w2": "Historical bounded W2 on 20676c remains PASS; AUTH-R1 candidate-specific W2 was never run",
+    "remaining": [
+      "Desktop visual review remains UNOBSERVED",
+      "Complete positive aggregate sensitivity remains open",
+      "Installation, remote publication and release remain unauthorized"
+    ],
+    "stop": "Candidate rejected; do not use for headed/native qualification"
+  },
+  "authority_atomicity_auth_r3_20260916": {
+    "status": "SOURCE_QUALIFIED_CANDIDATE",
+    "scope": "Pre-mutation authority write/remove safety and coherent paired-family classification; no GUI/headed campaign",
+    "starting_head": "f95e613f630fb437792a804f2a0d4a5957aed1f3",
+    "starting_tree": "659544deae915dbfa00489a40be694b0ea07cb91",
+    "prior_qualified_production": "20676c780740dd57d7920c3d1c4bc82b7881a8a2",
+    "prior_extension_sha256": "21aff1832389fa28ae049cbfb82d9f279344056f79e75623da2e9aed63ca3732",
+    "rejected_auth_r1_extension_sha256": "2e6d0f7e350d4bd83ec5fcf549e19a1e5fddffdfa8c8c05ee52fb9b2d60c5c7b",
+    "local_extension_identity": "Recorded in the AUTH-R3 completion response to avoid a packaged-document self-reference",
+    "classification": "Public-API-only endpoint classification plus shared ABSENT/STOCK/COMPANION/CONFLICT/AMBIGUOUS family state; exact-default and removal-default ambiguity refuse before mutation",
+    "validation": {
+      "provider_classes": 90,
+      "provider_tests": 889,
+      "provider_failures": 0,
+      "provider_errors": 0,
+      "provider_skips": 0,
+      "build_inputs": 7,
+      "tools": 143,
+      "tools_optional_skips": 1,
+      "ktlint": "PASS",
+      "build_extension": "PASS",
+      "independent_review": "PASS; fresh adversarial source/call-site audit plus 7 focused real-Program tests"
+    },
+    "regressions": [
+      "Case M retains persisted Y after exact-default refusal, caught exception, committed outer transaction and packed reopen",
+      "Both stock/companion ambiguity orientations refuse in shallow and full predicated, ordinary-entry and software-registry readers",
+      "Exact-equal ambiguity recovers after clean reopen",
+      "Genuine removal persists as absence after reopen",
+      "Independent old-order negative control loses the row after mutate-then-verify and commit"
+    ],
+    "w2": "Historical bounded W2 on 20676c remains PASS; AUTH-R3 candidate-specific bounded W2 is NOT_RUN",
+    "v": "UNOBSERVED",
+    "remaining": [
+      "Candidate-specific bounded headed/native W2",
+      "Actual desktop visual review V",
+      "Complete positive aggregate sensitivity",
+      "Installation, remote publication and release authorization"
+    ],
+    "stop": "STOP after local source qualification; no GUI campaign, installation, push or release action"
   }
 }

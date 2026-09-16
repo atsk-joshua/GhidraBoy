@@ -324,13 +324,12 @@ public final class OrdinaryEntryAccess {
     }
   }
 
+  private static AuthorityOptions.Family authority(Program p, Address alias) {
+    return AuthorityOptions.family(p,STOCK_OPTIONS,alias.toString(),OPTIONS,alias.toString());
+  }
   private static Registration read(Program p, Address alias) {
-    require(!(p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString())
-        && p.getOptionsNames().contains(OPTIONS) && p.getOptions(OPTIONS).contains(alias.toString())),
-        "Conflicting stock and companion authority; records retained");
-    boolean stock = p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString());
-    if (!stock && !p.getOptionsNames().contains(OPTIONS)) return null;
-    String json = p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).getString(alias.toString(), null);
+    var authority=authority(p,alias);boolean stock=authority.stock("ordinary-entry");
+    String json=authority.value("ordinary-entry");
     if (json == null) return null;
     // Inspect the version before decoding changed finite-choice record fields. Old records
     // remain intact and cannot be silently reinterpreted under pointer-choice semantics.
@@ -342,9 +341,15 @@ public final class OrdinaryEntryAccess {
     return result;
   }
   public static boolean registered(Program p, Address alias) {
-    if (p.getOptionsNames().contains(STOCK_OPTIONS) && p.getOptions(STOCK_OPTIONS).contains(alias.toString())) return true;
-    if (!p.getOptionsNames().contains(OPTIONS)) return false;
-    return p.getOptions(OPTIONS).contains(alias.toString());
+    return alias!=null&&authority(p,alias).present("ordinary-entry");
+  }
+  static boolean stockRegistered(Program p, Address alias) {
+    return alias!=null&&authority(p,alias).stock("ordinary-entry");
+  }
+  static boolean companionRegistered(Program p, Address alias) {
+    if(alias==null)return false;var authority=authority(p,alias);
+    authority.requireCoherent("ordinary-entry");
+    return authority.state()==AuthorityOptions.FamilyState.COMPANION;
   }
   public static Proof registeredProof(Program p, Address alias) {
     var registration = read(p, alias);
@@ -460,7 +465,7 @@ public final class OrdinaryEntryAccess {
       requireAliasBinding(p, alias, proof, monitor, stock);
       var registration = new Registration(stock ? STOCK_VERSION : VERSION, p.getUniqueProgramID(), alias.toString(), proof,
           fingerprint(p, monitor), comment, nativeIdentity, stock ? StockEntryInjection.VERSION : null);
-      p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).setString(alias.toString(), ProgramMapping.JSON.toJson(registration));
+      AuthorityOptions.setFamilyString(p,STOCK_OPTIONS,alias.toString(),OPTIONS,alias.toString(),stock,ProgramMapping.JSON.toJson(registration),"ordinary-entry");
       monitor.checkCancelled(); success = true; return alias;
     } finally { p.endTransaction(tx, success); }
   }
@@ -476,9 +481,9 @@ public final class OrdinaryEntryAccess {
     int tx = p.startTransaction("Refresh ordinary-entry access proof"); boolean success = false;
     try {
       String nativeIdentity = stock ? null : SoftwareCallStateEntryInjection.nativeIdentity();
-      p.getOptions(stock ? STOCK_OPTIONS : OPTIONS).setString(alias.toString(), ProgramMapping.JSON.toJson(
+      AuthorityOptions.setFamilyString(p,STOCK_OPTIONS,alias.toString(),OPTIONS,alias.toString(),stock,ProgramMapping.JSON.toJson(
           new Registration(stock ? STOCK_VERSION : VERSION, p.getUniqueProgramID(), alias.toString(), proof,
-              fingerprint(p, monitor), old.comment(), nativeIdentity, old.transport())));
+              fingerprint(p, monitor), old.comment(), nativeIdentity, old.transport())),"ordinary-entry");
       monitor.checkCancelled(); success = true;
     } finally { p.endTransaction(tx, success); }
   }

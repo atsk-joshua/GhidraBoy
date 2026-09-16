@@ -40,11 +40,9 @@ public final class StockEntryInjection extends InjectPayloadCallother {
   // Ownership detection must survive removal of context, convention and registration.
   static boolean owned(Program p, Address entry) {
     var block = p.getMemory().getBlock(entry);
-    return block != null && STORAGE.equals(block.getComment())
-        || p.getOptionsNames().contains(OrdinaryEntryAccess.STOCK_OPTIONS)
-            && p.getOptions(OrdinaryEntryAccess.STOCK_OPTIONS).contains(entry.toString())
-        || p.getOptionsNames().contains(PredicatedCalls.STOCK_OPTIONS)
-            && p.getOptions(PredicatedCalls.STOCK_OPTIONS).contains(entry.toString());
+    boolean ordinary = OrdinaryEntryAccess.stockRegistered(p, entry);
+    boolean predicated = PredicatedCalls.stockRegistered(p, entry);
+    return block != null && STORAGE.equals(block.getComment()) || ordinary || predicated;
   }
 
   /** Export ignores only structurally identified presentation storage, including retired carriers. */
@@ -98,11 +96,11 @@ public final class StockEntryInjection extends InjectPayloadCallother {
     return SoftwareCallInjection.revalidated(p, () -> {
       try {
         validate(p, context.baseAddr);
-        if (SoftwareCallDomains.registered(p, context.baseAddr))
+        if (SoftwareCallDomains.stockRegistered(p, context.baseAddr))
           return SoftwareCallDomains.emitStock(p, context.baseAddr, uniqueBase, TaskMonitor.DUMMY);
-        if (OrdinaryEntryAccess.registered(p, context.baseAddr))
+        if (OrdinaryEntryAccess.stockRegistered(p, context.baseAddr))
           return OrdinaryEntryAccess.emitStock(p, context.baseAddr, uniqueBase, TaskMonitor.DUMMY);
-        if (PredicatedCalls.registered(p, context.baseAddr))
+        if (PredicatedCalls.stockRegistered(p, context.baseAddr))
           return PredicatedCalls.emitStock(p, context.baseAddr, uniqueBase, TaskMonitor.DUMMY);
         if (!SoftwareCallRegistry.stockCarrier(p, context.baseAddr))
           throw new IllegalArgumentException("Missing predicated graph registration or stock software carrier");

@@ -21,9 +21,7 @@ public final class ExecutableImages {
   }
   private static void require(boolean ok,String reason){if(!ok)throw new IllegalArgumentException(reason);}
   private static Envelope read(Program p) {
-    if(!p.getOptionsNames().contains(OPTIONS)||!p.getOptions(OPTIONS).contains("authority"))return new Envelope(VERSION,p.getUniqueProgramID(),0,List.of(),Map.of());
-    String saved=p.getOptions(OPTIONS).getString("authority",null);
-    // Ghidra may register a queried null default without a persisted authority value.
+    String saved=AuthorityOptions.string(p,OPTIONS,"authority");
     if(saved==null)return new Envelope(VERSION,p.getUniqueProgramID(),0,List.of(),Map.of());
     var json=com.google.gson.JsonParser.parseString(saved).getAsJsonObject();
     require(json.has("version")&&VERSION.equals(json.get("version").getAsString()),"Unsupported executable image version; history retained");
@@ -31,7 +29,7 @@ public final class ExecutableImages {
   }
   private static String key(MapperState.Physical physical,int length){return physical+":"+length;}
   public static List<Image> history(Program p){return read(p).history();}
-  public static String serialized(Program p){return p.getOptions(OPTIONS).getString("authority",null);}
+  public static String serialized(Program p){return AuthorityOptions.string(p,OPTIONS,"authority");}
   public static Image resolve(Program p,String generation) throws Exception {
     require(generation!=null&&!generation.isBlank(),"Explicit executable generation required; address-only lookup refused");
     var e=read(p);var image=e.history().stream().filter(i->generation.equals(i.generation())).findFirst().orElseThrow(()->new IllegalArgumentException("Unknown executable generation"));
@@ -86,7 +84,7 @@ public final class ExecutableImages {
       var receipt=new Initializer(source.toString(),sources,HexFormat.of().formatHex(expected),Sha256.of(expected).toString(),declaration);
       var image=new Image(generation,p.getUniqueProgramID(),cpu,expected.length,physical,receipt,receipt.bytes(),entry.toString(),function.getID());
       var history=new ArrayList<>(before.history());history.add(image);var current=new TreeMap<>(before.current());current.put(key(physical,expected.length),generation);
-      p.getOptions(OPTIONS).setString("authority",ProgramMapping.JSON.toJson(new Envelope(VERSION,p.getUniqueProgramID(),sequence,history,current)));
+      AuthorityOptions.setString(p,OPTIONS,"authority",ProgramMapping.JSON.toJson(new Envelope(VERSION,p.getUniqueProgramID(),sequence,history,current)));
       monitor.checkCancelled();resolve(p,generation);success=true;return image;
     } finally {p.endTransaction(tx,success);}
   }

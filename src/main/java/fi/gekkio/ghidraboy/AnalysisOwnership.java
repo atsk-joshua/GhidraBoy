@@ -130,10 +130,8 @@ public final class AnalysisOwnership {
   }
 
   private static Registry registry(Program p) {
-    var options = p.getOptions(ProgramMapping.OPTIONS);
-    // A default-valued Options read can register an otherwise absent option in its cache.
-    // Do not let a read-only ownership check manufacture a review dependency.
-    String value = options.contains(KEY) ? options.getString(KEY, null) : "{\"version\":1,\"groups\":{}}";
+    String value=AuthorityOptions.string(p,ProgramMapping.OPTIONS,KEY);
+    if(value==null)value="{\"version\":1,\"groups\":{}}";
     var result = ProgramMapping.JSON.fromJson(value, Registry.class);
     if (result.version != 1 && result.version != 2 && result.version != 3 && result.version != 4 && result.version != VERSION)
       throw new IllegalStateException("Unsupported analysis ownership version");
@@ -151,7 +149,6 @@ public final class AnalysisOwnership {
   /** Ownership consistency only; the independent raw returning witness is checked separately. */
   static boolean returningMarkerCurrent(Program p, Address address) {
     try {
-      if (!p.getOptions(ProgramMapping.OPTIONS).contains(KEY)) return false;
       var group = registry(p).groups.get("software-call");
       if (group == null) return false;
       var function = p.getFunctionManager().getFunctionAt(address);
@@ -204,7 +201,7 @@ public final class AnalysisOwnership {
         if (helper.id == function.getID()) group.helpers.set(helperIndex, new Helper(helper.address, helper.id,
             helper.originalNoReturn, helper.originalFixup, helper.appliedFixup, helper.originalThunk, helperMetadataStamp(function)));
       }
-      p.getOptions(ProgramMapping.OPTIONS).setString(KEY, ProgramMapping.JSON.toJson(registry));
+      AuthorityOptions.setString(p,ProgramMapping.OPTIONS,KEY,ProgramMapping.JSON.toJson(registry));
       return;
     }
     throw new IllegalArgumentException("Missing state entry receipt");
@@ -255,7 +252,7 @@ public final class AnalysisOwnership {
     SoftwareCallRegistry.requireSupportedRecords(p);
     var registry = registry(p);
     registry.groups.put(feature, group);
-    p.getOptions(ProgramMapping.OPTIONS).setString(KEY, ProgramMapping.JSON.toJson(registry));
+    AuthorityOptions.setString(p,ProgramMapping.OPTIONS,KEY,ProgramMapping.JSON.toJson(registry));
   }
 
   public static List<String> remove(Program p, String feature, TaskMonitor monitor)
@@ -270,8 +267,8 @@ public final class AnalysisOwnership {
       if (group != null) undo(p, group, monitor, diagnostics);
       if (feature.equals("software-call")) SoftwareCallRegistry.remove(p);
       if (feature.equals("far-call"))
-        p.getOptions(ProgramMapping.OPTIONS).removeOption("farCallConvention");
-      p.getOptions(ProgramMapping.OPTIONS).setString(KEY, ProgramMapping.JSON.toJson(registry));
+        AuthorityOptions.removeString(p.getOptions(ProgramMapping.OPTIONS),"farCallConvention");
+      AuthorityOptions.setString(p,ProgramMapping.OPTIONS,KEY,ProgramMapping.JSON.toJson(registry));
       monitor.checkCancelled();
       success = true;
     } finally {

@@ -51,8 +51,7 @@ public final class PredicateOperations {
   }
 
   private static String stored(Program program,Address entry) {
-    var options=program.getOptions(PredicatedCalls.STOCK_OPTIONS);
-    return options.contains(entry.toString())?options.getString(entry.toString(),null):null;
+    return PredicatedCalls.stockRecord(program,entry);
   }
   private static final java.util.Map<Program,GateState> GATES=new java.util.IdentityHashMap<>();
   private static final class GateState {final java.util.concurrent.Semaphore semaphore=new java.util.concurrent.Semaphore(1,true);int users;}

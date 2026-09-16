@@ -1,5 +1,84 @@
 # Implementation status
 
+## AUTH-R3 authority atomicity and paired classification — source-qualified candidate
+
+AUTH-R2 rejects the AUTH-R1 local candidate
+`2e6d0f7e350d4bd83ec5fcf549e19a1e5fddffdfa8c8c05ee52fb9b2d60c5c7b`.
+AUTH-R1 checked the current value, called `setString`, and only then verified the
+result. With genuine persisted `Y` and cached non-null default `X`, writing `X` removed
+the database property before refusal. A caller could catch that refusal and commit its
+outer transaction. AUTH-R1 also left shallow predicated, ordinary-entry and software
+registry predicates that could return after examining only one family.
+
+AUTH-R3 uses one public-API-only endpoint classifier and one shared stock/companion
+classifier with `ABSENT`, `STOCK`, `COMPANION`, `CONFLICT` and `AMBIGUOUS` states. Both
+endpoints are evaluated before any positive membership or transport selection.
+Conflict, genuine-one-plus-ambiguous-opposite, ambiguous-one-plus-absent-opposite and
+both-ambiguous states refuse. Creation and replacement reject null, ambiguity,
+implicit family conversion and any proposed value equal to a non-null cached default
+before mutation. Removal requires the exact family and refuses before mutation when a
+cached non-null default would make absence unprovable. Successful writes/removals
+verify the full paired postcondition. No record version, schema, language/compiler ID
+or persisted semantic version changes.
+
+Real `ProgramDB` regressions cover the destructive Case M with caught refusal,
+committed outer transaction and packed reopen retaining `Y`; both paired ambiguity
+orientations for `PredicatedCalls`, `OrdinaryEntryAccess` and
+`SoftwareCallRegistry`; exact-equal refusal followed by clean-reopen recovery; and
+genuine removal followed by reopen absence. The independent negative control performs
+the rejected mutate-then-verify order and proves the row disappears after commit and
+reopen. Existing absence, pollution, valid-record, malformed/version, genuine-conflict,
+physical-ROM ownership and W2 observer regressions remain green.
+
+Full local qualification passes 889 tests in 90 classes with zero failures, errors or
+skips, plus `ktlintCheck` and `buildExtension`; build-input checks pass 7 tests and
+tools pass 143 tests with one existing optional dependency skip. The artifact identity
+is recorded in the AUTH-R3 completion response to avoid a
+packaged-document self-reference. It is an **AUTH-R3 source-qualified candidate**, not
+W2-qualified, installed, pushed or release-approved. Historical bounded W2 on
+`20676c780740dd57d7920c3d1c4bc82b7881a8a2` remains PASS. Candidate-specific bounded
+W2 remains `NOT_RUN`; V remains `UNOBSERVED`; aggregate lifecycle remains blocked.
+Fresh independent adversarial review reports no remaining authority finding and
+separately reruns the seven focused real-Program regressions successfully.
+
+## W2-R2 root-cause follow-up — W2 PASS; V/lifecycle remain BLOCKED
+
+The exact R3 production extension remains
+`21aff1832389fa28ae049cbfb82d9f279344056f79e75623da2e9aed63ca3732`.
+The final w2-13 `native-3` call is `PRE_NATIVE_CANCELLED`: the monitor changes from
+not-cancelled to cancelled and the call returns at pinned Ghidra 12.1.3 bytecode index
+61, before callback setup or native command execution. The checker retains that call
+but excludes it from actual-native-use ordering. `native-4` is the first actual native
+execution for the committed new authority and succeeds before explicit coherence
+refresh.
+
+The physical refusal was support-observer contamination, classification P7. At each
+`decompileFunction` entry the observer called typed `Options.getString(address, null)`
+without first checking `contains`. Ghidra's `AbstractOptions.getOption` installs an
+unregistered typed option in the in-memory option map. `StockEntryInjection.owned()`
+therefore changed from false to true for ordinary physical ROM at the same Program
+revision, and the deliberately fail-closed stock guard rejected that ROM as carrier
+storage. Neither the physical `UndefinedFunction` nor its default `__asm` convention,
+context, block, or stored Function topology was damaged.
+
+The support lookup now checks `contains` before `getString`. A bounded replay on the
+same Program/candidate records ordinary physical `UndefinedFunction` objects, no
+stored Function, `unknown`/`__asm`, no fixup/thunk/inline/no-return/custom storage,
+`gb_analysis_entry=0`, no stock ownership, and ordinary initialized read/execute ROM
+blocks. The native callback requests `__asm@@inject_uponentry` (`CALLMECHANISM`, type
+3). `rom2::5210` completes and displays as the fresh pre-carrier control; after a
+valid stock-carrier request, both `rom2::5210` and `rom1::4301` complete and display
+normally. The carrier alone retains stock convention, ownership, carrier comment and
+`gb_analysis_entry=1`.
+
+Retained w2-13 semantics remain 61,440 passing raw/emitted/native cases across five
+captures. Focused support tests and the cancellation receipt checker pass; no
+production suite was rerun. Retained H0/H1/H2/I1/W1/W3/bounded-W4/W5/W6 remain
+unchanged. W2 is accepted within that bounded scope. Actual desktop visual review is
+still UNOBSERVED, the complete positive V sensitivity roster is not accepted, and
+aggregate lifecycle status remains BLOCKED. Hardware/schema, migration, ownership,
+installation/recovery and Wyatt release obligations remain open.
+
 ## PUBLIC-OPERATIONS-LIFECYCLE R3 — PARTIAL; scope frozen; STOP for master review
 
 The attended R3 run exercised a real normal CodeBrowser and analysis-enabled service

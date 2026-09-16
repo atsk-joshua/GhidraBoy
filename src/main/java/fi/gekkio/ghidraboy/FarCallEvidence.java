@@ -56,7 +56,7 @@ final class FarCallEvidence {
     fields.add(Sha256.of(ProgramMapping.JSON.toJson(components).getBytes(StandardCharsets.UTF_8)).toString());
     var options = p.getOptions(ProgramMapping.OPTIONS);
     for (String key : java.util.List.of("analysis.ownership.v1", "farCallConvention"))
-      if (includeOwnership || !key.equals("analysis.ownership.v1")) fields.add(key + ":" + (options.contains(key) ? options.getString(key, null) : "absent"));
+      if (includeOwnership || !key.equals("analysis.ownership.v1")) fields.add(key + ":" + java.util.Objects.toString(AuthorityOptions.string(options,key),"absent"));
     for (var block : p.getMemory().getBlocks())
       fields.add("permissions:" + block.getStart() + ":" + block.getFlags());
     var context = p.getProgramContext();

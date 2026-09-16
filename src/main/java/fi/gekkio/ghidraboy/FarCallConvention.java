@@ -214,8 +214,7 @@ public record FarCallConvention(
                           + "; continuation +3; bank is not restored; callee return is not proven."));
       }
       AnalysisOwnership.save(p, "far-call", owned);
-      p.getOptions(ProgramMapping.OPTIONS)
-          .setString("farCallConvention", ProgramMapping.JSON.toJson(this));
+      AuthorityOptions.setString(p,ProgramMapping.OPTIONS,"farCallConvention",ProgramMapping.JSON.toJson(this));
       monitor.checkCancelled();
       success = true;
     } finally {
