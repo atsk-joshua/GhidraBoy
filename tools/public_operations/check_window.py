@@ -8,6 +8,12 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import check_conditional_calls as conditional
 import check_stock_window as window
 core=conditional.core
+_CHECK_CACHE = {}
+
+
+def check_fingerprint(root, label):
+    files = {root/'timeline.json', *root.glob(label+'*')}
+    return tuple(sorted((str(path.relative_to(root)), core.sha(path)) for path in files if path.is_file()))
 
 def nonvisual_record(root, label, timeline):
     """Bounded native-support validation; never used by default W2/V acceptance."""
@@ -47,8 +53,12 @@ def validated_capture(root,label,*,support_only=False):
 
 
 def check(root,label,delta=1,*,support_only=False):
+    key=(str(root.resolve()),label,delta,support_only,check_fingerprint(root,label))
+    if key in _CHECK_CACHE:return _CHECK_CACHE[key]
     cap=validated_capture(root,label,support_only=support_only)
-    return conditional.replay(cap,(root/f'{label}-fixture.gb').read_bytes(),delta=delta)
+    result=conditional.replay(cap,(root/f'{label}-fixture.gb').read_bytes(),delta=delta)
+    _CHECK_CACHE[key]=result
+    return result
 
 
 
@@ -185,6 +195,17 @@ RESCUE_KINDS = {'ordinary-refresh-requested', 'ordinary-refresh-invoked',
 LIFECYCLE_ROWS = {'H0/H1', 'H2', 'I1', 'W1', 'W2', 'W3', 'W4', 'W5', 'W6'}
 
 
+def immutable_no_rescue(timeline):
+    captures = [(i, event) for i, event in enumerate(timeline) if event['kind'] == 'passive-capture']
+    core.require(captures and captures[0][1]['detail']['phase'] == 'immutable-first', 'initial immutable use was not captured first')
+    first = captures[0][0]
+    # Visiting the other saved domains after the immutable first observation is
+    # required roster collection, not a rescue of that first observation.
+    core.require(not any(event['kind'] == 'navigate' for event in timeline[:first]), 'immutable first use required navigation rescue')
+    forbidden = (RESCUE_KINDS - {'navigate'}) | {'public-action-invoke', 'operation-begin'}
+    core.require(not any(event['kind'] in forbidden for event in timeline), 'immutable session used rescue/mutation')
+
+
 def topology_first_use(root, read=core.read):
     receipt = read(root/'topology-observation.json')
     core.require(receipt['schema'] == 1, 'unsupported topology observation schema')
@@ -223,6 +244,18 @@ def topology_first_use(root, read=core.read):
     starts = [e for e in bracket if e['kind'] == 'native-request-start']
     core.require(len(starts) == len(requests) and {e['request_id'] for e in starts} == {r['request_id'] for r in requests}, 'unobserved/abandoned native request')
     eligible = []
+    pre_native_cancelled = []
+    def cancelled_before_native(request):
+        status = request.get('native_status', {})
+        return (request.get('eligibility') == 'ELIGIBLE'
+            and request.get('currentness_evidence', {}).get('disposition') == 'ELIGIBLE'
+            and status.get('monitor_cancelled_at_entry') is False
+            and status.get('monitor_cancelled_at_return') is True
+            and status.get('return_code_index') == 61
+            and status.get('cancelled') is True
+            and status.get('timed_out') is False
+            and status.get('failed_to_start') is False
+            and request.get('completed') is False and request.get('error') == '')
     for request in requests:
         actual = request['identity']
         core.require(all(actual[key] == identity[key] for key in ('program_id', 'program_object')) and request['provider'] == provider and request['observed_operation_id'] == identity['operation_id'], 'wrong native Program/provider or creation correlation')
@@ -232,7 +265,11 @@ def topology_first_use(root, read=core.read):
         currentness, transaction = request['currentness_evidence'], request['transaction_evidence']
         core.require(currentness.get('observed_at_seq') == start['seq'] and transaction.get('observed_at_seq') == start['seq'], 'eligibility not observed at native start')
         core.require(transaction.get('owner_transaction_id') == actual['transaction_id'] and isinstance(transaction.get('active'), bool) and isinstance(currentness.get('current'), bool), 'unbound native eligibility')
-        if request['eligibility'] == 'ELIGIBLE':
+        classification = 'PRE_NATIVE_CANCELLED' if cancelled_before_native(request) else request['eligibility']
+        if classification == 'PRE_NATIVE_CANCELLED':
+            core.require(start['seq'] > terminal['seq'] and currentness['current'] and not transaction['active'] and transaction.get('owner_status') == 'COMMITTED', 'pre-native cancellation lacks eligible committed authority')
+            pre_native_cancelled.append(request)
+        elif request['eligibility'] == 'ELIGIBLE':
             core.require(start['seq'] > terminal['seq'] and currentness['current'] and not transaction['active'] and transaction.get('owner_status') == 'COMMITTED', 'native request started before eligible owner/currentness')
         elif request['eligibility'] == 'PROVISIONAL':
             core.require(transaction['active'] and transaction.get('owner_status') in ('NOT_DONE', 'NOT_DONE_BUT_ABORTED'), 'provisional request lacks active owner evidence')
@@ -240,8 +277,8 @@ def topology_first_use(root, read=core.read):
             core.require(actual['domain'] in before['domains'] and actual['domain'] != identity['domain'] and not transaction['active'] and not currentness['current'] and currentness.get('disposition') == 'STALE_AUTHORITY' and currentness.get('registration_sha256') and 'Stale predicated graph registration' in request['error'], 'unproven post-commit stale authority')
         else:
             core.require(currentness.get('disposition') == request['eligibility'], 'unobserved native cancellation/supersession')
-        if request['eligibility'] == 'ELIGIBLE' and actual['domain'] == identity['domain'] and actual['carrier'] == identity['carrier']:eligible.append(request)
-    target_requests = [r for r in requests if r['identity']['domain'] == identity['domain'] and r['identity']['carrier'] == identity['carrier'] and next(e['seq'] for e in starts if e['request_id'] == r['request_id']) > terminal['seq']]
+        if classification == 'ELIGIBLE' and actual['domain'] == identity['domain'] and actual['carrier'] == identity['carrier']:eligible.append(request)
+    target_requests = [r for r in requests if not cancelled_before_native(r) and r['identity']['domain'] == identity['domain'] and r['identity']['carrier'] == identity['carrier'] and next(e['seq'] for e in starts if e['request_id'] == r['request_id']) > terminal['seq']]
     target_requests.sort(key=lambda r: next(e['seq'] for e in starts if e['request_id'] == r['request_id']))
     core.require(target_requests and capture['request_id'] == target_requests[0]['request_id'], 'first committed new-domain request missed regardless of result')
     eligible.sort(key=lambda r: next(e['seq'] for e in starts if e['request_id'] == r['request_id']))
@@ -266,7 +303,7 @@ def topology_first_use(root, read=core.read):
         core.require(error['identity'] == request['identity'] and error['eligibility'] == request['eligibility'] and request['eligibility'] != 'ELIGIBLE' and request['error'], 'eligible/unclassified creation error')
     core.require(all(not r['error'] or any(e['request_id'] == r['request_id'] for e in errors) for r in requests), 'unattributed native request error')
     core.require(receipt['delta'] in (-1, 1), 'unsupported fixture delta')
-    return {'request_id':first['request_id'], 'identity':identity, 'attributed_errors':len(errors), 'delta':receipt['delta']}
+    return {'request_id':first['request_id'], 'identity':identity, 'attributed_errors':len(errors), 'delta':receipt['delta'], 'pre_native_cancelled':[r['request_id'] for r in pre_native_cancelled]}
 
 
 def topology_navigation(cap, first_use, read=core.read):
@@ -306,7 +343,8 @@ def acceptance_identities(root, inputs, read=core.read):
             artifacts = read(run_root/name)
             core.require(artifacts, 'empty candidate/support inventory')
             for path, digest in artifacts.items():
-                core.require(core.sha(run_root/path) == digest, 'changed candidate/support artifact: '+path)
+                artifact = Path(path) if name == 'runtime-inputs.json' else run_root/path
+                core.require(core.sha(artifact) == digest, 'changed candidate/support artifact: '+path)
     review = read(root/'integrated-acceptance.json')
     core.require(review['schema'] == 1 and review['status'] == 'PASS' and review['reviewer'] and review['manifest_sha256'] == core.sha(root/'acceptance-manifest.json'), 'unbound independent review')
     core.require(set(review['rows']) == LIFECYCLE_ROWS and all(review['rows'][row]['status'] == 'PASS' and review['rows'][row]['finding'] for row in LIFECYCLE_ROWS), 'incomplete independent row review')
@@ -440,8 +478,7 @@ def completion(root, read=core.read, include_v=True):
         result=read(reopen/'public-window-complete.json');core.require(result['immutable'] and result['unchanged'] and result['authority']==read(cap/'saved-authority.json'),'immutable first-use mismatch')
         labels=sorted(x.name.removesuffix('-source-binding.json') for x in reopen.glob('immutable-*-source-binding.json'));core.require('immutable-first' in labels,'missing first immutable native use')
         immutable_roster(json.loads(read(cap/'saved-authority.json')),{label:read(reopen/(label+'-request.json')) for label in labels})
-        timeline=read(reopen/'timeline.json');captures=[x for x in timeline if x['kind']=='passive-capture'];core.require(captures and captures[0]['detail']['phase']=='immutable-first','initial immutable use was not captured first')
-        core.require(not any(x['kind'] in RESCUE_KINDS | {'public-action-invoke','operation-begin'} for x in timeline),'immutable session used rescue/mutation')
+        immutable_no_rescue(read(reopen/'timeline.json'))
         return {label:check(reopen,label,-1) for label in labels}
     run('H0/H1',services);run('H2',contention);run('I1',lambda:chooser(cap));run('W1',warm);run('W2',topology);run('W3',supersession);run('W4',outstanding);run('W5',removal);run('W6',persistence)
     if include_v:

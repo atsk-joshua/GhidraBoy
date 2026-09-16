@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Compile a passive normal-provider W2 probe and optionally run on a new project copy.
 
-No screen capture, installed payload change, private controller intervention or proof
-refresh. Published DecompileData observations do not establish full request coverage.
+Desktop capture is opt-in. No installed payload change, private controller intervention
+or pre-witness proof refresh occurs. Published DecompileData observations do not
+establish full request coverage.
 """
 import argparse
 import hashlib
@@ -22,9 +23,14 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--project-name', required=True)
     parser.add_argument('--program', required=True)
-    parser.add_argument('--run', action='store_true', help='Run the real normal UI without desktop capture')
+    parser.add_argument('--run', action='store_true', help='Run the real normal UI')
+    parser.add_argument('--desktop-capture', action='store_true', help='Capture actual visible desktop window images for aggregate visual review')
     parser.add_argument('--observe-native', action='store_true', help='Pinned 12.1.3 public API breakpoints via loopback JDI; changes request timing')
     parser.add_argument('--comparison', action='store_true', help='Explicit refresh and reversal only after retaining pre-rescue display')
+    parser.add_argument('--physical-diagnostic', action='store_true', help='Run only the bounded stock-carrier/physical-destination discriminator')
+    parser.add_argument('--w2-r3', action='store_true', help='Run the bounded AUTH-R3 pollution/physical/topology/save qualification')
+    parser.add_argument('--immutable-reopen', action='store_true', help='Open the copied saved Program immutably for the first-use witness')
+    parser.add_argument('--baseline', type=Path, help='Saved authority receipt required by --immutable-reopen')
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[2]
     out = args.out.resolve()
@@ -53,7 +59,10 @@ def main():
     (out / 'captures').mkdir()
     installed = args.runtime / 'Ghidra/Extensions/GhidraBoy/ghidra_scripts'
     sources = [Path(__file__), repo / 'tools/public_operations/W2NormalProbe.java', repo / 'tools/public_operations/W2Bootstrap.java',
+               repo / 'tools/public_operations/fi/gekkio/ghidraboy/W2AuthorityProbe.java',
                *sorted((repo / 'src/test/scripts').glob('GhidraBoy*.java')), repo / 'src/test/scripts/Sm83PreservationInventory.java', installed / 'GhidraBoyTools.java']
+    sources += [repo / 'tools/public_operations/normalize_w2.py', repo / 'tools/public_operations/check_window.py',
+                repo / 'tools/check_conditional_calls.py', repo / 'tools/check_stock_window.py', repo / 'tools/check_predicated_calls.py']
     if args.observe_native:sources.append(repo / 'tools/public_operations/W2NativeObserver.java')
     identities = {str(p): sha(p) for p in sources}
     snapshots = {}
@@ -73,7 +82,7 @@ def main():
     runtime_ids = {str(p): sha(p) for p in runtime_files}
     write('runtime-inputs.json', runtime_ids)
     cmd = [str(args.jdk / 'bin/javac'), '-proc:none', '-cp', os.pathsep.join(map(str, args.runtime.rglob('*.jar'))),
-           '-sourcepath', os.pathsep.join(map(str, [repo / 'src/test/scripts', installed])), '-d', str(classes), *map(str, sources[1:3])]
+           '-sourcepath', os.pathsep.join(map(str, [repo / 'src/test/scripts', installed, repo / 'tools/public_operations'])), '-d', str(classes), *map(str, sources[1:4])]
     result = subprocess.run(cmd, text=True, capture_output=True)
     write('compile.json', dict(argv=cmd, exit=result.returncode, stdout=result.stdout, stderr=result.stderr))
     result.check_returncode()
@@ -95,7 +104,15 @@ def main():
            str(args.runtime / 'Ghidra/Framework/Utility/lib/Utility.jar') + os.pathsep + str(bootstrap), 'ghidra.Ghidra', 'W2Bootstrap',
            str(classes), str(out / 'projects'), args.project_name, str(out / 'captures'), str(repo / 'tools/public_operations'), str(installed), args.program]
     observer_cmd = None
+    if args.desktop_capture:cmd.insert(1, '-Dghidraboy.desktopCapture=true')
     if args.comparison:cmd.insert(1, '-Dghidraboy.w2Comparison=true')
+    if args.physical_diagnostic:cmd.insert(1, '-Dghidraboy.w2PhysicalDiagnostic=true')
+    if args.w2_r3:cmd.insert(1, '-Dghidraboy.w2R3=true')
+    if args.immutable_reopen:
+        if args.baseline is None:
+            parser.error('--immutable-reopen requires --baseline')
+        cmd.insert(1, '-Dghidraboy.w2R3Immutable=true')
+        cmd.insert(1, '-Dghidraboy.w2R3Baseline=' + str(args.baseline.resolve()))
     if args.observe_native:
         port = 5005  # Preparation only: no socket access or port reservation.
         if args.run:
@@ -112,7 +129,8 @@ def main():
     for name, expected in {**identities, **runtime_ids}.items():
         if sha(Path(name)) != expected:
             raise RuntimeError('Prepared input changed: ' + name)
-    receipt = dict(start_ns=time.time_ns(), normal_provider_scripted_observation=True, screen_capture=False, visual_acceptance='UNOBSERVED', argv=cmd)
+    receipt = dict(start_ns=time.time_ns(), normal_provider_scripted_observation=True, screen_capture=args.desktop_capture,
+                   visual_acceptance='CAPTURED_UNREVIEWED' if args.desktop_capture else 'UNOBSERVED', argv=cmd)
     with (out / 'launch.log').open('x') as log:
         process = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT)
         receipt['pid'] = process.pid
@@ -126,7 +144,7 @@ def main():
             receipt['observer_effect'] = 'Public boundary and provider exception event threads suspend for supported snapshots; compare timing to uninstrumented run'
         write('process-start.json', receipt)
         try:
-            receipt['exit'] = process.wait(timeout=300)
+            receipt['exit'] = process.wait(timeout=600)
         except subprocess.TimeoutExpired:
             receipt['timeout'] = True
             process.terminate()

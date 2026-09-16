@@ -82,6 +82,73 @@ class PublicOperationEvidenceTest(unittest.TestCase):
     def test_missing_base_is_not_execution(self):
         with self.assertRaises(ValueError):checker.check([])
 
+    def test_immutable_roster_navigation_is_not_first_use_rescue(self):
+        spec=importlib.util.spec_from_file_location('immutable_timeline',root/'check_window.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        first={'kind':'passive-capture','detail':{'phase':'immutable-first'}}
+        visit={'kind':'navigate','detail':{'phase':'immutable-0'}}
+        later={'kind':'passive-capture','detail':{'phase':'immutable-0'}}
+        module.immutable_no_rescue([first,visit,later])
+        with self.assertRaises(module.core.Refusal):module.immutable_no_rescue([visit,first,later])
+        for kind in (module.RESCUE_KINDS-{'navigate'})|{'public-action-invoke','operation-begin'}:
+            for trace in ([{'kind':kind},first,visit,later], [first,visit,{'kind':kind},later]):
+                with self.subTest(kind=kind,trace=trace):
+                    with self.assertRaises(module.core.Refusal):module.immutable_no_rescue(trace)
+
+    def test_native_observer_registration_lookup_is_non_mutating(self):
+        source=(root/'W2NormalProbe.java').read_text()
+        self.assertIn('return W2AuthorityProbe.predicatedStockRecord(p,at);',source)
+        self.assertIn('record.put("registration",probe.stockRegistration(p,function.getEntryPoint()))',source)
+        self.assertIn('record.put("registration_at_callback",p==null||f==null?null:stockRegistration(p,f.getEntryPoint()))',source)
+        self.assertNotIn('record.put("registration",p.getOptions(PredicatedCalls.STOCK_OPTIONS).getString',source)
+        self.assertEqual(1,source.count('.getString('))
+        self.assertIn('"INTENTIONAL_NEGATIVE_CONTROL_ONLY"',source)
+        bridge=(root/'fi/gekkio/ghidraboy/W2AuthorityProbe.java').read_text()
+        self.assertIn('StockEntryInjection.owned(program, entry)',bridge)
+        self.assertIn('PredicatedCalls.stockRecord(program, entry)',bridge)
+
+    def test_w2_desktop_capture_is_opt_in_and_hash_bound(self):
+        runner=(root/'run_w2_probe.py').read_text()
+        source=(root/'W2NormalProbe.java').read_text()
+        self.assertIn("parser.add_argument('--desktop-capture'",runner)
+        self.assertIn('-Dghidraboy.desktopCapture=true',runner)
+        self.assertIn('process.wait(timeout=600)',runner)
+        self.assertIn('var robot=new java.awt.Robot();robot.delay(500)',source)
+        self.assertIn('frame.setAlwaysOnTop(true);frame.setVisible(true);frame.toFront();frame.requestFocus()',source)
+        self.assertIn('Disposable W2 window did not become active/focused for desktop capture',source)
+        self.assertIn('attempt<240',source)
+        self.assertIn('record.put("desktop_sha256",hash(image))',source)
+        self.assertIn('record.put("visual_inspection","CAPTURED_UNREVIEWED")',source)
+        self.assertIn('for(var registered:List.of(seedAt,entry))',source)
+        self.assertNotIn('refreshAll("comparison-after-first-result")',source)
+        self.assertIn('registered.toString());\n          drain();',source)
+        normalizer=(root/'normalize_w2.py').read_text()
+        self.assertIn("visual = 'CAPTURED_UNREVIEWED' if desktop_captured else 'UNOBSERVED'",normalizer)
+        self.assertIn('support_only=not desktop_captured',normalizer)
+        self.assertIn("json.loads((cap/(label+'-request.json')).read_text())",normalizer)
+        self.assertIn("repo / 'tools/public_operations/normalize_w2.py'",runner)
+        self.assertIn("repo / 'tools/public_operations/check_window.py'",runner)
+
+    def test_semantic_cache_is_content_bound(self):
+        import tempfile
+        spec=importlib.util.spec_from_file_location('semantic_cache',root/'check_window.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as work:
+            path=Path(work);(path/'timeline.json').write_text('[]');(path/'cached-fixture.gb').write_bytes(b'a')
+            calls=[]
+            module.validated_capture=lambda *args,**kwargs:object()
+            module.conditional.replay=lambda *args,**kwargs:calls.append(args[1]) or {'status':'PASS'}
+            self.assertEqual('PASS',module.check(path,'cached')['status'])
+            self.assertEqual('PASS',module.check(path,'cached')['status'])
+            self.assertEqual(1,len(calls))
+            (path/'cached-fixture.gb').write_bytes(b'b')
+            self.assertEqual('PASS',module.check(path,'cached')['status'])
+            self.assertEqual(2,len(calls))
+
+    def test_acceptance_runtime_paths_are_not_rebased_under_lane(self):
+        source=(root/'check_window.py').read_text()
+        self.assertIn("artifact = Path(path) if name == 'runtime-inputs.json' else run_root/path",source)
+
 class TopologyReceiptContractTest(unittest.TestCase):
     """Synthetic schema tests only: these do not establish observed W2 or V acceptance."""
     def setUp(self):
@@ -156,6 +223,23 @@ class TopologyReceiptContractTest(unittest.TestCase):
         request['currentness_evidence']['observed_at_seq']=3.25;request['transaction_evidence']['observed_at_seq']=3.25
         receipt['events'] += [start,request];receipt['events'].sort(key=lambda e:e['seq'])
         with self.assertRaisesRegex(self.module.core.Refusal,'first committed new-domain'):self.check(receipt)
+    def test_pinned_initial_guard_cancellation_precedes_first_native_use(self):
+        import copy
+        receipt=copy.deepcopy(self.receipt)
+        start=copy.deepcopy(next(e for e in receipt['events'] if e['kind']=='native-request-start'))
+        request=copy.deepcopy(next(e for e in receipt['events'] if e['kind']=='native-request'))
+        start.update(seq=3.25,request_id='guard-cancelled');request.update(seq=3.4,request_id='guard-cancelled',completed=False,error='',native_status={
+            'monitor_cancelled_at_entry':False,'monitor_cancelled_at_return':True,'return_code_index':61,
+            'cancelled':True,'timed_out':False,'failed_to_start':False})
+        request['currentness_evidence']['disposition']='ELIGIBLE'
+        request['currentness_evidence']['observed_at_seq']=3.25;request['transaction_evidence']['observed_at_seq']=3.25
+        receipt['events'] += [start,request];receipt['events'].sort(key=lambda e:e['seq'])
+        self.assertEqual(['guard-cancelled'],self.check(receipt)['pre_native_cancelled'])
+        for field,value in [('return_code_index',62),('monitor_cancelled_at_entry',True),('cancelled',False)]:
+            changed=copy.deepcopy(receipt);status=next(e for e in changed['events'] if e.get('request_id')=='guard-cancelled' and e['kind']=='native-request')['native_status'];status[field]=value
+            with self.subTest(field=field), self.assertRaises(self.module.core.Refusal):self.check(changed)
+        changed=copy.deepcopy(receipt);cancelled=next(e for e in changed['events'] if e.get('request_id')=='guard-cancelled' and e['kind']=='native-request');cancelled['eligibility']='CANCELLED';cancelled['currentness_evidence']['disposition']='CANCELLED'
+        with self.subTest(classification='contradictory-cancelled'), self.assertRaises(self.module.core.Refusal):self.check(changed)
     def test_post_commit_stale_authority_is_not_provisional(self):
         import copy
         receipt=copy.deepcopy(self.receipt)

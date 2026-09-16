@@ -17,7 +17,7 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def normalize(run, *, bounded_prefix=False):
+def normalize(run, *, bounded_prefix=False, w2_r3=False):
     cap = run/'captures'
     read = lambda name: json.loads((cap/name).read_text())
     require = checker.core.require
@@ -45,8 +45,9 @@ def normalize(run, *, bounded_prefix=False):
     require(o['mutation'] == 'COMMITTED' and o['databaseCommit'] and o['current'] and not o['cancelled'], 'creation not current/committed')
     publication = one('public-action-presentation', lambda d: d['operation'] == operation)
     captured = one('passive-capture', lambda d: d['phase'] == 'topology-first-use')
-    comparison = one('explicit-comparison-begin')
-    require(captured['sequence'] < comparison['sequence'], 'post-comparison first result')
+    comparison = None if w2_r3 else one('explicit-comparison-begin')
+    if comparison is not None:
+        require(captured['sequence'] < comparison['sequence'], 'post-comparison first result')
     before, after = read('topology-before.json'), read('topology-after.json')
     record = read('topology-first-use-request.json')
     provider = dict(class_=observed['detail']['normal_provider_class'])
@@ -66,7 +67,8 @@ def normalize(run, *, bounded_prefix=False):
     event(terminal, 'owner-terminal', identity=identity, mutation=o['mutation'], current=o['current'], completion_receipt_seq=outcome['sequence'])
     event(publication, 'public-presentation', identity=identity, disposition=publication['detail']['disposition'])
     event(captured, 'first-use-capture', label='topology-first-use', request_id=record['native_request_id'])
-    event(comparison, 'explicit-provider-action', detail='comparison only after retained first result')
+    if comparison is not None:
+        event(comparison, 'explicit-provider-action', detail='comparison only after retained first result')
     for e in timeline:
         if apply['sequence'] < e['sequence'] < captured['sequence']:
             if e['kind'] == 'program-event':
@@ -90,13 +92,17 @@ def normalize(run, *, bounded_prefix=False):
         require(end['sequence'] < captured['sequence'], 'unclosed first-use work')
         s, t = start['detail'], end['detail']
         require(s['program'] == t['program'] == before['program'] and s['entry'] == t['entry'] and s['function_id'] == t['function_id'], 'foreign native result')
-        require(s['revision'] == t['revision'] and s['registration'] == t['registration'], 'source changed across native currentness validation')
-        displays = [e['detail'] for e in timeline if e['kind'] == 'display-data' and e['detail'].get('result_object') == t['result_object']]
+        active = s['transaction']['active']
+        require(s['registration'] == t['registration'], 'authority changed across native currentness validation')
+        if not active:
+            require(s['revision'] == t['revision'], 'source changed across non-provisional native currentness validation')
+        displays = [e['detail'] for e in timeline if e['kind'] == 'display-data'
+                    and end['sequence'] <= e['sequence'] < captured['sequence']
+                    and e['detail'].get('result_object') == t['result_object']]
         require(len(displays) <= 1 and (not t['completed'] or len(displays) == 1), 'unbound native/display result')
         if displays:
             require(displays[0]['completed'] == t['completed'] and displays[0]['error'] == t['error'] and displays[0]['provider_object'] == provider['object'], 'foreign native/display result')
         actual = {**identity, 'domain':s['entry'], 'carrier':s['entry']}
-        active = s['transaction']['active']
         if active:
             require(s['transaction']['id'] == o['transactionId'], 'foreign provisional owner')
             eligibility = 'PROVISIONAL'
@@ -119,7 +125,20 @@ def normalize(run, *, bounded_prefix=False):
     # comparison/navigation work is separately classified, never claimed complete.
     measured_lines = [line for line in raw if len(line.split('\t')) > 2 and line.split('\t')[2] in requests]
     (cap/'measured-native-events.tsv').write_text('\n'.join(measured_lines)+'\n')
-    outside_errors = [line for line in raw if line.startswith('provider-exception\t') and line.split('\t')[2] not in requests]
+    expected_later_stale = None
+    if w2_r3:
+        expected_later_stale = read('old-domain-stale-control.json')
+        stale_id = expected_later_stale['native_request_id']
+        require(stale_id in starts and stale_id in returns, 'unbound W2-R3 old-domain stale request')
+        stale_start, stale_end = starts[stale_id]['detail'], returns[stale_id]['detail']
+        require(stale_start['phase'] == stale_end['phase'] == 'old-domain-stale-control'
+                and stale_start['entry'] == stale_end['entry'] == expected_later_stale['old_entry']
+                and expected_later_stale['old_entry'] != expected_later_stale['current_entry']
+                and expected_later_stale['result_object'] == stale_end['result_object']
+                and not stale_end['completed'] and 'Stale predicated graph registration' in stale_end['error'],
+                'wrong or misattributed W2-R3 old-domain stale control')
+    expected_later_ids = {expected_later_stale['native_request_id']} if expected_later_stale else set()
+    outside_errors = [line for line in raw if line.startswith('provider-exception\t') and line.split('\t')[2] not in requests and line.split('\t')[2] not in expected_later_ids]
     errors = []
     for line_number, line in enumerate(measured_lines, 1):
         if line.startswith('provider-exception\t'):
@@ -158,7 +177,7 @@ def normalize(run, *, bounded_prefix=False):
         raw_sha256={name:sha(run/name) for name in ('captures/timeline.json','native-events.tsv','launch.log','process-start.json','process-exit.json','captures/topology-before.json','captures/topology-after.json')},
         printed_exception_groups=printed_groups, attributed_launch_lines=attributed_launch_lines, visual='UNOBSERVED',
         coverage_scope='measured apply through retained first-use capture only; full raw stream retained',
-        later_observations=dict(provider_exceptions=outside_errors, unmatched_requests=sorted(starts.keys()-returns.keys()), terminal_observer_record=raw[-1], navigation='FAIL' if outside_errors else 'UNOBSERVED'))
+        later_observations=dict(provider_exceptions=outside_errors, unmatched_requests=sorted(starts.keys()-returns.keys()), terminal_observer_record=raw[-1], navigation='FAIL' if outside_errors else 'PASS' if w2_r3 else 'UNOBSERVED', old_domain_stale=expected_later_stale))
     (cap/'topology-observation.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
@@ -168,18 +187,23 @@ def main():
     parser.add_argument('run', type=Path)
     parser.add_argument('--bounded-prefix', action='store_true', help='Validate only the completed creation interval despite a separately failed later process; never full-run acceptance')
     parser.add_argument('--receipt-only', action='store_true', help='Bind and check causal receipt without claiming semantic replay')
+    parser.add_argument('--w2-r3', action='store_true', help='Normalize the bounded AUTH-R3 run without the historical post-witness comparison phase')
     args = parser.parse_args()
-    receipt=normalize(args.run,bounded_prefix=args.bounded_prefix)
+    receipt=normalize(args.run,bounded_prefix=args.bounded_prefix,w2_r3=args.w2_r3)
     cap = args.run/'captures'
     first = checker.topology_first_use(cap)
-    labels = ['topology-first-use', *['domain-order-'+str(i) for i in range(4)]]
-    entries = [json.loads((cap/(label+'-request.json')).read_text())['display_entry'] for label in labels[1:]]
-    checker.core.require(len(set(entries)) == 2 and entries[0] == entries[3] and entries[1] == entries[2] and entries[0] != entries[1], 'missing actual domain reversal')
+    labels = ['topology-first-use'] if args.w2_r3 else ['topology-first-use', *['domain-order-'+str(i) for i in range(4)]]
+    if not args.w2_r3:
+        entries = [json.loads((cap/(label+'-request.json')).read_text())['display_entry'] for label in labels[1:]]
+        checker.core.require(len(set(entries)) == 2 and entries[0] == entries[3] and entries[1] == entries[2] and entries[0] != entries[1], 'missing actual domain reversal')
     if args.receipt_only:
         print(json.dumps(dict(first_use=first, process_completion=receipt['process_completion'], semantic_replay='NOT_RUN', visual='UNOBSERVED', W2_acceptance='UNOBSERVED'),indent=2))
         return
-    result = dict(process_completion=receipt['process_completion'], later_observations=receipt['later_observations'], native_creation_support='PASS', visual='UNOBSERVED', W2_acceptance='UNOBSERVED', first_use=first,
-                  semantics={label:checker.check(cap,label,1,support_only=True) for label in labels})
+    postprocessor_sources={str(path):sha(path) for path in (Path(__file__).resolve(),Path(checker.__file__).resolve(),Path(checker.conditional.__file__).resolve(),Path(checker.window.__file__).resolve(),Path(checker.core.__file__).resolve())}
+    desktop_captured = all((cap/(label+'-desktop.png')).is_file() and 'desktop_sha256' in json.loads((cap/(label+'-request.json')).read_text()) for label in labels)
+    visual = 'CAPTURED_UNREVIEWED' if desktop_captured else 'UNOBSERVED'
+    result = dict(process_completion=receipt['process_completion'], later_observations=receipt['later_observations'], native_creation_support='PASS', visual=visual, W2_acceptance='UNOBSERVED', first_use=first,postprocessor_sources=postprocessor_sources,
+                  semantics={label:checker.check(cap,label,1,support_only=not desktop_captured) for label in labels})
     (args.run/'native-support-replay.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
 

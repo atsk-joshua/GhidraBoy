@@ -683,14 +683,58 @@
       "Genuine removal persists as absence after reopen",
       "Independent old-order negative control loses the row after mutate-then-verify and commit"
     ],
-    "w2": "Historical bounded W2 on 20676c remains PASS; AUTH-R3 candidate-specific bounded W2 is NOT_RUN",
+    "w2": "Historical bounded W2 on 20676c remains PASS; AUTH-R3 candidate-specific bounded W2 is PASS by W2-R3",
+    "w2_r3_raw": "evidence/batches/AUTHORITY-MEMBERSHIP/W2-R3-20260916/raw",
+    "w2_r3_report": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916/REPORT-W2-R3.md",
+    "w2_r3_review": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916/W2-R3-INDEPENDENT-REVIEW.md",
+    "accepted_candidate": "evidence/batches/AUTHORITY-MEMBERSHIP/W2-R3-20260916/candidate/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip",
     "v": "UNOBSERVED",
     "remaining": [
-      "Candidate-specific bounded headed/native W2",
       "Actual desktop visual review V",
       "Complete positive aggregate sensitivity",
       "Installation, remote publication and release authorization"
     ],
-    "stop": "STOP after local source qualification; no GUI campaign, installation, push or release action"
+    "stop": "W2-R3 completed separately; final receipt identity recorded in the W2-R3 completion response pending authorized external archival; no installation, push or release action"
+  },
+  "public_operations_lifecycle_v1_20260916": {
+    "status": "PASS",
+    "scope": "Exact AUTH-R3 candidate aggregate public-operations lifecycle and actual desktop visual acceptance; not release approval",
+    "head": "f95e613f630fb437792a804f2a0d4a5957aed1f3",
+    "head_tree": "659544deae915dbfa00489a40be694b0ea07cb91",
+    "candidate_sha256": "54fc048798025691789da706508d9c5fd674c2655b8192152a65eb146899e07c",
+    "starting_support_documentation_worktree_identity": "2bacb31821217c99718b76f3e9070025c654aa504d44d3770a1b02f576057ba0",
+    "production_combined_sha256": "e3cb9178d51923f7e5db1ec40f1ca8029f0e8e12f0765d6a0ec6815fa658bc8d",
+    "production_files_verified": 65,
+    "rows": ["H0/H1", "H2", "I1", "W1", "W2", "W3", "W4", "W5", "W6", "V"],
+    "sensitive_controls": 12,
+    "desktop_screenshots_reviewed": 12,
+    "final_aggregate_sha256": "cbf4f44e2ad8d449caf0cb31ccced77abf72ca7f5b5a0fd36d23241f7601670f",
+    "acceptance_manifest_sha256": "0a5afa5f0bf2f9c75382926b94b3c6fa4b88d42fc8c0cbfdffe20c02829ef27f",
+    "independent_review_sha256": "90d099c30c28ff9aaf37e6ad35d0f636bdc18aa9edef83d8fcf1f80b936314ef",
+    "protected_local_evidence_root": "/private/tmp/GHIDRABOY-V1-20260916-QzPpoY",
+    "durable_raw": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916/raw",
+    "durable_derived": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916",
+    "archival": "REL-0A preserved the complete sensitive raw root and the accepted derived package externally; the original protected temp root remains a historical receipt input",
+    "remaining": [
+      "Wyatt release readiness",
+      "Hardware/schema completion",
+      "Migration completion",
+      "Package/install/recovery completion",
+      "General whole-ROM correctness"
+    ],
+    "next": "PREVIEW-P1/P2: target-specific compatibility audit and copied-Program rehearsal"
+  },
+  "rel_0a_preservation_20260916": {
+    "status": "PASS",
+    "scope": "Durable preservation of accepted W2-R3, V1 and supporting evidence; no source integration or relocation mapping",
+    "control_report": "evidence/controls/REL-0A-20260916/REL-0A-REPORT.md",
+    "manifest_index": "evidence/controls/REL-0A-20260916/manifest-index.json",
+    "copy_summary": "evidence/controls/REL-0A-20260916/copy-summary-final.json",
+    "independent_review": "evidence/controls/REL-0A-20260916/INDEPENDENT-REVIEW.md",
+    "w2_r3_raw": "evidence/batches/AUTHORITY-MEMBERSHIP/W2-R3-20260916/raw",
+    "v1_raw": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916/raw",
+    "v1_derived": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916",
+    "accepted_candidate": "evidence/batches/AUTHORITY-MEMBERSHIP/W2-R3-20260916/candidate/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip",
+    "replay_relocation": "UNIMPLEMENTED; retained historical absolute paths remain classified by REL-0A"
   }
 }

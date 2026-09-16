@@ -3,8 +3,8 @@
 `run_w2_probe.py` compiles support against an explicitly selected installed candidate,
 verifies every extension archive member, and copies a prepared project into a new
 output directory. By default it prepares only. `--run` launches the stored normal
-CodeBrowser and its normal Decompiler provider. The probe does not capture the desktop,
-replace a DecompInterface, reset the provider, or alter the installed extension.
+CodeBrowser and its normal Decompiler provider. Desktop capture is opt-in; the probe
+does not replace a DecompInterface, reset the provider, or alter the installed extension.
 
 ```sh
 python3 tools/public_operations/run_w2_probe.py \
@@ -12,7 +12,7 @@ python3 tools/public_operations/run_w2_probe.py \
   --candidate /path/to/qualified-extension.zip \
   --project-dir /path/to/prepared-project-directory --project-name carry \
   --program /carry.gb --out /path/to/new-output \
-  --observe-native --comparison --run
+  --observe-native --comparison --desktop-capture --run
 ```
 
 Use a self-authored prepared conditional fixture with an existing registration.
@@ -36,6 +36,11 @@ The event thread pauses for these observations, changing timing; retain an
 uninstrumented comparison and do not infer identical scheduling. Any unmatched
 request, exception, terminal or observer failure leaves coverage incomplete.
 
+`--desktop-capture` uses `java.awt.Robot` to capture the actual visible normal
+CodeBrowser window. It also maximizes, foregrounds and raises that disposable window
+before measurement. PNG hashes are bound into capture records but remain
+`CAPTURED_UNREVIEWED` until independent visual review.
+
 `--comparison` invokes explicit proof refresh and domain reversal only after the
 pre-rescue result has been retained. Those later results cannot replace the first.
 The support now retains the displayed HighFunction/C plus raw instructions, proof,
@@ -53,9 +58,10 @@ attempts are retained. A narrowly scoped creation receipt does not establish com
 later navigation or closure.
 
 The optional `check_window.check(..., support_only=True)` replays the same native
-semantic kernel and source bindings with visual status explicitly `UNOBSERVED`.
-Default W2/V acceptance continues to require an actual desktop screenshot. A successful
-settled-result replay cannot establish first-use causality or aggregate acceptance.
+semantic kernel and source bindings while requiring visual status to remain explicitly
+`UNOBSERVED`. Default W2/V acceptance requires `--desktop-capture` and independent
+review of the actual screenshots. A successful settled-result replay cannot establish
+first-use causality or aggregate acceptance.
 
 Each output retains source/class/runtime/fixture manifests, command, process exit,
 Program events, transaction observations and failures. JDI failures must not be

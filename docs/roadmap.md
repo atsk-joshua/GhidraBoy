@@ -1,5 +1,15 @@
 # Development roadmap
 
+PUBLIC-OPERATIONS-LIFECYCLE V1 is PASS for its scoped contract on the exact AUTH-R3
+candidate `54fc048798025691789da706508d9c5fd674c2655b8192152a65eb146899e07c`.
+All H0/H1/H2/I1/W1/W2/W3/W4/W5/W6 positive rows, actual desktop visual review and
+the twelve-control aggregate sensitivity matrix pass under one candidate identity.
+Production remains frozen. This closes only the lifecycle gate: Wyatt release
+readiness, hardware/schema completion, migration, package/install/recovery and general
+whole-ROM correctness remain open. The next bounded task is PREVIEW-P1/P2:
+target-specific compatibility audit and copied-Program rehearsal. It does not begin
+successor migration, hardware implementation or release work.
+
 AUTH-R1's local candidate is rejected by AUTH-R2 review. Its post-write verification
 could discover failure only after an exact-default write had removed a genuine
 database property, and its shallow paired predicates could select one family without
@@ -10,11 +20,15 @@ caller-caught refusal plus outer commit cannot change authority. One shared pair
 classifier drives membership, transport selection, creation, replacement and removal
 for stock and companion records. Both ambiguity orientations and genuine conflicts
 fail closed, while a clean reopen restores readable genuine authority. Local provider
-qualification passes and the resulting artifact is an **AUTH-R3 source-qualified
-candidate only**; its SHA-256 is recorded in the AUTH-R3 completion response to avoid a
-packaged-document self-reference. Candidate-specific headed/native W2 is `NOT_RUN`;
-V remains `UNOBSERVED` and aggregate lifecycle/release readiness remains blocked. No
-installation, remote publication or release is authorized.
+qualification passes and the resulting artifact is an **AUTH-R3 source-qualified and
+candidate-specific W2-qualified candidate**; its SHA-256 is
+`54fc048798025691789da706508d9c5fd674c2655b8192152a65eb146899e07c`.
+W2-R3 proves cache-only physical pollution remains non-authoritative, normal physical
+and genuine-carrier native use succeeds, the first actual new-domain native request
+succeeds before refresh, old stale work is attributed correctly, and immutable
+separate-JVM first use remains current. Production is unchanged. V remains
+`UNOBSERVED` and aggregate lifecycle/release readiness remains blocked. No installation,
+remote publication or release is authorized.
 
 The W2 root-cause follow-up closes bounded W2 without a production change. The
 recorded early call is `PRE_NATIVE_CANCELLED` at Ghidra's pinned pre-dispatch guard;

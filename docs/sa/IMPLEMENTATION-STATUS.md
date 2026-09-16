@@ -1,5 +1,85 @@
 # Implementation status
 
+## V1 exact-candidate aggregate public-operations lifecycle — PASS
+
+The exact AUTH-R3 extension
+`54fc048798025691789da706508d9c5fd674c2655b8192152a65eb146899e07c`
+passes the complete scoped public-operations lifecycle gate on pinned Ghidra 12.1.3.
+The final aggregate checker reports PASS for H0/H1, H2, I1, W1, W2, W3, W4, W5,
+W6 and V. All twelve maintained sensitive controls make aggregate acceptance refuse
+for the intended row while the checker verifies every unrelated row remains PASS.
+
+Visual acceptance uses actual `java.awt.Robot` desktop captures. The first/reopen
+lifecycle sessions captured the chooser, normal baseline, passive stale refusal,
+recovery, ordinary Decompiler Refresh, removal refusal and immutable second-JVM first
+use. The aggregate W2 session required one bounded user click to activate the
+disposable Ghidra window; its pre-refresh new-domain result, domain reversal and both
+physical navigation destinations are visibly unobstructed. Fresh independent review
+inspected twelve desktop screenshots and reports PASS per row, control and closure
+obligation.
+
+All four positive lanes bind to the same candidate. The accepted JVMs are service PID
+`77838`, first lifecycle PID `78649`, immutable reopen PID `84661`, and aggregate W2
+PID `41971` with observer PID `41978`. Programs close with zero consumers, W2 closes
+with `active_requests=0`, and no unrelated Ghidra process was disturbed. All 65 frozen
+production files remain byte-identical; the combined production identity is
+`e3cb9178d51923f7e5db1ec40f1ca8029f0e8e12f0765d6a0ec6815fa658bc8d`.
+
+Final aggregate receipt SHA-256:
+`cbf4f44e2ad8d449caf0cb31ccced77abf72ca7f5b5a0fd36d23241f7601670f`.
+Acceptance manifest SHA-256:
+`0a5afa5f0bf2f9c75382926b94b3c6fa4b88d42fc8c0cbfdffe20c02829ef27f`.
+Independent review SHA-256:
+`90d099c30c28ff9aaf37e6ad35d0f636bdc18aa9edef83d8fcf1f80b936314ef`.
+
+REL-0A preserves the W2-R3 raw evidence, V1 raw and derived evidence, the exact
+accepted candidate and required supporting corpora under the external SA workspace.
+The durable paths and preservation controls are recorded in the
+[evidence index](evidence-index.json); the original temp paths remain historical
+receipt inputs rather than the only surviving copies.
+
+`PUBLIC-OPERATIONS-LIFECYCLE` is PASS only for its scoped contract. This is not Wyatt
+release readiness and does not close hardware/schema, migration, package/install/
+recovery or whole-ROM correctness obligations. This checkpoint itself did not
+authorize installation, publication, merge, deployment or remote action. The exact
+next task is PREVIEW-P1/P2: target-specific compatibility audit and copied-Program
+rehearsal.
+
+## W2-R3 AUTH-R3 bounded headed/native qualification — PASS; V/lifecycle blocked
+
+The exact AUTH-R3 extension
+`54fc048798025691789da706508d9c5fd674c2655b8192152a65eb146899e07c`
+passes the candidate-specific bounded normal-CodeBrowser/PrimaryDecompilerProvider
+qualification on a disposable pinned Ghidra 12.1.3 runtime. The pre-run frozen
+worktree identity is
+`529467d7f3f1a4e4874a2ed9b956f8a4aca54e58758374b01227c1ccccce17c9`;
+all 65 frozen production files remain byte-identical and no production correction was
+made.
+
+The labeled `Options.getString(physicalAddress, null)` control creates only a cache
+entry at unchanged Program revision. Production ownership and both stock/companion
+registration families remain absent. Normal native use succeeds at the physical target
+and continuation before and after genuine carrier use; the genuine carrier remains
+owned, current and structurally valid. The retained creation sequence classifies
+`native-6` as provisional old-domain work, `native-7` as old stale authority, and
+`native-8` as the first actual new-domain native execution; `native-8` succeeds before
+any refresh/reapply/reset. No PRE_NATIVE_CANCELLED request occurred in this accepted
+timing, and no invocation was dropped.
+
+A separately launched immutable JVM uses the same candidate, reproduces the saved
+authority and succeeds on its first initiated normal stock request without mutation or
+rescue. Both JVMs close with zero consumers and zero active native requests. The
+maintained semantic kernel passes 49,152 cases across genuine carrier, topology first
+use, saved-current use and immutable first use. Focused support tests pass 21/21.
+Fresh narrow independent review answers all nine required questions PASS after exact
+postprocessor and consumed-input provenance was added. Final machine receipt SHA-256:
+`7de9197812788d0a1d78e2f230a00eac621589ab11e05ca9ff4dc708e0fd0e9c`.
+
+Candidate-specific W2 is PASS. Visual V remains UNOBSERVED; complete aggregate
+sensitivity, installation/publication and release authorization remain open, so the
+aggregate lifecycle remains BLOCKED. STOP after W2-R3; the exact next action is a
+separately authorized visual V task.
+
 ## AUTH-R3 authority atomicity and paired classification — source-qualified candidate
 
 AUTH-R2 rejects the AUTH-R1 local candidate
@@ -34,10 +114,10 @@ Full local qualification passes 889 tests in 90 classes with zero failures, erro
 skips, plus `ktlintCheck` and `buildExtension`; build-input checks pass 7 tests and
 tools pass 143 tests with one existing optional dependency skip. The artifact identity
 is recorded in the AUTH-R3 completion response to avoid a
-packaged-document self-reference. It is an **AUTH-R3 source-qualified candidate**, not
-W2-qualified, installed, pushed or release-approved. Historical bounded W2 on
+packaged-document self-reference. It is an **AUTH-R3 source-qualified and
+candidate-specific W2-qualified candidate**, not installed, pushed or release-approved. Historical bounded W2 on
 `20676c780740dd57d7920c3d1c4bc82b7881a8a2` remains PASS. Candidate-specific bounded
-W2 remains `NOT_RUN`; V remains `UNOBSERVED`; aggregate lifecycle remains blocked.
+W2 is `PASS`; V remains `UNOBSERVED`; aggregate lifecycle remains blocked.
 Fresh independent adversarial review reports no remaining authority finding and
 separately reruns the seven focused real-Program regressions successfully.
 
