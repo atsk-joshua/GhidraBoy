@@ -60,6 +60,23 @@ an instruction inventory is not a Program backup.
 
 ## Installed language-1 to language-2 upgrade
 
+Pinned Ghidra 12.1.3 performs language replacement and
+`reDisassembleAllInstructions` while constructing the upgraded `ProgramDB`.
+`LanguageTranslator.fixupInstructions`, language-change events and ProgramPlugin
+open/activate callbacks all occur afterward. Redisassembly can make regenerated
+DEFAULT references primary and demote surviving USER_DEFINED references, so no
+supported in-process extension hook can capture the lost pre-upgrade booleans.
+
+The maintained migration route therefore uses the packaged outer
+`migrate_legacy_program.py` launcher. It imports an immutable task-owned GZF copy in
+a source-compatible v1 provider, snapshots the complete USER_DEFINED tuple/primary
+set, copies that project, opens the copy with the v2 candidate, strictly preflights
+identity, restores primary bits only, performs structural preparation, writes a new
+GZF and verifies the saved project in a separate Ghidra process. Missing, ambiguous,
+retargeted or wrong-Program references refuse before mutation. Deliberately
+non-primary references stay non-primary. Downgrade is not supported; rollback means
+opening the untouched original under its original provider.
+
 The extension now packages the actual final-language-1 storage descriptor and an
 explicit simple translator. See the [compatibility decision](decisions/sm83-v1-v2-compatibility.md).
 Keep the complete original project closed and backed up. Open only a disposable

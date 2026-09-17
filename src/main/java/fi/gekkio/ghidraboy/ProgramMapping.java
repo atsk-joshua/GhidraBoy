@@ -65,6 +65,9 @@ public final class ProgramMapping {
 
   private record Anchor(String region, int bank, long length, long offset, String origin) {}
 
+  /** A reviewed physical identity for storage that already exists in the Program. */
+  public record RamIdentity(Address start, long length, String region, int bank, long offset) {}
+
   public static void anchor(Program p, MemoryBlock b, String region, int bank) throws Exception {
     var map = p.getUsrPropertyManager().getStringPropertyMap(ANCHORS);
     if (map == null) map = p.getUsrPropertyManager().createStringPropertyMap(ANCHORS);
@@ -80,6 +83,85 @@ public final class ProgramMapping {
       long offset,
       TaskMonitor monitor)
       throws Exception {
+    var desired = new RamIdentity(start, length, region, bank, offset);
+    preflightRamIdentities(p, List.of(desired), monitor);
+    int tx = p.startTransaction("Identify legacy RAM physical interval");
+    boolean success = false;
+    try {
+      applyRamIdentities(p, List.of(desired), "explicit-anchor", monitor);
+      monitor.checkCancelled();
+      success = true;
+    } finally {
+      p.endTransaction(tx, success);
+    }
+  }
+
+  static void preflightRamIdentities(
+      Program p, Collection<RamIdentity> identities, TaskMonitor monitor) throws Exception {
+    var planned = new ArrayList<RamIdentity>();
+    for (var identity : identities) {
+      monitor.checkCancelled();
+      validateRamIdentity(p, identity);
+      for (var other : planned) requireNoAnchorConflict(identity, other);
+      planned.add(identity);
+    }
+    var map = p.getUsrPropertyManager().getStringPropertyMap(ANCHORS);
+    if (map == null) return;
+    var iterator = map.getPropertyIterator();
+    while (iterator.hasNext()) {
+      monitor.checkCancelled();
+      var address = iterator.next();
+      var anchor = JSON.fromJson(map.getString(address), Anchor.class);
+      var existing = new RamIdentity(address, anchor.length, anchor.region, anchor.bank, anchor.offset);
+      for (var desired : planned) {
+        if (sameIdentity(desired, existing)) continue;
+        requireNoAnchorConflict(desired, existing);
+      }
+    }
+  }
+
+  static void applyRamIdentities(
+      Program p, Collection<RamIdentity> identities, String origin, TaskMonitor monitor)
+      throws Exception {
+    var map = p.getUsrPropertyManager().getStringPropertyMap(ANCHORS);
+    for (var identity : identities) {
+      monitor.checkCancelled();
+      boolean present = false;
+      if (map != null) {
+        var value = map.getString(identity.start());
+        if (value != null) {
+          var anchor = JSON.fromJson(value, Anchor.class);
+          present =
+              sameIdentity(
+                  identity,
+                  new RamIdentity(
+                      identity.start(),
+                      anchor.length,
+                      anchor.region,
+                      anchor.bank,
+                      anchor.offset));
+        }
+      }
+      if (present) continue;
+      if (map == null) map = p.getUsrPropertyManager().createStringPropertyMap(ANCHORS);
+      map.add(
+          identity.start(),
+          JSON.toJson(
+              new Anchor(
+                  identity.region(),
+                  identity.bank(),
+                  identity.length(),
+                  identity.offset(),
+                  origin)));
+    }
+  }
+
+  private static void validateRamIdentity(Program p, RamIdentity identity) throws Exception {
+    var start = identity.start();
+    long length = identity.length();
+    String region = identity.region();
+    int bank = identity.bank();
+    long offset = identity.offset();
     long bankSize =
         switch (region) {
           case "WRAM" -> 0x1000;
@@ -97,8 +179,12 @@ public final class ProgramMapping {
         };
     if (length <= 0 || offset < 0 || offset + length > bankSize || bank < 0 || bank > maxBank)
       throw new IllegalArgumentException("Invalid physical RAM interval");
-    if (region.equals("HRAM") && (!start.getAddressSpace().equals(p.getAddressFactory().getDefaultAddressSpace())
-        || start.getOffset()!=0xff80+offset)) throw new IllegalArgumentException("HRAM identity must match FF80..FFFE");
+    if (region.equals("HRAM")
+        && (!start
+                .getAddressSpace()
+                .equals(p.getAddressFactory().getDefaultAddressSpace())
+            || start.getOffset() != 0xff80 + offset))
+      throw new IllegalArgumentException("HRAM identity must match FF80..FFFE");
     var end = start.addNoWrap(length - 1);
     var block = p.getMemory().getBlock(start);
     if (block == null
@@ -107,42 +193,29 @@ public final class ProgramMapping {
         || block.getSourceInfos().stream().anyMatch(info -> info.getFileBytes().isPresent()))
       throw new IllegalArgumentException(
           "Identify a contiguous canonical RAM interval, not ROM or an alias");
-    var map = p.getUsrPropertyManager().getStringPropertyMap(ANCHORS);
-    var desired = new Anchor(region, bank, length, offset, "explicit-anchor");
-    if (map != null) {
-      var iterator = map.getPropertyIterator();
-      while (iterator.hasNext()) {
-        monitor.checkCancelled();
-        var a = iterator.next();
-        var existing = JSON.fromJson(map.getString(a), Anchor.class);
-        if (a.equals(start)
-            && desired.region.equals(existing.region)
-            && desired.bank == existing.bank
-            && desired.length == existing.length
-            && desired.offset == existing.offset) return;
-        boolean staticOverlap =
-            a.getAddressSpace().equals(start.getAddressSpace())
-                && start.getOffset() < a.getOffset() + existing.length
-                && a.getOffset() < start.getOffset() + length;
-        boolean physicalOverlap =
-            region.equals(existing.region)
-                && bank == existing.bank
-                && offset < existing.offset + existing.length
-                && existing.offset < offset + length;
-        if (staticOverlap || physicalOverlap)
-          throw new IllegalArgumentException("Conflicting existing RAM identity at " + a);
-      }
-    }
-    int tx = p.startTransaction("Identify legacy RAM physical interval");
-    boolean success = false;
-    try {
-      if (map == null) map = p.getUsrPropertyManager().createStringPropertyMap(ANCHORS);
-      map.add(start, JSON.toJson(desired));
-      monitor.checkCancelled();
-      success = true;
-    } finally {
-      p.endTransaction(tx, success);
-    }
+  }
+
+  private static boolean sameIdentity(RamIdentity a, RamIdentity b) {
+    return a.start().equals(b.start())
+        && a.length() == b.length()
+        && a.region().equals(b.region())
+        && a.bank() == b.bank()
+        && a.offset() == b.offset();
+  }
+
+  private static void requireNoAnchorConflict(RamIdentity desired, RamIdentity existing) {
+    boolean staticOverlap =
+        existing.start().getAddressSpace().equals(desired.start().getAddressSpace())
+            && desired.start().getOffset() < existing.start().getOffset() + existing.length()
+            && existing.start().getOffset() < desired.start().getOffset() + desired.length();
+    boolean physicalOverlap =
+        desired.region().equals(existing.region())
+            && desired.bank() == existing.bank()
+            && desired.offset() < existing.offset() + existing.length()
+            && existing.offset() < desired.offset() + desired.length();
+    if (staticOverlap || physicalOverlap)
+      throw new IllegalArgumentException(
+          "Conflicting existing RAM identity at " + existing.start());
   }
 
   /**
@@ -253,8 +326,8 @@ public final class ProgramMapping {
               }
             }
           }
-          if (!found) diagnostics.add("Unresolved physical identity: " + source.getMinAddress());
-        } else diagnostics.add("Legacy block needs explicit mapping: " + source.getMinAddress());
+          if (!found) diagnostics.add(unresolvedDiagnostic(p, block, source.getMinAddress()));
+        } else diagnostics.add(unresolvedDiagnostic(p, block, source.getMinAddress()));
       }
     }
     ranges.sort(
@@ -302,6 +375,19 @@ public final class ProgramMapping {
         List.copyOf(diagnostics),
         request,
         List.copyOf(unmapped));
+  }
+
+  private static String unresolvedDiagnostic(Program p, MemoryBlock block, Address start) {
+    var defaultSpace = p.getAddressFactory().getDefaultAddressSpace();
+    if (start.getAddressSpace().equals(defaultSpace)) {
+      long offset = start.getOffset();
+      long size = block.getSize();
+      if ((offset == 0xfe00 && size == 0xa0)
+          || (offset == 0xff00 && size == 0x80)
+          || (offset == 0xffff && size == 1))
+        return "Expected device region (not ordinary RAM): " + start;
+    }
+    return "Legacy RAM identity unresolved: " + start;
   }
 
   private static Range range(

@@ -5,8 +5,40 @@ is the first [roadmap](roadmap.md) priority; the
 [planned specification](static-analysis-spec.md) is not a claim that the current
 analyzer already meets it.
 
+## Stock Auto Analysis integration
+
+`GhidraBoyBankAnalyzer` is a public `AbstractAnalyzer` extension point named
+**GhidraBoy Bank and Mapper Analysis**. Its class name ends in `Analyzer`, so pinned
+Ghidra 12.1.3 discovers it through ClassSearcher. It is a low-priority instruction
+analyzer, after stock code/function/reference recovery has stabilized, and is enabled by default only for
+`SM83:LE:16:default`, and supports the stock one-shot action. Its normal options are
+a 1..100000 session state limit (100000 for full Auto Analysis) and justified
+Function creation.
+
+The adapter derives roots from external entry points, user/imported Functions not
+owned by GhidraBoy, and the first defined instruction of local or currently
+uncontained notified code ranges. Stock
+DEFAULT Functions are not all promoted to independent roots merely because they
+exist; proved flow from the justified roots can still reach them. It runs one
+deduplicated `BankAnalysis` worklist for all roots, restricted to the supplied
+`AddressSetView`; it does not start a 4096-state session per instruction. Only
+COMPLETE results are applied. Cancellation uses Ghidra's analyzer monitor.
+Incomplete/cancelled runs publish no result or confident mutation. Function
+discovery then consumes the same roots plus proved call destinations; its owned
+Functions are excluded from later root seeding to prevent circular evidence.
+The manager analyzer recognizes Ghidra's initial broad full-analysis notification,
+unions later instruction batches into that session and clears the state in
+`analysisEnded`; the separate one-shot analyzer instance remains range-local.
+
+Expected legacy prerequisites are logged clearly. Missing cartridge/RAM preparation
+does not escape as `Cartridge descriptor required` or an InvocationTargetException.
+The normal workflow uses Tools → GhidraBoy → Program Status... and Prepare Legacy
+Program..., followed by Analysis → Auto Analyze.... Script JSON remains an advanced
+diagnostic/recovery interface.
+
 `BankAnalysis.preview` evaluates existing defined instructions. `AnalysisResult`
-is typed and versioned: start points, explicit assumptions, configuration,
+schema 3 is typed and versioned: start points, explicit assumptions, per-root
+physical entry premises and provenance, configuration,
 completion, explored-state count, diagnostics, candidates and evidence fingerprint.
 `AnalysisResult.read` rejects incompatible engines. Only COMPLETE runs can contain
 PROVEN conclusions. STATE_LIMIT, CANCELLED and INPUT_CHANGED preserve useful
@@ -20,7 +52,9 @@ result validation, application (`AnalysisApplication`) and ownership
 second instruction interpreter. It expands memory accesses to little-endian bytes
 with 16-bit wrap. SLEIGH exposes architectural ordering for SP loads and pushes.
 Unmodeled values and relevant unknown writes invalidate knowledge conservatively.
-ROM register knowledge does not imply reset SRAM/RTC/VBK/SVBK state.
+ROM register knowledge does not imply reset SRAM/RTC/VBK/SVBK state. A physical
+MBC5 ROMX entry derives only the selector bits needed for that fetch; unrelated
+fields remain unknown. A conflicting explicit mapper assumption is rejected.
 
 Every fallthrough is checked against the CPU execution window. Same-window
 physical context is reused only while consistent with known mapper registers.
@@ -37,7 +71,7 @@ and target callfixups in canonical order. Apply/discovery reject stale results;
 preview detects changes during traversal. Ordinary supplemental navigation/data
 references are not analysis inputs, so application does not invalidate itself.
 
-Engine `20260907-sa00` evaluates raw `getPcode(false)` and decoded default flows
+Engine `20260916-m2-native-analysis-2` evaluates raw `getPcode(false)` and decoded default flows
 only when stored flow annotations are consistent. Flow/reference overrides, altered
 fallthrough/lengths and callfixups are explicitly unresolved; they are not mixed with
 raw architectural effects. This includes annotated inline-payload continuations
@@ -47,6 +81,12 @@ The evaluator delegates integer operations to pinned Ghidra behaviors with width
 and extraction guards. Separate contract and compiled-SLEIGH regressions qualify
 this bounded behavior, not whole-ROM semantics. See the source checkout's
 `docs/decisions/sa00-integrity.md` and `docs/evidence/sa00-20260907/README.md`.
+
+To converge changing exact register states around loops, an instruction with more
+than 32 distinct incoming states is reprocessed once with mapper/register knowledge
+widened to unknown. Later backedges to that instruction reuse the unknown state.
+The widening is explicit in findings and preserves uncertainty; it does not select
+one observed value or silently drop the unresolved loop.
 
 The current evaluator records memory references without propagating ROM lookup
 contents or bank-shadow memory values. It has no general returning-call summaries.

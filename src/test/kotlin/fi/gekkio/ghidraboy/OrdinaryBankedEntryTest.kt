@@ -22,6 +22,7 @@ import ghidra.program.model.symbol.SourceType
 import ghidra.util.task.TaskMonitor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -241,7 +242,21 @@ class OrdinaryBankedEntryTest : IntegrationTest() {
             assertEquals(listOf(0x4000, 0x4005), proof.segments().map { it.cpu() })
             assertEquals(listOf(5, 7), proof.segments().map { it.length() })
             assertEquals(listOf("rom1::4000", "rom2::4005"), proof.segments().map { it.source() })
-            assertEquals(MapperKnowledge.unknown(), proof.fetchSteps().first().incoming())
+            assertEquals(
+                1,
+                proof
+                    .fetchSteps()
+                    .first()
+                    .incoming()
+                    .low(),
+            )
+            assertNull(
+                proof
+                    .fetchSteps()
+                    .first()
+                    .incoming()
+                    .enabled(),
+            )
             assertEquals(listOf("rom2::4005"), proof.fetchSteps()[1].successors())
             val alias = OrdinaryEntryAccess.install(p, proof, monitor)
             assertTrue(OrdinaryEntryAccess.registered(p, alias))

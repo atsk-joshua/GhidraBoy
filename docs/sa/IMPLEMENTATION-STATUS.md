@@ -1,5 +1,43 @@
 # Implementation status
 
+## PREVIEW-M2 native Ghidra workflow — local/headless PASS; intended target headed workflow NOT_RUN
+
+The PREVIEW-M2 source candidate adds a stock-discovered low-priority instruction
+analyzer, normal Program Status/legacy-preparation actions, physical-entry partial
+mapper premises, bounded loop-state widening, session-wide scheduler-batch
+accumulation, integrated justified Function discovery and an outer v1-to-v2 primacy
+migration launcher. Mapping schema v2, SM83 language v2, constructors, compiler IDs,
+16-bit pointer semantics and the compiled SLA remain unchanged.
+
+Focused preparation/migration/analyzer/bank regressions pass. The native-capable
+provider baseline immediately before the bounded batch-accumulation/widening correction
+passes 901 tests in 93 classes with zero failures/errors/skips, plus `ktlintCheck`
+and `buildExtension`; the final bounded correction has focused analyzer/bank tests,
+lint and build only because of user closeout. Its broader full rerun is UNRUN.
+Build-inputs pass 7, and tools pass 146 with one explicit optional dependency skip. A fresh private
+target migration preserves all 456 USER_DEFINED reference booleans (436 primary,
+20 non-primary), all accepted Program inventories and the immutable source GZF.
+Separate-process reopen reports ROM0-63, VRAM0-1, WRAM0-7, SRAM0 only and HRAM;
+OAM/I/O/IE remain explicit device regions. Normal full-target Auto Analysis completes
+with one accumulated result (2,402 states / 143 roots in the first saved run), remains
+current after separate-process reopen, and a saved rerun completes safely while
+preserving all user-reference states. The unfinished third confirmation was cancelled
+at user closeout and is not acceptance evidence.
+
+The actual intended Linux/Steam Deck headed CodeBrowser → Auto Analyze → Decompiler
+→ save/close/separate-JVM workflow was not reachable and was not fabricated. The
+local disposable runtime also lacked its macOS native decompiler, so local target
+evidence is headless analysis/migration only. Final source/artifact identities and the
+external evidence root are recorded in the completion response and evidence index.
+
+`PREVIEW-M2-MIGRATION = PASS`
+
+`PREVIEW-M2-AUTO-ANALYSIS = PASS` (generic + private headless; headed target pending)
+
+`PREVIEW-M2-TARGET-WORKFLOW = NOT_RUN`
+
+`ENGINEERING-PREVIEW = NOT_READY`
+
 ## V1 exact-candidate aggregate public-operations lifecycle — PASS
 
 The exact AUTH-R3 extension

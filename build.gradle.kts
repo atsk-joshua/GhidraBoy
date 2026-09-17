@@ -41,7 +41,7 @@ val ghidraRelease = ghidraProps.getProperty("application.release.name")!!
 
 require(ghidraVersion == "12.1.3") { "This build targets Ghidra 12.1.3; found $ghidraVersion" }
 require(JavaVersion.current() == JavaVersion.VERSION_21) { "Run Gradle with JDK 21 (JAVA_HOME)" }
-version = "20260905-integration1"
+version = "20260916-preview-m2"
 val buildEpoch = providers.environmentVariable("SOURCE_DATE_EPOCH").orElse("1788566400")
 val buildDate = Instant.ofEpochSecond(buildEpoch.get().toLong()).atZone(ZoneOffset.UTC).toLocalDate()
 

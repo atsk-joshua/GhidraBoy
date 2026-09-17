@@ -10,6 +10,12 @@ ROM export, conservative bank analysis and per-function compiler conventions.
 It works without an emulator, Python or SDL. The optional debugger adds live
 execution and captured history through SameBoy or the experimental mGBA backend.
 
+The normal static workflow uses CodeBrowser's Analysis → Auto Analyze... with the
+stock-discovered **GhidraBoy Bank and Mapper Analysis** analyzer. Program status
+and conservative post-upgrade legacy preparation are available under
+Tools → GhidraBoy; Script Manager and raw MapperState JSON are advanced surfaces,
+not basic-use requirements.
+
 ![Tetris disassembly](screenshot.png)
 
 Start with [installation and static workflows](docs/user-workflows.md), or the
@@ -33,8 +39,10 @@ inexpensive checks. [Validation](docs/validation.md) distinguishes automated tes
 from installed, native and GUI qualification.
 
 The experimental stock transport uses `SM83:LE:16:default`, language version 2.0,
-and retains compiler `default` and added compiler profiles. Old annotated-Program
-upgrade is not qualified; see the [transport decision](docs/decisions/stock-ghidra-transport.md). Preserving
+and retains compiler `default` and added compiler profiles. Old annotated Programs
+require the outer snapshot/restore migration described in
+[instruction compatibility](docs/instruction-compatibility.md); direct open-and-save
+is not preservation-safe. See also the [M2 integration decision](docs/decisions/preview-m2-native-analysis.md). Preserving
 saved Programs is distinct from running on older Ghidra versions: current builds
 require 12.1.3. See [instruction compatibility](docs/instruction-compatibility.md)
 and [changes since the upstream release](docs/changes-since-official-release-report.md).

@@ -146,6 +146,23 @@ public final class AnalysisOwnership {
     return block != null && block.getName().startsWith(SoftwareCallExecutionView.PREFIX) && !block.isExecute();
   }
 
+  /** Generated function receipts are never allowed to bootstrap a later analysis root. */
+  public static boolean functionOwned(Program p, Address entry) {
+    try {
+      var group = registry(p).groups.get("functions");
+      if (group == null) return false;
+      var function = p.getFunctionManager().getFunctionAt(entry);
+      return function != null
+          && group.functions.stream()
+              .anyMatch(
+                  receipt ->
+                      receipt.id == function.getID()
+                          && Objects.equals(receipt.entry.resolve(p), entry));
+    } catch (Exception failure) {
+      return true;
+    }
+  }
+
   /** Ownership consistency only; the independent raw returning witness is checked separately. */
   static boolean returningMarkerCurrent(Program p, Address address) {
     try {

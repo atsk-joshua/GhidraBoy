@@ -27,6 +27,22 @@ release requirements remain retained, with historical receipts unchanged.
 | Installed/migration | `python3 tools/run_validation.py --help` | Explicit copied installed/legacy distributions and fixtures; CI provisions these |
 | Interactive acceptance | `debugger/scripts/test_ui_actions.sh` | Explicit GUI campaign; never implied by inexpensive checks |
 
+PREVIEW-M2's focused generic checks are:
+
+```sh
+./gradlew test --tests '*LegacyPreparationTest' \
+  --tests '*UserReferencePrimacyTest' \
+  --tests '*GhidraBoyAnalyzerIntegrationTest' \
+  --tests '*BankAnalysisTest' --tests '*BankAnalysisFetchTest'
+```
+
+They cover structural preparation/refusal/idempotence/cancellation/packed reopen,
+exact USER_DEFINED primacy restoration and negative identities, ClassSearcher
+discovery, SM83 applicability, stock options/one-shot execution, non-circular
+Function discovery, clear prerequisite logging and physical MBC5 partial entry
+state. They do not substitute for actual headed Auto Analyze/Decompiler/save/reopen
+acceptance on the intended Linux target.
+
 The original command remains supported:
 `PYTHONPATH=debugger:debugger/python python3 -m unittest discover -s debugger/tests/build_tools -v`.
 The aggregate deliberately does not indiscriminately discover native debugger

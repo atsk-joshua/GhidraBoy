@@ -134,7 +134,7 @@ public final class ProgramFingerprint {
       throws Exception {
     if (result == null
         || result.completion() == AnalysisResult.Completion.INPUT_CHANGED
-        || result.schemaVersion() != 2
+        || result.schemaVersion() != 3
         || !AnalysisResult.ENGINE_VERSION.equals(result.engineVersion())
         || !capture(p, monitor).equals(result.fingerprint()))
       throw new IllegalStateException(

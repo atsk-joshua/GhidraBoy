@@ -219,7 +219,7 @@ public class GhidraBoyTools extends GhidraScript {
                 : askChoice(
                     "Physical region",
                     "Region",
-                    List.of("WRAM", "VRAM", "SRAM", "MBC2_RAM"),
+                    List.of("WRAM", "VRAM", "SRAM", "MBC2_RAM", "HRAM"),
                     "WRAM");
         String bank = args.length > 3 ? args[3] : askString("Physical bank", "Hex bank number");
         String offset =

@@ -11,6 +11,7 @@ final class AnalysisCandidates {
     CALL,
     JUMP,
     FLOW,
+    WIDENING,
     LIMIT,
     CANCELLED
   }

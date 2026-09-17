@@ -3,6 +3,7 @@ package fi.gekkio.ghidraboy;
 import static fi.gekkio.ghidraboy.PcodeConstants.*;
 
 import ghidra.program.model.address.Address;
+import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.pcode.PcodeOp;
 import ghidra.util.task.TaskMonitor;
@@ -10,6 +11,8 @@ import java.util.*;
 
 /** Opt-in bounded analysis of existing instructions. Never decodes through marked data. */
 public final class BankAnalysis {
+  private static final int STATE_DIVERSITY_PER_ADDRESS = 32;
+
   private BankAnalysis() {}
 
   public record Finding(
@@ -60,12 +63,14 @@ public final class BankAnalysis {
 
   private record Work(Address address, MapperKnowledge state, Map<Long, Integer> registers) {}
 
+  private record Root(Address address, MapperKnowledge knowledge, AnalysisResult.EntryPremise premise) {}
+
   /** The physical entry is an external invocation premise, never evidence of a selected display. */
   public static FetchPreview previewFetch(
       Program p, Address start, MapperState assumption,
       AnalysisResult.Configuration configuration, TaskMonitor monitor) throws Exception {
     var diagnostic = new FetchCollector();
-    var result = preview(p, start, assumption, configuration, monitor, diagnostic);
+    var result = preview(p, List.of(start), assumption, configuration, null, monitor, diagnostic);
     for (var finding : result.findings())
       if (finding.confidence() != AnalysisResult.Confidence.PROVEN)
         diagnostic.frontier.add(finding.source() + " " + finding.access() + ": " + finding.reason());
@@ -87,18 +92,37 @@ public final class BankAnalysis {
       AnalysisResult.Configuration configuration,
       TaskMonitor monitor)
       throws Exception {
-    return preview(p, start, assumption, configuration, monitor, null);
+    return preview(p, List.of(start), assumption, configuration, null, monitor, null);
+  }
+
+  /** Runs one session-wide worklist for all justified roots. */
+  public static AnalysisResult preview(
+      Program p,
+      Collection<Address> starts,
+      AnalysisResult.Configuration configuration,
+      AddressSetView restriction,
+      TaskMonitor monitor)
+      throws Exception {
+    return preview(p, starts, null, configuration, restriction, monitor, null);
   }
 
   private static AnalysisResult preview(
-      Program p, Address start, MapperState assumption,
-      AnalysisResult.Configuration configuration, TaskMonitor monitor,
-      FetchCollector diagnostic) throws Exception {
+      Program p,
+      Collection<Address> starts,
+      MapperState assumption,
+      AnalysisResult.Configuration configuration,
+      AddressSetView restriction,
+      TaskMonitor monitor,
+      FetchCollector diagnostic)
+      throws Exception {
     // Content hashes alone cannot detect an edit that is restored during exploration.
     long modification = p.getModificationNumber();
     String fingerprint = ProgramFingerprint.capture(p, monitor);
     var cartridge = ProgramMapping.cartridge(p);
     if (cartridge == null) throw new IllegalArgumentException("Cartridge descriptor required");
+    var roots = entryRoots(p, cartridge, starts, assumption);
+    if (roots.isEmpty()) throw new IllegalArgumentException("At least one justified analysis root is required");
+    var primaryStart = roots.get(0).address();
     var queue = new ArrayDeque<Work>();
     var entryRegisters = new HashMap<Long, Integer>();
     // Executable contracts consume explicitly recorded context as premises. Unknown/partial
@@ -106,15 +130,18 @@ public final class BankAnalysis {
     if (!SoftwareCallRegistry.configurationIdentity(p).equals("absent")) {
       for (String name : List.of("A", "F", "BC", "DE", "HL", "SP")) {
         var register = p.getRegister(name);
-        var contextual = p.getProgramContext().getRegisterValue(register, start);
+        var contextual = p.getProgramContext().getRegisterValue(register, primaryStart);
         var value = contextual == null ? null : contextual.getUnsignedValue();
         if (value != null)
           put(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
               value.longValue(), entryRegisters, new HashMap<>());
       }
     }
-    queue.add(new Work(start, MapperKnowledge.from(assumption), Map.copyOf(entryRegisters)));
+    for (var root : roots)
+      queue.add(new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters)));
     var seen = new HashSet<Work>();
+    var diversity = new HashMap<Address, Integer>();
+    var widened = new HashSet<Address>();
     var candidates = new AnalysisCandidates();
     var targets = candidates.targets;
     var reasons = candidates.reasons;
@@ -125,14 +152,35 @@ public final class BankAnalysis {
       while (!queue.isEmpty()) {
         monitor.checkCancelled();
         var w = queue.removeFirst();
+        var top = new Work(w.address(), MapperKnowledge.unknown(), Map.of());
+        if (widened.contains(w.address()) && !w.equals(top)) continue;
         if (seen.contains(w)) continue;
+        int addressStates = diversity.getOrDefault(w.address(), 0);
+        if (!widened.contains(w.address())
+            && addressStates == STATE_DIVERSITY_PER_ADDRESS) {
+          widened.add(w.address());
+          reasons.put(
+              AnalysisCandidates.Site.control(w.address(), "widening"),
+              "State diversity widened to unknown after "
+                  + STATE_DIVERSITY_PER_ADDRESS
+                  + " distinct states at one instruction");
+          queue.addFirst(top);
+          continue;
+        }
         if (count == configuration.stateLimit()) {
           queue.addFirst(w);
           completion = AnalysisResult.Completion.STATE_LIMIT;
           break;
         }
         seen.add(w);
+        diversity.put(w.address(), addressStates + 1);
         count++;
+        if (restriction != null && !restriction.contains(w.address)) {
+          reasons.put(
+              AnalysisCandidates.Site.control(w.address, "flow"),
+              "Successor is outside the analyzer address restriction");
+          continue;
+        }
         var ins = p.getListing().getInstructionAt(w.address);
         if (ins == null) {
           reasons.put(
@@ -202,7 +250,13 @@ public final class BankAnalysis {
             }
             for (var continuation : ProgramMapping.physicalToStatic(p, returned.physical()))
               if (continuation.getOffset() == returned.cpu() && executionCandidate(p, continuation, diagnostic != null))
-                queue.addLast(new Work(continuation, MapperKnowledge.from(returned.mapper()), Map.copyOf(outputRegisters)));
+                enqueue(
+                    queue,
+                    new Work(
+                        continuation,
+                        MapperKnowledge.from(returned.mapper()),
+                        Map.copyOf(outputRegisters)),
+                    widened);
           }
           continue;
         }
@@ -359,7 +413,7 @@ public final class BankAnalysis {
           for (var a : nextViews) successors.add(new Work(a, state, Map.copyOf(regs)));
         }
         if (configuration.reverseBranches()) Collections.reverse(successors);
-        queue.addAll(successors);
+        for (var successor : successors) enqueue(queue, successor, widened);
         if (diagnostic != null)
           diagnostic.steps.add(new FetchStep(w.address.toString(), (int) w.address.getOffset(),
               fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(), w.state, state,
@@ -374,20 +428,21 @@ public final class BankAnalysis {
     }
     if (completion == AnalysisResult.Completion.STATE_LIMIT)
       reasons.put(
-          AnalysisCandidates.Site.control(start, "limit"),
+          AnalysisCandidates.Site.control(primaryStart, "limit"),
           configuration.stateLimit() + "-state worklist bound reached");
     if (completion == AnalysisResult.Completion.CANCELLED)
-      reasons.put(AnalysisCandidates.Site.control(start, "cancelled"), "Exploration cancelled");
+      reasons.put(AnalysisCandidates.Site.control(primaryStart, "cancelled"), "Exploration cancelled");
     if (completion != AnalysisResult.Completion.CANCELLED
         && (!fingerprint.equals(ProgramFingerprint.capture(p, monitor))
             || modification != p.getModificationNumber()))
       completion = AnalysisResult.Completion.INPUT_CHANGED;
     var findings = candidates.finish(completion);
     return new AnalysisResult(
-        2,
+        3,
         AnalysisResult.ENGINE_VERSION,
-        List.of(start.toString()),
+        roots.stream().map(root -> root.address().toString()).toList(),
         assumption,
+        roots.stream().map(Root::premise).toList(),
         configuration,
         completion,
         count,
@@ -397,6 +452,44 @@ public final class BankAnalysis {
         completion == AnalysisResult.Completion.COMPLETE
             ? List.of()
             : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
+  }
+
+  private static void enqueue(ArrayDeque<Work> queue, Work work, Set<Address> widened) {
+    queue.addLast(
+        widened.contains(work.address())
+            ? new Work(work.address(), MapperKnowledge.unknown(), Map.of())
+            : work);
+  }
+
+  private static List<Root> entryRoots(
+      Program p, Cartridge cartridge, Collection<Address> starts, MapperState assumption)
+      throws Exception {
+    var unique = new TreeSet<Address>(starts);
+    var result = new ArrayList<Root>();
+    for (var start : unique) {
+      var identities = ProgramMapping.staticToPhysical(p, start);
+      if (identities.size() != 1)
+        throw new IllegalArgumentException(
+            "Analysis root must have one established physical identity: " + start);
+      var physical = identities.get(0);
+      var knowledge =
+          MapperKnowledge.from(assumption)
+              .constrainEntry(cartridge, physical, (int) start.getOffset());
+      var resolved = knowledge.translate(cartridge, (int) start.getOffset(), false).physical();
+      if (resolved != null && !resolved.equals(physical))
+        throw new IllegalArgumentException(
+            "Physical analysis root contradicts the alleged mapper state: " + start);
+      result.add(
+          new Root(
+              start,
+              knowledge,
+              new AnalysisResult.EntryPremise(
+                  start.toString(),
+                  physical,
+                  knowledge,
+                  "physical Program topology at the instruction fetch root")));
+    }
+    return result;
   }
 
   public static void apply(Program p, AnalysisResult result, TaskMonitor monitor) throws Exception {

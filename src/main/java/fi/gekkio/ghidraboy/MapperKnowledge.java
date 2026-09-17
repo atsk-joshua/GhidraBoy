@@ -30,6 +30,94 @@ public record MapperKnowledge(
             s.latch());
   }
 
+  /**
+   * Adds only selector facts established by the physical execution view containing an entry.
+   * Fields unrelated to that fetch remain unknown.
+   */
+  public MapperKnowledge constrainEntry(
+      Cartridge cartridge, MapperState.Physical physical, int cpu) {
+    if (physical == null) return this;
+    var derived = unknown();
+    switch (physical.region()) {
+      case "ROM" -> {
+        if (cpu < 0 || cpu >= 0x8000)
+          throw new IllegalArgumentException("ROM entry is outside the CPU ROM windows");
+        if (cpu < 0x4000) {
+          if (physical.bank() != 0 && cartridge.mapper() != Cartridge.Mapper.MBC1)
+            throw new IllegalArgumentException("Physical ROM entry conflicts with fixed ROM window");
+        } else {
+          switch (cartridge.mapper()) {
+            case MBC5 ->
+                derived =
+                    new MapperKnowledge(
+                        physical.bank() & 0xff,
+                        cartridge.actualRomBanks() > 256 ? (physical.bank() >>> 8) & 1 : null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+            case MBC2, MBC3 -> {
+              // Effective bank 1 can result from more than one raw selector value.
+              if (physical.bank() != 1)
+                derived =
+                    new MapperKnowledge(
+                        physical.bank(), null, null, null, null, null, null, null);
+            }
+            case ROM_ONLY -> {
+              if (physical.bank() != 1)
+                throw new IllegalArgumentException("Physical ROM entry conflicts with ROM-only window");
+            }
+            case MBC1, RAW -> {
+              // MBC1 coupled wiring and RAW have no single safe scalar selector premise here.
+            }
+          }
+        }
+      }
+      case "VRAM" ->
+          derived =
+              new MapperKnowledge(null, null, null, null, null, physical.bank(), null, null);
+      case "WRAM" -> {
+        if (physical.bank() > 1)
+          derived =
+              new MapperKnowledge(null, null, null, null, null, null, physical.bank(), null);
+      }
+      case "SRAM", "MBC2_RAM" ->
+          derived =
+              new MapperKnowledge(
+                  null,
+                  null,
+                  null,
+                  physical.region().equals("SRAM") ? physical.bank() : null,
+                  true,
+                  null,
+                  null,
+                  null);
+      case "HRAM", "OAM", "IO", "IE", "DEVICE" -> {}
+      default -> throw new IllegalArgumentException("Unsupported physical execution region " + physical.region());
+    }
+    return merge(derived);
+  }
+
+  public MapperKnowledge merge(MapperKnowledge other) {
+    return new MapperKnowledge(
+        merge("ROM low selector", low, other.low),
+        merge("ROM high selector", high, other.high),
+        merge("mapper mode", mode, other.mode),
+        merge("RAM selector", ram, other.ram),
+        merge("RAM enabled state", enabled, other.enabled),
+        merge("VBK", vbk, other.vbk),
+        merge("SVBK", svbk, other.svbk),
+        merge("RTC latch", latch, other.latch));
+  }
+
+  private static <T> T merge(String name, T a, T b) {
+    if (a != null && b != null && !a.equals(b))
+      throw new IllegalArgumentException("Physical entry view contradicts explicit " + name);
+    return a != null ? a : b;
+  }
+
   private MapperState representative() {
     return new MapperState(
         low == null ? 1 : low,

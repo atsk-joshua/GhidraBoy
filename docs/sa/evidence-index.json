@@ -736,5 +736,27 @@
     "v1_derived": "evidence/batches/PUBLIC-OPERATIONS-LIFECYCLE/attended-completion/V1-20260916",
     "accepted_candidate": "evidence/batches/AUTHORITY-MEMBERSHIP/W2-R3-20260916/candidate/ghidra_12.1.3_PUBLIC_20260905-integration1_GhidraBoy.zip",
     "replay_relocation": "UNIMPLEMENTED; retained historical absolute paths remain classified by REL-0A"
+  },
+  "preview_m2_20260916": {
+    "status": "PARTIAL: local/headless implementation and workflow pass; intended Linux headed target workflow NOT_RUN",
+    "external_root": "evidence/batches/ENGINEERING-PREVIEW/PREVIEW-M2-20260916",
+    "decision": "docs/decisions/preview-m2-native-analysis.md",
+    "starting_head": "e6af3a64da8b000171cc35467ca70fce4c3a11c9",
+    "starting_tree": "63f873fe8b8991a33cd0e7974e02a9aee98e8d0a",
+    "candidate_identity": "Recorded in the PREVIEW-M2 completion response after final focused closeout",
+    "provider_baseline": "901 tests / 93 classes / zero failures, errors or skips on the native-capable runtime before the final bounded batch-accumulation/widening correction",
+    "final_correction_verification": "Focused analyzer/bank tests, ktlint and buildExtension; broader final full rerun UNRUN at user closeout",
+    "build_inputs": "7 PASS",
+    "tools": "146 PASS; one explicit optional dependency-package skip",
+    "migration_result": "evidence/batches/ENGINEERING-PREVIEW/PREVIEW-M2-20260916/migration/work4/migration-result.json",
+    "preservation_result": "evidence/batches/ENGINEERING-PREVIEW/PREVIEW-M2-20260916/migration/target-preservation-final.json",
+    "auto_analysis_log": "evidence/batches/ENGINEERING-PREVIEW/PREVIEW-M2-20260916/migration/headless-auto-analysis-final.log",
+    "auto_analysis_reopen": "evidence/batches/ENGINEERING-PREVIEW/PREVIEW-M2-20260916/migration/headless-analysis-final-status.json",
+    "auto_analysis_rerun": "evidence/batches/ENGINEERING-PREVIEW/PREVIEW-M2-20260916/migration/headless-analysis-final-rerun-status.json",
+    "migration": "PASS: source GZF unchanged; 456 USER_DEFINED / 436 primary / 20 non-primary preserved; separate-process reopen PASS",
+    "physical_identity": "ROM0-63, VRAM0-1, WRAM0-7, SRAM0 only, HRAM; OAM/I/O/IE remain device/unresolved",
+    "target_workflow": "NOT_RUN: actual intended Linux/Steam Deck headed CodeBrowser/Auto Analyze/Decompiler/save/reopen environment unavailable",
+    "engineering_preview": "NOT_READY",
+    "stopped": "User-directed closeout after coherent bounded batch-accumulation correction; no further GUI, experiment or capability work"
   }
 }

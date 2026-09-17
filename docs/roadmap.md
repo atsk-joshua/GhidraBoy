@@ -1,5 +1,14 @@
 # Development roadmap
 
+PREVIEW-M2 implements the normal stock-Ghidra analyzer/preparation/status path and
+outer primacy-safe migration boundary. Generic qualification and the private
+headless migration/full-analysis/reopen workflow pass locally; the actual intended
+Linux/Steam Deck headed workflow is NOT_RUN, so ENGINEERING-PREVIEW remains
+NOT_READY. The next unresolved obligation is exactly that candidate-specific headed
+target workflow, not further capability expansion. See
+[current status](sa/IMPLEMENTATION-STATUS.md) and the
+[M2 decision](decisions/preview-m2-native-analysis.md).
+
 PUBLIC-OPERATIONS-LIFECYCLE V1 is PASS for its scoped contract on the exact AUTH-R3
 candidate `54fc048798025691789da706508d9c5fd674c2655b8192152a65eb146899e07c`.
 All H0/H1/H2/I1/W1/W2/W3/W4/W5/W6 positive rows, actual desktop visual review and

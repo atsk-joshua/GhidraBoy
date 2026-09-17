@@ -22,12 +22,15 @@ class BankAnalysisFetchTest : IntegrationTest() {
                 listOf("rom1::4000", "rom1::4002", "rom2::4005", "rom2::4007", "rom2::4008", "rom2::400b"),
                 steps.map { it.source() },
             )
-            assertEquals(MapperKnowledge.unknown(), steps.first().incoming())
+            assertEquals(1, steps.first().incoming().low())
+            assertNull(steps.first().incoming().high())
+            assertNull(steps.first().incoming().enabled())
             val mapper = steps[1].writes().single()
             assertTrue(mapper.mapperControl())
             assertEquals(0x2000, mapper.cpu())
             assertEquals(2, mapper.value())
-            assertEquals(MapperKnowledge.unknown(), mapper.before())
+            assertEquals(1, mapper.before().low())
+            assertNull(mapper.before().enabled())
             assertEquals(2, mapper.after().low())
             assertNull(mapper.after().high())
             assertNull(mapper.after().enabled())

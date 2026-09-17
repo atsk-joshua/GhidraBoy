@@ -1,5 +1,15 @@
 # Static analysis implementation handoff
 
+PREVIEW-M2 now supplies the ordinary Ghidra integration shell described in W5:
+`GhidraBoyBankAnalyzer`, `LegacyPreparation`, `UserReferencePrimacy`,
+`GhidraBoyProgramPlugin` and the migration/package launchers. The analyzer is
+low-priority, unions later scheduler batches after the initial broad notification,
+widens excessive per-address exact state diversity to explicit unknown, and clears
+session state in `analysisEnded`; the separate one-shot instance remains local.
+Do not replace this with a Script Manager basic workflow or remove the outer
+pre-upgrade snapshot boundary. Local/headless qualification passes; intended Linux
+headed target acceptance remains the next and only PREVIEW-M2 obligation.
+
 This retained implementation guide describes the original SA requirement decomposition. Start with [current SA status](sa/IMPLEMENTATION-STATUS.md), the [implementation plan](sa/IMPLEMENTATION-PLAN.md), and [decision gates](sa/DECISION-GATES.md). Dated campaign instructions below are historical; they do not authorize replay or supersede accepted W3b. Original SA/FX/M scope remains required.
 
 This guide makes the [roadmap](roadmap.md) executable; it does not replace any

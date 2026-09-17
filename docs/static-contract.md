@@ -31,10 +31,20 @@ loader anchors remains unresolved in legacy programs. An explicit anchor can
 be added with `ProgramMapping.identifyRam` with checked interval bounds after a human
 identifies its region and bank; topology is never silently recreated.
 
+`LegacyPreparation` recognizes only a coherent historical GhidraBoy family:
+complete FileBytes-backed ROM banks plus exact canonical/overlay address spaces,
+bounds, permissions, uninitialized provenance and expected names for existing
+VRAM, WRAM, SRAM0 and HRAM. It preflights the entire descriptor/anchor plan before
+one transaction, refuses ambiguity or conflicts before mutation and is exactly
+idempotent. It never creates absent SRAM banks. OAM, I/O and IE remain explicitly
+reported device/unresolved regions rather than ordinary RAM omissions.
+
 `physicalToStatic`, `fileToStatic` return lists (empty = unmapped, multiple =
 several views). `staticToPhysical` follows byte aliases and returns identities.
 `MapperState.translate(cartridge, state, cpu, write)` reports mapped, unknown,
-unmapped or device results. Null mapper state never assumes bank 1. Explicit
+unmapped or device results. Null mapper state never assumes reset bank 1; a
+physically identified analysis root may separately contribute its proved entry
+selector constraint. Explicit
 state JSON example:
 
 ```json
@@ -78,6 +88,14 @@ conflicting or detached sources produce explicit rejection rather than being
 mistaken for a known-unmapped interval. Mapping schema versioning is independent
 of SLEIGH language versioning. P-code-only changes do not by themselves require
 a version change; the stock transport context schema now requires language 2.0.
+
+Bounded `AnalysisResult` schema 3 / engine `20260916-m2-native-analysis-2` adds a
+physical identity, partial `MapperKnowledge` and topology-derived provenance for
+each root. Incompatible earlier saved results are rejected and must be recomputed.
+Mapping schema v2, language v2, constructors, compiler IDs and 16-bit CPU pointers
+are unchanged. For MBC5 ROMX entries only the selector bits required by the
+physical fetch are derived; RAM enable/select, VBK, SVBK and unrelated fields stay
+unknown.
 
 
 Software-call model, preview, executable registry and ownership identities are

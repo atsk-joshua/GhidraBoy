@@ -10,6 +10,16 @@ before installing its replacement: two versions can leave conflicting JARs.
 Keep a backup of the original extension and projects. Language ID
 `SM83:LE:16:default`, compiler `default`, registers and 16-bit pointers are stable.
 
+For an existing SM83 language-v1 GhidraBoy Program, do not open the only copy in
+the new provider. Run the packaged `migration/migrate_legacy_program.py` launcher
+against the immutable GZF and a new output path. It snapshots all USER_DEFINED
+reference primary states in a source-compatible language-v1 Ghidra 12.1.3 copy,
+upgrades only a task-owned project copy, restores the exact states, prepares
+recognized historical topology, writes a new GZF and verifies it in a separate
+process. This outer boundary is required because stock Ghidra redisassembles
+instructions before any supported translator or plugin callback can observe the
+old primary-reference state.
+
 Standard cartridges use File → Import File and the Game Boy loader. Inspect its
 options and warnings. For deliberate manual import, run `GhidraBoyImport.java`
 from Script Manager's Game Boy category. Choose CARTRIDGE, SALVAGE, DMG_BOOT or
@@ -28,9 +38,33 @@ alone is not a malware verdict. The native helper is a Ghidra dependency, not a
 GhidraBoy binary. GUI acceptance requires actually operating dialogs; successful
 headless scripts alone do not establish it.
 
-# Tools, navigation and symbols
+# Normal analysis workflow
 
-Run `GhidraBoyTools.java`. Its action chooser exposes inspection, mapping export,
+Open the migrated/prepared Program in CodeBrowser. Use
+Tools → GhidraBoy → Program Status... to review cartridge identity, represented
+ROM/RAM banks, expected device regions, migration status and current/stale analysis
+state. For an already upgraded historical Program that still lacks metadata or RAM
+identity, use Tools → GhidraBoy → Prepare Legacy Program.... This is post-upgrade
+preparation, not a substitute for the pre-upgrade reference snapshot.
+
+Choose Analysis → Auto Analyze.... `GhidraBoy Bank and Mapper Analysis` appears for
+SM83 Programs and is enabled by default. Its normal options are the session-wide
+state limit and whether to create Functions from justified roots. It runs one
+deduplicated worklist from entry points, existing non-owned user/imported Function entries and
+newly defined code-range roots, then publishes only COMPLETE/PROVEN results. A
+selected range can use Analysis → One Shot with the same analyzer.
+
+The Program's physical execution view supplies only the mapper facts it proves. An
+MBC5 root in physical ROM bank 12, for example, establishes the relevant ROM
+selector bits while RAM enable/bank, VBK, SVBK and unrelated state remain unknown.
+Normal analysis never asks for MapperState JSON or a proof file. Preparation and
+unsupported-state messages use the normal analysis log rather than surfacing an
+InvocationTargetException.
+
+# Advanced/developer tools, navigation and symbols
+
+`GhidraBoyTools.java` remains an advanced Script Manager/headless surface. Its
+action chooser exposes inspection, mapping export,
 file/physical/CPU navigation, symbol sources, analysis and ROM exports. Navigation
 shows a choice when several static views share the same physical bytes. CPU
 navigation requires explicit mapper state; it does not select a live bank.
@@ -64,8 +98,10 @@ user labels, renamed/moved symbols and promoted functions are protected. Reload
 reconciles the selected source, preserving the other claims. File changes require
 an explicit reload; there is no background directory scan.
 
-# Analysis and per-function ABI
+# Advanced analysis and per-function ABI
 
+The following script actions are for diagnostics, recovery and reviewed
+state-sensitive work; ordinary Auto Analysis does not require them.
 `analysis-preview` takes MapperState JSON (or `null`), a static start, optional
 new output JSON path and optional configuration JSON. Example state:
 
@@ -117,14 +153,15 @@ patches and preserves known-unmapped original tails/boot holes. Conflicting alia
 patches, missing sources and detached ambiguous mappings are rejected. Repair is
 explicit and reports changed checksum offsets and the output SHA256.
 
-Close and copy the complete original project directory and `.gpr` before opening
-under newer Ghidra. For SM83 1-to-2, first inspect the core-translated copy, save
-and close it, and verify immutable first use in another process before enhancement
-or reanalysis. The [language compatibility workflow](instruction-compatibility.md#installed-language-1-to-language-2-upgrade)
-describes the supported route and preservation limits. Enhance only a further copy. `enhance-legacy` preserves known
-historical hardware choices; unknown hardware remains unknown unless explicitly
-identified. Use `identify-ram` for reviewed RAM intervals; conflicts are rejected.
-Topology and annotations are never silently recreated. Reanalyze reviewed code.
+Keep the complete original project/GZF closed and immutable. For SM83 v1-to-v2,
+use the packaged outer migration launcher described above; direct open-and-save is
+not preservation-safe because redisassembly can displace user primaries before an
+extension callback runs. The launcher refuses wrong, missing or ambiguous reference
+identity; never creates, deletes or retargets references; preserves deliberately
+non-primary user references; prepares only structurally recognized existing RAM;
+and performs a separate-process reopen. `enhance-legacy` and `identify-ram` remain
+advanced recovery actions. The latter includes HRAM, but ordinary preparation does
+not require twelve manual anchors.
 
 Actual 11.3.1 creation/save/close and 12.1.3 upgrade/reanalysis/reopen were tested
 with a legal self-authored fixture, separately from old-language-on-12.1.3 tests.
