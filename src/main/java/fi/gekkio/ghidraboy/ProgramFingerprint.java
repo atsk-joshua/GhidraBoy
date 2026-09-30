@@ -27,13 +27,31 @@ public final class ProgramFingerprint {
 
   static Map<String, String> coreComponents(Program p, TaskMonitor monitor) throws Exception {
     var parts = new TreeMap<String, String>();
+    var mapping = ProgramMapping.inspect(p);
     parts.put(
         "mapping",
         Sha256.of(
                 ProgramMapping.JSON
-                    .toJson(ProgramMapping.inspect(p))
+                    .toJson(mapping)
                     .getBytes(StandardCharsets.UTF_8))
             .toString());
+    // Mapping covers permissions, source identity, space names and mapped alias topology;
+    // memory covers initialization/current bytes. Only the remaining ROM authority gate is new.
+    var romReadEligibility = new TreeMap<String, Boolean>();
+    for (var range : mapping.ranges()) {
+      if ((!range.region().equals("ROM") && !range.region().equals("BOOT"))
+          || (range.fileOffset() == null && !"loader-anchor".equals(range.provenance()))) continue;
+      var space = p.getAddressFactory().getAddressSpace(range.space());
+      var block = p.getMemory().getBlock(space.getAddress(range.start()));
+      if (block == null || block.isMapped() || !block.isInitialized() || !block.isRead()
+          || block.isWrite() || space.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+          || space.getName().startsWith(OrdinaryEntryAccess.PREFIX)) continue;
+      romReadEligibility.put(address(block.getStart()), !block.isVolatile()
+          && !block.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+          && !block.getName().startsWith(OrdinaryEntryAccess.PREFIX));
+    }
+    parts.put("romReadEligibility",
+        Sha256.of(ProgramMapping.JSON.toJson(romReadEligibility).getBytes(StandardCharsets.UTF_8)).toString());
     var memory = MessageDigest.getInstance("SHA-256");
     byte[] buffer = new byte[16384];
     var blocks = new ArrayList<>(Arrays.asList(p.getMemory().getBlocks()));

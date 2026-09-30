@@ -88,8 +88,19 @@ widened to unknown. Later backedges to that instruction reuse the unknown state.
 The widening is explicit in findings and preserves uncertainty; it does not select
 one observed value or silently drop the unresolved loop.
 
-The current evaluator records memory references without propagating ROM lookup
-contents or bank-shadow memory values. It has no general returning-call summaries.
+Ordinary BankAnalysis propagates scalar values from actual p-code LOAD operations
+when a known 16-bit CPU pointer and path-local mapper knowledge establish every
+physical ROM/BOOT byte. It reads current initialized, readable, non-writable,
+nonvolatile direct static storage bound by a file source or explicit loader ROM/BOOT
+anchor; all eligible physical sources must agree. Byte-mapped aliases share backing
+storage and cannot independently establish immutability. Generated
+execution/presentation storage cannot supply byte authority. Values assemble
+little-endian into the existing register/unique domain and can drive mapper writes.
+Mapping findings remain independent of value proof, including for unknown loads.
+Address-valued operands remain mapping observations and are never implicitly
+loaded by COPY. Unsupported widths, unknown pointers/banks, RAM and device reads
+remain unknown. Bank-shadow memory and general returning-call summaries remain
+unsupported. Schema 3 is retained; older analysis engines require a new preview.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are
 explicit work in the [research record](static-analysis-research.md), not proof

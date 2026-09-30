@@ -758,5 +758,42 @@
     "target_workflow": "NOT_RUN: actual intended Linux/Steam Deck headed CodeBrowser/Auto Analyze/Decompiler/save/reopen environment unavailable",
     "engineering_preview": "NOT_READY",
     "stopped": "User-directed closeout after coherent bounded batch-accumulation correction; no further GUI, experiment or capability work"
+  },
+  "sa_rom_value_propagation_n1_20260930": {
+    "status": "Bounded N1 implementation and independent review complete",
+    "scope": "Ordinary immutable physical-ROM LOAD value propagation; no broader SA completion or final qualification",
+    "external_root": "evidence/batches/SA-ROM-VALUE-PROPAGATION/20260930-n1",
+    "decision": "docs/decisions/ordinary-rom-load-values.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "64f87ed48460dd60985d1e469c6f1ff8e79b7ad5",
+    "source_state": "uncommitted bounded working-tree changes",
+    "source_identity_sha256": "9bb015ea0f7bbb5dfa7df69b08cb95bcac6316098a82e8cc9069d4379450ae31",
+    "candidate_sha256": "876b9fc5b95d792cdcf3fa1d13914372b73192ab6fead2b928e696c17f9e35d6",
+    "report": "REPORT.md",
+    "report_sha256": "ae25063cfc18a47741df0fddacb97ea50a8f52670152908fd0acf499bdc6931a",
+    "manifest": "manifest.json",
+    "manifest_sha256": "11d23cef237e5fa538923a1fc0b56a0e0153e1cb8d8d22ef68da568bef0c2346",
+    "inventory_sha256": "bee9f93bf9a79995cb551bca5e06dab800db6ab20b6be110ec4bce6a7a83623c",
+    "focused_tests": "66 tests / 13 classes; zero failures, errors or skips in identified disposable native-capable runtime",
+    "lint_package": "ktlintCheck and buildExtension PASS",
+    "persistence": "Packed current/replaced-byte save/reopen PASS; old engine and current-byte stale results refused",
+    "docker": "One fixture with script-only compilation correction and confirming retry: installed manager-owned one-time analyzer and separate-JVM reopen/stale controls PASS",
+    "initial_failures": "Preserved in external receipts: fixture setup/compile corrections, missing mac native in original selected distribution, installed script compile correction",
+    "review": "Independent physical-source/LOAD/fingerprint/persistence review; no blocking findings",
+    "script_correction_review": "script-correction-review.txt",
+    "script_correction_review_sha256": "acb651a9bb58394b91d2ba11b445419399c32456cf3140cf5a5de527f9080313",
+    "unrun": [
+      "full provider suite",
+      "full run_validation.py",
+      "broad installed_smoke.py",
+      "historical native campaigns",
+      "headed GUI",
+      "debugger",
+      "Wyatt/Steam Deck",
+      "broad corpus",
+      "full hardware matrix"
+    ],
+    "closeout_review": "SA-N1-CLOSE corrected overbroad fingerprinting: ROM/BOOT candidate volatility and reserved generated-block classification only; ordinary names and RAM/device volatility excluded; mapped topology already covered. Four affected fingerprint/packed-reopen/stale tests PASS. Original receipt source/artifact identities above precede this correction.",
+    "stop": "STOP after bounded N1 implementation and review"
   }
 }

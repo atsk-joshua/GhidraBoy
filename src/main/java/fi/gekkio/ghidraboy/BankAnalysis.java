@@ -356,7 +356,11 @@ public final class BankAnalysis {
           }
           var output = op.getOutput();
           if (output != null) {
-            Long result = internal ? null : evaluate(op, regs, unique);
+            Long result = internal ? null : op.getOpcode() == PcodeOp.LOAD
+                ? (op.getInput(0).isConstant()
+                    && (int) op.getInput(0).getOffset() == p.getAddressFactory().getDefaultAddressSpace().getSpaceID()
+                    ? romLoad(p, cartridge, state, value(op.getInput(1), regs, unique), output.getSize()) : null)
+                : evaluate(op, regs, unique);
             if (output.isAddress()) {
               int cpu = (int) (output.getOffset() & 65535);
               state =
@@ -626,6 +630,53 @@ public final class BankAnalysis {
         writes.add(new WriteTransition(operation, i, cpu, octet, before, state, control));
     }
     return state;
+  }
+
+  /** LOAD alone consumes memory. Mapping observations do not authorize a byte value. */
+  static Long romLoad(Program p, Cartridge c, MapperKnowledge state, Long pointer, int width)
+      throws Exception {
+    if (pointer == null || width < 1 || width > Long.BYTES) return null;
+    var mapping = ProgramMapping.inspect(p);
+    long value = 0;
+    for (int i = 0; i < width; i++) {
+      int cpu = (int) ((pointer + i) & 65535);
+      var request = new ScalarAccess.Request(cpu, ScalarAccess.Kind.READ, width, i, null, -1, -1, null);
+      var physical = ScalarAccess.resolve(c, state, request).resolution().orElseThrow().physical();
+      if (physical == null || (!physical.region().equals("ROM") && !physical.region().equals("BOOT")))
+        return null;
+      Integer octet = null;
+      // File sources or explicit loader anchors establish static storage provenance.
+      // Neither original FileBytes nor detached/unidentified snapshots supply a value.
+      // Aliases and generated snapshots cannot supply an independent source of ROM authority.
+      for (var range : mapping.ranges()) {
+        if ((range.fileOffset() == null && !"loader-anchor".equals(range.provenance()))
+            || !range.region().equals(physical.region())
+            || range.bank() != physical.bank() || physical.offset() < range.offset()
+            || physical.offset() >= range.offset() + range.length()) continue;
+        var space = p.getAddressFactory().getAddressSpace(range.space());
+        var address = space.getAddress(range.start() + physical.offset() - range.offset());
+        var block = p.getMemory().getBlock(address);
+        if (block == null || block.isMapped() || !block.isInitialized() || !block.isRead()
+            || block.isWrite() || block.isVolatile()
+            || block.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+            || block.getName().startsWith(OrdinaryEntryAccess.PREFIX)
+            || space.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+            || space.getName().startsWith(OrdinaryEntryAccess.PREFIX)) continue;
+        var identities = ProgramMapping.staticToPhysical(p, address, mapping);
+        if (identities.size() != 1 || !physical.equals(identities.get(0))) return null;
+        int current;
+        try {
+          current = p.getMemory().getByte(address) & 255;
+        } catch (ghidra.program.model.mem.MemoryAccessException unavailable) {
+          return null;
+        }
+        if (octet != null && octet != current) return null;
+        octet = current;
+      }
+      if (octet == null) return null;
+      value |= (long) octet << (8 * i);
+    }
+    return value;
   }
 
   private static void readAccess(
