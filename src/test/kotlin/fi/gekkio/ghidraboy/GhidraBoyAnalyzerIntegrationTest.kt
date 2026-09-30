@@ -1,5 +1,6 @@
 package fi.gekkio.ghidraboy
 
+import ghidra.app.plugin.core.analysis.AutoAnalysisManager
 import ghidra.app.plugin.processors.sleigh.SleighLanguageProvider
 import ghidra.app.services.AnalysisPriority
 import ghidra.app.services.Analyzer
@@ -9,11 +10,13 @@ import ghidra.framework.plugintool.Plugin
 import ghidra.program.database.ProgramDB
 import ghidra.program.disassemble.Disassembler
 import ghidra.program.model.address.AddressSet
+import ghidra.program.model.listing.Program
 import ghidra.util.classfinder.ClassSearcher
 import ghidra.util.task.TaskMonitor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -194,7 +197,7 @@ class GhidraBoyAnalyzerIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `broad auto-analysis session unions later scheduler batches while one-shot stays local`() {
+    fun `manager-owned broad auto-analysis session unions later scheduler batches and cleans up`() {
         fixture(2).useProgram { program, first ->
             val second = ProgramMapping.fileToStatic(program, 3L * 0x4000).single()
             program.withTransaction {
@@ -202,11 +205,11 @@ class GhidraBoyAnalyzerIntegrationTest : IntegrationTest() {
                     .getDisassembler(program, TaskMonitor.DUMMY, null)
                     .disassemble(second, AddressSet(second, second))
             }
-            val analyzer = GhidraBoyBankAnalyzer()
-            val options = program.getOptions("GhidraBoy session test")
-            analyzer.registerOptions(options, program)
+            val manager = AutoAnalysisManager.getAnalysisManager(program)
+            val analyzer = manager.getAnalyzer(GhidraBoyBankAnalyzer.NAME) as GhidraBoyBankAnalyzer
+            val options = program.getOptions(Program.ANALYSIS_PROPERTIES).getOptions(GhidraBoyBankAnalyzer.NAME)
             program.withTransaction { options.setBoolean(GhidraBoyBankAnalyzer.CREATE_FUNCTIONS, false) }
-            analyzer.optionsChanged(options, program)
+            manager.initializeOptions()
 
             val broad = AddressSet()
             program.memory.blocks.forEach { broad.add(it.start, it.end) }
@@ -217,11 +220,58 @@ class GhidraBoyAnalyzerIntegrationTest : IntegrationTest() {
                 AnalysisResult.read(program.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", null))
             assertTrue(accumulated.starts().contains(first.toString()))
             assertTrue(accumulated.starts().contains(second.toString()))
+            assertNull(program.functionManager.getFunctionAt(first))
+            assertNull(program.functionManager.getFunctionAt(second))
 
             analyzer.analysisEnded(program)
             assertTrue(analyzer.added(program, AddressSet(second, second), TaskMonitor.DUMMY, MessageLog()))
             val local = AnalysisResult.read(program.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", null))
             assertEquals(listOf(second.toString()), local.starts())
+        }
+    }
+
+    @Test
+    fun `scheduled separate one-shot analyzer keeps broad and narrow runs independent`() {
+        fixture(2).useProgram { program, first ->
+            val second = ProgramMapping.fileToStatic(program, 3L * 0x4000).single()
+            program.withTransaction {
+                Disassembler
+                    .getDisassembler(program, TaskMonitor.DUMMY, null)
+                    .disassemble(second, AddressSet(second, second))
+            }
+            val manager = AutoAnalysisManager.getAnalysisManager(program)
+            val registered = manager.getAnalyzer(GhidraBoyBankAnalyzer.NAME)
+            assertTrue(registered is GhidraBoyBankAnalyzer)
+            val oneShot = GhidraBoyBankAnalyzer()
+            assertNotSame(registered, oneShot)
+            val options = program.getOptions(Program.ANALYSIS_PROPERTIES)
+            program.withTransaction {
+                // Queue only the requested One Shot commands, without ordinary analyzer mutations.
+                options.optionNames.filter { manager.getAnalyzer(it) != null }.forEach {
+                    options.setBoolean(it, false)
+                }
+                options.getOptions(GhidraBoyBankAnalyzer.NAME).setBoolean(GhidraBoyBankAnalyzer.CREATE_FUNCTIONS, false)
+            }
+            manager.initializeOptions()
+
+            val broad = AddressSet(program.memory)
+            assertTrue(broad.numAddresses > 0x10000)
+            program.withTransaction {
+                manager.scheduleOneTimeAnalysis(oneShot, broad)
+                manager.startAnalysis(TaskMonitor.DUMMY)
+            }
+            val firstRun = AnalysisResult.read(program.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", null))
+            assertTrue(firstRun.starts().contains(first.toString()))
+            assertTrue(firstRun.starts().contains(second.toString()))
+            assertTrue(firstRun.findings().any { it.source() == first.toString() && it.access() == "jump" })
+
+            program.withTransaction {
+                manager.scheduleOneTimeAnalysis(oneShot, AddressSet(second, second))
+                manager.startAnalysis(TaskMonitor.DUMMY)
+            }
+            val secondRun = AnalysisResult.read(program.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", null))
+            assertEquals(listOf(second.toString()), secondRun.starts())
+            assertFalse(secondRun.findings().any { it.source() == first.toString() })
         }
     }
 

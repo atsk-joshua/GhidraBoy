@@ -124,21 +124,23 @@ public final class BankAnalysis {
     if (roots.isEmpty()) throw new IllegalArgumentException("At least one justified analysis root is required");
     var primaryStart = roots.get(0).address();
     var queue = new ArrayDeque<Work>();
-    var entryRegisters = new HashMap<Long, Integer>();
-    // Executable contracts consume explicitly recorded context as premises. Unknown/partial
-    // values are not filled from a template or architectural guess.
-    if (!SoftwareCallRegistry.configurationIdentity(p).equals("absent")) {
-      for (String name : List.of("A", "F", "BC", "DE", "HL", "SP")) {
-        var register = p.getRegister(name);
-        var contextual = p.getProgramContext().getRegisterValue(register, primaryStart);
-        var value = contextual == null ? null : contextual.getUnsignedValue();
-        if (value != null)
-          put(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
-              value.longValue(), entryRegisters, new HashMap<>());
+    boolean hasSoftwareCalls = !SoftwareCallRegistry.configurationIdentity(p).equals("absent");
+    for (var root : roots) {
+      var entryRegisters = new HashMap<Long, Integer>();
+      // Executable contracts consume only this root's explicitly recorded context as premises.
+      // Unknown/partial values are not filled from a template or architectural guess.
+      if (hasSoftwareCalls) {
+        for (String name : List.of("A", "F", "BC", "DE", "HL", "SP")) {
+          var register = p.getRegister(name);
+          var contextual = p.getProgramContext().getRegisterValue(register, root.address());
+          var value = contextual == null ? null : contextual.getUnsignedValue();
+          if (value != null)
+            put(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
+                value.longValue(), entryRegisters, new HashMap<>());
+        }
       }
-    }
-    for (var root : roots)
       queue.add(new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters)));
+    }
     var seen = new HashSet<Work>();
     var diversity = new HashMap<Address, Integer>();
     var widened = new HashSet<Address>();

@@ -1,5 +1,6 @@
 package fi.gekkio.ghidraboy;
 
+import ghidra.app.plugin.core.analysis.AutoAnalysisManager;
 import ghidra.app.services.AbstractAnalyzer;
 import ghidra.app.services.AnalysisPriority;
 import ghidra.app.services.AnalyzerType;
@@ -101,8 +102,10 @@ public final class GhidraBoyBankAnalyzer extends AbstractAnalyzer {
       }
 
       var notifiedRoots = roots(program, set, monitor);
-      Session session = sessions.get(program);
-      if (session == null && set.getNumAddresses() > 0x10000) {
+      boolean managerOwned =
+          AutoAnalysisManager.getAnalysisManager(program).getAnalyzer(NAME) == this;
+      Session session = managerOwned ? sessions.get(program) : null;
+      if (managerOwned && session == null && set.getNumAddresses() > 0x10000) {
         session = new Session();
         sessions.put(program, session);
       }

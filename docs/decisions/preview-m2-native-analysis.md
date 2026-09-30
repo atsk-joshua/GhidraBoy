@@ -19,13 +19,20 @@ Function as an independent entry premise. One shared worklist consumes Ghidra's
 `AddressSetView`, so analysis is not multiplied into one 4096-state session per
 instruction. The manager instance unions subsequent scheduler batches after the
 initial broad notification and clears them in `analysisEnded`; the distinct one-shot
-instance stays range-local. Only complete results are applied. Justified Function discovery is a
-later phase of the same analyzer; GhidraBoy-owned Functions cannot seed a later run.
+instance stays range-local. Session lookup and creation require identity with
+`AutoAnalysisManager.getAnalysisManager(program).getAnalyzer(NAME)`; a caller-supplied
+One Shot instance cannot accumulate roots even for a broad range. Only complete
+results are applied. Justified Function discovery is a later phase of the same analyzer; GhidraBoy-owned Functions cannot seed a later run.
 Generated supplemental references remain excluded from the interpretation
 fingerprint and cannot circularly establish a result.
 
-`AnalysisResult` advances to schema 3 and engine
-`20260916-m2-native-analysis-2`. Every root records its unique physical identity,
+`AnalysisResult` retains schema 3 and advances the engine to
+`20260930-m2-native-analysis-3`. This invalidates persisted results from the
+previous engine, which copied the first root's CPU register context to unrelated
+roots. With an applied SoftwareCall registry, each root independently consumes
+only complete A/F/BC/DE/HL/SP values from ProgramContext at its own address;
+absent or partial values remain unknown. Registry absence keeps context consumption
+disabled. Every root records its unique physical identity,
 partial mapper knowledge and topology provenance. For MBC5 ROMX, the physical bank
 derives only the low selector and, when geometry requires it, the ninth bit.
 Unrelated RAM enable/select, VBK, SVBK, RTC and register facts remain unknown.

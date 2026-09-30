@@ -16,7 +16,7 @@ public record AnalysisResult(
     String fingerprint,
     List<BankAnalysis.Finding> findings,
     List<String> diagnostics) {
-  public static final String ENGINE_VERSION = "20260916-m2-native-analysis-2";
+  public static final String ENGINE_VERSION = "20260930-m2-native-analysis-3";
 
   public record EntryPremise(
       String start,
