@@ -1,13 +1,16 @@
 # Development roadmap
 
 The bounded N8 [exact JP HL successor](decisions/finite-pointer-successor.md) is
-closed under its existing finite proof contract. WUX-0 has completed stock-flow
-investigation and records the [production lifecycle decision still required](decisions/proven-stock-flow-integration.md);
-WUX-1P supplies the [ordinary-CD proof certificate foundation](decisions/ordinary-call-proof-certificate.md)
-with must-proof provenance and schema-4 recomputation; broader qualification is
-blocked by a reproduced baseline native carrier fault-test failure. WUX-1A native lifecycle
-work remains deferred and no new native capability is claimed. N9, general indirect
-flow, discovery and whole-ROM qualification remain open.
+closed under its existing finite proof contract. WUX-0 completed stock-flow
+investigation and records the [production lifecycle decision still required](decisions/proven-stock-flow-integration.md).
+WUX-1P is now CLOSED under the
+[ordinary-CD proof certificate contract](decisions/ordinary-call-proof-certificate.md):
+must-proof provenance, schema-4 recomputation, separate-process persistence and
+the final 1,098-test provider aggregate pass. The prior carrier-fault blocker was
+an inherited test-oracle defect and was repaired without changing production
+native behavior. WUX-1A native lifecycle work may now resume as a separate task;
+no native CALL lowering or new Wyatt capability is claimed yet. N9, general
+indirect flow, discovery and whole-ROM qualification remain open.
 
 The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)
 composes multiple direct returning sites within one invocation using the existing

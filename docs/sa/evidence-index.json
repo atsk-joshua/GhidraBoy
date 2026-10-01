@@ -1237,5 +1237,44 @@
       "main/release/remote mutation/persistent installation"
     ],
     "qualification_boundary": "Architecture-sensitive bounded WUX-0 decision evidence only; normal user production workflow unchanged"
+  },
+  "wux_1p_ordinary_call_proof_20261001": {
+    "status": "PASS",
+    "scope": "Typed must-proof provenance for incumbent ordinary unconditional CD matched-return composition; no native flow lowering",
+    "decision": "docs/decisions/ordinary-call-proof-certificate.md",
+    "external_root": "evidence/batches/WUX-1P-ORDINARY-CALL-PROOF-20261001",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "5e27da6f6158c5bb6238835bae72773105212653",
+    "starting_tree": "0ad57459aadedf4456e0c94262f62a2c6cb01ba5",
+    "implementation_commit": "83cc5a621ea379fec7c474f3f5650c3facf72d04",
+    "implementation_tree": "454f75ab7a593ab787c7ef9d9a5213ba9b859452",
+    "qualified_commit": "3bff09e4a4afeb1d486d4dd08b44845db9b209f9",
+    "qualified_tree": "43059ddb0a9641345bf6f721d751e69434857e6c",
+    "engine": "20261001-wux1p-ordinary-call-proof-1",
+    "schema": 4,
+    "focused": "178 affected semantic/currentness tests PASS; zero failures, errors or skips",
+    "persistence": "Three separate-JVM phases PASS: exact persisted identities/currentness, recomputation agreement, preceding schema3 rejection, user annotation preservation and consumed-dependency stale refusal",
+    "oracle_repair": "The sole prior aggregate failure was an inherited StockRouteFaultTest oracle defect. __ghidraboy_state_entry_v1 correctly rejects missing state-entry authority before requesting carrier bytes. Dedicated 24-test StockRouteFaultTest suite PASS; production behavior unchanged.",
+    "aggregate": {
+      "tests": 1098,
+      "classes": 105,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "ktlint": "PASS",
+      "build_extension": "PASS"
+    },
+    "review": "Independent producer and compatibility/persistence reviews closed all scoped findings, including incomplete local exploration, returned mapper conflicts and generated execution-storage provenance.",
+    "native_stock_flow": "UNCHANGED; WUX-1A lowering not implemented",
+    "remaining": [
+      "Owned physical CALL reference lifecycle",
+      "DEFAULT displacement/restoration",
+      "generated-flow non-evidence lifecycle",
+      "same-session incumbent analyzer convergence",
+      "JP HL native-flow decision",
+      "headed/private Wyatt and Steam Deck qualification",
+      "debugger, migration, corpus/fuzz/hardware and release qualification"
+    ],
+    "stop": "WUX-1P CLOSED; WUX-1A may resume only as a separately authorized task"
   }
 }

@@ -114,11 +114,31 @@ workflow improvement, native transport capability or whole-ROM completeness.
 
 ## Qualification boundary
 
-Focused semantic and compatibility checks and actual separate-process persistence
-are recorded in the evidence index. Overall WUX-1P qualification is blocked by
-an existing native carrier fault-test failure: StockRouteFaultTest's paired
-`__ghidraboy_state_entry_v1` recovery capture has zero byte chunks where its
-unchanged oracle requires one. The same failure reproduces on the exact starting
-baseline. No native code or test expectation is changed to force acceptance.
-This remains a separate unresolved obligation; WUX-1P is not capability PASS and
-WUX-1A is not resumed automatically.
+WUX-1P is CLOSED for its bounded provenance contract.
+
+The implementation commit is
+`83cc5a621ea379fec7c474f3f5650c3facf72d04`. Focused semantic/currentness
+qualification passes 178 tests. Three separate JVM phases prove exact persisted
+certificate identity/currentness, recomputation agreement, preceding schema-3
+rejection, preservation of unrelated user annotations and stale refusal after a
+consumed RET dependency changes.
+
+The initial broad provider run exposed one pre-existing `StockRouteFaultTest`
+oracle failure. Investigation on both the exact starting baseline and the WUX-1P
+candidate established that the deliberately substituted
+`__ghidraboy_state_entry_v1` convention rejects missing state-entry authority
+through its `uponentry` protocol before the native decompiler requests carrier
+bytes. The test was split so ordinary carrier faults retain their one-byte recovery
+requirement while the state-entry case explicitly requires zero byte requests and
+the semantic state-entry rejection. No production code or native transport changed.
+
+The qualified checkpoint is
+`3bff09e4a4afeb1d486d4dd08b44845db9b209f9`
+(tree `43059ddb0a9641345bf6f721d751e69434857e6c`). Final
+`./gradlew test ktlintCheck buildExtension` passes with 1,098 tests, zero failures,
+errors or skips.
+
+This qualification establishes only the typed ordinary-CD admission authority.
+WUX-1A native CALL lowering, DEFAULT displacement/restoration, owned generated-flow
+non-evidence handling, scheduler convergence and Wyatt workflow improvement remain
+unimplemented and require separate authorization.

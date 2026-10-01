@@ -1,30 +1,40 @@
 # Implementation status
 
-## WUX-1P ordinary returning-call certificate — implemented; broader qualification blocked
+## WUX-1P ordinary returning-call certificate — CLOSED
 
 The [certificate contract](../decisions/ordinary-call-proof-certificate.md) adds a
-structured durable assertion from successful incumbent CD matched-return
-composition. Source, target and continuation retain exact static Program and
-physical ROM identities. Every evaluated source encounter must succeed compatibly;
-conflicting identities/outgoing mapper, failed encounters and incomplete callee
-exploration suppress authority. Nested/sequential N4–N7 semantics remain unchanged.
-Conditional and software calls cannot issue this certificate. Generic Findings
-remain observations.
+structured durable assertion from successful incumbent unconditional CD
+matched-return composition. Source, target and continuation retain exact static
+Program and physical ROM identities. Every evaluated source encounter must succeed
+compatibly; conflicting identities or outgoing mapper state, failed encounters,
+generated execution storage and incomplete callee exploration suppress authority.
+Nested/sequential N4–N7 semantics remain unchanged. Conditional and software calls
+cannot issue this certificate. Generic Findings remain observations.
 
 Schema 4 / engine `20261001-wux1p-ordinary-call-proof-1` requires recomputation of
 preceding N8/WUX-0 results. Ownership remains unchanged. Saved output cannot
-bootstrap fresh proof; current fingerprint validation remains mandatory. Fresh
-focused, broader, independent review and separate-process qualification are recorded
-in the [evidence index](evidence-index.json).
+bootstrap fresh proof; current fingerprint validation remains mandatory.
 
-The provenance implementation has focused and separate-process evidence, but
-overall WUX-1P PASS remains blocked by the existing StockRouteFaultTest native
-carrier recovery-chunk failure, reproduced on the exact starting baseline. Its
-test and native behavior are preserved; resolving that separate failure is outside
-this slice. WUX-1A native CALL lowering,
-DEFAULT displacement/restoration, generated-flow non-evidence handling and
-production convergence remain separate obligations. No native-flow behavior or
-Wyatt workflow improvement is claimed. STOP after WUX-1P; no N9 begins.
+WUX-1P qualification is complete. The implementation is
+`83cc5a621ea379fec7c474f3f5650c3facf72d04`; the qualified checkpoint after a
+test-only native fault-oracle correction is
+`3bff09e4a4afeb1d486d4dd08b44845db9b209f9`
+(tree `43059ddb0a9641345bf6f721d751e69434857e6c`). Focused qualification passes
+178 tests. Three separate JVM persistence/currentness phases pass. Final provider
+validation passes 1,098 tests across 105 JUnit reports with zero failures, errors
+or skips; `ktlintCheck` and `buildExtension` pass.
+
+The previous aggregate blocker was an inherited `StockRouteFaultTest` oracle:
+`__ghidraboy_state_entry_v1` is a state-entry `uponentry` protocol and correctly
+rejects missing state-entry authority before requesting carrier bytes. A dedicated
+test now proves that zero-byte early rejection while the remaining carrier-fault
+matrix retains its one-byte recovery requirement. Production native behavior was
+not changed.
+
+WUX-1A native CALL lowering, DEFAULT displacement/restoration, generated-flow
+non-evidence handling and production convergence remain separate obligations.
+No native-flow or Wyatt workflow improvement is claimed by WUX-1P itself. Exact
+qualification details are in the [evidence index](evidence-index.json).
 
 ## WUX-0 stock-flow integration — investigation complete; WUX-1 deferred
 
