@@ -1090,5 +1090,81 @@
       "final SA-07"
     ],
     "stop": "STOP after N7; no N8/main/PR/release/persistent installation"
+  },
+  "sa_finite_pointer_successor_n8_20261001": {
+    "status": "Bounded N8 CLOSED",
+    "scope": "Exact ordinary one-byte SM83 E9 JP HL successor when both architectural HL bytes are exact and current mapper knowledge establishes one defined immutable executable physical ROM target. Preserves mapper/register/flag/SP/RAM state and active ordinary frame; creates no synthetic call, fallthrough, Function or decoding.",
+    "decision": "docs/decisions/finite-pointer-successor.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "538ac5174121d1aee153b84a64b05d3d05a2f8a8",
+    "implementation_commit": "1803b0d14028f16df0091bc447ad3af58f9f072d",
+    "implementation_tree": "8fe87e80873cbe2bed917f42cbe87f3e62232ef6",
+    "engine": "20260930-n8-finite-pointer-successor-1",
+    "schema": 3,
+    "focused": "24 N8 finite-pointer successor tests PASS; zero failures/errors/skips",
+    "retained_call_regression": "99 retained N4-N7 returning/nested/conditional/sequential call tests PASS; zero failures/errors/skips",
+    "affected": "181 BankAnalysis tests across 13 reports PASS; zero failures/errors/skips",
+    "fixture_repair": "Consumed-target byte invalidation fixture initially attempted C9->00 beneath an existing RET code unit. Test fixture was corrected to clear the code unit before byte mutation and redisassembly. Targeted test, 24-test N8 suite and 181-test affected-engine suite then PASS. No production semantics were weakened.",
+    "persistence": {
+      "engine": "20260930-n8-finite-pointer-successor-1",
+      "schema": 3,
+      "pointer_and_frames": "transient only; no new persisted graph/cache shape",
+      "fingerprint": "shape unchanged from N7",
+      "save_reopen": "Packed GZF save/reopen retains a current N8 result and recomputation matches the stored result; N7 engine identity is rejected.",
+      "dependency_invalidation": "Consumed target execute, volatile, byte and generated-view identity changes invalidate the saved proof."
+    },
+    "toolchain": {
+      "ghidra": "12.1.3",
+      "ghidra_release": "PUBLIC",
+      "java": "openjdk version \"21.0.12.1\" 2026-08-18",
+      "gradle": "9.0.0",
+      "host": "macOS arm64"
+    },
+    "source_identity": {
+      "production_sha256": {
+        "src/main/java/fi/gekkio/ghidraboy/AnalysisResult.java": "ae4b2d2323c5bd712655ac047eb5cbecccbe4d03f00b95706252852a4af47c21",
+        "src/main/java/fi/gekkio/ghidraboy/BankAnalysis.java": "f294172e905b1c6ed3d12c25f719cffee738178a4292c2f613238a5ff8a24100"
+      },
+      "test_sha256": {
+        "src/test/java/fi/gekkio/ghidraboy/BankAnalysisFinitePointerSuccessorTest.java": "8e5a74d7d8366bca17c3d7a5c0ee0a79d575cd3fd6c56917d0ee62212ebde197"
+      },
+      "decision_sha256": {
+        "docs/decisions/finite-pointer-successor.md": "4ee3a03106a5119263ddc6693f3d030379764ab55ed636986da95442f43e0158"
+      }
+    },
+    "package_validation": {
+      "build_extension": "PASS; Gradle reported buildExtension and inputs UP-TO-DATE",
+      "extension": "build/distributions/ghidra_12.1.3_PUBLIC_20260916-preview-m2_GhidraBoy.zip",
+      "extension_sha256": "94b571c67c52ca1ae796b31c493cc22fc5de307636b25fa044510f9df2c27715",
+      "provider_jar_entry": "GhidraBoy/lib/GhidraBoy-20260916-preview-m2.jar",
+      "provider_jar_sha256": "fed5d8f76109795e85c36ecb3f0efdee0dcb57dcb9c9bec30f15f1f3411c12b0",
+      "packaged_decision": "GhidraBoy/docs/decisions/finite-pointer-successor.md",
+      "packaged_bytecode": "N8 engine identity verified in packaged AnalysisResult.class and JP HL implementation verified in packaged BankAnalysis.class"
+    },
+    "remaining": [
+      "finite immutable pointer tables and arbitrary pointer sets",
+      "mutable pointer domains",
+      "dispatch/callback discovery",
+      "indirect CALL and call-like PUSH/JP patterns",
+      "return synthesis and RST/RETI",
+      "recursive/cyclic dispatch solving",
+      "general conditional/computed flow",
+      "discovery expansion and whole-ROM closure",
+      "SA-03/SA-04/SA-07 closure"
+    ],
+    "unrun": [
+      "full provider suite",
+      "broad historical installed qualification",
+      "headed GUI/final target workflow",
+      "Steam Deck/Wyatt",
+      "debugger qualification",
+      "annotated migration",
+      "corpus",
+      "fuzzing",
+      "hardware campaigns",
+      "final SA-07"
+    ],
+    "qualification_boundary": "Ordinary BankAnalysis semantics, persistence/currentness and exact static package identity only. This does not qualify headed workflow, Steam Deck, debugger, migration, whole-ROM analysis or release readiness.",
+    "stop": "STOP after N8; no N9/main/PR/release/persistent installation. Next campaign is Wyatt normal-Ghidra integration/release hardening, not static-analysis feature expansion."
   }
 }
