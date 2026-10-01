@@ -1,5 +1,37 @@
 # Implementation status
 
+## SA-SEQUENTIAL-RETURNING-CALL-COMPOSITION — bounded N7 CLOSED
+
+N7 admits multiple sequential direct returning calls within one invocation:
+caller → A → B → A continuation → C → A continuation → caller. Admission uses
+the active immutable frame chain rather than encountered sites; maximum active
+ordinary depth remains two. Each call establishes a fresh frame from actual
+current SP, physical stack bytes and mapper state. B's returned register/flag,
+RAM and mapper state feeds C; A retains its original physical frame across both
+returns. See the [N7 contract](../decisions/sequential-returning-call.md).
+
+Incomplete first or later callees cannot authorize the containing return.
+Physical recursion and third active levels remain refused. N6's one conditional
+site per invocation, the 128-state local limit, shared global budget, cancellation,
+widening and N3 must-fact joins remain unchanged. Engine
+`20260930-n7-sequential-returning-call-1` retains schema 3 and fingerprint
+dependencies; preceding N6 results require recomputation. Frames remain transient.
+
+Fresh N4/N5/N6 baseline, focused N7 and scoped affected regressions, independent
+semantic review, lint/build and build-input/package integrity pass. One disposable
+pinned Ghidra Docker witness demonstrates physical B → C → A → caller state
+dependency and separate frames; separate JVM save/reopen accepts N7, agrees with
+recomputation and rejects preceding N6 read/application. Exact identities, counts,
+commands and retained initial test-oracle failure are in the
+[evidence index](evidence-index.json).
+
+Only bounded sequential composition is closed. Arbitrary depth, recursion,
+indirect calls, RST/RETI, summaries, ABI inference, interrupts/devices, RAM code,
+general interprocedural/conditional flow, discovery and whole-ROM closure remain
+open, as do SA-01/SA-03/SA-07. Full historical/native, headed target/Steam Deck,
+debugger, migration, corpus, fuzzing and hardware campaigns are NOT RUN for N7.
+No main change, PR, release or persistent installation. STOP after N7; no N8.
+
 ## SA-CONDITIONAL-CALL-RET-MICROFLOW — bounded N6 CLOSED
 
 Ordinary BankAnalysis now interprets CALL NZ/Z/NC/C and RET NZ/Z/NC/C through

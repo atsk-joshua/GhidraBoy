@@ -1,5 +1,15 @@
 # Development roadmap
 
+The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)
+composes multiple direct returning sites within one invocation using the existing
+physical frames and returned state. Active depth stays two; sequential calls
+consume the same global budget and incomplete components invalidate the containing
+return. N6 conditional bounds remain unchanged. Scoped unit, installed, persistence,
+package and independent review evidence is in [current status](sa/IMPLEMENTATION-STATUS.md).
+Only this bounded composition step is closed; arbitrary depth, recursion, indirect
+calls, summaries, discovery, whole-ROM and SA-01/SA-03/SA-07 remain open. STOP after
+N7; N8 does not begin here. The N4/N5/N6 entries below retain their historical scope.
+
 The bounded N6 [conditional CALL/RET extension](decisions/conditional-call-ret-microflow.md)
 adds NZ/Z/NC/C architectural microflow to the retained N4/N5 evaluator. Exact F
 selects one outcome; unknown F preserves true and false paths, with actual stack

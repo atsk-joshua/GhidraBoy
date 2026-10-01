@@ -102,15 +102,20 @@ Ordinary direct returning-call composition retains schema 3 and transient N3
 memory facts. It matches actual CALL/RET stack bytes and outgoing physical
 continuation under the returned mapper. It neither persists callable summaries
 nor changes software-call identities. N5 extends this to two active ordinary
-frames with one nested site per invocation. Nested state resumes the containing
-callee before returning to its caller; incomplete nested proofs invalidate the
+frames. N7 admits sequential returning sites within those two active levels.
+Nested state resumes the containing callee before returning to its caller; incomplete nested proofs invalidate the
 containing invocation. Old N4 results require a new preview; fingerprint components
 are unchanged. See the [bounded N4 contract](decisions/ordinary-returning-call.md)
 and [N5 extension](decisions/nested-returning-call.md). N6 adds one conditional
 CALL/RET microflow site per invocation, with F-derived known/unknown outcomes,
 actual guarded stack effects and unchanged depth/frame proof. Old N5 results
 require recomputation; no persisted shape or fingerprint dependency changes.
-See the [N6 contract](decisions/conditional-call-ret-microflow.md).
+See the [N6 contract](decisions/conditional-call-ret-microflow.md). N7 keeps those
+conditional bounds and admits a later direct call only after the preceding call
+has completely returned. Its physical frame uses the actual current SP and mapper;
+the original containing frame remains authoritative. Engine
+`20260930-n7-sequential-returning-call-1` rejects N6 results without changing schema
+3 or fingerprint dependencies. See the [N7 contract](decisions/sequential-returning-call.md).
 
 Software-call model, preview, executable registry and ownership identities are
 versioned independently from mapping and language compatibility. The earlier

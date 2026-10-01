@@ -194,6 +194,12 @@ public final class BankAnalysis {
       MapperState.Physical callee) {}
   private record Exploration(boolean complete, List<Work> returns) {}
 
+  // Encountered sites are not active invocations. The immutable frame chain is the
+  // authority for admission, including while a nested callee is being explored.
+  private static boolean hasOrdinaryCallCapacity(List<CallFrame> frames) {
+    return frames.size() < ORDINARY_CALL_DEPTH;
+  }
+
   private static Exploration explore(
       Program p, Cartridge cartridge, List<Work> entries, List<CallFrame> frames,
       AnalysisResult.Configuration configuration, AddressSetView restriction,
@@ -213,7 +219,6 @@ public final class BankAnalysis {
     boolean complete = true;
     var returns = new ArrayList<Work>();
     var edges = new HashMap<Address, Set<Address>>();
-    var nestedCallSites = new HashSet<Address>();
     var conditionalSites = new HashSet<Address>();
     monitor.setMessage("Exploring bank states");
     try {
@@ -541,11 +546,13 @@ public final class BankAnalysis {
             continue;
           }
           if (flow.isCall()) {
-            nestedCallSites.add(w.address);
-            if (frames.size() == ORDINARY_CALL_DEPTH || nestedCallSites.size() > 1 || !supported || internal) {
+            // Only active invocations spend depth. composeCall explores synchronously:
+            // a completed nested return resumes this invocation with its original frames
+            // and the returned Work, so a later site can establish a fresh physical frame.
+            if (!hasOrdinaryCallCapacity(frames) || !supported || internal) {
               complete = false;
               reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
-                  "Ordinary nested call exceeds depth 2, one nested site, or supported raw effects");
+                  "Ordinary nested call exceeds active depth 2 or supported raw effects");
               continue;
             }
           }
@@ -764,7 +771,7 @@ public final class BankAnalysis {
       TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
       throws Exception {
     // CD or a validated conditional taken suffix has a real push and one direct CALL.
-    if (frames.size() >= ORDINARY_CALL_DEPTH
+    if (!hasOrdinaryCallCapacity(frames)
         || ins.getLength() != 3 || ((ins.getBytes()[0] & 255) != 0xcd
             && (microflow == null || !microflow.call()))
         || ins.getFallThrough() == null || ins.getDefaultFlows().length != 1

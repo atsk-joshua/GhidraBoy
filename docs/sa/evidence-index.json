@@ -1039,5 +1039,56 @@
       "final SA-07"
     ],
     "stop": "STOP after N6; no main change, PR or N7/N8"
+  },
+  "sa_sequential_returning_call_composition_n7_20260930": {
+    "status": "Bounded N7 CLOSED",
+    "scope": "Multiple sequential direct returning calls per invocation; active depth two; actual physical frames and returned register/flag/RAM/mapper state; unchanged N6 conditional bounds",
+    "external_root": "evidence/batches/SA-SEQUENTIAL-RETURNING-CALL-COMPOSITION/20260930-n7",
+    "decision": "docs/decisions/sequential-returning-call.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "50a800bfe62d53f1af10a4314fc03d0009de9bd8",
+    "report": "REPORT.md",
+    "closeout": "closeout.json",
+    "manifest": "manifest.json",
+    "review": "independent-review.txt",
+    "commands": "commands.json",
+    "baseline": "85 N4/N5/N6 tests freshly rerun; zero failures/errors/skips",
+    "focused": "13 N7 tests PASS in final affected run; initial 98-test run had one corrected diagnostic-step oracle failure",
+    "affected": "218 tests / 22 classes including 13 N7 + 205 retained affected tests; zero failures/errors/skips",
+    "lint_package": "ktlintCheck, buildExtension, 7 build-input tests and final documentation/package identity checks PASS",
+    "docker": "Disposable pinned installed witness proves B register/RAM/mapper -> physical ROM2 C -> physical ROM3 RET -> A continuation -> caller dependency, actual distinct stack frames; separate-JVM N7 current/recompute and N6 read/apply rejection PASS",
+    "docker_image": "sha256:4c7f42ce61b8c05b462c23ad92940f8c57a9666dc6e56d2b8c0cd7ccb20b1e20",
+    "fixture_sha256": "b8f405e923fbde86d79df450f74fd8c9dd65847e8c04de35348016c54a2e4c44",
+    "persistence": {
+      "engine": "20260930-n7-sequential-returning-call-1",
+      "schema": 3,
+      "frames": "transient only; no cache",
+      "fingerprint": "unchanged from N6"
+    },
+    "retained_failures": "Initial default-cache sandbox denial, test diagnostic oracle failure, installed fixture loader-header omission and script compilation errors retained; corrected final scoped checks PASS; no outstanding semantic failure",
+    "remaining": [
+      "arbitrary-depth and recursive solving",
+      "indirect/computed calls, RST/RETI",
+      "multiple conditional sites/general conditional flow",
+      "general summaries and ABI inference",
+      "RAM-code execution",
+      "device/asynchronous/interrupt effects",
+      "discovery expansion",
+      "whole-ROM call closure",
+      "SA-01/SA-03/SA-07 closure"
+    ],
+    "unrun": [
+      "full provider suite",
+      "historical/native installed campaigns",
+      "run_validation.py",
+      "headed GUI/final target/Steam Deck",
+      "debugger",
+      "annotated migration",
+      "corpus",
+      "fuzzing",
+      "hardware",
+      "final SA-07"
+    ],
+    "stop": "STOP after N7; no N8/main/PR/release/persistent installation"
   }
 }

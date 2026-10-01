@@ -113,11 +113,11 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20260930-n6-conditional-call-ret-1` retains schema 3 and existing fingerprint
+Engine `20260930-n7-sequential-returning-call-1` retains schema 3 and existing fingerprint
 components; older engines require a new preview. N3 memory joining remains intact.
 
-An unmodified unconditional direct CALL can compose a bounded callee and one
-nested direct callee (maximum active ordinary depth two) when
+An unmodified unconditional direct CALL can compose a bounded callee with
+sequential nested direct callees (maximum active ordinary depth two) when
 exact SP, the actual pushed return bytes, defined executable ROM and one physical
 target are established. The same evaluator executes callee instructions and
 unconditional RET; the popped physical frame bytes, returned PC/SP and outgoing
@@ -129,8 +129,10 @@ the original global state budget too. Frames and memory remain transient.
 See the [returning-call contract](decisions/ordinary-returning-call.md).
 Nested returned state resumes the containing callee's actual continuation before
 its own RET can return state to the outer caller. A failed nested proof invalidates
-the containing invocation. One nested site per invocation is supported; distinct
-sequential sites are refused. See the [N5 contract](decisions/nested-returning-call.md).
+the containing invocation. N7 admits multiple sequential direct returning sites:
+each new callee receives the previous returned state and a fresh physical frame,
+while the containing invocation retains its original frame. Admission counts active
+frames, not completed sites. See the [N7 contract](decisions/sequential-returning-call.md).
 N6 additionally interprets CALL NZ/Z/NC/C and RET NZ/Z/NC/C through validated
 instruction-local raw p-code guards. Exact F selects one outcome; unknown F
 preserves both. False CALL/RET has no stack effect, and true paths retain the same
