@@ -3,7 +3,10 @@
 The bounded N8 [exact JP HL successor](decisions/finite-pointer-successor.md) is
 closed under its existing finite proof contract. WUX-0 has completed stock-flow
 investigation and records the [production lifecycle decision still required](decisions/proven-stock-flow-integration.md);
-WUX-1 is deferred and no new native capability is claimed. N9, general indirect
+WUX-1P supplies the [ordinary-CD proof certificate foundation](decisions/ordinary-call-proof-certificate.md)
+with must-proof provenance and schema-4 recomputation; broader qualification is
+blocked by a reproduced baseline native carrier fault-test failure. WUX-1A native lifecycle
+work remains deferred and no new native capability is claimed. N9, general indirect
 flow, discovery and whole-ROM qualification remain open.
 
 The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)

@@ -151,13 +151,13 @@ class BankAnalysisMemoryJoinTest extends IntegrationTest {
       var result = f.preview(false).result();
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
-      assertEquals(3, result.schemaVersion());
+      assertEquals(4, result.schemaVersion());
       assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(
           json.replace(AnalysisResult.ENGINE_VERSION, "20260930-n2-ram-value-1")));
       var fields = com.google.gson.JsonParser.parseString(json).getAsJsonObject().keySet();
       assertEquals(Set.of("schemaVersion", "engineVersion", "starts", "assumption", "entryPremises",
           "configuration", "completion", "exploredStates", "pendingStates", "fingerprint",
-          "findings", "diagnostics"), fields);
+          "findings", "ordinaryCallProofs", "diagnostics"), fields);
     }
   }
 

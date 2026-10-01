@@ -89,7 +89,7 @@ mistaken for a known-unmapped interval. Mapping schema versioning is independent
 of SLEIGH language versioning. P-code-only changes do not by themselves require
 a version change; the stock transport context schema now requires language 2.0.
 
-Bounded `AnalysisResult` schema 3 / engine `20260930-n6-conditional-call-ret-1` retains a
+Bounded `AnalysisResult` schema 4 / engine `20261001-wux1p-ordinary-call-proof-1` retains a
 physical identity, partial `MapperKnowledge` and topology-derived provenance for
 each root. Incompatible earlier saved results are rejected and must be recomputed.
 Mapping schema v2, language v2, constructors, compiler IDs and 16-bit CPU pointers
@@ -98,24 +98,36 @@ physical fetch are derived; RAM enable/select, VBK, SVBK and unrelated fields st
 unknown.
 
 
-Ordinary direct returning-call composition retains schema 3 and transient N3
-memory facts. It matches actual CALL/RET stack bytes and outgoing physical
-continuation under the returned mapper. It neither persists callable summaries
+Ordinary direct returning-call composition retains transient N3 memory facts and
+validation frames. Schema 4 additionally persists a dedicated ordinary-CD
+matched-return certificate with exact source/target/continuation static and
+physical identities. Every relevant source encounter must succeed compatibly;
+failed/conflicting encounters, incomplete callee exploration and generated
+execution evidence withhold authority. Generic Findings remain observations.
+Preceding schema-3/N8 results require recomputation, never inferred certificates.
+AnalysisResult capture adds a generated-storage eligibility dependency; shared
+software/ordinary-entry fingerprint component shapes and ownership identities
+remain unchanged. See the [certificate contract](decisions/ordinary-call-proof-certificate.md).
+
+The incumbent composition matches actual CALL/RET stack bytes and outgoing physical
+continuation under the returned mapper. It neither persists callable state summaries
 nor changes software-call identities. N5 extends this to two active ordinary
 frames. N7 admits sequential returning sites within those two active levels.
 Nested state resumes the containing callee before returning to its caller; incomplete nested proofs invalidate the
-containing invocation. Old N4 results require a new preview; fingerprint components
-are unchanged. See the [bounded N4 contract](decisions/ordinary-returning-call.md)
+containing invocation. The N4–N7 engine advances described below originally
+retained schema 3 and their preceding fingerprint dependency shapes; those
+results now require recomputation under WUX-1P. See the [bounded N4 contract](decisions/ordinary-returning-call.md)
 and [N5 extension](decisions/nested-returning-call.md). N6 adds one conditional
 CALL/RET microflow site per invocation, with F-derived known/unknown outcomes,
-actual guarded stack effects and unchanged depth/frame proof. Old N5 results
-require recomputation; no persisted shape or fingerprint dependency changes.
+actual guarded stack effects and unchanged depth/frame proof. That historical N6
+engine required N5 recomputation without changing persisted shape or dependency
+components.
 See the [N6 contract](decisions/conditional-call-ret-microflow.md). N7 keeps those
 conditional bounds and admits a later direct call only after the preceding call
 has completely returned. Its physical frame uses the actual current SP and mapper;
-the original containing frame remains authoritative. Engine
-`20260930-n7-sequential-returning-call-1` rejects N6 results without changing schema
-3 or fingerprint dependencies. See the [N7 contract](decisions/sequential-returning-call.md).
+the original containing frame remains authoritative. The historical N7 engine
+`20260930-n7-sequential-returning-call-1` rejected N6 results without changing
+schema 3 or fingerprint dependencies. See the [N7 contract](decisions/sequential-returning-call.md).
 
 Software-call model, preview, executable registry and ownership identities are
 versioned independently from mapping and language compatibility. The earlier

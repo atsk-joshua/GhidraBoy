@@ -164,7 +164,7 @@ public final class BankAnalysis {
       completion = AnalysisResult.Completion.INPUT_CHANGED;
     var findings = candidates.finish(completion);
     return new AnalysisResult(
-        3,
+        AnalysisResult.SCHEMA_VERSION,
         AnalysisResult.ENGINE_VERSION,
         roots.stream().map(root -> root.address().toString()).toList(),
         assumption,
@@ -175,6 +175,7 @@ public final class BankAnalysis {
         session.pending,
         fingerprint,
         findings,
+        session.callProofs.finish(completion),
         completion == AnalysisResult.Completion.COMPLETE
             ? List.of()
             : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
@@ -186,7 +187,61 @@ public final class BankAnalysis {
   private static final class Session {
     int count;
     int pending;
+    final OrdinaryCallProofCollector callProofs = new OrdinaryCallProofCollector();
     AnalysisResult.Completion completion = AnalysisResult.Completion.COMPLETE;
+  }
+
+  /** Counts all relevant CD encounters, including refusals before composition. */
+  private static final class OrdinaryCallProofCollector {
+    private boolean incompleteExploration;
+    private boolean generatedStorageEncounter;
+    private final Map<Address, Integer> encounters = new TreeMap<>();
+    private final Map<Address, Integer> successes = new TreeMap<>();
+    private final Map<Address, AnalysisResult.OrdinaryCallProof> proofs = new TreeMap<>();
+    private final Map<Address, MapperKnowledge> returnedMappers = new TreeMap<>();
+    private final Set<Address> conflicts = new HashSet<>();
+
+    void encounter(Program p, Address address) throws Exception {
+      var instruction = p.getListing().getInstructionAt(address);
+      if (instruction == null) return;
+      if ((instruction.getBytes()[0] & 255) == 0xcd) encounters.merge(address, 1, Integer::sum);
+      // Prefix state and interior callee bytes are proof dependencies too, not only
+      // the three certificate endpoints. Keep generated execution out of all proof inputs.
+      for (int i = 0; i < instruction.getLength(); i++)
+        if (!ordinaryCallProofStorage(p, address.addWrap(i))) generatedStorageEncounter = true;
+    }
+
+    void success(Program p, Cartridge cartridge, Work caller,
+        Address target, MapperKnowledge targetState, Work continuation) throws Exception {
+      // Generated execution/presentation storage cannot become architectural proof.
+      // Check both block and space identity so renaming a block cannot confer authority.
+      for (var address : List.of(caller.address(), target, continuation.address()))
+        if (!ordinaryCallProofStorage(p, address)) return;
+      var sourcePhysical = caller.state().translate(cartridge, (int) caller.address().getOffset(), false).physical();
+      var targetPhysical = targetState.translate(cartridge, (int) target.getOffset(), false).physical();
+      var continuationPhysical = continuation.state().translate(cartridge, (int) continuation.address().getOffset(), false).physical();
+      if (sourcePhysical == null || targetPhysical == null || continuationPhysical == null
+          || !sourcePhysical.region().equals("ROM") || !targetPhysical.region().equals("ROM")
+          || !continuationPhysical.region().equals("ROM")
+          || !ProgramMapping.staticToPhysical(p, caller.address()).equals(List.of(sourcePhysical))
+          || !ProgramMapping.staticToPhysical(p, target).equals(List.of(targetPhysical))
+          || !ProgramMapping.staticToPhysical(p, continuation.address()).equals(List.of(continuationPhysical))) return;
+      var proof = new AnalysisResult.OrdinaryCallProof(caller.address().toString(), sourcePhysical,
+          target.toString(), targetPhysical, continuation.address().toString(), continuationPhysical);
+      var prior = proofs.putIfAbsent(caller.address(), proof);
+      if (prior != null && !prior.equals(proof)) conflicts.add(caller.address());
+      var priorMapper = returnedMappers.putIfAbsent(caller.address(), continuation.state());
+      if (priorMapper != null && !priorMapper.equals(continuation.state())) conflicts.add(caller.address());
+      successes.merge(caller.address(), 1, Integer::sum);
+    }
+
+    List<AnalysisResult.OrdinaryCallProof> finish(AnalysisResult.Completion completion) {
+      if (completion != AnalysisResult.Completion.COMPLETE || incompleteExploration || generatedStorageEncounter) return List.of();
+      return proofs.entrySet().stream()
+          .filter(e -> !conflicts.contains(e.getKey())
+              && Objects.equals(encounters.get(e.getKey()), successes.get(e.getKey())))
+          .map(Map.Entry::getValue).toList();
+    }
   }
 
   // Preview-local, depth-bounded validation frames. Architectural bytes remain in SymbolicMemory.
@@ -259,6 +314,7 @@ public final class BankAnalysis {
           reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), "Ordinary callee state bound reached");
           break;
         }
+        session.callProofs.encounter(p, w.address());
         seen.add(w);
         if (processedKeys.add(joinKey)) diversity.put(w.address(), addressStates + 1);
         session.count++;
@@ -655,6 +711,10 @@ public final class BankAnalysis {
     }
     if (frame == null || session.completion != AnalysisResult.Completion.COMPLETE) session.pending += queue.size();
     if (frame != null && cyclic(edges)) complete = false;
+    // An unexamined callee frontier can lead back to a previously successful CD
+    // under a conflicting state, even when its immediate address is not that site.
+    // Do not claim a session-wide must-proof from partial invocation exploration.
+    if (frame != null && !complete) session.callProofs.incompleteExploration = true;
     return new Exploration(complete && session.completion == AnalysisResult.Completion.COMPLETE, List.copyOf(returns));
   }
 
@@ -911,6 +971,8 @@ public final class BankAnalysis {
       result = new Work(result.address(), result.state(), Map.copyOf(commonRegisters),
           SymbolicMemory.State.joinOrdinary(result.memory(), returned.memory()));
     }
+    if ((ins.getBytes()[0] & 255) == 0xcd && callableInstruction(p, caller.state(), ins))
+      session.callProofs.success(p, cartridge, caller, target, state, result);
     return result;
   }
 
@@ -1189,6 +1251,16 @@ public final class BankAnalysis {
           from, AnalysisCandidates.Access.READ, access.operation(), access.operand(), access.byteIndex());
       record(p, outcome.resolution().orElseThrow(), access.cpu(), key, targets, reasons, canonicalOnly);
     }
+  }
+
+  /** Certificate storage discriminator; fingerprinted independently of navigation annotations. */
+  static boolean ordinaryCallProofStorage(Program p, Address address) {
+    var block = p.getMemory().getBlock(address);
+    var space = address.getAddressSpace().getName();
+    return block != null && !block.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+        && !block.getName().startsWith(OrdinaryEntryAccess.PREFIX)
+        && !space.startsWith(SoftwareCallExecutionView.PREFIX)
+        && !space.startsWith(OrdinaryEntryAccess.PREFIX);
   }
 
   private static boolean executionCandidate(Program p, Address address, boolean canonicalOnly) {

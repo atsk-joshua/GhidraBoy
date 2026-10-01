@@ -305,15 +305,15 @@ class BankAnalysisNestedReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRetainsSchemaAndRejectsN4WithoutTransientState() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20260930-n8-finite-pointer-successor-1", result.engineVersion());
-      assertEquals(3, result.schemaVersion());
+      assertEquals("20261001-wux1p-ordinary-call-proof-1", result.engineVersion());
+      assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
       assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(
           json.replace(AnalysisResult.ENGINE_VERSION, "20260930-n4-returning-call-1")));
       assertEquals(Set.of("schemaVersion", "engineVersion", "starts", "assumption", "entryPremises",
           "configuration", "completion", "exploredStates", "pendingStates", "fingerprint",
-          "findings", "diagnostics"), com.google.gson.JsonParser.parseString(json).getAsJsonObject().keySet());
+          "findings", "ordinaryCallProofs", "diagnostics"), com.google.gson.JsonParser.parseString(json).getAsJsonObject().keySet());
     }
   }
 }

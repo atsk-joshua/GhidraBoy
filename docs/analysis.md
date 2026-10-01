@@ -37,7 +37,7 @@ Program..., followed by Analysis → Auto Analyze.... Script JSON remains an adv
 diagnostic/recovery interface.
 
 `BankAnalysis.preview` evaluates existing defined instructions. `AnalysisResult`
-schema 3 is typed and versioned: start points, explicit assumptions, per-root
+schema 4 is typed and versioned: start points, explicit assumptions, per-root
 physical entry premises and provenance, configuration,
 completion, explored-state count, diagnostics, candidates and evidence fingerprint.
 `AnalysisResult.read` rejects incompatible engines. Only COMPLETE runs can contain
@@ -113,8 +113,8 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20260930-n8-finite-pointer-successor-1` retains schema 3 and existing fingerprint
-components; older engines require a new preview. N3 memory joining remains intact.
+Engine `20261001-wux1p-ordinary-call-proof-1` uses schema 4 with a fingerprint
+component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with
 sequential nested direct callees (maximum active ordinary depth two) when
@@ -127,6 +127,13 @@ effects. Different return mapper/continuation identities and any incomplete path
 retain the conservative unknown continuation. The 128-state callee cap consumes
 the original global state budget too. Frames and memory remain transient.
 See the [returning-call contract](decisions/ordinary-returning-call.md).
+Successful unconditional CD composition additionally produces a structured durable
+ordinary-call certificate with exact source/target/continuation static and physical
+identities. Every relevant encounter at a source must succeed compatibly; failed or
+unresolved alternatives veto that site. Generic CALL Findings remain destination
+observations. Conditional and software calls have no ordinary-CD certificates;
+incomplete results expose none. See the
+[certificate and compatibility contract](decisions/ordinary-call-proof-certificate.md).
 Nested returned state resumes the containing callee's actual continuation before
 its own RET can return state to the outer caller. A failed nested proof invalidates
 the containing invocation. N7 admits multiple sequential direct returning sites:

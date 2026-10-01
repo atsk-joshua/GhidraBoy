@@ -80,9 +80,8 @@ public class GhidraBoyInstalledLifecycle extends GhidraScript {
           !p.getSymbolTable().getSymbols("SharedPersistent").hasNext(),
           "unclaimed owned symbol removed after rename/reopen");
       var result =
-          ProgramMapping.JSON.fromJson(
-              p.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", "null"),
-              AnalysisResult.class);
+          AnalysisResult.read(
+              p.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", "null"));
       println(
           "BEFORE_COMPONENTS="
               + p.getOptions(ProgramMapping.OPTIONS).getString("fingerprint.components", ""));

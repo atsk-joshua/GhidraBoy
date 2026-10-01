@@ -1,5 +1,31 @@
 # Implementation status
 
+## WUX-1P ordinary returning-call certificate — implemented; broader qualification blocked
+
+The [certificate contract](../decisions/ordinary-call-proof-certificate.md) adds a
+structured durable assertion from successful incumbent CD matched-return
+composition. Source, target and continuation retain exact static Program and
+physical ROM identities. Every evaluated source encounter must succeed compatibly;
+conflicting identities/outgoing mapper, failed encounters and incomplete callee
+exploration suppress authority. Nested/sequential N4–N7 semantics remain unchanged.
+Conditional and software calls cannot issue this certificate. Generic Findings
+remain observations.
+
+Schema 4 / engine `20261001-wux1p-ordinary-call-proof-1` requires recomputation of
+preceding N8/WUX-0 results. Ownership remains unchanged. Saved output cannot
+bootstrap fresh proof; current fingerprint validation remains mandatory. Fresh
+focused, broader, independent review and separate-process qualification are recorded
+in the [evidence index](evidence-index.json).
+
+The provenance implementation has focused and separate-process evidence, but
+overall WUX-1P PASS remains blocked by the existing StockRouteFaultTest native
+carrier recovery-chunk failure, reproduced on the exact starting baseline. Its
+test and native behavior are preserved; resolving that separate failure is outside
+this slice. WUX-1A native CALL lowering,
+DEFAULT displacement/restoration, generated-flow non-evidence handling and
+production convergence remain separate obligations. No native-flow behavior or
+Wyatt workflow improvement is claimed. STOP after WUX-1P; no N9 begins.
+
 ## WUX-0 stock-flow integration — investigation complete; WUX-1 deferred
 
 Pinned stock reference, p-code, block, Function, scheduler and native experiments

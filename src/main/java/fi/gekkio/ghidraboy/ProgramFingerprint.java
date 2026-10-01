@@ -157,8 +157,18 @@ public final class ProgramFingerprint {
   }
 
   public static String capture(Program p, TaskMonitor monitor) throws Exception {
+    // Keep this result-specific policy out of shared software/ordinary-entry dependency shapes.
+    var parts = new TreeMap<>(components(p, monitor));
+    // Certificates exclude generated storage by both block and space identity.
+    // Mapped aliases do not enter romReadEligibility, so cover this discriminator separately.
+    var callProofEligibility = new TreeMap<String, Boolean>();
+    for (var block : p.getMemory().getBlocks())
+      callProofEligibility.put(address(block.getStart()),
+          BankAnalysis.ordinaryCallProofStorage(p, block.getStart()));
+    parts.put("ordinaryCallProofEligibility",
+        Sha256.of(ProgramMapping.JSON.toJson(callProofEligibility).getBytes(StandardCharsets.UTF_8)).toString());
     return Sha256.of(
-            ProgramMapping.JSON.toJson(components(p, monitor)).getBytes(StandardCharsets.UTF_8))
+            ProgramMapping.JSON.toJson(parts).getBytes(StandardCharsets.UTF_8))
         .toString();
   }
 
@@ -166,7 +176,7 @@ public final class ProgramFingerprint {
       throws Exception {
     if (result == null
         || result.completion() == AnalysisResult.Completion.INPUT_CHANGED
-        || result.schemaVersion() != 3
+        || result.schemaVersion() != AnalysisResult.SCHEMA_VERSION
         || !AnalysisResult.ENGINE_VERSION.equals(result.engineVersion())
         || !capture(p, monitor).equals(result.fingerprint()))
       throw new IllegalStateException(

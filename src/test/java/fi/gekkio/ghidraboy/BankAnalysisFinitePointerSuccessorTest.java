@@ -382,7 +382,7 @@ class BankAnalysisFinitePointerSuccessorTest extends IntegrationTest {
   @Test void savedReopenedSingletonResultIsCurrentAndRejectsN7Engine() throws Exception {
     try (var f = new Fixture("1100021a6f131a67e9", "c9")) {
       var original = f.preview(MapperState.reset()).result();
-      assertEquals(3, original.schemaVersion());
+      assertEquals(4, original.schemaVersion());
       BankAnalysis.apply(f.p, original, TaskMonitor.DUMMY);
       var packed = temporary.resolve("n8.gzf").toFile();
       f.p.saveToPackedFile(packed, TaskMonitor.DUMMY);
