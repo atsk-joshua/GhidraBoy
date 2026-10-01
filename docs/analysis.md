@@ -23,7 +23,9 @@ exist; proved flow from the justified roots can still reach them. It runs one
 deduplicated `BankAnalysis` worklist for all roots, restricted to the supplied
 `AddressSetView`; it does not start a 4096-state session per instruction. Only
 COMPLETE results are applied. Cancellation uses Ghidra's analyzer monitor.
-Incomplete/cancelled runs publish no result or confident mutation. Function
+Incomplete/cancelled runs publish no result or new confident mutation. Before
+preview, stale owned ordinary-CALL flow is retired; an unchanged original proof
+survives a smaller incomplete invocation. Function
 discovery then consumes the same roots plus proved call destinations; its owned
 Functions are excluded from later root seeding to prevent circular evidence.
 The manager analyzer recognizes Ghidra's initial broad full-analysis notification,
@@ -134,6 +136,15 @@ unresolved alternatives veto that site. Generic CALL Findings remain destination
 observations. Conditional and software calls have no ordinary-CD certificates;
 incomplete results expose none. See the
 [certificate and compatibility contract](decisions/ordinary-call-proof-certificate.md).
+Applying a current ordinary-CD certificate installs a primary physical stock CALL
+on the decoded operand and temporarily displaces its exact DEFAULT CPU reference.
+Raw architectural p-code remains CPU-addressed. Exact receipt-based normalization
+keeps the unchanged proof current without accepting generated flow as evidence.
+Edited/user/imported competing references refuse publication or remain preserved
+on removal. Changed proof dependencies retire unchanged owned flow before fresh
+analysis; removal restores the original DEFAULT only while its source matches.
+Stock Function discovery is notified only on actual publication changes, with
+bounded self-feedback. See the [stock flow contract](decisions/ordinary-call-stock-flow.md).
 Nested returned state resumes the containing callee's actual continuation before
 its own RET can return state to the outer caller. A failed nested proof invalidates
 the containing invocation. N7 admits multiple sequential direct returning sites:

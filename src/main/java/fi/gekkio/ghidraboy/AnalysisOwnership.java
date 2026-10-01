@@ -14,7 +14,7 @@ public final class AnalysisOwnership {
   // Keep the option key so saved v1 projects are found. The envelope and each function
   // receipt carry independent versions: saving another group must not upgrade old proof.
   private static final String KEY = "analysis.ownership.v1";
-  private static final int VERSION = 5;
+  private static final int VERSION = 6;
   private static final int FUNCTION_VERSION = 2;
 
   private AnalysisOwnership() {}
@@ -77,6 +77,7 @@ public final class AnalysisOwnership {
   public record Body(Point entry, long id, List<Range> original, List<Range> applied) {}
 
   public static final class Group {
+    public List<OrdinaryCallFlow.Receipt> ordinaryCalls = new ArrayList<>();
     public List<StateEntry> stateEntries = new ArrayList<>();
     public List<NativeFunctionInventory> nativeFunctionInventories = new ArrayList<>();
     public List<Redirect> redirects = new ArrayList<>();
@@ -133,8 +134,12 @@ public final class AnalysisOwnership {
     String value=AuthorityOptions.string(p,ProgramMapping.OPTIONS,KEY);
     if(value==null)value="{\"version\":1,\"groups\":{}}";
     var result = ProgramMapping.JSON.fromJson(value, Registry.class);
-    if (result.version != 1 && result.version != 2 && result.version != 3 && result.version != 4 && result.version != VERSION)
+    if (result.version != 1 && result.version != 2 && result.version != 3 && result.version != 4 && result.version != 5 && result.version != VERSION)
       throw new IllegalStateException("Unsupported analysis ownership version");
+    // Earlier envelopes never described DEFAULT displacement: unknown fields cannot
+    // acquire destructive authority merely by saving an unrelated ownership group.
+    if (result.version < 6)
+      for (var group : result.groups.values()) group.ordinaryCalls = new ArrayList<>();
     // Upgrade only the envelope. Missing function versions remain zero (legacy), and
     // their incomplete stamps are never recomputed against the current Program.
     result.version = VERSION;
@@ -265,6 +270,11 @@ public final class AnalysisOwnership {
     } catch (Exception e) { return false; }
   }
 
+  static Group group(Program p, String feature) {
+    var group = registry(p).groups.get(feature);
+    return group == null ? new Group() : group;
+  }
+
   public static void save(Program p, String feature, Group group) {
     SoftwareCallRegistry.requireSupportedRecords(p);
     var registry = registry(p);
@@ -313,6 +323,8 @@ public final class AnalysisOwnership {
 
   static void undo(Program p, Group group, TaskMonitor monitor, List<String> diagnostics)
       throws Exception {
+    for (var receipt : group.ordinaryCalls)
+      OrdinaryCallFlow.undo(p, receipt, diagnostics);
     var removableViews = new ArrayList<String>();
     for (var view : group.views) {
       if (view.stamp != null && view.stamp.equals(viewStamp(p, view.name, monitor))) removableViews.add(view.name);

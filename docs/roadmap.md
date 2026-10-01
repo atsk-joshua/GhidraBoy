@@ -1,5 +1,13 @@
 # Development roadmap
 
+The bounded WUX-1A ordinary CALL integration now derives reversible stock flow
+from WUX-1P certificates with exact DEFAULT displacement, stale retirement and
+bounded same-session discovery. Focused Java/scheduling/packed-reopen checks pass;
+native C and aggregate qualification remain unrun. See the
+[contract](decisions/ordinary-call-stock-flow.md) and
+[current status](sa/IMPLEMENTATION-STATUS.md). WUX-1B / JP HL remains separate;
+no retained SA/M requirement is replaced.
+
 The bounded N8 [exact JP HL successor](decisions/finite-pointer-successor.md) is
 closed under its existing finite proof contract. WUX-0 completed stock-flow
 investigation and records the [production lifecycle decision still required](decisions/proven-stock-flow-integration.md).

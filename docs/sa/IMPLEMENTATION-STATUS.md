@@ -1,5 +1,30 @@
 # Implementation status
 
+## WUX-1A ordinary CALL stock integration — bounded implementation verified
+
+The [stock flow contract](../decisions/ordinary-call-stock-flow.md) derives one
+primary operand-matched physical CALL only from current WUX-1P certificates,
+with exact DEFAULT displacement/restoration and separate versioned ownership.
+Result-only flow normalization prevents circular invalidation; edited/independent
+flow remains visible. Stale unchanged artifacts retire before preview, including
+incomplete previews; a current original basis survives smaller incomplete runs.
+Targeted stock scheduling discovers the physical Function in the same session
+and consumes unchanged publication feedback without another relational pass.
+
+Focused Java flow/ownership/currentness, incumbent scheduling and packed save/reopen
+checks pass: 78 selected tests, 77 PASS and one native availability skip. Lint and
+diff checks pass. The existing native AnalysisLifecycle test was separately
+excluded after confirming the pinned distribution lacks macOS arm64 `decompile`.
+Native C execution, separate-JVM/large persistence, full provider, installed/headed,
+Docker, release, Steam Deck and Wyatt qualification remain unrun. WUX-1P evaluator,
+schema/engine, shared fingerprints, SLEIGH and JP HL behavior remain unchanged.
+Ownership envelope 6 reads older receipts without granting displacement authority.
+Detailed source/dependency identities and commands are in the [evidence index](evidence-index.json).
+
+This closes the authorized implementation slice only. Native-capable execution
+and aggregate qualification remain separate review obligations; WUX-1B is not begun.
+
+
 ## WUX-1P ordinary returning-call certificate — CLOSED
 
 The [certificate contract](../decisions/ordinary-call-proof-certificate.md) adds a

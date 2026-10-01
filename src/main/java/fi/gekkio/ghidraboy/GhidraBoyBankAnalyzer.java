@@ -101,6 +101,7 @@ public final class GhidraBoyBankAnalyzer extends AbstractAnalyzer {
         return true;
       }
 
+      if (OrdinaryCallFlow.consumeNotification(program, set, monitor)) return true;
       var notifiedRoots = roots(program, set, monitor);
       boolean managerOwned =
           AutoAnalysisManager.getAnalysisManager(program).getAnalyzer(NAME) == this;
@@ -165,6 +166,7 @@ public final class GhidraBoyBankAnalyzer extends AbstractAnalyzer {
   @Override
   public void analysisEnded(Program program) {
     sessions.remove(program);
+    OrdinaryCallFlow.analysisEnded(program);
   }
 
   static List<Address> roots(Program program, AddressSetView set, TaskMonitor monitor)

@@ -51,6 +51,7 @@ final class InstructionInterpretation {
     var decoded = Arrays.asList(ins.getDefaultFlows());
     for (var ref : ins.getReferencesFrom()) {
       if (!relevant(ref)) continue;
+      if (OrdinaryCallFlow.architecturalExemption(ins, ref)) continue;
       if (ref.getReferenceType().isOverride()
           || !decoded.contains(ref.getToAddress())
           || !ref.getReferenceType().equals(ins.getFlowType()))

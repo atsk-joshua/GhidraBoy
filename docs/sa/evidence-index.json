@@ -1276,5 +1276,42 @@
       "debugger, migration, corpus/fuzz/hardware and release qualification"
     ],
     "stop": "WUX-1P CLOSED; WUX-1A may resume only as a separately authorized task"
+  },
+  "wux_1a_ordinary_call_stock_flow_20261001": {
+    "status": "Bounded implementation and focused Java/scheduling/packed-reopen verification PASS; native and aggregate qualification unrun",
+    "baseline": "de09dd51aabfd119c9ec60ff683f6b4730e178eb",
+    "branch": "preview-m2-ghidra-native",
+    "decision": "docs/decisions/ordinary-call-stock-flow.md",
+    "temporary_execution_root": "/private/tmp/ghidraboy-wux1a-evidence",
+    "receipt": {
+      "path": "/private/tmp/ghidraboy-wux1a-evidence/receipt.json",
+      "sha256": "1b0ad0a7d18f56716ee69c68bb4fe32fd840e424dcb0fde1399a53e63c2f9ade"
+    },
+    "source_manifest": {
+      "path": "/private/tmp/ghidraboy-wux1a-evidence/source-manifest.json",
+      "sha256": "de98802584f06f5c7b452e6744264b47c266460a2662c81047d708b7d5d82759"
+    },
+    "focused_tests": {
+      "selected": 78,
+      "passed": 77,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "classes": 10
+    },
+    "native_unavailable": "Pinned distribution has no os/mac_arm_64/decompile; new native test skipped, one inherited native lifecycle test excluded",
+    "checks": [
+      "ktlintCheck PASS",
+      "git diff --check PASS",
+      "Independent diff review PASS"
+    ],
+    "ownership": "Envelope 6; ordinary-call-flow receipt 1; old envelopes do not gain displacement authority",
+    "limits": [
+      "Native C execution and separate-JVM persistence unverified",
+      "Full provider/Docker/large persistence/release/headed/Steam Deck/Wyatt not run",
+      "Retirement occurs on analysis invocation; edited artifacts preserved",
+      "WUX-1B/JP HL not begun"
+    ],
+    "remote_mutation": "NONE; one local commit only"
   }
 }

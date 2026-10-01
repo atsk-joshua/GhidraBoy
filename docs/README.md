@@ -14,7 +14,7 @@ extracted archives; source README files are entry points for contributors.
 | Static installation and everyday use | [User workflows](user-workflows.md) |
 | Supported inputs and mappers | [Input policy](input-policy.md) |
 | Public predicate action lifecycle | [Operation contract](public-operations.md) |
-| Analysis and annotation preservation | [Analysis](analysis.md) |
+| Analysis and annotation preservation | [Analysis](analysis.md), [ordinary CALL stock flow](decisions/ordinary-call-stock-flow.md) |
 | Compiler conventions | [Compiler support](compiler-support.md) |
 | Debugger capabilities and limitations | [Support matrix](../debugger/docs/SUPPORT.md) |
 | Debugger installation, upgrade and rollback | [Installation](../debugger/docs/INSTALL.md) |

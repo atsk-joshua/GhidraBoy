@@ -159,6 +159,28 @@ public final class ProgramFingerprint {
   public static String capture(Program p, TaskMonitor monitor) throws Exception {
     // Keep this result-specific policy out of shared software/ordinary-entry dependency shapes.
     var parts = new TreeMap<>(components(p, monitor));
+    // Normalize only exact owned presentation in the AnalysisResult dependency path.
+    // Shared component consumers retain their original stored-reference contract.
+    var normalized = new ArrayList<String>();
+    for (var ins : p.getListing().getInstructions(true)) {
+      monitor.checkCancelled();
+      var receipt = OrdinaryCallFlow.exact(ins);
+      if (receipt != null) {
+        var old = receipt.displaced();
+        normalized.add(address(old.from().resolve(p)) + ":" + address(old.to().resolve(p))
+            + ":" + ghidra.program.model.symbol.RefType.UNCONDITIONAL_CALL.getValue()
+            + ":" + old.operand() + ":" + old.primary() + ":" + old.source());
+      } else {
+        for (var ref : ins.getReferencesFrom())
+          if (InstructionInterpretation.relevant(ref))
+            normalized.add(address(ref.getFromAddress()) + ":" + address(ref.getToAddress())
+                + ":" + ref.getReferenceType().getValue() + ":" + ref.getOperandIndex()
+                + ":" + ref.isPrimary() + ":" + ref.getSource());
+      }
+    }
+    Collections.sort(normalized);
+    parts.put("flowReferences", Sha256.of(String.join("\n", normalized)
+        .getBytes(StandardCharsets.UTF_8)).toString());
     // Certificates exclude generated storage by both block and space identity.
     // Mapped aliases do not enter romReadEligibility, so cover this discriminator separately.
     var callProofEligibility = new TreeMap<String, Boolean>();

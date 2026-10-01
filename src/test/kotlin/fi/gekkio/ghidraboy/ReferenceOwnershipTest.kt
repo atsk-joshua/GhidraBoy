@@ -51,7 +51,7 @@ class ReferenceOwnershipTest : IntegrationTest() {
 
     @Test
     fun `historical receipt lacking primary evidence is retained even after another group is saved`() {
-        for (version in listOf(2, 3, 4)) {
+        for (version in listOf(2, 3, 4, 5)) {
             program { p ->
                 own(p)
                 p.withTransaction {
@@ -60,7 +60,7 @@ class ReferenceOwnershipTest : IntegrationTest() {
                         com.google.gson.JsonParser
                             .parseString(options.getString("analysis.ownership.v1", ""))
                             .asJsonObject
-                    assertEquals(5, root.get("version").asInt)
+                    assertEquals(6, root.get("version").asInt)
                     root.addProperty("version", version)
                     for (key in listOf(
                         "views",
@@ -87,7 +87,7 @@ class ReferenceOwnershipTest : IntegrationTest() {
                         com.google.gson.JsonParser
                             .parseString(options.getString("analysis.ownership.v1", ""))
                             .asJsonObject
-                    assertEquals(5, upgraded.get("version").asInt)
+                    assertEquals(6, upgraded.get("version").asInt)
                 }
                 val diagnostics = AnalysisOwnership.remove(p, "test", TaskMonitor.DUMMY)
                 assertEquals(1, p.referenceManager.getReferencesFrom(address(0x150)).size)

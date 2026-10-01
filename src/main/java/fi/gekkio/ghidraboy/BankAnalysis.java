@@ -121,6 +121,7 @@ public final class BankAnalysis {
       TaskMonitor monitor,
       FetchCollector diagnostic)
       throws Exception {
+    OrdinaryCallFlow.retireStale(p, monitor);
     // Content hashes alone cannot detect an edit that is restored during exploration.
     long modification = p.getModificationNumber();
     String fingerprint = ProgramFingerprint.capture(p, monitor);
