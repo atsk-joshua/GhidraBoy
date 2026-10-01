@@ -214,6 +214,7 @@ public final class BankAnalysis {
     var returns = new ArrayList<Work>();
     var edges = new HashMap<Address, Set<Address>>();
     var nestedCallSites = new HashSet<Address>();
+    var conditionalSites = new HashSet<Address>();
     monitor.setMessage("Exploring bank states");
     try {
       while (!queue.isEmpty() && session.completion == AnalysisResult.Completion.COMPLETE) {
@@ -356,13 +357,44 @@ public final class BankAnalysis {
         var fetchBytes = diagnostic == null ? null : fetchBytes(p, ins);
         var writes = diagnostic == null ? null : new ArrayList<WriteTransition>();
         var raw = ins.getPcode(false);
+        var microflow = conditionalMicroflow(p, ins, raw);
+        if (microflow != null) {
+          conditionalSites.add(w.address);
+          if (conditionalSites.size() > 1) {
+            complete = false;
+            reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+                "Second conditional CALL/RET site exceeds the one-site microflow bound");
+            continue;
+          }
+          var condition = microflow.condition(registerValue(p, "F", w.registers));
+          // The false outcome has no push/pop, frame transition or predicate mutation.
+          if (condition != Condition.TRUE) {
+            int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
+            var views = resolveWithContext(p, cartridge, w.state, nextCpu, w.address, diagnostic != null);
+            if (views.isEmpty()) {
+              complete = false;
+              reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+                  "Conditional false fallthrough has no established execution view");
+            }
+            for (var view : views) {
+              var falseWork = new Work(view, w.state, w.registers, w.memory);
+              enqueue(queue, falseWork, widened, joined);
+              if (frame != null) edges.computeIfAbsent(w.address, k -> new HashSet<>()).add(view);
+            }
+            if (diagnostic != null) diagnostic.steps.add(new FetchStep(w.address.toString(),
+                (int) w.address.getOffset(), fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(),
+                w.state, w.state, List.of(), views.stream().map(Address::toString).toList()));
+          }
+          if (condition == Condition.FALSE) continue;
+          // Only the recognized guarded suffix runs through the incumbent evaluator.
+        }
         var state = w.state;
         var regs = new HashMap<>(w.registers);
         var unique = new HashMap<Long, Integer>();
         var memory = SymbolicMemory.State.ordinary(w.memory);
         boolean changedMapper = false;
         // Internal p-code branches are not path interpreted by this finite evaluator.
-        boolean internal =
+        boolean internal = microflow == null &&
             Arrays.stream(raw)
                 .anyMatch(
                     op ->
@@ -373,6 +405,7 @@ public final class BankAnalysis {
         int operation = 0;
         for (var op : raw) {
           int operationIndex = operation++;
+          if (microflow != null && operationIndex <= microflow.gate()) continue;
           if (op.getOpcode() == PcodeOp.RETURN) returnedCpu = value(op.getInput(0), regs, unique);
           if (op.getOpcode() == PcodeOp.CALLOTHER && !CartridgeBus.isDirectWrite(p.getLanguage(), op)) supported = false;
           if (op.getOpcode() != PcodeOp.BRANCH
@@ -491,7 +524,7 @@ public final class BankAnalysis {
           if (Arrays.stream(raw).anyMatch(op -> op.getOpcode() == PcodeOp.RETURN)) {
             var sp = registerValue(p, "SP", regs);
             // The actual pop and RETURN operand, not flow metadata, establish this frame.
-            if (ins.getBytes().length != 1 || (ins.getBytes()[0] & 255) != 0xc9
+            if (ins.getBytes().length != 1 || ((ins.getBytes()[0] & 255) != 0xc9 && (microflow == null || microflow.call()))
                 || returnedCpu == null || returnedCpu.intValue() != frame.cpu()
                 || sp == null || sp.intValue() != frame.sp()
                 || !stackIdentity(cartridge, w.state, (frame.sp() - 2) & 65535).equals(frame.stack())) complete = false;
@@ -532,7 +565,7 @@ public final class BankAnalysis {
             targets.computeIfAbsent(key, k -> new TreeSet<>()).add(a);
             if (!attemptedCall && flow.isCall()) {
               attemptedCall = true;
-              composed = composeCall(p, cartridge, w, ins, raw, state, regs, memory, resolved,
+              composed = composeCall(p, cartridge, w, ins, raw, microflow, state, regs, memory, resolved,
                   frames, configuration, restriction, monitor, diagnostic, candidates, session);
             }
             // Unsupported calls retain the incumbent unknown continuation.
@@ -604,6 +637,92 @@ public final class BankAnalysis {
     return new Exploration(complete && session.completion == AnalysisResult.Completion.COMPLETE, List.copyOf(returns));
   }
 
+  private enum Condition { TRUE, FALSE, UNKNOWN }
+
+  private record Microflow(boolean call, int gate, int opcode) {
+    Condition condition(Long f) {
+      if (f == null) return Condition.UNKNOWN;
+      int bit = (opcode & 0x10) == 0 ? 7 : 4;
+      boolean set = (f & (1L << bit)) != 0;
+      boolean taken = (opcode & 8) == 0 ? !set : set;
+      return taken ? Condition.TRUE : Condition.FALSE;
+    }
+  }
+
+  /** Narrow SM83 gate recognition; no arbitrary CBRANCH path interpretation. */
+  private static Microflow conditionalMicroflow(Program p,
+      ghidra.program.model.listing.Instruction ins, PcodeOp[] raw) throws Exception {
+    int opcode = ins.getBytes()[0] & 255;
+    boolean call = opcode == 0xc4 || opcode == 0xcc || opcode == 0xd4 || opcode == 0xdc;
+    boolean ret = opcode == 0xc0 || opcode == 0xc8 || opcode == 0xd0 || opcode == 0xd8;
+    if ((!call && !ret) || ins.getLength() != (call ? 3 : 1) || raw.length == 0
+        || ins.isFallThroughOverridden()) return null;
+    int gate = -1;
+    for (int i = 0; i < raw.length; i++) if (raw[i].getOpcode() == PcodeOp.CBRANCH) {
+      if (gate != -1) return null;
+      gate = i;
+    }
+    if (gate < 1 || gate > 8) return null;
+    var branch = raw[gate];
+    int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
+    if (branch.getNumInputs() != 2 || !branch.getInput(0).isAddress()
+        || branch.getInput(0).getOffset() != nextCpu || branch.getInput(1).getSize() != 1) return null;
+    var f = p.getRegister("F");
+    var sp = p.getRegister("SP");
+    var pc = p.getRegister("PC");
+    var defined = new HashSet<Long>();
+    for (int i = 0; i < gate; i++) {
+      var op = raw[i];
+      if (!ordinaryOperation(op) || op.getOpcode() == PcodeOp.LOAD
+          || op.getOutput() == null || !op.getOutput().isUnique()) return null;
+      for (var input : op.getInputs())
+        if (!input.isConstant() && !(input.isUnique() && defined.contains(input.getOffset()))
+            && !(input.isRegister() && input.getAddress().equals(f.getAddress()) && input.getSize() == 1)) return null;
+      defined.add(op.getOutput().getOffset());
+    }
+    if (!branch.getInput(1).isUnique() || !defined.contains(branch.getInput(1).getOffset())) return null;
+    var result = new Microflow(call, gate, opcode);
+    // Validate the compiled F-only predicate against the architectural truth table.
+    // Reuse PcodeConstants; these local uniques never enter Work or mutate F.
+    for (long flags = 0; flags < 256; flags++) {
+      var registers = new HashMap<Long, Integer>();
+      var unique = new HashMap<Long, Integer>();
+      put(new ghidra.program.model.pcode.Varnode(f.getAddress(), 1), flags, registers, unique);
+      for (int i = 0; i < gate; i++) put(raw[i].getOutput(), evaluate(raw[i], registers, unique), registers, unique);
+      Long skip = value(branch.getInput(1), registers, unique);
+      if (skip == null || skip != (result.condition(flags) == Condition.TRUE ? 0L : 1L)) return null;
+    }
+    int memoryOps = 0, spWrites = 0, pcWrites = 0;
+    for (int i = gate + 1; i < raw.length; i++) {
+      var op = raw[i];
+      if (i == raw.length - 1) {
+        if (op.getOpcode() != (call ? PcodeOp.CALL : PcodeOp.RETURN) || op.getNumInputs() != 1) return null;
+        if (call && (!op.getInput(0).isAddress() || ins.getDefaultFlows().length != 1
+            || !op.getInput(0).getAddress().equals(ins.getDefaultFlows()[0]))) return null;
+        if (!call && (!op.getInput(0).isRegister() || !op.getInput(0).getAddress().equals(pc.getAddress())
+            || op.getInput(0).getSize() != 2)) return null;
+        continue;
+      }
+      if (op.getOpcode() == (call ? PcodeOp.STORE : PcodeOp.LOAD)) {
+        if (!op.getInput(0).isConstant()
+            || op.getInput(0).getOffset() != p.getAddressFactory().getDefaultAddressSpace().getSpaceID()
+            || op.getInput(1).getSize() != 2
+            || (call ? op.getInput(2).getSize() : op.getOutput().getSize()) != 1) return null;
+        memoryOps++;
+      } else if (!ordinaryOperation(op) || op.getOpcode() == PcodeOp.LOAD) return null;
+      var output = op.getOutput();
+      if (output != null && !output.isUnique()) {
+        if (!output.isRegister() || output.getSize() != 2) return null;
+        if (output.getAddress().equals(sp.getAddress())) spWrites++;
+        else if (!call && output.getAddress().equals(pc.getAddress())) pcWrites++;
+        else return null;
+      }
+      // The guarded suffix cannot consume a predicate temporary that was skipped.
+      for (var input : op.getInputs()) if (input.isUnique() && defined.contains(input.getOffset())) return null;
+    }
+    return memoryOps == 2 && spWrites == (call ? 2 : 1) && pcWrites == (call ? 0 : 1) ? result : null;
+  }
+
   private static List<MapperState.Physical> stackIdentity(Cartridge cartridge, MapperKnowledge state, int sp) {
     var low = state.translate(cartridge, sp, false).physical();
     var high = state.translate(cartridge, (sp + 1) & 65535, false).physical();
@@ -639,15 +758,15 @@ public final class BankAnalysis {
 
   private static Work composeCall(
       Program p, Cartridge cartridge, Work caller, ghidra.program.model.listing.Instruction ins,
-      PcodeOp[] raw, MapperKnowledge state, Map<Long, Integer> registers, SymbolicMemory.State memory,
+      PcodeOp[] raw, Microflow microflow, MapperKnowledge state, Map<Long, Integer> registers, SymbolicMemory.State memory,
       List<Address> targets, List<CallFrame> frames,
       AnalysisResult.Configuration configuration, AddressSetView restriction,
       TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
       throws Exception {
-    // Opcode CD has an unconditional architectural push followed by one direct CALL.
-    // Conditional CALL, RST and computed/reclassified transfers do not enter this subset.
+    // CD or a validated conditional taken suffix has a real push and one direct CALL.
     if (frames.size() >= ORDINARY_CALL_DEPTH
-        || ins.getLength() != 3 || (ins.getBytes()[0] & 255) != 0xcd
+        || ins.getLength() != 3 || ((ins.getBytes()[0] & 255) != 0xcd
+            && (microflow == null || !microflow.call()))
         || ins.getFallThrough() == null || ins.getDefaultFlows().length != 1
         || targets.size() != 1 || raw.length == 0
         || raw[raw.length - 1].getOpcode() != PcodeOp.CALL) return null;

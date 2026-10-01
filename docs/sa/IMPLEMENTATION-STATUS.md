@@ -1,5 +1,48 @@
 # Implementation status
 
+## SA-CONDITIONAL-CALL-RET-MICROFLOW — bounded N6 CLOSED
+
+Ordinary BankAnalysis now interprets CALL NZ/Z/NC/C and RET NZ/Z/NC/C through
+validated instruction-local raw p-code guards. Conditions use the incumbent F
+byte (Z bit 7, C bit 4); known conditions select one architectural outcome and
+unknown conditions preserve both. False paths have no push/pop or frame change.
+True paths execute actual stack effects and retain N4/N5 physical frame,
+returned PC/SP and outgoing mapper/continuation validation. See the
+[N6 contract](../decisions/conditional-call-ret-microflow.md).
+
+Each invocation admits one conditional transfer site; reprocessing the same site
+for N3 memory weakening does not spend another. Depth remains two, with N5's
+separate one-nested-site bound. Known-false recursive/third-level calls are not
+executed; reachable taken refusals preserve false exploration and invalidate the
+containing invocation. Incomplete alternate paths cannot publish returned proof.
+Compatible returns retain existing register/flag and physical RAM meets;
+incompatible mapper/continuation identities refuse composition. The 128-state
+local cap and single global budget remain unchanged.
+
+Focused N6 and retained N4/N5 tests, the scoped affected analysis/scalar/topology/
+boundary regressions, independent review, lint, static packaging and build-input
+checks pass. One disposable Ghidra 12.1.3 Linux amd64 / JDK 21.0.12.1 Docker
+witness proves taken CALL with actual return bytes and caller continuation,
+unknown RET with both outcomes and conservative returned-state meeting, and
+known-false CALL without callee execution or stores. Separate-JVM save/reopen
+accepts current N6, agrees on recomputation and rejects N5 read/apply. Exact
+commands, identities and counts are in the [evidence index](evidence-index.json).
+
+Engine `20260930-n6-conditional-call-ret-1` retains schema 3 and unchanged
+fingerprint dependencies. Frames, site sets and condition/path state remain
+transient. Global COMPLETE still means a drained session worklist, not completed
+invocation composition; unsupported paths retain frontiers and unknown caller
+state. SLEIGH, ordinary conditional JP/JR, mapper/graph/native/software-call
+contracts and discovery are unchanged.
+
+This closes only bounded N6. General conditional flow, arbitrary-depth or
+recursive solving, indirect-call recovery, RST/RETI, RAM code, general summaries,
+software-call/ABI inference, device/interrupt effects, discovery and whole-ROM
+qualification remain open, as do SA-01/SA-03/SA-07. Full provider and historical
+installed campaigns, run_validation.py, headed GUI, final target/Steam Deck,
+debugger, migration, corpus, fuzzing, hardware and final SA-07 were intentionally
+unrun. No main merge, PR or N7/N8 begins here. STOP after N6.
+
 ## SA-NESTED-RETURNING-CALL-COMPOSITION — bounded N5 CLOSED
 
 Ordinary CD/C9 composition now admits exactly two active invocations: caller → A

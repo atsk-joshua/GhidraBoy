@@ -986,5 +986,58 @@
       "final SA-07"
     ],
     "stop": "STOP after N5; no N6, main merge or PR"
+  },
+  "sa_conditional_call_ret_microflow_n6_20260930": {
+    "status": "SA-CONDITIONAL-CALL-RET-MICROFLOW CLOSED",
+    "scope": "CALL NZ/Z/NC/C and RET NZ/Z/NC/C raw guarded effects, exact/unknown F outcomes, one conditional site per invocation, retained N4/N5 physical frames and depth two",
+    "external_root": "evidence/batches/SA-CONDITIONAL-CALL-RET-MICROFLOW/20260930-n6",
+    "decision": "docs/decisions/conditional-call-ret-microflow.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "7c88d565fae39211511d3b521289ef420f418a04",
+    "report": "REPORT.md",
+    "manifest": "manifest.json",
+    "review": "independent-review.txt",
+    "commands": "commands.json",
+    "baseline": "57 N4/N5 tests freshly rerun; zero failures/errors/skips",
+    "focused": "28 N6 tests; zero failures/errors/skips; all four exact/unknown conditions, physical frames, overlay views, nested state, recursion/depth/site and incomplete-path refusals",
+    "affected": "93 existing tests in 9 classes, including 57 retained N4/N5 tests; 121 total tests in 10 classes with N6; zero failures/errors/skips",
+    "lint_package": "ktlintCheck, buildExtension and 7 build-input tests PASS; N6 ADR in explicit documentation payload",
+    "docker": "One first-run pinned-image disposable installed witness: taken CALL actual push/callee RET/continuation; unknown RET both paths with conflicting A conservative meet and restored SP; known-false CALL no stores/callee; separate JVM N6 current/recompute and N5 read/apply rejection PASS",
+    "docker_image": "sha256:4c7f42ce61b8c05b462c23ad92940f8c57a9666dc6e56d2b8c0cd7ccb20b1e20",
+    "fixture_sha256": "fecc2c7428d7ddbc9260370a52ff9933ad7debc89fefa9ed905b45ad0dc65668",
+    "persistence": {
+      "engine": "20260930-n6-conditional-call-ret-1",
+      "schema": 3,
+      "frames_condition_path_state": "transient only; no cache",
+      "fingerprint": "unchanged from N5"
+    },
+    "remaining": [
+      "general conditional JP/JR predicate analysis",
+      "general interprocedural summaries",
+      "arbitrary-depth and recursive solving",
+      "distinct sequential nested sites or multiple conditional sites per invocation",
+      "indirect/computed calls, RST/RETI",
+      "software-call/ABI inference",
+      "RAM code",
+      "device/asynchronous/interrupt effects",
+      "discovery expansion",
+      "whole-ROM and final qualification"
+    ],
+    "unrun": [
+      "full provider suite",
+      "historical installed_smoke",
+      "run_validation.py",
+      "headed GUI",
+      "Linux final target workflow",
+      "Steam Deck/Wyatt",
+      "debugger",
+      "migration",
+      "broad corpus",
+      "fuzzing",
+      "hardware matrix",
+      "native historical campaigns",
+      "final SA-07"
+    ],
+    "stop": "STOP after N6; no main change, PR or N7/N8"
   }
 }

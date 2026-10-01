@@ -89,7 +89,7 @@ mistaken for a known-unmapped interval. Mapping schema versioning is independent
 of SLEIGH language versioning. P-code-only changes do not by themselves require
 a version change; the stock transport context schema now requires language 2.0.
 
-Bounded `AnalysisResult` schema 3 / engine `20260930-n5-nested-returning-call-1` retains a
+Bounded `AnalysisResult` schema 3 / engine `20260930-n6-conditional-call-ret-1` retains a
 physical identity, partial `MapperKnowledge` and topology-derived provenance for
 each root. Incompatible earlier saved results are rejected and must be recomputed.
 Mapping schema v2, language v2, constructors, compiler IDs and 16-bit CPU pointers
@@ -106,7 +106,11 @@ frames with one nested site per invocation. Nested state resumes the containing
 callee before returning to its caller; incomplete nested proofs invalidate the
 containing invocation. Old N4 results require a new preview; fingerprint components
 are unchanged. See the [bounded N4 contract](decisions/ordinary-returning-call.md)
-and [N5 extension](decisions/nested-returning-call.md).
+and [N5 extension](decisions/nested-returning-call.md). N6 adds one conditional
+CALL/RET microflow site per invocation, with F-derived known/unknown outcomes,
+actual guarded stack effects and unchanged depth/frame proof. Old N5 results
+require recomputation; no persisted shape or fingerprint dependency changes.
+See the [N6 contract](decisions/conditional-call-ret-microflow.md).
 
 Software-call model, preview, executable registry and ownership identities are
 versioned independently from mapping and language compatibility. The earlier

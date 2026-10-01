@@ -224,8 +224,8 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
     refused(CALL, "31560108fccf31fccf3e02c9");
   }
 
-  @Test void conditionalReturnAndUnknownEntrySpRemainExcluded() throws Exception {
-    refused(CALL, "3e02c8c9");
+  @Test void incompleteConditionalReturnAndUnknownEntrySpRemainExcluded() throws Exception {
+    refused(CALL, "3e02c8e9");
     refused("cd0003", "3e02c9");
   }
 
@@ -238,10 +238,10 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
     }
   }
 
-  @Test void n5RoundTripRejectsN4WithoutSerializingFramesOrMemory() throws Exception {
+  @Test void currentRoundTripRejectsN4WithoutSerializingFramesOrMemory() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20260930-n5-nested-returning-call-1", result.engineVersion());
+      assertEquals("20260930-n6-conditional-call-ret-1", result.engineVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
       assertEquals(3, result.schemaVersion());

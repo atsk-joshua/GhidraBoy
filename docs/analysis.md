@@ -113,7 +113,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20260930-n5-nested-returning-call-1` retains schema 3 and existing fingerprint
+Engine `20260930-n6-conditional-call-ret-1` retains schema 3 and existing fingerprint
 components; older engines require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee and one
@@ -131,7 +131,13 @@ Nested returned state resumes the containing callee's actual continuation before
 its own RET can return state to the outer caller. A failed nested proof invalidates
 the containing invocation. One nested site per invocation is supported; distinct
 sequential sites are refused. See the [N5 contract](decisions/nested-returning-call.md).
-Conditional CALL/RET, RETI, RST, third-level/recursive/computed calls, RAM code, general
+N6 additionally interprets CALL NZ/Z/NC/C and RET NZ/Z/NC/C through validated
+instruction-local raw p-code guards. Exact F selects one outcome; unknown F
+preserves both. False CALL/RET has no stack effect, and true paths retain the same
+physical frame proof. One conditional transfer site per invocation is supported;
+reachable incomplete alternatives invalidate composition. See the
+[N6 contract](decisions/conditional-call-ret-microflow.md).
+RETI, RST, third-level/recursive/computed calls, RAM code, general
 summaries, symbolic pointers and device/interrupt summaries remain unsupported.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are

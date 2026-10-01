@@ -1,5 +1,15 @@
 # Development roadmap
 
+The bounded N6 [conditional CALL/RET extension](decisions/conditional-call-ret-microflow.md)
+adds NZ/Z/NC/C architectural microflow to the retained N4/N5 evaluator. Exact F
+selects one outcome; unknown F preserves true and false paths, with actual stack
+frames only on taken transfers. One conditional site per invocation, depth two,
+physical frame matching and incomplete-alternate refusal bound the proof. Scoped
+unit, installed and persistence verification passes; see
+[current status](sa/IMPLEMENTATION-STATUS.md). General conditional control flow,
+indirect calls, arbitrary depth, recursive solving, summaries and discovery remain
+open. N6 does not close SA-01/SA-03/SA-07; N7/N8 do not begin here.
+
 The bounded N5 [nested returning-call extension](decisions/nested-returning-call.md)
 extends the retained [N4 foundation](decisions/ordinary-returning-call.md) to two
 active established CD/C9 invocations using the incumbent evaluator and N3 RAM join.
@@ -9,7 +19,8 @@ Incomplete nested proofs invalidate the containing invocation. Third levels,
 distinct sequential nested sites and unknown/incompatible returns remain
 conservative. Exact verification is in
 [current status](sa/IMPLEMENTATION-STATUS.md). General SA-03/interprocedural,
-recursive/indirect and discovery scope remains open; no N6 starts here.
+recursive/indirect and discovery scope remains open; N6 adds only the bounded
+conditional extension above.
 
 PREVIEW-M2 implements the normal stock-Ghidra analyzer/preparation/status path and
 outer primacy-safe migration boundary. Generic qualification and the private

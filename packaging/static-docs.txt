@@ -50,3 +50,4 @@ decisions/ordinary-ram-byte-facts.md
 decisions/ordinary-memory-join.md
 decisions/ordinary-returning-call.md
 decisions/nested-returning-call.md
+decisions/conditional-call-ret-microflow.md
