@@ -81,6 +81,50 @@ public final class SymbolicMemory {
     State(String scope){this.scope=scope;}
     State copy(){var s=new State(scope);s.footprint=footprint;s.facts.putAll(facts);s.killed.addAll(killed);return s;}
     List<Fact> identity(){return facts.entrySet().stream().sorted(Comparator.comparing(e->e.getKey().toString())).map(e->new Fact(e.getKey(),e.getValue().origin())).toList();}
+    // Ordinary analysis has no declared entry inputs. Reuse the physical fact store, but
+    // accept only exact path-written bytes; loader bytes and W4 symbolic inputs are absent.
+    Map<MapperState.Physical,AbstractValues.Value> snapshot(){return Map.copyOf(facts);}
+    static State ordinary(Map<MapperState.Physical,AbstractValues.Value> snapshot){
+      var state=new State("ordinary-bank-analysis");state.facts.putAll(snapshot);return state;
+    }
+    static boolean ordinaryRegion(MapperState.Physical physical){
+      return physical!=null&&(physical.region().equals("WRAM")||physical.region().equals("HRAM"));
+    }
+    static boolean ordinaryBacking(Program p,MapperState.Physical physical) throws Exception {
+      if(!ordinaryRegion(physical))return false;
+      for(var at:ProgramMapping.physicalToStatic(p,physical)) {
+        var block=p.getMemory().getBlock(at);
+        if(block!=null&&!block.isMapped()&&block.isRead()&&block.isWrite()&&!block.isVolatile()
+            &&block.getSourceInfos().stream().noneMatch(i->i.getFileBytes().isPresent())
+            &&ProgramMapping.staticToPhysical(p,at).equals(List.of(physical)))return true;
+      }
+      return false;
+    }
+    Long ordinaryRead(Program p,Cartridge cartridge,MapperKnowledge mapper,Long pointer,int width) throws Exception {
+      if(pointer==null||width<1||width>Long.BYTES)return null;
+      long result=0;
+      for(int i=0;i<width;i++) {
+        var request=new ScalarAccess.Request((int)((pointer+i)&65535),ScalarAccess.Kind.READ,width,i,null,-1,-1,null);
+        var physical=ScalarAccess.resolve(cartridge,mapper,request).resolution().orElseThrow().physical();
+        if(!ordinaryBacking(p,physical))return null;
+        var value=facts.get(physical);
+        if(value==null||!(value.domain() instanceof AbstractValues.Exact exact))return null;
+        result|=exact.value()<<(i*8);
+      }
+      return result;
+    }
+    void ordinaryWrite(Program p,ScalarAccess.Outcome outcome,boolean mapperControl) throws Exception {
+      var resolution=outcome.resolution().orElseThrow();var physical=resolution.physical();
+      if(ordinaryRegion(physical)) {
+        // Remove by physical key even when the current backing is ineligible.
+        facts.remove(physical);
+        var value=outcome.request().writtenValue();
+        if(value!=null&&ordinaryBacking(p,physical))facts.put(physical,AbstractValues.constant(value,1));
+      } else if(!mapperControl&&(physical==null||resolution.status().equals("device"))) {
+        // An unresolved destination/device effect is not established disjoint from RAM.
+        facts.clear();
+      }
+    }
     AbstractValues.Value read(Program p,MapperKnowledge mapper,int cpu,String source,int operation,List<Access> accesses) throws Exception {
       var at=address(p,mapper,cpu,ScalarAccess.Kind.READ,footprint);var physical=physical(p,mapper,cpu,ScalarAccess.Kind.READ,footprint);
       var value=facts.get(physical);

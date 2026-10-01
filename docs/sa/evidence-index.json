@@ -705,7 +705,18 @@
     "starting_support_documentation_worktree_identity": "2bacb31821217c99718b76f3e9070025c654aa504d44d3770a1b02f576057ba0",
     "production_combined_sha256": "e3cb9178d51923f7e5db1ec40f1ca8029f0e8e12f0765d6a0ec6815fa658bc8d",
     "production_files_verified": 65,
-    "rows": ["H0/H1", "H2", "I1", "W1", "W2", "W3", "W4", "W5", "W6", "V"],
+    "rows": [
+      "H0/H1",
+      "H2",
+      "I1",
+      "W1",
+      "W2",
+      "W3",
+      "W4",
+      "W5",
+      "W6",
+      "V"
+    ],
     "sensitive_controls": 12,
     "desktop_screenshots_reviewed": 12,
     "final_aggregate_sha256": "cbf4f44e2ad8d449caf0cb31ccced77abf72ca7f5b5a0fd36d23241f7601670f",
@@ -795,5 +806,52 @@
     ],
     "closeout_review": "SA-N1-CLOSE corrected overbroad fingerprinting: ROM/BOOT candidate volatility and reserved generated-block classification only; ordinary names and RAM/device volatility excluded; mapped topology already covered. Four affected fingerprint/packed-reopen/stale tests PASS. Original receipt source/artifact identities above precede this correction.",
     "stop": "STOP after bounded N1 implementation and review"
+  },
+  "sa_ram_value_facts_n2_20260930": {
+    "status": "Bounded N2 implementation, independent review and validation complete",
+    "scope": "Path-local exact synchronous WRAM/HRAM byte facts with physical alias-aware invalidation; no memory joins/widening",
+    "external_root": "evidence/batches/SA-RAM-VALUE-FACTS/20260930-n2",
+    "decision": "docs/decisions/ordinary-ram-byte-facts.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "901c14d065ce31007dea3f600fb447620c22c76e",
+    "source_identity_sha256": "7c90667bcdf483d199b5f85267aae7223b7f02713e2ac3368c56188f7be92690",
+    "candidate_sha256": "e52d0fe6a3defe6c1dec20e3d08e1e220d2416e5d7716630e8d486adc99d4906",
+    "fixture_sha256": "4f5020dd81bb1f32f162d7d469890b6b605abb470706eb30e2f528f9b7159cf6",
+    "report": "REPORT.md",
+    "report_sha256": "23f4dbc02c40de93c4b69af29cdb001947573bed4bbf7485655414fd2c9619e2",
+    "manifest": "manifest.json",
+    "manifest_sha256": "eff484e8a7427ca70a6444be51c30861a43bea48cb84df84222501da5f6a3045",
+    "review": "independent-review.txt",
+    "review_sha256": "41d1f95a6bf421092e028bbb8a082511f21ac7a892287019ad20071b986c913f",
+    "focused": "61 tests / 10 classes; no failures/errors/skips; final 12-test N2 class confirmation adds reverse physical-bank separation",
+    "lint_package": "ktlintCheck and buildExtension PASS",
+    "docker": "One narrow installed discovered-analyzer witness with fixture-header correction/retry: echo RAM STORE/LOAD positive, unwritten initialized RAM negative, separate-JVM saved findings/currentness and old-engine/volatility stale refusal PASS",
+    "persistence": {
+      "engine": "20260930-n2-ram-value-1",
+      "schema": 3,
+      "ram_facts": "transient only",
+      "new_fingerprint": "canonical mutable WRAM/HRAM volatility eligibility; physical identity and alias topology already covered"
+    },
+    "git_closeout": "git-closeout.txt",
+    "remaining": [
+      "memory joins/widening",
+      "general symbolic pointers",
+      "interprocedural summaries",
+      "device/asynchronous/interrupt effects",
+      "broad banked RAM inference",
+      "discovery expansion"
+    ],
+    "unrun": [
+      "full provider suite",
+      "broad run_validation.py/installed_smoke campaigns",
+      "headed Ghidra",
+      "Wyatt/Steam Deck",
+      "debugger/native campaigns",
+      "migration campaigns",
+      "hardware matrix",
+      "broad corpus",
+      "fuzzing"
+    ],
+    "stop": "STOP after N2; SA-MEMORY-JOIN-WIDENING not begun"
   }
 }

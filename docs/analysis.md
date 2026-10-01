@@ -98,8 +98,15 @@ execution/presentation storage cannot supply byte authority. Values assemble
 little-endian into the existing register/unique domain and can drive mapper writes.
 Mapping findings remain independent of value proof, including for unknown loads.
 Address-valued operands remain mapping observations and are never implicitly
-loaded by COPY. Unsupported widths, unknown pointers/banks, RAM and device reads
-remain unknown. Bank-shadow memory and general returning-call summaries remain
+loaded by COPY. Unsupported widths, unknown pointers/banks and device reads remain unknown.
+Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
+byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
+each physical byte, so echo aliases share facts and disjoint writes preserve them.
+Initialized Program RAM never supplies runtime values. Branches retain separate
+snapshots; calls and the existing bounded diversity fallback drop them. Existing
+resolved WRAM banks stay distinct without new bank inference. See the
+[bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
+Memory joins/widening and general returning-call summaries remain
 unsupported. Schema 3 is retained; older analysis engines require a new preview.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are

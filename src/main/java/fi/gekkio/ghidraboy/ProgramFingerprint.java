@@ -52,6 +52,20 @@ public final class ProgramFingerprint {
     }
     parts.put("romReadEligibility",
         Sha256.of(ProgramMapping.JSON.toJson(romReadEligibility).getBytes(StandardCharsets.UTF_8)).toString());
+    // Ordinary RAM facts consume mutability/volatility and physical backing, never stored values.
+    // Mapping already covers identities, permissions, file provenance and alias topology.
+    var ramEligibility = new TreeMap<String, Boolean>();
+    for (var range : mapping.ranges()) {
+      if ((!range.region().equals("WRAM") && !range.region().equals("HRAM"))
+          || range.alias() != null) continue;
+      var space = p.getAddressFactory().getAddressSpace(range.space());
+      var block = p.getMemory().getBlock(space.getAddress(range.start()));
+      if (block != null && !block.isMapped() && block.isRead() && block.isWrite()
+          && block.getSourceInfos().stream().noneMatch(i -> i.getFileBytes().isPresent()))
+        ramEligibility.put(address(block.getStart()), !block.isVolatile());
+    }
+    parts.put("ramReadEligibility",
+        Sha256.of(ProgramMapping.JSON.toJson(ramEligibility).getBytes(StandardCharsets.UTF_8)).toString());
     var memory = MessageDigest.getInstance("SHA-256");
     byte[] buffer = new byte[16384];
     var blocks = new ArrayList<>(Arrays.asList(p.getMemory().getBlocks()));

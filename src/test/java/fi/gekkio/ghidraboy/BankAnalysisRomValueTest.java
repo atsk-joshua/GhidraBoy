@@ -206,15 +206,17 @@ class BankAnalysisRomValueTest extends IntegrationTest {
     }
   }
 
-  @Test void ordinaryRenamesAndRamVolatilityAreNotRomValueDependencies() throws Exception {
+  @Test void ordinaryRenamesRemainIrrelevantAndRamVolatilityNowInvalidatesN2() throws Exception {
     try (var f = new Fixture()) {
       var original = f.preview(MapperState.reset()).result();
       f.edit(() -> {
         f.p.getMemory().getBlock(f.at("0200")).setName("renamed_rom");
-        f.p.getMemory().getBlock(f.at("c100")).setVolatile(true);
       });
       ProgramFingerprint.requireCurrent(f.p, original, TaskMonitor.DUMMY);
       selector(f.preview(MapperState.reset()), 2, "rom2::4000");
+      f.edit(() -> f.p.getMemory().getBlock(f.at("c100")).setVolatile(true));
+      assertThrows(IllegalStateException.class, () -> ProgramFingerprint.requireCurrent(f.p, original, TaskMonitor.DUMMY));
+      assertEquals(2L, f.load(0x200L, 1, EXACT), "RAM eligibility does not change ROM value authority");
       f.edit(() -> f.p.getMemory().getBlock(f.at("0200"))
           .setName(OrdinaryEntryAccess.PREFIX + "excluded"));
       assertThrows(IllegalStateException.class,

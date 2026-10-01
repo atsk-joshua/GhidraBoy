@@ -77,10 +77,10 @@ class BankAnalysisScalarWriteTest extends IntegrationTest {
     var writes = diagnostic ? new ArrayList<BankAnalysis.WriteTransition>() : null;
     var method = BankAnalysis.class.getDeclaredMethod("writeAccess", Program.class, Cartridge.class,
         MapperKnowledge.class, int.class, int.class, Long.class, Address.class, int.class,
-        Map.class, Map.class, List.class);
+        Map.class, Map.class, List.class, SymbolicMemory.State.class);
     method.setAccessible(true);
     var after = (MapperKnowledge) method.invoke(null, f.p, f.c, state, address, width, value,
-        source, operation, out.targets, out.reasons, writes);
+        source, operation, out.targets, out.reasons, writes, SymbolicMemory.State.ordinary(Map.of()));
     return new Result(out, after, writes);
   }
 

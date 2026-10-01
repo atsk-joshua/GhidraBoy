@@ -61,7 +61,8 @@ public final class BankAnalysis {
     final List<String> frontier = new ArrayList<>();
   }
 
-  private record Work(Address address, MapperKnowledge state, Map<Long, Integer> registers) {}
+  private record Work(Address address, MapperKnowledge state, Map<Long, Integer> registers,
+      Map<MapperState.Physical, AbstractValues.Value> memory) {}
 
   private record Root(Address address, MapperKnowledge knowledge, AnalysisResult.EntryPremise premise) {}
 
@@ -139,7 +140,7 @@ public final class BankAnalysis {
                 value.longValue(), entryRegisters, new HashMap<>());
         }
       }
-      queue.add(new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters)));
+      queue.add(new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters), Map.of()));
     }
     var seen = new HashSet<Work>();
     var diversity = new HashMap<Address, Integer>();
@@ -154,7 +155,7 @@ public final class BankAnalysis {
       while (!queue.isEmpty()) {
         monitor.checkCancelled();
         var w = queue.removeFirst();
-        var top = new Work(w.address(), MapperKnowledge.unknown(), Map.of());
+        var top = new Work(w.address(), MapperKnowledge.unknown(), Map.of(), Map.of());
         if (widened.contains(w.address()) && !w.equals(top)) continue;
         if (seen.contains(w)) continue;
         int addressStates = diversity.getOrDefault(w.address(), 0);
@@ -257,7 +258,7 @@ public final class BankAnalysis {
                     new Work(
                         continuation,
                         MapperKnowledge.from(returned.mapper()),
-                        Map.copyOf(outputRegisters)),
+                        Map.copyOf(outputRegisters), Map.of()),
                     widened);
           }
           continue;
@@ -268,6 +269,7 @@ public final class BankAnalysis {
         var state = w.state;
         var regs = new HashMap<>(w.registers);
         var unique = new HashMap<Long, Integer>();
+        var memory = SymbolicMemory.State.ordinary(w.memory);
         boolean changedMapper = false;
         // Internal p-code branches are not path interpreted by this finite evaluator.
         boolean internal =
@@ -304,6 +306,7 @@ public final class BankAnalysis {
                 val = value(op.getInput(2), regs, unique);
             if (internal || ptr == null) {
               state = MapperKnowledge.unknown();
+              memory.facts.clear();
               changedMapper = true;
               unknownAccess(
                   w.address,
@@ -327,7 +330,7 @@ public final class BankAnalysis {
                       operationIndex,
                       targets,
                       reasons,
-                      writes);
+                      writes, memory);
               changedMapper |= touchesMapper(cartridge, cpu, width);
             }
           } else if (op.getOpcode() == PcodeOp.LOAD) {
@@ -359,7 +362,7 @@ public final class BankAnalysis {
             Long result = internal ? null : op.getOpcode() == PcodeOp.LOAD
                 ? (op.getInput(0).isConstant()
                     && (int) op.getInput(0).getOffset() == p.getAddressFactory().getDefaultAddressSpace().getSpaceID()
-                    ? romLoad(p, cartridge, state, value(op.getInput(1), regs, unique), output.getSize()) : null)
+                    ? memoryLoad(p, cartridge, state, memory, value(op.getInput(1), regs, unique), output.getSize()) : null)
                 : evaluate(op, regs, unique);
             if (output.isAddress()) {
               int cpu = (int) (output.getOffset() & 65535);
@@ -375,7 +378,7 @@ public final class BankAnalysis {
                       operationIndex,
                       targets,
                       reasons,
-                      writes);
+                      writes, memory);
               changedMapper |= touchesMapper(cartridge, cpu, output.getSize());
             }
             put(output, result, regs, unique);
@@ -392,7 +395,7 @@ public final class BankAnalysis {
           for (var a : resolved) {
             targets.computeIfAbsent(key, k -> new TreeSet<>()).add(a);
             // No interprocedural return summary: do not propagate assumed state into callees.
-            if (!flow.isCall()) successors.add(new Work(a, state, Map.copyOf(regs)));
+            if (!flow.isCall()) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
           }
         }
         Address next = ins.getFallThrough();
@@ -405,6 +408,7 @@ public final class BankAnalysis {
           if (flow.isCall()) {
             state = MapperKnowledge.unknown();
             regs.clear();
+            memory.facts.clear();
             changedMapper = true;
           }
           int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
@@ -416,7 +420,7 @@ public final class BankAnalysis {
                 AnalysisCandidates.Site.control(w.address, "flow"),
                 "Fallthrough execution view unresolved after call, mapper write or window"
                     + " transition");
-          for (var a : nextViews) successors.add(new Work(a, state, Map.copyOf(regs)));
+          for (var a : nextViews) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
         }
         if (configuration.reverseBranches()) Collections.reverse(successors);
         for (var successor : successors) enqueue(queue, successor, widened);
@@ -463,7 +467,7 @@ public final class BankAnalysis {
   private static void enqueue(ArrayDeque<Work> queue, Work work, Set<Address> widened) {
     queue.addLast(
         widened.contains(work.address())
-            ? new Work(work.address(), MapperKnowledge.unknown(), Map.of())
+            ? new Work(work.address(), MapperKnowledge.unknown(), Map.of(), Map.of())
             : work);
   }
 
@@ -607,7 +611,7 @@ public final class BankAnalysis {
       int operation,
       Map<AnalysisCandidates.Site, Set<Address>> targets,
       Map<AnalysisCandidates.Site, String> reasons,
-      List<WriteTransition> writes)
+      List<WriteTransition> writes, SymbolicMemory.State memory)
       throws Exception {
     // P-code operations are ordered. Within a remaining little-endian wide store,
     // bytes use increasing 16-bit addresses. SM83 stack stores explicitly encode
@@ -624,12 +628,19 @@ public final class BankAnalysis {
           from, AnalysisCandidates.Access.WRITE, access.operation(), access.operand(), access.byteIndex());
       record(p, outcome.resolution().orElseThrow(), access.cpu(), key, targets, reasons, writes != null);
       boolean control = mapperControl(c, cpu);
+      memory.ordinaryWrite(p, outcome, control);
       // The adapter proposes a state; this caller retains its mapper-control policy, including CGB gating.
       if (control) state = outcome.after().orElseThrow();
       if (writes != null)
         writes.add(new WriteTransition(operation, i, cpu, octet, before, state, control));
     }
     return state;
+  }
+
+  private static Long memoryLoad(Program p, Cartridge c, MapperKnowledge state,
+      SymbolicMemory.State memory, Long pointer, int width) throws Exception {
+    var ram = memory.ordinaryRead(p, c, state, pointer, width);
+    return ram != null ? ram : romLoad(p, c, state, pointer, width);
   }
 
   /** LOAD alone consumes memory. Mapping observations do not authorize a byte value. */
