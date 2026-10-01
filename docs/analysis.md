@@ -113,7 +113,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20260930-n7-sequential-returning-call-1` retains schema 3 and existing fingerprint
+Engine `20260930-n8-finite-pointer-successor-1` retains schema 3 and existing fingerprint
 components; older engines require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with
@@ -139,6 +139,14 @@ preserves both. False CALL/RET has no stack effect, and true paths retain the sa
 physical frame proof. One conditional transfer site per invocation is supported;
 reachable incomplete alternatives invalidate composition. See the
 [N6 contract](decisions/conditional-call-ret-microflow.md).
+N8 follows unmodified E9 `JP HL` when both architectural HL bytes are exact
+and current mapper knowledge proves one defined immutable executable physical
+ROM target. Every target instruction byte must agree with current authoritative
+Program sources. The jump preserves registers, flags, SP, mapper, physical RAM
+facts and any active ordinary frame; it creates no call frame or fallthrough.
+Unknown pointers, ambiguous sources and generated views remain unresolved.
+No Function is required or created. See the [N8 contract](decisions/finite-pointer-successor.md).
+Finite pointer tables, arbitrary computed flow and indirect calls remain open.
 RETI, RST, third-level/recursive/computed calls, RAM code, general
 summaries, symbolic pointers and device/interrupt summaries remain unsupported.
 Discovery requires existing defined instructions and currently refuses any seed

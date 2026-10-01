@@ -271,7 +271,7 @@ class BankAnalysisSequentialReturningCallTest extends IntegrationTest {
   @Test void n7RoundTripRejectsImmediatelyPrecedingEngineWithoutPersistingFrames() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + CALL_C + "c9", "3e01c9", "3e03c9")) {
       var result = f.preview(false).result();
-      assertEquals("20260930-n7-sequential-returning-call-1", result.engineVersion());
+      assertEquals("20260930-n8-finite-pointer-successor-1", result.engineVersion());
       assertEquals(3, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

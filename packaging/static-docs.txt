@@ -52,3 +52,4 @@ decisions/ordinary-returning-call.md
 decisions/nested-returning-call.md
 decisions/conditional-call-ret-microflow.md
 decisions/sequential-returning-call.md
+decisions/finite-pointer-successor.md

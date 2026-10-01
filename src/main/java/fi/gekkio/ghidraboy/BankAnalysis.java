@@ -559,6 +559,20 @@ public final class BankAnalysis {
         }
         Work composed = null;
         boolean attemptedCall = false;
+        boolean pointerSuccessor = false;
+        if (flow.isComputed() && exactHlJump(p, ins, raw)) {
+          var pointer = value(raw[0].getInput(0), regs, unique);
+          var target = pointer == null ? null : exactPointerTarget(p, cartridge, state, pointer.intValue());
+          if (target != null) {
+            // This is a jump within the current exploration, including its active frame.
+            // No push, restoration, new invocation or fallthrough is synthesized.
+            successors.add(new Work(target, state, Map.copyOf(regs), memory.snapshot()));
+            targets.computeIfAbsent(AnalysisCandidates.Site.control(w.address, "jump"), k -> new TreeSet<>()).add(target);
+            pointerSuccessor = true;
+          } else reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), pointer == null
+              ? "JP HL requires an exact 16-bit architectural pointer"
+              : "JP HL target has no unique defined immutable executable ROM source; undefined bytes left intact");
+        }
         for (var dest : ins.getDefaultFlows()) {
           var resolved =
               resolveWithContext(
@@ -620,7 +634,7 @@ public final class BankAnalysis {
           }
         }
         if (frame != null) {
-          if (successors.isEmpty() || flow.isComputed()) complete = false;
+          if (successors.isEmpty() || (flow.isComputed() && !pointerSuccessor)) complete = false;
           for (var successor : successors)
             edges.computeIfAbsent(w.address, k -> new HashSet<>()).add(successor.address);
         }
@@ -630,8 +644,8 @@ public final class BankAnalysis {
           diagnostic.steps.add(diagnosticIndex, new FetchStep(w.address.toString(), (int) w.address.getOffset(),
               fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(), w.state, state,
               writes, successors.stream().map(work -> work.address.toString()).toList()));
-        if (flow.isComputed())
-          reasons.put(
+        if (flow.isComputed() && !pointerSuccessor)
+          reasons.putIfAbsent(
               AnalysisCandidates.Site.control(w.address, "flow"),
               "Indirect flow requires a validated per-program convention");
       }
@@ -740,6 +754,84 @@ public final class BankAnalysis {
     var register = p.getRegister(name);
     return value(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
         registers, Map.of());
+  }
+
+  /** The compiled E9 contract is deliberately one operation, not a BRANCHIND interpreter. */
+  static boolean exactHlJump(Program p, ghidra.program.model.listing.Instruction ins,
+      PcodeOp[] raw) throws Exception {
+    var hl = p.getRegister("HL");
+    return ins.getLength() == 1 && (ins.getBytes()[0] & 255) == 0xe9
+        && ins.getFlowType().isJump() && ins.getFlowType().isComputed()
+        && !ins.getFlowType().isCall() && ins.getFallThrough() == null
+        && ins.getDefaultFlows().length == 0
+        && InstructionInterpretation.architecturalUnresolved(ins) == null
+        && raw.length == 1 && raw[0].getOpcode() == PcodeOp.BRANCHIND
+        && raw[0].getOutput() == null && raw[0].getNumInputs() == 1
+        && raw[0].getInput(0).isRegister() && raw[0].getInput(0).getSize() == 2
+        && hl.getMinimumByteSize() == 2 && raw[0].getInput(0).getAddress().equals(hl.getAddress())
+        && Arrays.toString(raw).equals(Arrays.toString(ins.getPcode(true)));
+  }
+
+  private static boolean pointerStorage(Program p, Address address) {
+    var block = p.getMemory().getBlock(address);
+    var space = address.getAddressSpace().getName();
+    return block != null && !block.isMapped() && block.isInitialized() && block.isRead()
+        && block.isExecute() && !block.isWrite() && !block.isVolatile()
+        && !block.getName().startsWith(SoftwareCallExecutionView.PREFIX)
+        && !block.getName().startsWith(OrdinaryEntryAccess.PREFIX)
+        && !space.startsWith(SoftwareCallExecutionView.PREFIX)
+        && !space.startsWith(OrdinaryEntryAccess.PREFIX);
+  }
+
+  /** Current Program sources must agree; a CPU pointer never chooses an alias or mapper. */
+  private static Map<Address, Integer> pointerSources(Program p, ProgramMapping.Snapshot mapping,
+      MapperState.Physical physical) throws Exception {
+    var sources = new HashMap<Address, Integer>();
+    Integer agreed = null;
+    for (var range : mapping.ranges()) {
+      if ((range.fileOffset() == null && !"loader-anchor".equals(range.provenance()))
+          || !range.region().equals("ROM") || range.bank() != physical.bank()
+          || physical.offset() < range.offset() || physical.offset() >= range.offset() + range.length()) continue;
+      var space = p.getAddressFactory().getAddressSpace(range.space());
+      var at = space.getAddress(range.start() + physical.offset() - range.offset());
+      if (!pointerStorage(p, at)) continue;
+      if (!ProgramMapping.staticToPhysical(p, at, mapping).equals(List.of(physical))) return Map.of();
+      int octet = p.getMemory().getByte(at) & 255;
+      if (agreed != null && agreed != octet) return Map.of();
+      agreed = octet;
+      sources.put(at, octet);
+    }
+    return sources;
+  }
+
+  static Address exactPointerTarget(Program p, Cartridge cartridge, MapperKnowledge state, int cpu)
+      throws Exception {
+    if (cpu < 0 || cpu > 65535) return null;
+    var physical = ScalarAccess.resolve(cartridge, state,
+        new ScalarAccess.Request(cpu, ScalarAccess.Kind.FETCH, 1, 0, null, -1, -1, null))
+        .resolution().orElseThrow().physical();
+    if (physical == null || !physical.region().equals("ROM")) return null;
+    var mapping = ProgramMapping.inspect(p);
+    var sources = pointerSources(p, mapping, physical);
+    var entries = sources.keySet().stream().filter(a -> a.getOffset() == cpu).toList();
+    // Agreement does not authorize selecting one of multiple static execution identities.
+    if (entries.size() != 1) return null;
+    var target = entries.get(0);
+    var instruction = p.getListing().getInstructionAt(target);
+    if (instruction == null) return null;
+    byte[] bytes = instruction.getBytes();
+    for (int i = 0; i < bytes.length; i++) {
+      int fetchCpu = (cpu + i) & 65535;
+      var expected = ScalarAccess.resolve(cartridge, state,
+          new ScalarAccess.Request(fetchCpu, ScalarAccess.Kind.FETCH, bytes.length, i, target.toString(), -1, -1, null))
+          .resolution().orElseThrow().physical();
+      var at = target.addWrap(i);
+      if (expected == null || !expected.region().equals("ROM") || !pointerStorage(p, at)
+          || !ProgramMapping.staticToPhysical(p, at, mapping).equals(List.of(expected))) return null;
+      var octets = pointerSources(p, mapping, expected);
+      if (!Objects.equals(octets.get(at), bytes[i] & 255)) return null;
+    }
+    return target;
   }
 
   private static boolean ordinaryOperation(PcodeOp op) {
