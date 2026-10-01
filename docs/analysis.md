@@ -61,8 +61,9 @@ physical context is reused only while consistent with known mapper registers.
 Cross-window fallthrough, relative branches and wrapped PC resolve through actual
 Program views. Cross-boundary fetch stops if identity or bytes cannot be proven.
 Undefined code and data markings stop traversal; analysis does not sweep bytes.
-Unknown calls invalidate return-state knowledge. No general interprocedural
-summaries or runtime bank switching are provided.
+Unsupported or unproved calls invalidate return-state knowledge. The bounded
+ordinary direct returning-call subset below can compose established callee state.
+No general interprocedural summaries or runtime bank switching are provided.
 
 Fingerprints cover mapping, initialized bytes, defined data, raw instruction p-code,
 length/flow/fallthrough overrides, language/compiler identities, consulted flow and
@@ -71,7 +72,7 @@ and target callfixups in canonical order. Apply/discovery reject stale results;
 preview detects changes during traversal. Ordinary supplemental navigation/data
 references are not analysis inputs, so application does not invalidate itself.
 
-Engine `20260916-m2-native-analysis-2` evaluates raw `getPcode(false)` and decoded default flows
+The architectural path evaluates raw `getPcode(false)` and decoded default flows
 only when stored flow annotations are consistent. Flow/reference overrides, altered
 fallthrough/lengths and callfixups are explicitly unresolved; they are not mixed with
 raw architectural effects. This includes annotated inline-payload continuations
@@ -108,14 +109,25 @@ joins physical byte facts by retaining only exact values established on every
 incoming path. Disagreement or absence becomes unknown. A weakened processed
 state is requeued; compatible memory revisions do not consume address diversity,
 but every evaluation consumes the global state budget. Incompatible mapper or
-register states stay separate. Calls and the existing diversity fallback drop facts. Existing
+register states stay separate. Unsupported calls and the existing diversity fallback drop facts. Existing
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20260930-n3-memory-join-1` retains schema 3 and existing fingerprint
-dependencies; older engines require a new preview. This must-knowledge memory-only
-widening is bounded and is not general RAM analysis. General symbolic pointers,
-returning-call summaries and device/interrupt effects remain unsupported.
+Engine `20260930-n4-returning-call-1` retains schema 3 and existing fingerprint
+components; older engines require a new preview. N3 memory joining remains intact.
+
+An unmodified unconditional direct CALL can now compose one bounded callee when
+exact SP, the actual pushed return bytes, defined executable ROM and one physical
+target are established. The same evaluator executes callee instructions and
+unconditional RET; the popped physical frame bytes, returned PC/SP and outgoing
+mapper must prove an available continuation. Compatible returning paths retain
+common register/flag bytes and N3 RAM facts. Mapper state comes from actual callee
+effects. Different return mapper/continuation identities and any incomplete path
+retain the conservative unknown continuation. The 128-state callee cap consumes
+the original global state budget too. Frames and memory remain transient.
+See the [returning-call contract](decisions/ordinary-returning-call.md).
+Conditional CALL/RET, RETI, RST, nested/recursive/computed calls, RAM code, general
+summaries, symbolic pointers and device/interrupt summaries remain unsupported.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are
 explicit work in the [research record](static-analysis-research.md), not proof

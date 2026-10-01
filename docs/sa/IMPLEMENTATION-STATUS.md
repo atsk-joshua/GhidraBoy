@@ -1,5 +1,34 @@
 # Implementation status
 
+## SA-RETURNING-CALL-COMPOSITION — bounded N4 CLOSED
+
+Ordinary unconditional direct CALL (CD) now executes its actual architectural
+push, analyzes one bounded callee with the incumbent evaluator and composes state
+only after complete matching unconditional RET (C9) proofs. Exact SP and both
+physical frame-byte identities are required, together with defined executable ROM
+and unique physical target/continuation views. Compatible returns meet exact
+register/flag bytes and unchanged N3 physical RAM must-facts; the outgoing mapper
+comes from actual callee effects. Different mapper/continuation identities or any
+incomplete path retain the conservative unknown continuation. See the
+[contract](../decisions/ordinary-returning-call.md).
+
+The 128-state callee cap also consumes the shared global budget. Nested/recursive,
+conditional and computed calls, guarded returns, RST/RETI, RAM code and general
+summaries remain unsupported. Engine `20260930-n4-returning-call-1` retains schema
+3 and existing fingerprint components; no frame or RAM snapshot is persisted.
+Independent review corrected physical-stack matching and closed its findings.
+Focused N4 and affected N3/evaluator/topology/boundary/call-consumer tests, lint and
+static packaging pass. One disposable installed Ghidra 12.1.3 Docker witness
+proves returned RAM selects ROM2 and conflicting return facts remain unknown.
+Separate JVM save/reopen accepts current N4 results and rejects N3 read/apply.
+Exact commands, identities and outcomes are in the [evidence index](evidence-index.json).
+
+This closes only N4. General interprocedural analysis, whole-ROM call closure,
+SA-01/SA-03/SA-07, discovery, interrupt/device summaries and broad qualification
+remain open. Headed GUI, Steam Deck, debugger, full provider/historical installed,
+migration, corpus/fuzzing/hardware and final SA-07 campaigns were not run. The next
+bounded extension requires separate authorization; none begins here.
+
 ## SA-MEMORY-JOIN-WIDENING — bounded N3 CLOSED
 
 Ordinary BankAnalysis joins transient physical RAM must-facts only at identical

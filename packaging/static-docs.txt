@@ -48,3 +48,4 @@ decisions/public-operations-attended-completion.md
 decisions/preview-m2-native-analysis.md
 decisions/ordinary-ram-byte-facts.md
 decisions/ordinary-memory-join.md
+decisions/ordinary-returning-call.md

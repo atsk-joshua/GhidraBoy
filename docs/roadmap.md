@@ -1,5 +1,12 @@
 # Development roadmap
 
+The bounded N4 [ordinary returning-call foundation](decisions/ordinary-returning-call.md)
+now composes one established CD/C9 invocation using the incumbent evaluator and
+N3 RAM join. It retains mapper effects and common register/flag/memory facts;
+unknown or incomplete returns remain conservative. Exact verification is in
+[current status](sa/IMPLEMENTATION-STATUS.md). General SA-03/interprocedural,
+recursive/indirect and discovery scope remains open; no successor starts here.
+
 PREVIEW-M2 implements the normal stock-Ghidra analyzer/preparation/status path and
 outer primacy-safe migration boundary. Generic qualification and the private
 headless migration/full-analysis/reopen workflow pass locally; the actual intended

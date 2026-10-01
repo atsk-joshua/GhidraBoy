@@ -129,9 +129,7 @@ public final class BankAnalysis {
     var roots = entryRoots(p, cartridge, starts, assumption);
     if (roots.isEmpty()) throw new IllegalArgumentException("At least one justified analysis root is required");
     var primaryStart = roots.get(0).address();
-    var queue = new ArrayDeque<Work>();
-    var joined = new HashMap<JoinKey, Work>();
-    var widened = new HashSet<Address>();
+    var entries = new ArrayList<Work>();
     boolean hasSoftwareCalls = !SoftwareCallRegistry.configurationIdentity(p).equals("absent");
     for (var root : roots) {
       var entryRegisters = new HashMap<Long, Integer>();
@@ -147,19 +145,74 @@ public final class BankAnalysis {
                 value.longValue(), entryRegisters, new HashMap<>());
         }
       }
-      enqueue(queue, new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters), Map.of()), widened, joined);
+      entries.add(new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters), Map.of()));
     }
+    var candidates = new AnalysisCandidates();
+    var session = new Session();
+    explore(p, cartridge, entries, null, configuration, restriction, monitor, diagnostic, candidates, session);
+    var completion = session.completion;
+    var reasons = candidates.reasons;
+    if (completion == AnalysisResult.Completion.STATE_LIMIT)
+      reasons.put(
+          AnalysisCandidates.Site.control(primaryStart, "limit"),
+          configuration.stateLimit() + "-state worklist bound reached");
+    if (completion == AnalysisResult.Completion.CANCELLED)
+      reasons.put(AnalysisCandidates.Site.control(primaryStart, "cancelled"), "Exploration cancelled");
+    if (completion != AnalysisResult.Completion.CANCELLED
+        && (!fingerprint.equals(ProgramFingerprint.capture(p, monitor))
+            || modification != p.getModificationNumber()))
+      completion = AnalysisResult.Completion.INPUT_CHANGED;
+    var findings = candidates.finish(completion);
+    return new AnalysisResult(
+        3,
+        AnalysisResult.ENGINE_VERSION,
+        roots.stream().map(root -> root.address().toString()).toList(),
+        assumption,
+        roots.stream().map(Root::premise).toList(),
+        configuration,
+        completion,
+        session.count,
+        session.pending,
+        fingerprint,
+        findings,
+        completion == AnalysisResult.Completion.COMPLETE
+            ? List.of()
+            : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
+  }
+
+  private static final int CALLEE_STATE_LIMIT = 128;
+
+  private static final class Session {
+    int count;
+    int pending;
+    AnalysisResult.Completion completion = AnalysisResult.Completion.COMPLETE;
+  }
+
+  // One exact logical frame; architectural bytes remain solely in SymbolicMemory.
+  private record CallFrame(int cpu, int sp, List<MapperState.Physical> stack) {}
+  private record Exploration(boolean complete, List<Work> returns) {}
+
+  private static Exploration explore(
+      Program p, Cartridge cartridge, List<Work> entries, CallFrame frame,
+      AnalysisResult.Configuration configuration, AddressSetView restriction,
+      TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
+      throws Exception {
+    var queue = new ArrayDeque<Work>();
+    var joined = new HashMap<JoinKey, Work>();
+    var widened = new HashSet<Address>();
+    for (var entry : entries) enqueue(queue, entry, widened, joined);
     var seen = new HashSet<Work>();
     var diversity = new HashMap<Address, Integer>();
     var processedKeys = new HashSet<JoinKey>();
-    var candidates = new AnalysisCandidates();
     var targets = candidates.targets;
     var reasons = candidates.reasons;
-    int count = 0;
-    var completion = AnalysisResult.Completion.COMPLETE;
+    int localCount = 0;
+    boolean complete = true;
+    var returns = new ArrayList<Work>();
+    var edges = new HashMap<Address, Set<Address>>();
     monitor.setMessage("Exploring bank states");
     try {
-      while (!queue.isEmpty()) {
+      while (!queue.isEmpty() && session.completion == AnalysisResult.Completion.COMPLETE) {
         monitor.checkCancelled();
         var w = queue.removeFirst();
         var top = new Work(w.address(), MapperKnowledge.unknown(), Map.of(), Map.of());
@@ -172,6 +225,7 @@ public final class BankAnalysis {
         if (!widened.contains(w.address())
             && !processedKeys.contains(joinKey)
             && addressStates == STATE_DIVERSITY_PER_ADDRESS) {
+          if (frame != null) complete = false;
           widened.add(w.address());
           reasons.put(
               AnalysisCandidates.Site.control(w.address(), "widening"),
@@ -184,15 +238,23 @@ public final class BankAnalysis {
           queue.addFirst(top);
           continue;
         }
-        if (count == configuration.stateLimit()) {
+        if (session.count == configuration.stateLimit()) {
           queue.addFirst(w);
-          completion = AnalysisResult.Completion.STATE_LIMIT;
+          session.completion = AnalysisResult.Completion.STATE_LIMIT;
+          complete = false;
+          break;
+        }
+        if (frame != null && localCount == CALLEE_STATE_LIMIT) {
+          complete = false;
+          reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), "Ordinary callee state bound reached");
           break;
         }
         seen.add(w);
         if (processedKeys.add(joinKey)) diversity.put(w.address(), addressStates + 1);
-        count++;
+        session.count++;
+        localCount++;
         if (restriction != null && !restriction.contains(w.address)) {
+          if (frame != null) complete = false;
           reasons.put(
               AnalysisCandidates.Site.control(w.address, "flow"),
               "Successor is outside the analyzer address restriction");
@@ -200,12 +262,15 @@ public final class BankAnalysis {
         }
         var ins = p.getListing().getInstructionAt(w.address);
         if (ins == null) {
+          if (frame != null) complete = false;
           reasons.put(
               AnalysisCandidates.Site.control(w.address, "flow"),
               "No defined instruction; data/undefined bytes left intact");
           continue;
         }
-        if (!fetchEstablished(p, cartridge, w.state, ins, diagnostic != null)) {
+        if (!fetchEstablished(p, cartridge, w.state, ins, diagnostic != null)
+            || (frame != null && !callableInstruction(p, w.state, ins))) {
+          if (frame != null) complete = false;
           reasons.put(
               AnalysisCandidates.Site.control(w.address, "flow"),
               "Instruction fetch crosses an unestablished physical execution view");
@@ -213,11 +278,17 @@ public final class BankAnalysis {
         }
         String interpretation = InstructionInterpretation.unresolved(ins);
         if (interpretation != null) {
+          if (frame != null) complete = false;
           reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), interpretation);
           continue;
         }
         var softwareCall = InstructionInterpretation.softwareCall(ins);
         if (softwareCall != null) {
+          if (frame != null) {
+            complete = false;
+            reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), "Nested software call is outside ordinary call composition");
+            continue;
+          }
           if (diagnostic != null)
             diagnostic.frontier.add(w.address + ": Software-call summary is not an instruction fetch trace");
           var premises = softwareCall.configuration();
@@ -244,10 +315,10 @@ public final class BankAnalysis {
                 "Unresolved callee effects: " + String.join("; ", summary.unresolved()));
             continue;
           }
-          var frame = softwareCall.frame();
+          var softwareFrame = softwareCall.frame();
           var callKey = AnalysisCandidates.Site.control(w.address, "call");
-          for (var target : ProgramMapping.physicalToStatic(p, frame.target()))
-            if (target.getOffset() == frame.targetCpu() && SoftwareCallExecutionView.canonical(p, target))
+          for (var target : ProgramMapping.physicalToStatic(p, softwareFrame.target()))
+            if (target.getOffset() == softwareFrame.targetCpu() && SoftwareCallExecutionView.canonical(p, target))
               targets.computeIfAbsent(callKey, k -> new TreeSet<>()).add(target);
           for (var path : summary.paths()) {
             var returned = path.returned();
@@ -277,6 +348,7 @@ public final class BankAnalysis {
           }
           continue;
         }
+        int diagnosticIndex = diagnostic == null ? 0 : diagnostic.steps.size();
         var fetchBytes = diagnostic == null ? null : fetchBytes(p, ins);
         var writes = diagnostic == null ? null : new ArrayList<WriteTransition>();
         var raw = ins.getPcode(false);
@@ -292,16 +364,21 @@ public final class BankAnalysis {
                     op ->
                         op.getOpcode() == PcodeOp.CBRANCH
                             || (op.getOpcode() == PcodeOp.BRANCH && op.getInput(0).isConstant()));
+        Long returnedCpu = null;
+        boolean supported = true;
         int operation = 0;
         for (var op : raw) {
           int operationIndex = operation++;
+          if (op.getOpcode() == PcodeOp.RETURN) returnedCpu = value(op.getInput(0), regs, unique);
+          if (op.getOpcode() == PcodeOp.CALLOTHER && !CartridgeBus.isDirectWrite(p.getLanguage(), op)) supported = false;
           if (op.getOpcode() != PcodeOp.BRANCH
               && op.getOpcode() != PcodeOp.CBRANCH
               && op.getOpcode() != PcodeOp.CALL
               && op.getOpcode() != PcodeOp.RETURN)
             for (int operand = 0; operand < op.getNumInputs(); operand++) {
               var input = op.getInput(operand);
-              if (input.isAddress())
+              if (input.isAddress()) {
+                if (frame != null) complete = false;
                 readAccess(
                     p,
                     cartridge,
@@ -314,11 +391,13 @@ public final class BankAnalysis {
                     targets,
                     reasons,
                     diagnostic != null);
+              }
             }
           if (op.getOpcode() == PcodeOp.STORE || CartridgeBus.isDirectWrite(p.getLanguage(), op)) {
             Long ptr = value(op.getInput(1), regs, unique),
                 val = value(op.getInput(2), regs, unique);
             if (internal || ptr == null) {
+              if (frame != null) complete = false;
               state = MapperKnowledge.unknown();
               memory.facts.clear();
               changedMapper = true;
@@ -395,20 +474,60 @@ public final class BankAnalysis {
                       writes, memory);
               changedMapper |= touchesMapper(cartridge, cpu, output.getSize());
             }
+            if (frame != null && op.getOpcode() == PcodeOp.LOAD && result == null) complete = false;
+            if (frame != null && !ordinaryOperation(op)) supported = false;
             put(output, result, regs, unique);
           }
         }
         var successors = new ArrayList<Work>();
         var flow = ins.getFlowType();
+        if (frame != null) {
+          if (!supported || (internal && Arrays.stream(raw).anyMatch(op -> (op.getOutput() != null && !op.getOutput().isUnique())
+              || op.getOpcode() == PcodeOp.STORE || CartridgeBus.isDirectWrite(p.getLanguage(), op)))) complete = false;
+          if (Arrays.stream(raw).anyMatch(op -> op.getOpcode() == PcodeOp.RETURN)) {
+            var sp = registerValue(p, "SP", regs);
+            // The actual pop and RETURN operand, not flow metadata, establish this frame.
+            if (ins.getBytes().length != 1 || (ins.getBytes()[0] & 255) != 0xc9
+                || returnedCpu == null || returnedCpu.intValue() != frame.cpu()
+                || sp == null || sp.intValue() != frame.sp()
+                || !stackIdentity(cartridge, w.state, (frame.sp() - 2) & 65535).equals(frame.stack())) complete = false;
+            else {
+              var views = resolve(p, cartridge, state, frame.cpu(), diagnostic != null);
+              if (views.size() != 1 || p.getListing().getInstructionAt(views.get(0)) == null
+                  || !callableInstruction(p, state, p.getListing().getInstructionAt(views.get(0)))
+                  || !fetchEstablished(p, cartridge, state, p.getListing().getInstructionAt(views.get(0)), diagnostic != null)) complete = false;
+              else returns.add(new Work(views.get(0), state, Map.copyOf(regs), memory.snapshot()));
+            }
+            if (diagnostic != null) diagnostic.steps.add(new FetchStep(w.address.toString(),
+                (int) w.address.getOffset(), fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(),
+                w.state, state, writes, List.of()));
+            continue;
+          }
+          if (flow.isCall()) {
+            complete = false;
+            reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), "Nested or recursive ordinary call is outside the one-frame bound");
+            continue;
+          }
+        }
+        Work composed = null;
+        boolean attemptedCall = false;
         for (var dest : ins.getDefaultFlows()) {
           var resolved =
               resolveWithContext(
                   p, cartridge, state, (int) dest.getOffset(), changedMapper ? null : w.address, diagnostic != null);
           var key = AnalysisCandidates.Site.control(w.address, flow.isCall() ? "call" : "jump");
-          if (resolved.isEmpty()) reasons.put(key, "Unknown bank or missing static execution view");
+          if (resolved.isEmpty()) {
+            if (frame != null) complete = false;
+            reasons.put(key, "Unknown bank or missing static execution view");
+          }
           for (var a : resolved) {
             targets.computeIfAbsent(key, k -> new TreeSet<>()).add(a);
-            // No interprocedural return summary: do not propagate assumed state into callees.
+            if (frame == null && !attemptedCall && flow.isCall()) {
+              attemptedCall = true;
+              composed = composeCall(p, cartridge, w, ins, raw, state, regs, memory, resolved,
+                  configuration, restriction, monitor, diagnostic, candidates, session);
+            }
+            // Unsupported calls retain the incumbent unknown continuation.
             if (!flow.isCall()) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
           }
         }
@@ -419,27 +538,40 @@ public final class BankAnalysis {
             && ins.getAddress().getOffset() + ins.getLength() > 65535)
           next = ins.getAddress().addWrap(ins.getLength());
         if (next != null) {
-          if (flow.isCall()) {
+          if (flow.isCall() && composed != null) {
+            successors.add(composed);
+            next = null;
+          }
+          if (next != null && flow.isCall()) {
             state = MapperKnowledge.unknown();
             regs.clear();
             memory.facts.clear();
             changedMapper = true;
           }
-          int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
-          if (ins.isFallThroughOverridden()) nextCpu = (int) next.getOffset();
-          var nextViews =
-              resolveWithContext(p, cartridge, state, nextCpu, changedMapper ? null : w.address, diagnostic != null);
-          if (nextViews.isEmpty())
-            reasons.put(
-                AnalysisCandidates.Site.control(w.address, "flow"),
-                "Fallthrough execution view unresolved after call, mapper write or window"
-                    + " transition");
-          for (var a : nextViews) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
+          if (next != null) {
+            int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
+            if (ins.isFallThroughOverridden()) nextCpu = (int) next.getOffset();
+            var nextViews =
+                resolveWithContext(p, cartridge, state, nextCpu, changedMapper ? null : w.address, diagnostic != null);
+            if (nextViews.isEmpty()) {
+              if (frame != null) complete = false;
+              reasons.put(
+                  AnalysisCandidates.Site.control(w.address, "flow"),
+                  "Fallthrough execution view unresolved after call, mapper write or window"
+                      + " transition");
+            }
+            for (var a : nextViews) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
+          }
+        }
+        if (frame != null) {
+          if (successors.isEmpty() || flow.isComputed()) complete = false;
+          for (var successor : successors)
+            edges.computeIfAbsent(w.address, k -> new HashSet<>()).add(successor.address);
         }
         if (configuration.reverseBranches()) Collections.reverse(successors);
         for (var successor : successors) enqueue(queue, successor, widened, joined);
         if (diagnostic != null)
-          diagnostic.steps.add(new FetchStep(w.address.toString(), (int) w.address.getOffset(),
+          diagnostic.steps.add(diagnosticIndex, new FetchStep(w.address.toString(), (int) w.address.getOffset(),
               fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(), w.state, state,
               writes, successors.stream().map(work -> work.address.toString()).toList()));
         if (flow.isComputed())
@@ -448,34 +580,116 @@ public final class BankAnalysis {
               "Indirect flow requires a validated per-program convention");
       }
     } catch (ghidra.util.exception.CancelledException cancelled) {
-      completion = AnalysisResult.Completion.CANCELLED;
+      session.completion = AnalysisResult.Completion.CANCELLED;
+      complete = false;
     }
-    if (completion == AnalysisResult.Completion.STATE_LIMIT)
-      reasons.put(
-          AnalysisCandidates.Site.control(primaryStart, "limit"),
-          configuration.stateLimit() + "-state worklist bound reached");
-    if (completion == AnalysisResult.Completion.CANCELLED)
-      reasons.put(AnalysisCandidates.Site.control(primaryStart, "cancelled"), "Exploration cancelled");
-    if (completion != AnalysisResult.Completion.CANCELLED
-        && (!fingerprint.equals(ProgramFingerprint.capture(p, monitor))
-            || modification != p.getModificationNumber()))
-      completion = AnalysisResult.Completion.INPUT_CHANGED;
-    var findings = candidates.finish(completion);
-    return new AnalysisResult(
-        3,
-        AnalysisResult.ENGINE_VERSION,
-        roots.stream().map(root -> root.address().toString()).toList(),
-        assumption,
-        roots.stream().map(Root::premise).toList(),
-        configuration,
-        completion,
-        count,
-        queue.size(),
-        fingerprint,
-        findings,
-        completion == AnalysisResult.Completion.COMPLETE
-            ? List.of()
-            : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
+    if (frame == null || session.completion != AnalysisResult.Completion.COMPLETE) session.pending += queue.size();
+    if (frame != null && cyclic(edges)) complete = false;
+    return new Exploration(complete && session.completion == AnalysisResult.Completion.COMPLETE, List.copyOf(returns));
+  }
+
+  private static List<MapperState.Physical> stackIdentity(Cartridge cartridge, MapperKnowledge state, int sp) {
+    var low = state.translate(cartridge, sp, false).physical();
+    var high = state.translate(cartridge, (sp + 1) & 65535, false).physical();
+    return low == null || high == null ? List.of() : List.of(low, high);
+  }
+
+  private static Long registerValue(Program p, String name, Map<Long, Integer> registers) {
+    var register = p.getRegister(name);
+    return value(new ghidra.program.model.pcode.Varnode(register.getAddress(), register.getMinimumByteSize()),
+        registers, Map.of());
+  }
+
+  private static boolean ordinaryOperation(PcodeOp op) {
+    int opcode = op.getOpcode();
+    return opcode == PcodeOp.LOAD || opcode == PcodeOp.COPY
+        || (opcode >= PcodeOp.INT_EQUAL && opcode <= PcodeOp.BOOL_OR)
+        || opcode == PcodeOp.PIECE || opcode == PcodeOp.SUBPIECE
+        || opcode == PcodeOp.POPCOUNT || opcode == PcodeOp.LZCOUNT;
+  }
+
+  private static boolean callableInstruction(Program p, MapperKnowledge state,
+      ghidra.program.model.listing.Instruction ins) throws Exception {
+    for (int i = 0; i < ins.getLength(); i++) {
+      var at = ins.getAddress().addWrap(i);
+      var block = p.getMemory().getBlock(at);
+      var physical = state.translate(ProgramMapping.cartridge(p), (int) (at.getOffset() & 65535), false).physical();
+      if (block == null || !block.isExecute() || !block.isRead() || !block.isInitialized()
+          || block.isWrite() || physical == null || !physical.region().equals("ROM")
+          || !ProgramMapping.staticToPhysical(p, at).equals(List.of(physical))) return false;
+    }
+    return true;
+  }
+
+  private static Work composeCall(
+      Program p, Cartridge cartridge, Work caller, ghidra.program.model.listing.Instruction ins,
+      PcodeOp[] raw, MapperKnowledge state, Map<Long, Integer> registers, SymbolicMemory.State memory,
+      List<Address> targets, AnalysisResult.Configuration configuration, AddressSetView restriction,
+      TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
+      throws Exception {
+    // Opcode CD has an unconditional architectural push followed by one direct CALL.
+    // Conditional CALL, RST and computed/reclassified transfers do not enter this subset.
+    if (ins.getLength() != 3 || (ins.getBytes()[0] & 255) != 0xcd
+        || ins.getFallThrough() == null || ins.getDefaultFlows().length != 1
+        || targets.size() != 1 || raw.length == 0
+        || raw[raw.length - 1].getOpcode() != PcodeOp.CALL) return null;
+    var target = targets.get(0);
+    int targetCpu = (int) target.getOffset();
+    var physical = state.translate(cartridge, targetCpu, false).physical();
+    if (physical == null || !ProgramMapping.staticToPhysical(p, target).equals(List.of(physical))) return null;
+    var callee = p.getListing().getInstructionAt(target);
+    if (callee == null || !callableInstruction(p, state, callee)) return null;
+    var beforeSp = registerValue(p, "SP", caller.registers());
+    var entrySp = registerValue(p, "SP", registers);
+    int cpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
+    if (beforeSp == null || entrySp == null || entrySp.intValue() != ((beforeSp.intValue() - 2) & 65535)) return null;
+    // Consume the real CALL stores through the incumbent memory model. No synthesized word.
+    var word = memory.ordinaryRead(p, cartridge, state, entrySp, 2);
+    if (word == null || word.intValue() != cpu) return null;
+    if (diagnostic != null) diagnostic.frontier.add(caller.address() + ": Ordinary call composition is not a linear instruction fetch trace");
+    var calleeCandidates = new AnalysisCandidates();
+    var summary = explore(p, cartridge,
+        List.of(new Work(target, state, Map.copyOf(registers), memory.snapshot())),
+        new CallFrame(cpu, beforeSp.intValue(), stackIdentity(cartridge, state, entrySp.intValue())), configuration, restriction, monitor, diagnostic, calleeCandidates, session);
+    for (var entry : calleeCandidates.targets.entrySet()) {
+      candidates.targets.computeIfAbsent(entry.getKey(), k -> new TreeSet<>()).addAll(entry.getValue());
+      if (!summary.complete()) candidates.reasons.put(entry.getKey(), "Incomplete ordinary callee exploration: candidates are not proof");
+    }
+    candidates.reasons.putAll(calleeCandidates.reasons);
+    if (!summary.complete() || summary.returns().isEmpty()) {
+      candidates.reasons.put(AnalysisCandidates.Site.control(caller.address(), "flow"),
+          "Ordinary call has no complete matched-return proof");
+      return null;
+    }
+    var result = summary.returns().get(0);
+    for (var returned : summary.returns().subList(1, summary.returns().size())) {
+      // Different physical continuations or mapper identities are incompatible. Fall back
+      // to the existing unknown continuation rather than inventing a mapper lattice.
+      if (!result.address().equals(returned.address()) || !result.state().equals(returned.state())) return null;
+      var commonRegisters = new HashMap<>(result.registers());
+      commonRegisters.entrySet().removeIf(e -> !Objects.equals(e.getValue(), returned.registers().get(e.getKey())));
+      result = new Work(result.address(), result.state(), Map.copyOf(commonRegisters),
+          SymbolicMemory.State.joinOrdinary(result.memory(), returned.memory()));
+    }
+    return result;
+  }
+
+  private static boolean cyclic(Map<Address, Set<Address>> edges) {
+    var active = new HashSet<Address>();
+    var done = new HashSet<Address>();
+    for (var address : edges.keySet()) if (cyclic(address, edges, active, done)) return true;
+    return false;
+  }
+
+  private static boolean cyclic(Address address, Map<Address, Set<Address>> edges,
+      Set<Address> active, Set<Address> done) {
+    if (done.contains(address)) return false;
+    if (!active.add(address)) return true;
+    for (var next : edges.getOrDefault(address, Set.of()))
+      if (cyclic(next, edges, active, done)) return true;
+    active.remove(address);
+    done.add(address);
+    return false;
   }
 
   static void enqueue(ArrayDeque<Work> queue, Work work, Set<Address> widened,
