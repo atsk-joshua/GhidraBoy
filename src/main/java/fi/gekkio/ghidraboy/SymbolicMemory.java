@@ -84,6 +84,21 @@ public final class SymbolicMemory {
     // Ordinary analysis has no declared entry inputs. Reuse the physical fact store, but
     // accept only exact path-written bytes; loader bytes and W4 symbolic inputs are absent.
     Map<MapperState.Physical,AbstractValues.Value> snapshot(){return Map.copyOf(facts);}
+    /** Must-knowledge meet: absent or disagreeing bytes are unknown, never alternatives. */
+    static Map<MapperState.Physical,AbstractValues.Value> joinOrdinary(
+        Map<MapperState.Physical,AbstractValues.Value> left,
+        Map<MapperState.Physical,AbstractValues.Value> right) {
+      if(left.equals(right))return left;
+      var common=new HashMap<MapperState.Physical,AbstractValues.Value>();
+      for(var entry:left.entrySet()) {
+        var other=right.get(entry.getKey());var value=entry.getValue();
+        if(other!=null&&value.width()==1&&other.width()==1
+            &&value.domain() instanceof AbstractValues.Exact a
+            &&other.domain() instanceof AbstractValues.Exact b&&a.value()==b.value())
+          common.put(entry.getKey(),value);
+      }
+      return common.size()==left.size()?left:Map.copyOf(common);
+    }
     static State ordinary(Map<MapperState.Physical,AbstractValues.Value> snapshot){
       var state=new State("ordinary-bank-analysis");state.facts.putAll(snapshot);return state;
     }

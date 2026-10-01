@@ -83,7 +83,7 @@ this bounded behavior, not whole-ROM semantics. See the source checkout's
 `docs/decisions/sa00-integrity.md` and `docs/evidence/sa00-20260907/README.md`.
 
 To converge changing exact register states around loops, an instruction with more
-than 32 distinct incoming states is reprocessed once with mapper/register knowledge
+than 32 distinct incoming non-memory states is reprocessed once with mapper/register knowledge
 widened to unknown. Later backedges to that instruction reuse the unknown state.
 The widening is explicit in findings and preserves uncertainty; it does not select
 one observed value or silently drop the unresolved loop.
@@ -102,12 +102,20 @@ loaded by COPY. Unsupported widths, unknown pointers/banks and device reads rema
 Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
 byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
 each physical byte, so echo aliases share facts and disjoint writes preserve them.
-Initialized Program RAM never supplies runtime values. Branches retain separate
-snapshots; calls and the existing bounded diversity fallback drop them. Existing
+Initialized Program RAM never supplies runtime values. Branches carry transient
+snapshots. At an identical static address, MapperKnowledge and register map, N3
+joins physical byte facts by retaining only exact values established on every
+incoming path. Disagreement or absence becomes unknown. A weakened processed
+state is requeued; compatible memory revisions do not consume address diversity,
+but every evaluation consumes the global state budget. Incompatible mapper or
+register states stay separate. Calls and the existing diversity fallback drop facts. Existing
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
-Memory joins/widening and general returning-call summaries remain
-unsupported. Schema 3 is retained; older analysis engines require a new preview.
+See the [bounded memory join contract](decisions/ordinary-memory-join.md).
+Engine `20260930-n3-memory-join-1` retains schema 3 and existing fingerprint
+dependencies; older engines require a new preview. This must-knowledge memory-only
+widening is bounded and is not general RAM analysis. General symbolic pointers,
+returning-call summaries and device/interrupt effects remain unsupported.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are
 explicit work in the [research record](static-analysis-research.md), not proof

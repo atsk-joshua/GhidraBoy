@@ -112,8 +112,8 @@ class BankAnalysisRamValueTest extends IntegrationTest {
     try (var f = new Fixture("3e02e0702100d036023e01e0703e02e0707e", GameBoyKind.CGB)) { selector(f.preview(MapperState.reset()), 2); }
   }
   @Test void branchesRetainSeparateFactsAndDoNotProveOnePathValue() throws Exception {
-    // Unknown Z chooses C000=1 or C000=2 before the shared LOAD.
-    try (var f = new Fixture("2100c028043601180236027e", GameBoyKind.GB)) {
+    // Unknown Z chooses C000=1 or C000=2, with distinct B values retaining path correlation.
+    try (var f = new Fixture("2100c02806060136011804060236027e", GameBoyKind.GB)) {
       var preview = f.preview(MapperState.reset());
       var values = new HashSet<Integer>();
       preview.steps().stream().flatMap(step -> step.writes().stream())
@@ -128,8 +128,8 @@ class BankAnalysisRamValueTest extends IntegrationTest {
   }
   @Test void callsAndDiversityFallbackCannotRetainAnObservedRamConstant() throws Exception {
     check("2100c03602cd00037e", null);
-    // Loop through load/increment/store; existing diversity fallback drops all path facts.
-    try (var f = new Fixture("2100c036027e3c7720fb7e", GameBoyKind.GB)) {
+    // A changing independent BC counter keeps register states incompatible; diversity drops facts.
+    try (var f = new Fixture("0100002100c036027e3c770320fa7e", GameBoyKind.GB)) {
       var preview = f.preview(MapperState.reset());
       assertTrue(preview.result().findings().stream().anyMatch(x -> x.access().equals("widening")));
       assertTrue(preview.steps().stream().flatMap(x -> x.writes().stream())

@@ -853,5 +853,47 @@
       "fuzzing"
     ],
     "stop": "STOP after N2; SA-MEMORY-JOIN-WIDENING not begun"
+  },
+  "sa_memory_join_widening_n3_20260930": {
+    "status": "Bounded N3 CLOSED",
+    "scope": "Must-knowledge physical RAM byte join at identical address/mapper/register state; bounded reprocessing",
+    "external_root": "evidence/batches/SA-MEMORY-JOIN-WIDENING/20260930-n3",
+    "decision": "docs/decisions/ordinary-memory-join.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "03efb5b07d9425a3e36dcd20152b30982725c4be",
+    "report": "REPORT.md",
+    "manifest": "manifest-final.json",
+    "review": "independent-review.txt",
+    "commands": "commands.json",
+    "focused": "25 tests / 3 classes (13 N3 + 12 N2), then 84 affected tests / 15 classes; zero failures/errors/skips",
+    "lint_package": "ktlintCheck and buildExtension PASS",
+    "docker": "One pinned-image installed discovered-analyzer witness: common physical RAM selector proves ROM2; conflicting selector UNKNOWN; separate-JVM current identity, old N2 read/apply rejection and RAM eligibility stale refusal PASS",
+    "persistence": {
+      "engine": "20260930-n3-memory-join-1",
+      "schema": 3,
+      "ram_facts": "transient only",
+      "fingerprint": "unchanged from N2"
+    },
+    "remaining": [
+      "N4 returning-call composition (not begun)",
+      "general symbolic pointers",
+      "device/asynchronous/interrupt effects",
+      "new mapper inference",
+      "discovery expansion",
+      "whole-ROM and final qualification"
+    ],
+    "unrun": [
+      "full provider suite",
+      "broad installed_smoke.py/run_validation.py campaigns",
+      "headed GUI",
+      "Wyatt/Steam Deck",
+      "debugger",
+      "native architecture campaigns",
+      "broad corpus",
+      "fuzzing",
+      "migration campaign",
+      "full hardware matrix",
+      "final qualification"
+    ]
   }
 }

@@ -46,3 +46,5 @@ decisions/static-dispatch-model.md
 public-operations.md
 decisions/public-operations-attended-completion.md
 decisions/preview-m2-native-analysis.md
+decisions/ordinary-ram-byte-facts.md
+decisions/ordinary-memory-join.md

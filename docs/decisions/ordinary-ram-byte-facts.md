@@ -1,5 +1,9 @@
 # Ordinary path-local RAM byte facts (N2)
 
+N3 subsequently refines compatible-state convergence; see the
+[ordinary memory join decision](ordinary-memory-join.md). The worklist descriptions
+below record the N2 checkpoint. Its byte authority and invalidation contract remain.
+
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,
 not general memory analysis or milestone completion.

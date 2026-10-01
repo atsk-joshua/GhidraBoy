@@ -1,5 +1,23 @@
 # Implementation status
 
+## SA-MEMORY-JOIN-WIDENING — bounded N3 CLOSED
+
+Ordinary BankAnalysis joins transient physical RAM must-facts only at identical
+static address, MapperKnowledge and register state. Changed joined snapshots are
+reprocessed; conflicting/missing facts become unknown. Compatible memory revisions
+converge without spending address diversity, while the existing incompatible-state
+fallback and global budget remain conservative. See the
+[join contract](../decisions/ordinary-memory-join.md) and
+[evidence index](evidence-index.json).
+
+Focused join/RAM and affected analysis, scalar/mapping, lifecycle/fingerprint
+regressions, formatting, extension packaging, independent review and one disposable
+Ghidra 12.1.3 Linux Docker witness pass. Common RAM retains a proved physical
+successor; conflicting RAM does not. Separate-process save/reopen preserves N3
+identity and rejects N2. Schema 3 and fingerprint dependencies remain unchanged.
+This closes only N3; general memory analysis and SA-03 remain open. N4 returning-call
+composition is the next separately authorized task and has not begun.
+
 ## PREVIEW-M2 native Ghidra workflow — local/headless PASS; intended target headed workflow NOT_RUN
 
 The PREVIEW-M2 source candidate adds a stock-discovered low-priority instruction

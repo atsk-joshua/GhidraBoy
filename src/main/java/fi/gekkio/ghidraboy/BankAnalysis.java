@@ -61,8 +61,13 @@ public final class BankAnalysis {
     final List<String> frontier = new ArrayList<>();
   }
 
-  private record Work(Address address, MapperKnowledge state, Map<Long, Integer> registers,
+  record Work(Address address, MapperKnowledge state, Map<Long, Integer> registers,
       Map<MapperState.Physical, AbstractValues.Value> memory) {}
+
+  // Address includes the static execution view; instruction-local uniques are reset on every step.
+  record JoinKey(Address address, MapperKnowledge state, Map<Long, Integer> registers) {
+    static JoinKey of(Work work) { return new JoinKey(work.address(), work.state(), work.registers()); }
+  }
 
   private record Root(Address address, MapperKnowledge knowledge, AnalysisResult.EntryPremise premise) {}
 
@@ -125,6 +130,8 @@ public final class BankAnalysis {
     if (roots.isEmpty()) throw new IllegalArgumentException("At least one justified analysis root is required");
     var primaryStart = roots.get(0).address();
     var queue = new ArrayDeque<Work>();
+    var joined = new HashMap<JoinKey, Work>();
+    var widened = new HashSet<Address>();
     boolean hasSoftwareCalls = !SoftwareCallRegistry.configurationIdentity(p).equals("absent");
     for (var root : roots) {
       var entryRegisters = new HashMap<Long, Integer>();
@@ -140,11 +147,11 @@ public final class BankAnalysis {
                 value.longValue(), entryRegisters, new HashMap<>());
         }
       }
-      queue.add(new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters), Map.of()));
+      enqueue(queue, new Work(root.address(), root.knowledge(), Map.copyOf(entryRegisters), Map.of()), widened, joined);
     }
     var seen = new HashSet<Work>();
     var diversity = new HashMap<Address, Integer>();
-    var widened = new HashSet<Address>();
+    var processedKeys = new HashSet<JoinKey>();
     var candidates = new AnalysisCandidates();
     var targets = candidates.targets;
     var reasons = candidates.reasons;
@@ -157,9 +164,13 @@ public final class BankAnalysis {
         var w = queue.removeFirst();
         var top = new Work(w.address(), MapperKnowledge.unknown(), Map.of(), Map.of());
         if (widened.contains(w.address()) && !w.equals(top)) continue;
-        if (seen.contains(w)) continue;
+        // Pending entries may have been weakened again before their turn. Only evaluate
+        // the current joined snapshot; a processed key can return with fewer must-facts.
+        var joinKey = JoinKey.of(w);
+        if (!w.equals(joined.get(joinKey)) || seen.contains(w)) continue;
         int addressStates = diversity.getOrDefault(w.address(), 0);
         if (!widened.contains(w.address())
+            && !processedKeys.contains(joinKey)
             && addressStates == STATE_DIVERSITY_PER_ADDRESS) {
           widened.add(w.address());
           reasons.put(
@@ -167,6 +178,9 @@ public final class BankAnalysis {
               "State diversity widened to unknown after "
                   + STATE_DIVERSITY_PER_ADDRESS
                   + " distinct states at one instruction");
+          // The popped item may itself be top but not yet processed. Force it pending:
+          // ordinary no-change enqueue would otherwise lose this required evaluation.
+          joined.put(JoinKey.of(top), top);
           queue.addFirst(top);
           continue;
         }
@@ -176,7 +190,7 @@ public final class BankAnalysis {
           break;
         }
         seen.add(w);
-        diversity.put(w.address(), addressStates + 1);
+        if (processedKeys.add(joinKey)) diversity.put(w.address(), addressStates + 1);
         count++;
         if (restriction != null && !restriction.contains(w.address)) {
           reasons.put(
@@ -259,7 +273,7 @@ public final class BankAnalysis {
                         continuation,
                         MapperKnowledge.from(returned.mapper()),
                         Map.copyOf(outputRegisters), Map.of()),
-                    widened);
+                    widened, joined);
           }
           continue;
         }
@@ -423,7 +437,7 @@ public final class BankAnalysis {
           for (var a : nextViews) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
         }
         if (configuration.reverseBranches()) Collections.reverse(successors);
-        for (var successor : successors) enqueue(queue, successor, widened);
+        for (var successor : successors) enqueue(queue, successor, widened, joined);
         if (diagnostic != null)
           diagnostic.steps.add(new FetchStep(w.address.toString(), (int) w.address.getOffset(),
               fetchBytes, Arrays.stream(raw).map(PcodeOp::toString).toList(), w.state, state,
@@ -464,11 +478,19 @@ public final class BankAnalysis {
             : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
   }
 
-  private static void enqueue(ArrayDeque<Work> queue, Work work, Set<Address> widened) {
-    queue.addLast(
-        widened.contains(work.address())
-            ? new Work(work.address(), MapperKnowledge.unknown(), Map.of(), Map.of())
-            : work);
+  static void enqueue(ArrayDeque<Work> queue, Work work, Set<Address> widened,
+      Map<JoinKey, Work> joined) {
+    if (widened.contains(work.address()))
+      work = new Work(work.address(), MapperKnowledge.unknown(), Map.of(), Map.of());
+    var key = JoinKey.of(work);
+    var previous = joined.get(key);
+    if (previous != null) {
+      var memory = SymbolicMemory.State.joinOrdinary(previous.memory(), work.memory());
+      if (memory.equals(previous.memory())) return;
+      work = new Work(work.address(), work.state(), work.registers(), memory);
+    }
+    joined.put(key, work);
+    queue.addLast(work);
   }
 
   private static List<Root> entryRoots(
