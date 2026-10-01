@@ -1,5 +1,11 @@
 # Development roadmap
 
+The bounded N8 [exact JP HL successor](decisions/finite-pointer-successor.md) is
+closed under its existing finite proof contract. WUX-0 has completed stock-flow
+investigation and records the [production lifecycle decision still required](decisions/proven-stock-flow-integration.md);
+WUX-1 is deferred and no new native capability is claimed. N9, general indirect
+flow, discovery and whole-ROM qualification remain open.
+
 The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)
 composes multiple direct returning sites within one invocation using the existing
 physical frames and returned state. Active depth stays two; sequential calls
@@ -7,8 +13,9 @@ consume the same global budget and incomplete components invalidate the containi
 return. N6 conditional bounds remain unchanged. Scoped unit, installed, persistence,
 package and independent review evidence is in [current status](sa/IMPLEMENTATION-STATUS.md).
 Only this bounded composition step is closed; arbitrary depth, recursion, indirect
-calls, summaries, discovery, whole-ROM and SA-01/SA-03/SA-07 remain open. STOP after
-N7; N8 does not begin here. The N4/N5/N6 entries below retain their historical scope.
+calls, summaries, discovery, whole-ROM and SA-01/SA-03/SA-07 remain open. The
+original N7 stop is superseded by the accepted N8 checkpoint above; the N4–N7
+entries retain their historical scope.
 
 The bounded N6 [conditional CALL/RET extension](decisions/conditional-call-ret-microflow.md)
 adds NZ/Z/NC/C architectural microflow to the retained N4/N5 evaluator. Exact F
@@ -18,7 +25,8 @@ physical frame matching and incomplete-alternate refusal bound the proof. Scoped
 unit, installed and persistence verification passes; see
 [current status](sa/IMPLEMENTATION-STATUS.md). General conditional control flow,
 indirect calls, arbitrary depth, recursive solving, summaries and discovery remain
-open. N6 does not close SA-01/SA-03/SA-07; N7/N8 do not begin here.
+open. N6 does not close SA-01/SA-03/SA-07; later N7/N8 checkpoints retain their
+separate bounded contracts.
 
 The bounded N5 [nested returning-call extension](decisions/nested-returning-call.md)
 extends the retained [N4 foundation](decisions/ordinary-returning-call.md) to two

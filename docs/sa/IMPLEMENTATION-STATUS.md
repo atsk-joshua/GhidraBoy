@@ -1,5 +1,31 @@
 # Implementation status
 
+## WUX-0 stock-flow integration — investigation complete; WUX-1 deferred
+
+Pinned stock reference, p-code, block, Function, scheduler and native experiments
+identify the [ownership/invalidation decision](../decisions/proven-stock-flow-integration.md)
+required before production lowering. Physical primary CALL changes high/native
+p-code but leaves an extra DEFAULT CPU-space flow edge. COMPUTED_JUMP adds Java
+CFG flow while native cross-overlay JP HL remains unresolved. Raw architecture
+is unchanged. Separate-process persistence passes for the experimental artifacts;
+incumbent analyzer feedback and production lifecycle are unqualified. No production
+capability PASS is claimed. Exact receipts are in the [evidence index](evidence-index.json).
+
+## SA-FINITE-POINTER-SUCCESSOR — bounded N8 CLOSED
+
+The accepted N8 checkpoint admits exact ordinary E9 JP HL under the
+[finite-pointer contract](../decisions/finite-pointer-successor.md). Both HL bytes,
+mapper-qualified physical identity and one defined immutable executable ROM view
+are required. The jump preserves architectural state and active call frames; it
+creates no call, fallthrough, Function or native flow transport.
+
+The newer implementation and evidence commits supersede the earlier N7-only
+current checkpoint. Engine `20260930-n8-finite-pointer-successor-1` retains schema 3;
+N7 results require recomputation. Accepted focused/affected, package, independent
+review and persistence evidence remains in the [evidence index](evidence-index.json).
+General pointer sets/tables, indirect calls, discovery, whole-ROM and SA-03/SA-04/
+SA-07 remain open. No N9 begins here.
+
 ## SA-SEQUENTIAL-RETURNING-CALL-COMPOSITION — bounded N7 CLOSED
 
 N7 admits multiple sequential direct returning calls within one invocation:
@@ -30,7 +56,8 @@ indirect calls, RST/RETI, summaries, ABI inference, interrupts/devices, RAM code
 general interprocedural/conditional flow, discovery and whole-ROM closure remain
 open, as do SA-01/SA-03/SA-07. Full historical/native, headed target/Steam Deck,
 debugger, migration, corpus, fuzzing and hardware campaigns are NOT RUN for N7.
-No main change, PR, release or persistent installation. STOP after N7; no N8.
+No main change, PR, release or persistent installation occurred in N7. Its original
+stop after N7 is superseded by the accepted N8 checkpoint above.
 
 ## SA-CONDITIONAL-CALL-RET-MICROFLOW — bounded N6 CLOSED
 

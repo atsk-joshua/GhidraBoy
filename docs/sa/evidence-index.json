@@ -1166,5 +1166,76 @@
     ],
     "qualification_boundary": "Ordinary BankAnalysis semantics, persistence/currentness and exact static package identity only. This does not qualify headed workflow, Steam Deck, debugger, migration, whole-ROM analysis or release readiness.",
     "stop": "STOP after N8; no N9/main/PR/release/persistent installation. Next campaign is Wyatt normal-Ghidra integration/release hardening, not static-analysis feature expansion."
+  },
+  "wux_stock_flow_investigation_20261001": {
+    "status": "WUX-0 investigation complete; WUX-1 production deferred; no product-capability PASS",
+    "scope": "Pinned stock CALL/COMPUTED_JUMP artifacts, primary/high/raw semantics, Java CFG, native output, targeted scheduler and experimental separate-process persistence; production provider unchanged",
+    "decision": "docs/decisions/proven-stock-flow-integration.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "c67f27c0119caaa404341894157747e9ba5030f0",
+    "starting_tree": "1d8cd44298000bab01d7e3cf95563c0c4beb0e94",
+    "external_evidence": "evidence/batches/WUX-0-STOCK-FLOW-20261001",
+    "temporary_execution_root": "/private/tmp/ghidraboy-wux0-evidence",
+    "focused": {
+      "fi.gekkio.ghidraboy.BankAnalysisFinitePointerSuccessorTest": {
+        "tests": 24,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "fi.gekkio.ghidraboy.GhidraBoyAnalyzerIntegrationTest": {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "fi.gekkio.ghidraboy.ReferenceOwnershipTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "fi.gekkio.ghidraboy.StockFlowMechanismTest": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "build_inputs": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint_and_package": "ktlintCheck and buildExtension PASS; new packaged links and changed document bytes PASS; production JAR unchanged. Full changed-document payload-link scan reports seven pre-existing missing historical targets, zero introduced.",
+    "runtime": {
+      "ghidra": "12.1.3",
+      "revision": "8b4c91d4d5bd1549622bfbade0df199585b98365",
+      "jdk_host": "21.0.12.1",
+      "docker_image": "sha256:4c7f42ce61b8c05b462c23ad92940f8c57a9666dc6e56d2b8c0cd7ccb20b1e20",
+      "official_linux_native_sha256": "4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d",
+      "tested_n8_extension_sha256": "e5e5572ff2872eaa9c1f2c880328658cc2c1085dbfc9a5caa78108604633390f",
+      "provider_jar_sha256": "fed5d8f76109795e85c36ecb3f0efdee0dcb57dcb9c9bec30f15f1f3411c12b0"
+    },
+    "call": "Physical primary normal CALL selects bank2 high/native target with raw stack/continuation unchanged; DEFAULT CPU-space flow persists alongside physical flow. Original proof self-invalidates.",
+    "jp_hl": "COMPUTED_JUMP adds Java instruction/block flow without replacing architectural BRANCHIND. Cross-overlay Function body excludes target; native completes with missing-memory warning and truncated control flow. Stock CPU-space computed edge also appears.",
+    "scheduler": "Disposable LOW_PRIORITY producer codeDefined(source) reaches earlier stock Function creation in same session; two explicit producer runs, one notification. Incumbent GhidraBoy disabled for this isolated experiment; production feedback remains NOT_RUN.",
+    "save_reopen": "Separate analyzeHeadless JVM reopens saved experimental references, primary selection, raw/high p-code and Functions and reproduces native outcomes. Not a production lifecycle PASS.",
+    "controls": "Consumed selector-byte mutation rejects old proof; conflicting USER_DEFINED primary preserved on stale apply refusal; two physical targets remain AMBIGUOUS; known+unknown same-source E9 has COMPLETE/PROVEN JUMP+UNKNOWN FLOW; STATE_LIMIT retains existing owned native reference. Retained N8 includes unknown HL/ambiguous source controls.",
+    "retained_failures": "Initial mechanism run: 4 tests, 3 fixture failures (missing SP and mutation beneath code unit). Two later six-test runs: one test-oracle filter failure each (UNKNOWN FLOW excluded by JUMP filter). Corrected six-test run and final eight-test mechanism suite pass. Initial Docker import lacked standard recognition header; corrected self-authored header run passes prepare/reopen. Full payload scan finds seven pre-existing broken historical links; no new broken link.",
+    "review": "Independent focused review supports deferral based on combined DEFAULT displacement/restoration, non-circular proof exclusion, stale retirement and scheduler feedback obligations; no inference that a new field alone mandates stop.",
+    "next": "Explicit ordinary-CD native-flow lifecycle design/prototype covering DEFAULT displacement/restoration, primary/user preservation, dependency retirement, incomplete refresh and real incumbent convergence; JP HL structured admission/cross-overlay transport decision remains separate.",
+    "unrun": [
+      "unfiltered full provider suite (no production change)",
+      "production normal Auto Analysis flow integration",
+      "incumbent producer feedback/second-pass avoidance",
+      "headed/private Wyatt/Steam Deck workflow",
+      "debugger",
+      "annotated migration",
+      "corpus/fuzz/hardware",
+      "main/release/remote mutation/persistent installation"
+    ],
+    "qualification_boundary": "Architecture-sensitive bounded WUX-0 decision evidence only; normal user production workflow unchanged"
   }
 }
