@@ -1,11 +1,15 @@
 # Development roadmap
 
-The bounded N4 [ordinary returning-call foundation](decisions/ordinary-returning-call.md)
-now composes one established CD/C9 invocation using the incumbent evaluator and
-N3 RAM join. It retains mapper effects and common register/flag/memory facts;
-unknown or incomplete returns remain conservative. Exact verification is in
+The bounded N5 [nested returning-call extension](decisions/nested-returning-call.md)
+extends the retained [N4 foundation](decisions/ordinary-returning-call.md) to two
+active established CD/C9 invocations using the incumbent evaluator and N3 RAM join.
+Nested state resumes the containing callee before its own RET returns state to
+the caller; mapper effects and common register/flag/RAM facts survive both levels.
+Incomplete nested proofs invalidate the containing invocation. Third levels,
+distinct sequential nested sites and unknown/incompatible returns remain
+conservative. Exact verification is in
 [current status](sa/IMPLEMENTATION-STATUS.md). General SA-03/interprocedural,
-recursive/indirect and discovery scope remains open; no successor starts here.
+recursive/indirect and discovery scope remains open; no N6 starts here.
 
 PREVIEW-M2 implements the normal stock-Ghidra analyzer/preparation/status path and
 outer primacy-safe migration boundary. Generic qualification and the private

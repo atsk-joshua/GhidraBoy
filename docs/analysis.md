@@ -113,10 +113,11 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20260930-n4-returning-call-1` retains schema 3 and existing fingerprint
+Engine `20260930-n5-nested-returning-call-1` retains schema 3 and existing fingerprint
 components; older engines require a new preview. N3 memory joining remains intact.
 
-An unmodified unconditional direct CALL can now compose one bounded callee when
+An unmodified unconditional direct CALL can compose a bounded callee and one
+nested direct callee (maximum active ordinary depth two) when
 exact SP, the actual pushed return bytes, defined executable ROM and one physical
 target are established. The same evaluator executes callee instructions and
 unconditional RET; the popped physical frame bytes, returned PC/SP and outgoing
@@ -126,7 +127,11 @@ effects. Different return mapper/continuation identities and any incomplete path
 retain the conservative unknown continuation. The 128-state callee cap consumes
 the original global state budget too. Frames and memory remain transient.
 See the [returning-call contract](decisions/ordinary-returning-call.md).
-Conditional CALL/RET, RETI, RST, nested/recursive/computed calls, RAM code, general
+Nested returned state resumes the containing callee's actual continuation before
+its own RET can return state to the outer caller. A failed nested proof invalidates
+the containing invocation. One nested site per invocation is supported; distinct
+sequential sites are refused. See the [N5 contract](decisions/nested-returning-call.md).
+Conditional CALL/RET, RETI, RST, third-level/recursive/computed calls, RAM code, general
 summaries, symbolic pointers and device/interrupt summaries remain unsupported.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are

@@ -149,7 +149,7 @@ public final class BankAnalysis {
     }
     var candidates = new AnalysisCandidates();
     var session = new Session();
-    explore(p, cartridge, entries, null, configuration, restriction, monitor, diagnostic, candidates, session);
+    explore(p, cartridge, entries, List.of(), configuration, restriction, monitor, diagnostic, candidates, session);
     var completion = session.completion;
     var reasons = candidates.reasons;
     if (completion == AnalysisResult.Completion.STATE_LIMIT)
@@ -181,6 +181,7 @@ public final class BankAnalysis {
   }
 
   private static final int CALLEE_STATE_LIMIT = 128;
+  private static final int ORDINARY_CALL_DEPTH = 2;
 
   private static final class Session {
     int count;
@@ -188,15 +189,17 @@ public final class BankAnalysis {
     AnalysisResult.Completion completion = AnalysisResult.Completion.COMPLETE;
   }
 
-  // One exact logical frame; architectural bytes remain solely in SymbolicMemory.
-  private record CallFrame(int cpu, int sp, List<MapperState.Physical> stack) {}
+  // Preview-local, depth-bounded validation frames. Architectural bytes remain in SymbolicMemory.
+  private record CallFrame(int cpu, int sp, List<MapperState.Physical> stack,
+      MapperState.Physical callee) {}
   private record Exploration(boolean complete, List<Work> returns) {}
 
   private static Exploration explore(
-      Program p, Cartridge cartridge, List<Work> entries, CallFrame frame,
+      Program p, Cartridge cartridge, List<Work> entries, List<CallFrame> frames,
       AnalysisResult.Configuration configuration, AddressSetView restriction,
       TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
       throws Exception {
+    var frame = frames.isEmpty() ? null : frames.get(frames.size() - 1);
     var queue = new ArrayDeque<Work>();
     var joined = new HashMap<JoinKey, Work>();
     var widened = new HashSet<Address>();
@@ -210,6 +213,7 @@ public final class BankAnalysis {
     boolean complete = true;
     var returns = new ArrayList<Work>();
     var edges = new HashMap<Address, Set<Address>>();
+    var nestedCallSites = new HashSet<Address>();
     monitor.setMessage("Exploring bank states");
     try {
       while (!queue.isEmpty() && session.completion == AnalysisResult.Completion.COMPLETE) {
@@ -504,9 +508,13 @@ public final class BankAnalysis {
             continue;
           }
           if (flow.isCall()) {
-            complete = false;
-            reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), "Nested or recursive ordinary call is outside the one-frame bound");
-            continue;
+            nestedCallSites.add(w.address);
+            if (frames.size() == ORDINARY_CALL_DEPTH || nestedCallSites.size() > 1 || !supported || internal) {
+              complete = false;
+              reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+                  "Ordinary nested call exceeds depth 2, one nested site, or supported raw effects");
+              continue;
+            }
           }
         }
         Work composed = null;
@@ -522,14 +530,22 @@ public final class BankAnalysis {
           }
           for (var a : resolved) {
             targets.computeIfAbsent(key, k -> new TreeSet<>()).add(a);
-            if (frame == null && !attemptedCall && flow.isCall()) {
+            if (!attemptedCall && flow.isCall()) {
               attemptedCall = true;
               composed = composeCall(p, cartridge, w, ins, raw, state, regs, memory, resolved,
-                  configuration, restriction, monitor, diagnostic, candidates, session);
+                  frames, configuration, restriction, monitor, diagnostic, candidates, session);
             }
             // Unsupported calls retain the incumbent unknown continuation.
             if (!flow.isCall()) successors.add(new Work(a, state, Map.copyOf(regs), memory.snapshot()));
           }
+        }
+        // A partial nested proof cannot authorize the containing invocation's RET,
+        // even if another arm returned or a later instruction could reestablish state.
+        if (frame != null && flow.isCall() && composed == null) {
+          complete = false;
+          reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
+              "Nested ordinary call has no complete matched-return proof");
+          continue;
         }
         Address next = ins.getFallThrough();
         if (next == null
@@ -624,12 +640,14 @@ public final class BankAnalysis {
   private static Work composeCall(
       Program p, Cartridge cartridge, Work caller, ghidra.program.model.listing.Instruction ins,
       PcodeOp[] raw, MapperKnowledge state, Map<Long, Integer> registers, SymbolicMemory.State memory,
-      List<Address> targets, AnalysisResult.Configuration configuration, AddressSetView restriction,
+      List<Address> targets, List<CallFrame> frames,
+      AnalysisResult.Configuration configuration, AddressSetView restriction,
       TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
       throws Exception {
     // Opcode CD has an unconditional architectural push followed by one direct CALL.
     // Conditional CALL, RST and computed/reclassified transfers do not enter this subset.
-    if (ins.getLength() != 3 || (ins.getBytes()[0] & 255) != 0xcd
+    if (frames.size() >= ORDINARY_CALL_DEPTH
+        || ins.getLength() != 3 || (ins.getBytes()[0] & 255) != 0xcd
         || ins.getFallThrough() == null || ins.getDefaultFlows().length != 1
         || targets.size() != 1 || raw.length == 0
         || raw[raw.length - 1].getOpcode() != PcodeOp.CALL) return null;
@@ -637,6 +655,7 @@ public final class BankAnalysis {
     int targetCpu = (int) target.getOffset();
     var physical = state.translate(cartridge, targetCpu, false).physical();
     if (physical == null || !ProgramMapping.staticToPhysical(p, target).equals(List.of(physical))) return null;
+    if (frames.stream().anyMatch(active -> active.callee().equals(physical))) return null;
     var callee = p.getListing().getInstructionAt(target);
     if (callee == null || !callableInstruction(p, state, callee)) return null;
     var beforeSp = registerValue(p, "SP", caller.registers());
@@ -648,9 +667,12 @@ public final class BankAnalysis {
     if (word == null || word.intValue() != cpu) return null;
     if (diagnostic != null) diagnostic.frontier.add(caller.address() + ": Ordinary call composition is not a linear instruction fetch trace");
     var calleeCandidates = new AnalysisCandidates();
+    var nestedFrames = new ArrayList<>(frames);
+    nestedFrames.add(new CallFrame(cpu, beforeSp.intValue(),
+        stackIdentity(cartridge, state, entrySp.intValue()), physical));
     var summary = explore(p, cartridge,
         List.of(new Work(target, state, Map.copyOf(registers), memory.snapshot())),
-        new CallFrame(cpu, beforeSp.intValue(), stackIdentity(cartridge, state, entrySp.intValue())), configuration, restriction, monitor, diagnostic, calleeCandidates, session);
+        List.copyOf(nestedFrames), configuration, restriction, monitor, diagnostic, calleeCandidates, session);
     for (var entry : calleeCandidates.targets.entrySet()) {
       candidates.targets.computeIfAbsent(entry.getKey(), k -> new TreeSet<>()).addAll(entry.getValue());
       if (!summary.complete()) candidates.reasons.put(entry.getKey(), "Incomplete ordinary callee exploration: candidates are not proof");

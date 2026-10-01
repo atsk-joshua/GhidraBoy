@@ -938,5 +938,53 @@
       "final SA-07"
     ],
     "stop": "STOP after N4; no successor extension begun"
+  },
+  "sa_nested_returning_call_composition_n5_20260930": {
+    "status": "Bounded N5 CLOSED",
+    "scope": "Depth-2 CD/C9 physical frames; actual B -> A continuation -> caller register/flag, mapper and N3 RAM composition; one nested site per invocation",
+    "external_root": "evidence/batches/SA-NESTED-RETURNING-CALL-COMPOSITION/20260930-n5",
+    "decision": "docs/decisions/nested-returning-call.md",
+    "starting_branch": "preview-m2-ghidra-native",
+    "starting_head": "9bc053a20580c5ad9d46f3a582d2c0a44bed03ad",
+    "report": "REPORT.md",
+    "manifest": "manifest.json",
+    "review": "independent-review.txt",
+    "commands": "commands.json",
+    "focused": "26 N5 tests + 31 retained ordinary returning-call tests; zero failures/errors/skips",
+    "affected": "240 distinct tests / 31 classes covered: 238 affected-suite tests, then final focused rerun adds 2 review-driven regressions; zero failures/errors/skips",
+    "lint_package": "ktlintCheck, buildExtension and 7 build-input tests PASS; N5 contract included in explicit documentation payload",
+    "docker": "One pinned-image disposable installed witness: B RAM/mapper -> actual A continuation effects -> caller ROM3; nested RAM conflicts UNKNOWN; third-level refusal; separate-JVM N5 current/recompute and N4 read/apply rejection PASS",
+    "docker_image": "sha256:4c7f42ce61b8c05b462c23ad92940f8c57a9666dc6e56d2b8c0cd7ccb20b1e20",
+    "fixture_sha256": "798468fd50186ed169af59a1541fcdb8b1dcc405202d5b29396499c9d64e4f4a",
+    "persistence": {
+      "engine": "20260930-n5-nested-returning-call-1",
+      "schema": 3,
+      "frames_registers_ram": "transient only; no cache",
+      "fingerprint": "unchanged from N4"
+    },
+    "remaining": [
+      "general interprocedural summaries",
+      "arbitrary-depth and recursive calls",
+      "distinct sequential nested sites",
+      "indirect/conditional calls and returns, RST/RETI",
+      "software-call/ABI inference",
+      "RAM code",
+      "device/asynchronous/interrupt effects",
+      "discovery expansion",
+      "whole-ROM and final qualification"
+    ],
+    "unrun": [
+      "full provider suite",
+      "broad historical installed qualification",
+      "headed GUI",
+      "Steam Deck",
+      "debugger qualification",
+      "broad/annotated legacy migration",
+      "corpus",
+      "fuzzing",
+      "hardware campaigns",
+      "final SA-07"
+    ],
+    "stop": "STOP after N5; no N6, main merge or PR"
   }
 }

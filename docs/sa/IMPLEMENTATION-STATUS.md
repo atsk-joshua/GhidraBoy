@@ -1,5 +1,38 @@
 # Implementation status
 
+## SA-NESTED-RETURNING-CALL-COMPOSITION — bounded N5 CLOSED
+
+Ordinary CD/C9 composition now admits exactly two active invocations: caller → A
+→ B, B RET → A continuation, A RET → caller continuation. Both frames retain
+actual pushed physical-byte identity and restored PC/SP checks. B receives A's
+actual post-CALL state; A executes its remaining instructions with B's returned
+register/flag, mapper and unchanged N3 RAM state before returning to the caller.
+Compatible returns use the existing exact/unknown meets; incompatible mapper or
+continuation identities and any incomplete nested path invalidate the containing
+invocation. See the [N5 contract](../decisions/nested-returning-call.md).
+
+One nested site per invocation is admitted. Third active levels, recursion,
+indirect/conditional calls or returns, RST/RETI, software helpers inside the chain
+and RAM code remain unsupported. Each invocation retains the 128-state local cap
+and every evaluation consumes the single global budget. Frames remain transient;
+engine `20260930-n5-nested-returning-call-1` retains schema 3 and unchanged
+fingerprint components. Old N4 results require recomputation.
+
+Focused nested and retained call regressions, affected analysis/evaluator/topology
+and call-consumer suites, independent review, lint, static packaging and build-input
+checks pass. One disposable installed Ghidra 12.1.3 Docker witness proves nested
+RAM/mapper composition with actual A post-return effects, conflicting nested RAM
+and third-level refusal. Separate JVM save/reopen accepts current N5 results,
+agrees on recomputation and rejects N4 read/apply. Exact commands, identities,
+test accounting and receipts are in the [evidence index](evidence-index.json).
+
+This closes only bounded N5. General summaries/interprocedural analysis,
+arbitrary depth, recursive solving, indirect-call recovery, ABI/software-call
+inference, interrupt/device summaries, discovery and whole-ROM closure remain
+open, together with SA-01/SA-03/SA-07. Full provider/historical installed campaigns,
+headed GUI, Steam Deck, debugger, broad migration, corpus, fuzzing, hardware and
+final SA-07 were intentionally unrun. No main merge, PR or N6 begins here.
+
 ## SA-RETURNING-CALL-COMPOSITION — bounded N4 CLOSED
 
 Ordinary unconditional direct CALL (CD) now executes its actual architectural

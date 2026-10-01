@@ -205,12 +205,12 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
     refused(CALL, "");
   }
 
-  @Test void nestedAndRecursiveOrdinaryCallsFailClosed() throws Exception {
+  @Test void nestedOrdinaryCallComposesAndRecursiveCallFailsClosed() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "cd20033e02c9", "3e02c9")) {
       var preview = f.preview(false, 4096);
       assertNotNull(f.p.getListing().getInstructionAt(ProgramMapping.staticAddress(f.p, "0320")));
-      assertFalse(provesRom2(preview));
-      assertTrue(selectors(preview).stream().allMatch(w -> w.value() == null));
+      assertTrue(provesRom2(preview));
+      assertTrue(selectors(preview).stream().allMatch(w -> Objects.equals(2, w.value())));
     }
     refused(CALL, "cd00033e02c9");
   }
@@ -238,15 +238,15 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
     }
   }
 
-  @Test void n4RoundTripRejectsN3WithoutSerializingFramesOrMemory() throws Exception {
+  @Test void n5RoundTripRejectsN4WithoutSerializingFramesOrMemory() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20260930-n4-returning-call-1", result.engineVersion());
+      assertEquals("20260930-n5-nested-returning-call-1", result.engineVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
       assertEquals(3, result.schemaVersion());
       assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(
-          json.replace(AnalysisResult.ENGINE_VERSION, "20260930-n3-memory-join-1")));
+          json.replace(AnalysisResult.ENGINE_VERSION, "20260930-n4-returning-call-1")));
       assertEquals(Set.of("schemaVersion", "engineVersion", "starts", "assumption", "entryPremises",
           "configuration", "completion", "exploredStates", "pendingStates", "fingerprint",
           "findings", "diagnostics"), com.google.gson.JsonParser.parseString(json).getAsJsonObject().keySet());
