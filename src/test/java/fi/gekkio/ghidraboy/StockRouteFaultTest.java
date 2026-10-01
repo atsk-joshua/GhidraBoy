@@ -16,7 +16,7 @@ public class StockRouteFaultTest extends IntegrationTest {
   private void fixture(StockEntryTransportTest.Action action) throws Exception { var helper = new StockEntryTransportTest(); helper.beforeAll(); helper.fixture(action); }
   // Inherited tests remain in their original class only.
   @org.junit.jupiter.params.ParameterizedTest(name="carrier fault {0}")
-  @org.junit.jupiter.params.provider.ValueSource(strings={"context", "convention", "paired", "missing", "malformed", "byte", "size", "flow", "backing", "mapped", "paired:__sdcc416", "paired:__sdcc451_call0", "paired:__sdcc451_call1_first8", "paired:__sdcc451_call1_first16", "paired:__sdcc451_call1_first32", "paired:__sdcc451_variadic", "paired:__sdcc451_banked_callee", "paired:__sdcc451_preserves_bc", "paired:__ghidraboy_state_entry_v1", "paired:default", "paired:unknown"})
+  @org.junit.jupiter.params.provider.ValueSource(strings={"context", "convention", "paired", "missing", "malformed", "byte", "size", "flow", "backing", "mapped", "paired:__sdcc416", "paired:__sdcc451_call0", "paired:__sdcc451_call1_first8", "paired:__sdcc451_call1_first16", "paired:__sdcc451_call1_first32", "paired:__sdcc451_variadic", "paired:__sdcc451_banked_callee", "paired:__sdcc451_preserves_bc", "paired:default", "paired:unknown"})
   void nativeCarrierFaultMatrix(String fault) throws Exception {
     fixture((p,f)->{
       var root=PredicatedCalls.install(p,PredicatedCalls.preview(p,f,PredicatedCallGraph.Limits.PRIMARY,TaskMonitor.DUMMY),TaskMonitor.DUMMY);
@@ -76,6 +76,67 @@ public class StockRouteFaultTest extends IntegrationTest {
       }finally{owner.dispose();}
     });
   }
+  @Test
+  void legacyStateEntryConventionRejectsBeforeCarrierRecovery() throws Exception {
+    fixture((p,f)->{
+      var root=PredicatedCalls.install(
+          p,
+          PredicatedCalls.preview(p,f,PredicatedCallGraph.Limits.PRIMARY,TaskMonitor.DUMMY),
+          TaskMonitor.DUMMY);
+      var function=p.getFunctionManager().getFunctionAt(root);
+
+      assertEquals(1,p.getMemory().getBlock(root).getSize());
+      assertFalse(p.getMemory().getBlock(root).isMapped());
+      assertEquals(List.of(),ProgramMapping.staticToPhysical(p,root));
+
+      var owner=new DecompInterface();
+      owner.setOptions(new ghidra.app.decompiler.DecompileOptions());
+      try {
+        assertTrue(owner.openProgram(p));
+
+        var baseline=owner.decompileFunction(function,30,TaskMonitor.DUMMY);
+        assertTrue(baseline.decompileCompleted(),baseline.getErrorMessage());
+        assertNotNull(baseline.getHighFunction());
+        assertNotNull(baseline.getDecompiledFunction());
+
+        p.getListing().clearCodeUnits(root,root,false);
+        p.getProgramContext().setValue(
+            p.getRegister("gb_analysis_entry"),root,root,BigInteger.ZERO);
+        Disassembler.getDisassembler(p,TaskMonitor.DUMMY,null)
+            .disassemble(root,new AddressSet(root),false);
+
+        var raw=p.getListing().getInstructionAt(root);
+        assertEquals(1,raw.getLength());
+        assertNull(raw.getFallThrough());
+        assertEquals(0,raw.getFlows().length);
+
+        function.setCallingConvention(SoftwareCallStateEntryInjection.CONVENTION);
+
+        var debug=Files.createTempFile("stock-route-state-entry",".xml").toFile();
+        owner.enableDebug(debug);
+        var invalid=owner.decompileFunction(function,30,TaskMonitor.DUMMY);
+
+        var xml=javax.xml.parsers.DocumentBuilderFactory.newInstance()
+            .newDocumentBuilder().parse(debug);
+        assertEquals(
+            0,
+            xml.getElementsByTagName("bytechunk").getLength(),
+            "legacy state-entry rejection must occur before carrier-byte recovery");
+
+        assertFalse(invalid.decompileCompleted(),invalid.getErrorMessage());
+        assertNull(invalid.getHighFunction());
+        assertNull(invalid.getDecompiledFunction());
+
+        String error=invalid.getErrorMessage();
+        assertFalse(error.isBlank());
+        assertTrue(error.contains("Unresolved state-qualified entry"),error);
+        assertTrue(error.contains("Missing state-entry registry"),error);
+      } finally {
+        owner.dispose();
+      }
+    });
+  }
+
   @Test void earlierStockCarrierRecordRejectsBeforeChangedFieldsAndIsNotRefreshed() throws Exception {
     fixture((p,f)->{
       var root=PredicatedCalls.install(p,PredicatedCalls.preview(p,f,PredicatedCallGraph.Limits.PRIMARY,TaskMonitor.DUMMY),TaskMonitor.DUMMY);
