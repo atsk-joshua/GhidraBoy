@@ -98,7 +98,13 @@ The native DecompInterface test requires the pinned platform executable and repo
 an explicit skip when it is unavailable. Detailed commands and source/dependency
 identities are indexed in [evidence](../sa/evidence-index.json).
 
-Full provider, separate-JVM persistence matrix, Docker, installed/headed, release,
-Steam Deck, debugger, Wyatt and whole-ROM qualification remain unrun here. Native
-C transport still needs execution on a pinned native-capable distribution when
-that executable is absent. WUX-1B / JP HL does not begin with this integration.
+Q1 now qualifies the bounded transport on pinned Linux Ghidra 12.1.3 / JDK
+21.0.12.1: all 1,130 provider tests pass without failures, errors or skips; lint and
+extension build pass. Native DecompInterface receives exactly `rom2::4100`, and the
+inherited mapper-store lifecycle control executes and passes. The only repair
+removes the inherited legacy state-entry zero-bytechunk test assertion; semantic
+missing-registry rejection and unrelated strict carrier checks remain intact.
+See the [qualification status](../sa/IMPLEMENTATION-STATUS.md) and indexed evidence.
+Separate-JVM persistence matrix, installed/headed, release, Steam Deck, debugger,
+Wyatt and whole-ROM qualification remain unrun here. Q2 and WUX-1B / JP HL do not
+begin with this qualification.

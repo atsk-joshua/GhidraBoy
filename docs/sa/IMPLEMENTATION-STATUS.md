@@ -1,5 +1,33 @@
 # Implementation status
 
+## WUX-1A-Q1 — CLOSED / QUALIFIED
+
+The resumed Q1 qualification passes on pinned Linux Ghidra 12.1.3 / JDK
+21.0.12.1: 1,130 provider tests across 108 JUnit XML reports, zero failures,
+errors or skips. `ktlintCheck`, `buildExtension`, build-input and diff checks pass.
+The focused run passes all 24 `StockRouteFaultTest` cases and both native controls.
+The ordinary CALL native target is exactly `rom2::4100`; the inherited mapper-store
+native lifecycle and raw architectural p-code equivalence tests execute and pass.
+The tested candidate is frozen `3a092c82f565e32d3a422739f89dd708b7fb654b` plus the
+four-line test-oracle repair, tree `763142ff4c9fc6539fcf64d3f4a1cdb9a8562f35`.
+The local closeout adds only qualification/status documentation to that test tree.
+
+Q1-D1 classified the legacy state-entry discrepancy as **INHERITED_ORACLE**:
+the qualified WUX-1P checkpoint and all later comparison points record the same
+one-byte `c9` presentation carrier while correctly rejecting missing registry
+authority. Pinned upstream records instruction/load-image acquisition before
+upon-entry injection evaluation; bytechunk count is not semantic acceptance.
+Q1-R1 removes only the zero-bytechunk assertion. Completion/HighFunction/C/error
+rejection assertions, fixture preconditions and unrelated strict carrier assertions
+remain unchanged. No production, state-entry, ordinary CALL or language change
+was made. Historical Q1 failure and D1 evidence remain preserved.
+
+This closes the original aggregate/native Q1 scope only. Separate-JVM/large
+persistence, installed/headed, release, Steam Deck, debugger, Wyatt and whole-ROM
+qualification remain outside this result. Q2 and WUX-1B have not begun. Commands,
+identities, native witnesses and the historical WUX-1P test-oracle qualification
+erratum are linked from the [evidence index](evidence-index.json).
+
 ## WUX-1A ordinary CALL stock integration — bounded implementation verified
 
 The [stock flow contract](../decisions/ordinary-call-stock-flow.md) derives one
@@ -15,14 +43,15 @@ Focused Java flow/ownership/currentness, incumbent scheduling and packed save/re
 checks pass: 78 selected tests, 77 PASS and one native availability skip. Lint and
 diff checks pass. The existing native AnalysisLifecycle test was separately
 excluded after confirming the pinned distribution lacks macOS arm64 `decompile`.
-Native C execution, separate-JVM/large persistence, full provider, installed/headed,
-Docker, release, Steam Deck and Wyatt qualification remain unrun. WUX-1P evaluator,
+At that implementation checkpoint, native C execution, separate-JVM/large
+persistence, full provider, installed/headed, Docker, release, Steam Deck and Wyatt
+qualification remained unrun; Q1 above now supplies the aggregate/native result. WUX-1P evaluator,
 schema/engine, shared fingerprints, SLEIGH and JP HL behavior remain unchanged.
 Ownership envelope 6 reads older receipts without granting displacement authority.
 Detailed source/dependency identities and commands are in the [evidence index](evidence-index.json).
 
-This closes the authorized implementation slice only. Native-capable execution
-and aggregate qualification remain separate review obligations; WUX-1B is not begun.
+That checkpoint closed the authorized implementation slice only. Q1 above now
+closes its native-capable execution and aggregate obligation; WUX-1B is not begun.
 
 
 WUX-1A-R1 hardens this candidate before qualification: known obsolete-engine
@@ -34,8 +63,9 @@ availability skip; the inherited native lifecycle method remains excluded for th
 same missing executable. Deterministic cache reuse, open-transaction edits,
 rollback, obsolete-engine packed reopen and commit-boundary cancellation pass.
 Independent source review, lint and diff checks pass. Pinned scheduler coalescing
-and conservative partition behavior need no representation change. Broader
-qualification remains unrun; evidence is indexed under WUX-1A-R1.
+and conservative partition behavior need no representation change. At that repair
+checkpoint broader qualification remained unrun; Q1 above supplies the bounded
+aggregate/native result. Repair evidence is indexed under WUX-1A-R1.
 
 
 ## WUX-1P ordinary returning-call certificate — CLOSED
@@ -62,15 +92,18 @@ test-only native fault-oracle correction is
 validation passes 1,098 tests across 105 JUnit reports with zero failures, errors
 or skips; `ktlintCheck` and `buildExtension` pass.
 
-The previous aggregate blocker was an inherited `StockRouteFaultTest` oracle:
-`__ghidraboy_state_entry_v1` is a state-entry `uponentry` protocol and correctly
-rejects missing state-entry authority before requesting carrier bytes. A dedicated
-test now proves that zero-byte early rejection while the remaining carrier-fault
-matrix retains its one-byte recovery requirement. Production native behavior was
-not changed.
+**Test-oracle qualification erratum.** The WUX-1P test-only correction retained
+an incorrect zero-byte assumption for legacy state-entry rejection. Q1-D1's pinned
+Linux comparison reproduces one `c9` bytechunk at this qualified checkpoint and
+all later WUX-1A points, while missing-registry semantic rejection remains correct.
+The historical aggregate receipt is preserved; it does not establish zero-byte
+ordering on Linux. Q1-R1 removes only that non-semantic assertion and retains the
+semantic rejection and unrelated strict carrier checks. WUX-1P production
+semantics are not reopened and production native behavior was not changed.
 
 WUX-1A native CALL lowering, DEFAULT displacement/restoration, generated-flow
-non-evidence handling and production convergence remain separate obligations.
+non-evidence handling and production convergence were separate WUX-1P obligations;
+the bounded implementation and Q1 qualification above address them.
 No native-flow or Wyatt workflow improvement is claimed by WUX-1P itself. Exact
 qualification details are in the [evidence index](evidence-index.json).
 

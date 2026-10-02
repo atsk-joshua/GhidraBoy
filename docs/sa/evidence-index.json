@@ -1275,7 +1275,14 @@
       "headed/private Wyatt and Steam Deck qualification",
       "debugger, migration, corpus/fuzz/hardware and release qualification"
     ],
-    "stop": "WUX-1P CLOSED; WUX-1A may resume only as a separately authorized task"
+    "stop": "WUX-1P CLOSED; WUX-1A may resume only as a separately authorized task",
+    "native_oracle_qualification_erratum": {
+      "diagnostic": "evidence/batches/WUX-1A-Q1-D1-20261001",
+      "classification": "INHERITED_ORACLE",
+      "historical_oracle_claim": "The recorded zero-byte early-rejection claim does not hold on pinned Linux, including qualified WUX-1P commit 3bff09e4. Historical receipts are preserved.",
+      "semantic_result": "Missing-registry rejection remained correct at all four comparison points; WUX-1P production semantics are not reopened.",
+      "correction": "WUX-1A-Q1-R1 removes only the non-semantic zero-bytechunk assertion; all semantic rejection and unrelated strict carrier assertions remain intact."
+    }
   },
   "wux_1a_ordinary_call_stock_flow_20261001": {
     "status": "Bounded implementation and focused Java/scheduling/packed-reopen verification PASS; native and aggregate qualification unrun",
@@ -1312,7 +1319,8 @@
       "Retirement occurs on analysis invocation; edited artifacts preserved",
       "WUX-1B/JP HL not begun"
     ],
-    "remote_mutation": "NONE; one local commit only"
+    "remote_mutation": "NONE; one local commit only",
+    "qualification_followup": "wux_1a_q1_qualification_20261001"
   },
   "wux_1a_r1_lifecycle_hardening_20261001": {
     "status": "Focused repair PASS; broader qualification unrun",
@@ -1349,6 +1357,61 @@
       "Installed/headed/Steam Deck/Wyatt",
       "Release qualification",
       "WUX-1B not begun; no remote mutation"
+    ],
+    "qualification_followup": "wux_1a_q1_qualification_20261001"
+  },
+  "wux_1a_q1_qualification_20261001": {
+    "status": "CLOSED / QUALIFIED",
+    "scope": "Original Q1 aggregate/native qualification only; no Q2/WUX-1B or release/installed/headed qualification",
+    "baseline": "3a092c82f565e32d3a422739f89dd708b7fb654b",
+    "baseline_tree": "0c40656b82a3b36d888331dea227272c046b851f",
+    "tested_tree": "763142ff4c9fc6539fcf64d3f4a1cdb9a8562f35",
+    "tested_candidate": "Baseline plus four-line test-oracle assertion removal; local closeout adds status documentation only.",
+    "evidence": "evidence/batches/WUX-1A-Q1-R1-20261001",
+    "receipt": "evidence/batches/WUX-1A-Q1-R1-20261001/receipt.json",
+    "prior_q1": "evidence/batches/WUX-1A-Q1-20261001",
+    "diagnostic": "evidence/batches/WUX-1A-Q1-D1-20261001",
+    "oracle": "INHERITED_ORACLE, identical behavior back through qualified WUX-1P; semantic rejection correct; bytechunk count is non-semantic",
+    "production_changed": false,
+    "focused": {
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "aggregate": {
+      "junit_xml": 108,
+      "tests": 1130,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passes": 1130
+    },
+    "runtime": {
+      "ghidra": "12.1.3",
+      "ghidra_revision": "8b4c91d4d5bd1549622bfbade0df199585b98365",
+      "jdk": "21.0.12.1",
+      "image": "sha256:4c7f42ce61b8c05b462c23ad92940f8c57a9666dc6e56d2b8c0cd7ccb20b1e20",
+      "native_sha256": "4a97ff9a3dbac5757c7240a664571e82345e4abc4f67cd211cd9d402abe4543d"
+    },
+    "native_call": "EXECUTED PASS; exact rom2::4100 target singleton",
+    "native_mapper_lifecycle": "EXECUTED PASS",
+    "raw_pcode_equivalence": "PASS; production and language sources unchanged",
+    "ktlintCheck": "PASS",
+    "buildExtension": "PASS",
+    "build_inputs": "7 PASS",
+    "diff_check": "PASS",
+    "remaining_original_q1_gates": "None; original scope recovered from Qualify ordinary CALL candidate task. Historical macOS missing-native environment remains unqualified; no retry required.",
+    "outside_scope": [
+      "Q2",
+      "WUX-1B",
+      "separate-JVM/large persistence",
+      "installed/headed",
+      "Steam Deck",
+      "Wyatt",
+      "debugger",
+      "release",
+      "whole-ROM"
     ]
   }
 }

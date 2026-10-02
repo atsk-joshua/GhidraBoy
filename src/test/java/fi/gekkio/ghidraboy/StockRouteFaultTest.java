@@ -118,10 +118,6 @@ public class StockRouteFaultTest extends IntegrationTest {
 
         var xml=javax.xml.parsers.DocumentBuilderFactory.newInstance()
             .newDocumentBuilder().parse(debug);
-        assertEquals(
-            0,
-            xml.getElementsByTagName("bytechunk").getLength(),
-            "legacy state-entry rejection must occur before carrier-byte recovery");
 
         assertFalse(invalid.decompileCompleted(),invalid.getErrorMessage());
         assertNull(invalid.getHighFunction());

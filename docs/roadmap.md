@@ -2,8 +2,9 @@
 
 The bounded WUX-1A ordinary CALL integration now derives reversible stock flow
 from WUX-1P certificates with exact DEFAULT displacement, stale retirement and
-bounded same-session discovery. Focused Java/scheduling/packed-reopen checks pass;
-native C and aggregate qualification remain unrun. See the
+bounded same-session discovery. Q1 is CLOSED / QUALIFIED: the pinned Linux native
+aggregate passes 1,130 tests with zero failures, errors or skips; both required
+native controls, raw p-code equivalence, lint and extension build pass. See the
 [contract](decisions/ordinary-call-stock-flow.md) and
 [current status](sa/IMPLEMENTATION-STATUS.md). WUX-1B / JP HL remains separate;
 no retained SA/M requirement is replaced.
@@ -14,10 +15,12 @@ investigation and records the [production lifecycle decision still required](dec
 WUX-1P is now CLOSED under the
 [ordinary-CD proof certificate contract](decisions/ordinary-call-proof-certificate.md):
 must-proof provenance, schema-4 recomputation, separate-process persistence and
-the final 1,098-test provider aggregate pass. The prior carrier-fault blocker was
-an inherited test-oracle defect and was repaired without changing production
-native behavior. WUX-1A native lifecycle work may now resume as a separate task;
-no native CALL lowering or new Wyatt capability is claimed yet. N9, general
+the historical 1,098-test provider aggregate pass. Q1-D1 established a test-oracle
+qualification erratum: the legacy zero-byte assumption was already wrong at the
+WUX-1P checkpoint on pinned Linux, while semantic rejection remained correct.
+Q1-R1 removes that non-semantic assertion without changing production behavior.
+WUX-1A's bounded native CALL transport is now qualified under Q1; Q2, WUX-1B and
+new Wyatt capability are not claimed. N9, general
 indirect flow, discovery and whole-ROM qualification remain open.
 
 The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)
