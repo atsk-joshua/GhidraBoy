@@ -83,7 +83,7 @@ class BankAnalysisScxLivenessTest extends IntegrationTest {
         new Case("unknown-slot", 0xffff, "21fdff70", 0xfffd, null, null, false, 1, 1, false),
         new Case("FF46", 0xffff, "3ec0e046", 0xff46, 0xc0L, null, false, 1, 1, true),
         new Case("FF55", 0xffff, "3e00e055", 0xff55, 0L, null, false, 1, 1, true),
-        new Case("FF26-unclassified", 0xffff, "3e00e026", 0xff26, 0L, null, false, 1, 1, true),
+        new Case("FF27-unclassified", 0xffff, "3e00e027", 0xff27, 0L, null, false, 1, 1, true),
         new Case("WRAM-SVBK", 0xd100, "3e02e070", 0xff70, 2L, null, false, 1, 2, false),
         new Case("CFFF-D000-SVBK", 0xd001, "3e02e070", 0xff70, 2L, null, false, 1, 2, false),
         new Case("device-boundary", 0xff81, "3e02ea00c1", 0xc100, 2L, null, false, 1, 1, false),

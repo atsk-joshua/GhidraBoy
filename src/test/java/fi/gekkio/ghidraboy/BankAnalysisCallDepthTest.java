@@ -182,7 +182,7 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
   }
   @Test void thirdLevelRetainsTwoATwoBRefusals() throws Exception {
     // DMA, unknown device, alias, changed bank, unknown address, unresolved LOAD, forged SP, incompatible mapper returns.
-    for (String leaf : List.of("3ec0e046", "3e00e055", "3e00e026", "21facf3600",
+    for (String leaf : List.of("3ec0e046", "3e00e055", "3e00e041", "21facf3600",
         "12", "fa00a0", "31fecf", "28063e01ea0020c9" + "3e02ea0020c9")) {
       try (var f = new Fixture(3, leaf)) { refused(f, null); }
     }
@@ -200,14 +200,55 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
       }
     }
   }
+  @ParameterizedTest @ValueSource(ints = {1, 2, 3})
+  void qualifiedUnknownDeviceWritesRetainExactDepthProofs(int depth) throws Exception {
+    for (String device : List.of("40", "26")) try (var f = new Fixture(depth, "f070e0" + device + "3e02")) {
+      for (boolean reverse : List.of(false, true)) {
+        var preview = f.preview(reverse, 4096);
+        var expected = new HashSet<AnalysisResult.OrdinaryCallProof>();
+        for (int level = 1; level <= depth; level++) {
+          int source = level == 1 ? 0x155 : target(level - 1);
+          expected.add(new AnalysisResult.OrdinaryCallProof(hex(source), rom(source), hex(target(level)),
+              rom(target(level)), hex(source + 3), rom(source + 3)));
+        }
+        assertEquals(depth, preview.result().ordinaryCallProofs().size(), preview.result().findings().toString());
+        assertEquals(expected, new HashSet<>(preview.result().ordinaryCallProofs()));
+        var deviceWrite = writes(preview, target(depth) + 2).get(0);
+        assertEquals(0xff00 + Integer.parseInt(device, 16), deviceWrite.cpu());
+        assertNull(deviceWrite.value());
+        assertEquals(deviceWrite.before(), deviceWrite.after());
+        assertEquals(List.of(0, 0xd0), writes(preview, 0x158).stream().map(BankAnalysis.WriteTransition::value).toList());
+        assertEquals(2, writes(preview, 0x15b).get(0).value());
+      }
+    }
+  }
+  @Test void qualifiedDeviceWritesCannotBypassDepthStructuralCycleOrResourceRefusal() throws Exception {
+    for (String device : List.of("40", "26")) {
+      String prefix = "f070e0" + device + "3e02";
+      // The qualified write executes in the third callee before the refused fourth invocation.
+      try (var f = new Fixture(3, prefix + "cd6003")) {
+        refused(f, "0360");
+        var preview = f.preview(false, 4096);
+        assertTrue(preview.result().findings().stream().anyMatch(x -> x.reason().contains("active depth 3")));
+        assertNull(writes(preview, target(3) + 2).get(0).value());
+      }
+      for (String effect : List.of("18fe", "fa00a0", "cd0003"))
+        try (var f = new Fixture(3, prefix + effect)) { refused(f, null); }
+      try (var f = new Fixture(3, prefix + "3e00".repeat(129))) {
+        refused(f, null);
+        assertTrue(f.preview(false, 4096).result().findings().stream().anyMatch(x -> x.reason().contains("callee state bound")));
+      }
+    }
+  }
   @Test void packedPriorEngineRequiresRecomputation() throws Exception {
-    try (var f = new Fixture(3, "")) {
+    for (String priorEngine : List.of("20261001-call-stack-liveness-2a-1",
+        "20261001-call-stack-liveness-2c-1")) try (var f = new Fixture(3, "")) {
       var result = f.preview(false, 4096).result();
-      var oldJson = ProgramMapping.JSON.toJson(result).replace(AnalysisResult.ENGINE_VERSION, "20261001-call-stack-liveness-2a-1");
+      var oldJson = ProgramMapping.JSON.toJson(result).replace(AnalysisResult.ENGINE_VERSION, priorEngine);
       int tx = f.p.startTransaction("Store obsolete result");
       try { f.p.getOptions(ProgramMapping.OPTIONS).setString("analysis.latest", oldJson); }
       finally { f.p.endTransaction(tx, true); }
-      var packed = temporary.resolve("prior-engine.gzf").toFile();
+      var packed = temporary.resolve(priorEngine + ".gzf").toFile();
       f.p.saveToPackedFile(packed, TaskMonitor.DUMMY);
       var database = PackedDatabase.getPackedDatabase(packed, true, TaskMonitor.DUMMY);
       Object consumer = new Object();
@@ -226,6 +267,8 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
         assertEquals(result.ordinaryCallProofs(), fresh.ordinaryCallProofs());
         assertEquals(3, fresh.ordinaryCallProofs().size());
         assertEquals(4, fresh.schemaVersion());
+        assertEquals(AnalysisResult.ENGINE_VERSION, fresh.engineVersion());
+        ProgramFingerprint.requireCurrent(p, fresh, TaskMonitor.DUMMY);
       } finally { if (reopened != null) reopened.release(consumer); database.dispose(); }
     }
   }

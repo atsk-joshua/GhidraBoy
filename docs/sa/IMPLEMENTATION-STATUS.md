@@ -1,5 +1,25 @@
 # Implementation status
 
+## CALL-STACK-LIVENESS-2D — bounded implementation
+
+The ordinary-memory exception now covers exactly FF26, FF40, FF42, FF43, FF4A
+and FF4B on established GB/CGB hardware. Known and unknown written byte values
+preserve existing physical WRAM/HRAM facts only; no device state, interrupt,
+timing, PPU or APU completeness is established. See the
+[RAM contract](../decisions/ordinary-ram-byte-facts.md). Mapper/bank handling,
+reads, structural/value coverage, frame identity and maximum depth three remain
+independent. FF41/FF0F/FFFF, DMA triggers, unclassified and unresolved writes
+retain conservatism. Engine `20261001-call-stack-liveness-2d-1` retains schema 4;
+2C results require recomputation and obsolete owned flow retains retirement
+authority only.
+
+Focused device, retained 2A/2B/2C, mapper and WUX currentness/packed lifecycle
+validation and bounded source-derived Wyatt replay are recorded in external batch
+`CALL-STACK-LIVENESS-2D-20261001`. This bounded step leaves final integrated
+campaign/evidence-index closeout open. WUX-1A remains CLOSED / QUALIFIED; WUX-1B
+has not begun. No whole-ROM, installed/native/GUI or release qualification is
+claimed. The replay frontier is recorded in the batch without repair.
+
 ## CALL-STACK-LIVENESS-2C — bounded implementation
 
 The internal ordinary-call maximum advances from two to three active invocations

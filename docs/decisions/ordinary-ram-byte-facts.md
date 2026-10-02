@@ -19,6 +19,34 @@ checks old-engine rejection and packed save/reopen. Detailed implementation
 receipts are retained in the external `CALL-STACK-LIVENESS-2A-20261001` batch;
 this slice does not close the broader CALL-stack campaign or begin WUX-1B.
 
+CALL-STACK-LIVENESS-2D extends only that exact WRITE exception to the finite set
+FF26/NR52, FF40/LCDC, FF42/SCY, FF43/SCX, FF4A/WY and FF4B/WX. The independent
+1A/2A, WYATT-DEVICE-LIVENESS-1 and dedicated WYATT-LCDC-EFFECT-1 audits establish
+value-independent ordinary WRAM/HRAM noninterference in the incumbent synchronous
+ROM/ordinary-RAM domain. The LCDC audit supersedes the device audit's pending
+FF40 classification only within that domain. No corresponding device value or
+old/new PPU/APU state is retained or created; interrupt, timing, video accessibility
+and audio behavior are not modeled by this rule.
+
+A single narrowly named internal predicate checks established hardware, WRITE,
+exact CPU byte address and device resolution. It does not admit a range, unknown
+addresses or unresolved effects. FF41, FF0F, FFFF, FF46, FF55 and other unclassified
+writes retain conservative invalidation. Mapper handling (including FF70/FF4F),
+physical aliases, stack identities, reads, execution flow, coverage and depth gates
+are unchanged. Each constituent STORE byte remains independently resolved before
+its existing mapper transition; an adjacent unqualified byte still invalidates.
+A general effect framework and a separate FF40 structural refusal were rejected:
+the independent LCDC audit establishes no such barrier for this bounded domain.
+
+Engine `20261001-call-stack-liveness-2d-1` advances compatibility once; schema stays
+4 because only transient invalidation changes. 2C results require recomputation;
+obsolete owned WUX-1A flow may retire but cannot authorize new publication.
+`BankAnalysisDeviceLivenessTest` adds independent physical stack/mapper/RET oracles
+and finite device controls alongside retained 2A/2B/2C and packed lifecycle tests.
+Implementation evidence belongs to external `CALL-STACK-LIVENESS-2D-20261001`.
+Final integrated campaign/evidence-index closeout remains open; WUX-1A remains
+CLOSED / QUALIFIED and WUX-1B has not begun.
+
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,
 not general memory analysis or milestone completion.

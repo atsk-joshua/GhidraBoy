@@ -417,7 +417,9 @@ class OrdinaryCallFlowTest extends IntegrationTest {
   }
 
   @Test void obsoleteEngineKnownReceiptRetiresAfterReopenWithoutProofAuthority() throws Exception {
-    for (String operation : List.of("retire", "remove", "edited", "future")) try (var f = new Fixture()) {
+    for (String priorEngine : List.of("20261001-call-stack-liveness-2a-1",
+        "20261001-call-stack-liveness-2c-1"))
+      for (String operation : List.of("retire", "remove", "edited", "future")) try (var f = new Fixture()) {
       var proof = f.proof();
       var original = OrdinaryCallFlow.Tuple.of(f.calls().get(0));
       f.publish(proof);
@@ -425,10 +427,10 @@ class OrdinaryCallFlowTest extends IntegrationTest {
         var group = AnalysisOwnership.group(f.p, OrdinaryCallFlow.GROUP);
         var r = group.ordinaryCalls.get(0);
         group.ordinaryCalls.set(0, new OrdinaryCallFlow.Receipt(operation.equals("future") ? 2 : 1,
-            r.proof(), "20261001-call-stack-liveness-2a-1", r.basis(), r.bytes(), r.installed(), r.displaced()));
+            r.proof(), priorEngine, r.basis(), r.bytes(), r.installed(), r.displaced()));
         AnalysisOwnership.save(f.p, OrdinaryCallFlow.GROUP, group);
       });
-      var packed = temporary.resolve("obsolete-" + operation + ".gzf").toFile();
+      var packed = temporary.resolve("obsolete-" + priorEngine + "-" + operation + ".gzf").toFile();
       f.p.saveToPackedFile(packed, TaskMonitor.DUMMY);
       var database = ghidra.framework.store.db.PackedDatabase.getPackedDatabase(packed, true, TaskMonitor.DUMMY);
       var consumer = new Object();
@@ -466,6 +468,17 @@ class OrdinaryCallFlowTest extends IntegrationTest {
         } else {
           assertTrue(OrdinaryCallFlow.receipts(p).isEmpty(), operation);
           assertEquals(original, OrdinaryCallFlow.Tuple.of(refs.get(0)), operation);
+          var fresh = BankAnalysis.preview(p, ProgramMapping.staticAddress(p, "0150"), MapperState.reset(),
+              AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY);
+          assertEquals(1, fresh.ordinaryCallProofs().size(), priorEngine);
+          assertEquals(AnalysisResult.ENGINE_VERSION, fresh.engineVersion());
+          ProgramFingerprint.requireCurrent(p, fresh, TaskMonitor.DUMMY);
+          int publishTx = p.startTransaction("Publish recomputed current proof");
+          try { assertTrue(OrdinaryCallFlow.publish(p, fresh, TaskMonitor.DUMMY).contains(source)); }
+          finally { p.endTransaction(publishTx, true); }
+          assertTrue(OrdinaryCallFlow.currentProof(OrdinaryCallFlow.receipts(p).get(0)));
+          assertNotNull(OrdinaryCallFlow.exact(ins));
+          assertArrayEquals(new Address[] {target}, ins.getFlows());
         }
       } finally {
         if (reopened != null) reopened.release(consumer);

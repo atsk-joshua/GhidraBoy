@@ -135,19 +135,23 @@ public final class SymbolicMemory {
         facts.remove(physical);
         var value=outcome.request().writtenValue();
         if(value!=null&&ordinaryBacking(p,physical))facts.put(physical,AbstractValues.constant(value,1));
-      } else if(!mapperControl&&!disjointScxWrite(p,outcome)
+      } else if(!mapperControl&&!deviceWriteWithoutOrdinaryRamInterference(p,outcome)
           &&(physical==null||resolution.status().equals("device"))) {
         // An unresolved destination/device effect is not established disjoint from RAM.
         facts.clear();
       }
     }
-    private static boolean disjointScxWrite(Program p,ScalarAccess.Outcome outcome) {
-      // SCX changes scrolling only in the incumbent synchronous analysis domain.
-      // This exact exception says nothing about other devices, DMA or byte values.
+    private static boolean deviceWriteWithoutOrdinaryRamInterference(Program p,ScalarAccess.Outcome outcome) {
+      // Exact qualified local writes preserve only WRAM/HRAM contents in the
+      // incumbent synchronous domain. No device state/value or timing is modeled.
       var cartridge=ProgramMapping.cartridge(p);
       return cartridge!=null&&cartridge.hardwareKnown()
           &&outcome.request().kind()==ScalarAccess.Kind.WRITE
-          &&Integer.valueOf(0xff43).equals(outcome.request().cpu())
+          &&outcome.request().cpu()!=null
+          &&switch(outcome.request().cpu()) {
+            case 0xff26,0xff40,0xff42,0xff43,0xff4a,0xff4b -> true;
+            default -> false;
+          }
           &&outcome.resolution().orElseThrow().status().equals("device");
     }
     AbstractValues.Value read(Program p,MapperKnowledge mapper,int cpu,String source,int operation,List<Access> accesses) throws Exception {
