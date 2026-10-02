@@ -19,7 +19,7 @@ public record AnalysisResult(
     List<OrdinaryCallProof> ordinaryCallProofs,
     List<String> diagnostics) {
   public static final int SCHEMA_VERSION = 4;
-  public static final String ENGINE_VERSION = "20261002-call-stack-liveness-2f-1";
+  public static final String ENGINE_VERSION = "20261002-local-loop-1";
 
   /** Successful must-proof of an ordinary unconditional CD invocation and its matched return. */
   public record OrdinaryCallProof(

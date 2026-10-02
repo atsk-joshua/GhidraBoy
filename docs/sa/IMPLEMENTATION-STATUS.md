@@ -1,5 +1,31 @@
 # Implementation status
 
+## LOCAL-LOOP-1 — focused implementation candidate
+
+The [finite conditional-loop contract](../decisions/finite-conditional-loops.md)
+adds pure raw CBRANCH predicate selection, transient partial F-bit precision and
+ordinary-invocation JoinKey graph termination checks. Self-authored public CALL
+fixtures establish four INC/CP iterations and eight DEC/copy iterations with exact
+counter/pointer exits, unknown-predicate alternatives, returned flag meets,
+branch-order invariance and stable/wraparound/unknown-state refusals. RAM meets,
+physical/frame/mapper guards, recursion/depth, cancellation, global budget,
+128-state invocation limit and 32-key widening remain unchanged.
+
+Engine `20261002-local-loop-1` retains schema 4. Prior-engine results require
+recomputation; obsolete owned physical CALL flow has retirement authority only.
+Focused validation passes 422 tests across 35 JUnit reports with zero failures,
+errors or skips, plus lint and extension build. Packed currentness/reopen and
+retirement controls include the preceding 2F engine. Independent semantic review
+and raw compiled instruction evidence are in external batch
+`LOCAL-LOOP-1-20261002`. The original N6 test expecting both known-condition JR
+arms is superseded by hardware truth-table assertions; its failed run is retained.
+
+This is a focused candidate only. Unseeded Wyatt source-path, integrated Linux
+qualification and WYATT-GAP-2 remain open gates. A hardware-finite invocation may
+still exceed the retained resource budget. No whole-ROM, arbitrary-loop, installed,
+headed, Steam Deck, Wyatt workflow or release acceptance is claimed. WUX-1A remains
+CLOSED / QUALIFIED; WUX-1B has not begun.
+
 ## CALL-STACK-LIVENESS-2F — bounded implementation
 
 The exact ordinary-memory noninterference set adds FF25/NR51 only: FF24, FF25,

@@ -85,12 +85,19 @@ The architectural path evaluates raw `getPcode(false)` and decoded default flows
 only when stored flow annotations are consistent. Flow/reference overrides, altered
 fallthrough/lengths and callfixups are explicitly unresolved; they are not mixed with
 raw architectural effects. This includes annotated inline-payload continuations
-until SA-01 supplies a validated effect summary. Unmodified conditional transfers
-retain alternatives, but internal conditional p-code effects remain conservative.
+until SA-01 supplies a validated effect summary. Unmodified conditional jumps
+retain every feasible alternative; internal conditional p-code effects remain conservative.
 The evaluator delegates integer operations to pinned Ghidra behaviors with width
 and extraction guards. Separate contract and compiled-SLEIGH regressions qualify
 this bounded behavior, not whole-ROM semantics. See the source checkout's
 `docs/decisions/sa00-integrity.md` and `docs/evidence/sa00-20260907/README.md`.
+
+Pure raw conditional jumps use known predicate bits to select only feasible
+successors; unknown predicates retain both. Known Z can survive with unknown C
+through transient partial flag facts. Ordinary-call termination requires a complete
+acyclic explored abstract-state graph, so register-counted finite loops can return
+under the existing 128-state invocation budget. Reachable repeating state cycles
+remain refused. See the [finite-loop contract](decisions/finite-conditional-loops.md).
 
 To converge changing exact register states around loops, an instruction with more
 than 32 distinct incoming non-memory states is reprocessed once with mapper/register knowledge

@@ -5,6 +5,12 @@ It reuses the ordinary BankAnalysis worklist, PcodeConstants, MapperKnowledge,
 ScalarAccess and SymbolicMemory.State. There is one instruction evaluator and
 one physical RAM fact store. It does not close SA-01, SA-03 or SA-07.
 
+The original N4 boundaries below are historical. Later nested/sequential and
+conditional CALL/RET contracts extend invocation support; LOCAL-LOOP-1's
+[finite conditional-loop contract](finite-conditional-loops.md) supersedes the
+address-cycle and always-both-JR boundaries with partial flags, proven predicates
+and complete acyclic abstract-state exploration. The 128-state limit remains.
+
 ## Supported invocation
 
 Only an unmodified unconditional SM83 CALL (CD) is eligible. Its decoded direct

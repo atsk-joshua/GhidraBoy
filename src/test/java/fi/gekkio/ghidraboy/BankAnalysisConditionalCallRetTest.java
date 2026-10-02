@@ -433,17 +433,19 @@ class BankAnalysisConditionalCallRetTest extends IntegrationTest {
     }
   }
 
-  @Test void knownFlagsDoNotTurnOrdinaryConditionalJrIntoANewPredicateInterpreter() throws Exception {
-    try (var f = new Fixture(SP + flags(0) + CALL_A + SELECT, "28043e0118043e021800c9")) {
-      selects(f.preview(false), null);
-      selects(f.preview(true), null);
+  @Test void ordinaryConditionalJrUsesProvenRawPredicateWithoutChangingCallMicroflow() throws Exception {
+    // JR Z selects A=1 for Z=0 and A=2 for Z=1; no feasible arm is discarded.
+    for (int flags : List.of(0, 0x80))
+      try (var f = new Fixture(SP + flags(flags) + CALL_A + SELECT, "28043e0118043e021800c9")) {
+      selects(f.preview(false), flags == 0 ? 1 : 2);
+      selects(f.preview(true), flags == 0 ? 1 : 2);
     }
   }
 
   @Test void n6RoundTripRejectsN5AndRetainsSchemaWithoutTransientMicroflow() throws Exception {
     try (var f = new Fixture(SP + flags(0) + "c40003" + SELECT, "3e02c9")) {
       var result = f.preview(false).result();
-      assertEquals("20261002-call-stack-liveness-2f-1", result.engineVersion());
+      assertEquals("20261002-local-loop-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

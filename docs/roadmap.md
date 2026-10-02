@@ -1,5 +1,13 @@
 # Development roadmap
 
+LOCAL-LOOP-1 has a focused implementation candidate for
+[finite conditional loops](decisions/finite-conditional-loops.md): sound raw branch
+predicates, partial flag bits and exhausted acyclic abstract-state exploration.
+The existing invocation and global budgets remain binding. Unseeded Wyatt,
+integrated qualification and the bounded WYATT-GAP-2 comparison remain open;
+see [current status](sa/IMPLEMENTATION-STATUS.md). This does not begin WUX-1B
+or close general loop, discovery, whole-ROM or retained SA/M requirements.
+
 WUX-1A is **COMPLETE / CLOSED / QUALIFIED** for bounded ordinary unconditional
 returning direct-CALL stock flow from current typed WUX-1P proof. Exact DEFAULT
 displacement/restoration, stale retirement, normal stock convergence, separate-JVM
