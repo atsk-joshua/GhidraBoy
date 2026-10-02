@@ -253,7 +253,7 @@ class BankAnalysisScxLivenessTest extends IntegrationTest {
       var current = f.preview(false, 4096).result();
       assertEquals(1, current.ordinaryCallProofs().size());
       var oldJson = ProgramMapping.JSON.toJson(current).replace(AnalysisResult.ENGINE_VERSION,
-          "20261001-call-stack-liveness-2b-1");
+          "20261001-call-stack-liveness-2a-1");
       var old = ProgramMapping.JSON.fromJson(oldJson, AnalysisResult.class);
       assertEquals(current.fingerprint(), old.fingerprint());
       assertTrue(old.ordinaryCallProofs().isEmpty());

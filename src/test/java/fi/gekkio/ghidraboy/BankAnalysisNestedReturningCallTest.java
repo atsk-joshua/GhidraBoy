@@ -232,12 +232,13 @@ class BankAnalysisNestedReturningCallTest extends IntegrationTest {
     refused(CALL_B + "c9", "cd0003c9");
   }
 
-  @Test void thirdActiveCallLevelRefusesWithoutPartialLeafEffects() throws Exception {
+  @Test void thirdActiveCallLevelComposes() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "cd4003c9", "3e02c9", GameBoyKind.GB)) {
       var preview = f.preview(false, 4096);
-      assertFalse(provesBank(preview, 2));
-      assertTrue(writes(preview, 0x156, 0x2000).stream().allMatch(w -> w.value() == null));
-      assertTrue(preview.steps().stream().noneMatch(s -> s.cpu() == 0x340));
+      assertTrue(provesBank(preview, 2));
+      assertEquals(3, preview.result().ordinaryCallProofs().size());
+      assertTrue(writes(preview, 0x156, 0x2000).stream().allMatch(w -> Objects.equals(2, w.value())));
+      assertTrue(preview.steps().stream().anyMatch(s -> s.cpu() == 0x340));
     }
   }
 
@@ -305,7 +306,7 @@ class BankAnalysisNestedReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRetainsSchemaAndRejectsN4WithoutTransientState() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20261001-call-stack-liveness-2a-1", result.engineVersion());
+      assertEquals("20261001-call-stack-liveness-2c-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

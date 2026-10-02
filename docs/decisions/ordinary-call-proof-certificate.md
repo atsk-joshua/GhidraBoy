@@ -54,7 +54,7 @@ Each nested or sequential invocation has its own source identity. A successful
 inner proof cannot certify an outer invocation whose remaining paths fail. A
 refused inner invocation prevents its dependent outer composition from succeeding.
 Independent inner proofs are retained only when no callee exploration is incomplete. Recursion and
-third active depth remain refused. Conditional C4/CC/D4/DC and software summaries
+fourth active depth remain refused under [2C](three-level-ordinary-call.md). Conditional C4/CC/D4/DC and software summaries
 never emit this type, even when their generic CALL observation is PROVEN.
 
 STATE_LIMIT, CANCELLED and INPUT_CHANGED produce an empty final collection.

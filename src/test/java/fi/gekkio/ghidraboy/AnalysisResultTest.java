@@ -49,7 +49,8 @@ class AnalysisResultTest {
     for (String old : List.of(oldSchema.toString(),
         current.replace(AnalysisResult.ENGINE_VERSION, "20260930-n8-finite-pointer-successor-1"),
         current.replace(AnalysisResult.ENGINE_VERSION, "20261001-wux1p-ordinary-call-proof-1"),
-        current.replace(AnalysisResult.ENGINE_VERSION, "20261001-call-stack-liveness-2b-1"))) {
+        current.replace(AnalysisResult.ENGINE_VERSION, "20261001-call-stack-liveness-2b-1"),
+        current.replace(AnalysisResult.ENGINE_VERSION, "20261001-call-stack-liveness-2a-1"))) {
       assertNotEquals(current, old);
       assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(old));
       assertTrue(ProgramMapping.JSON.fromJson(old, AnalysisResult.class).ordinaryCallProofs().isEmpty());

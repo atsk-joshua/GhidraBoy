@@ -1,5 +1,21 @@
 # Implementation status
 
+## CALL-STACK-LIVENESS-2C — bounded implementation
+
+The internal ordinary-call maximum advances from two to three active invocations
+under the [2C contract](../decisions/three-level-ordinary-call.md). Fourth calls,
+recursion, cycles, incomplete paths, unsafe frames/mapper identities and resource
+limits remain refused. Device-write handling and 2B read semantics are unchanged.
+Engine `20261001-call-stack-liveness-2c-1` retains schema 4; pre-2C saved results
+require recomputation and obsolete owned flow retains retirement authority only.
+
+Focused depth, retained N4–N7, WUX-1P/WUX-1A, 2A/2B and packed lifecycle checks
+qualify this bounded implementation. Detailed receipts stay in external batch
+`CALL-STACK-LIVENESS-2C-20261001`; final integrated campaign/evidence-index closeout
+remain open. WUX-1A remains CLOSED / QUALIFIED. WUX-1B has not begun. Broader
+Wyatt composition, device frontiers, whole-ROM, installed/native/GUI and release
+qualification are not established by this step.
+
 ## WUX-1A — CLOSED / QUALIFIED
 
 WUX-1A qualifies bounded ordinary unconditional returning direct-CALL stock flow
@@ -267,7 +283,7 @@ unrun. No main merge, PR or N7/N8 begins here. STOP after N6.
 
 ## SA-NESTED-RETURNING-CALL-COMPOSITION — bounded N5 CLOSED
 
-Ordinary CD/C9 composition now admits exactly two active invocations: caller → A
+The historical N5 checkpoint admitted exactly two active invocations: caller → A
 → B, B RET → A continuation, A RET → caller continuation. Both frames retain
 actual pushed physical-byte identity and restored PC/SP checks. B receives A's
 actual post-CALL state; A executes its remaining instructions with B's returned

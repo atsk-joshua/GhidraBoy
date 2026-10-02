@@ -183,7 +183,7 @@ public final class BankAnalysis {
   }
 
   private static final int CALLEE_STATE_LIMIT = 128;
-  private static final int ORDINARY_CALL_DEPTH = 2;
+  private static final int ORDINARY_CALL_DEPTH = 3;
 
   private static final class Session {
     int count;
@@ -611,7 +611,7 @@ public final class BankAnalysis {
             if (!hasOrdinaryCallCapacity(frames) || !supported || internal) {
               complete = false;
               reasons.put(AnalysisCandidates.Site.control(w.address, "flow"),
-                  "Ordinary nested call exceeds active depth 2 or supported raw effects");
+                  "Ordinary nested call exceeds active depth " + ORDINARY_CALL_DEPTH + " or supported raw effects");
               continue;
             }
           }

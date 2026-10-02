@@ -196,11 +196,12 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
     }
   }
 
-  @Test void recursionAndThirdDepthDoNotCertifyDependentInvocations() throws Exception {
+  @Test void recursionAndFourthDepthDoNotCertifyDependentInvocations() throws Exception {
     try (var f = new Fixture(CALL + STOP, "cd0003c9")) {
       assertTrue(f.result().ordinaryCallProofs().isEmpty());
     }
-    try (var f = new Fixture(CALL + STOP, "cd2003c9", "cd4003c9", "3e02c9", GameBoyKind.GB)) {
+    try (var f = new Fixture(CALL + STOP, "cd2003c9", "cd4003c9", "cd6003c9", GameBoyKind.GB)) {
+      f.code("0360", "3e02c9");
       assertTrue(f.result().ordinaryCallProofs().isEmpty());
       assertTrue(f.result().findings().stream().anyMatch(x -> x.reason().contains("depth")));
     }

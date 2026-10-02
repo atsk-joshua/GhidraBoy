@@ -302,13 +302,14 @@ class BankAnalysisConditionalCallRetTest extends IntegrationTest {
     }
   }
 
-  @Test void knownFalseDepthThreeCallContinuesButReachableThirdFrameRefuses() throws Exception {
+  @Test void knownFalseDepthFourCallContinuesButReachableFourthFrameRefuses() throws Exception {
     for (Integer fbits : Arrays.asList(0x80, 0, null)) {
       String prefix = fbits == null ? "3e02" : flags(fbits) + "3e02";
-      try (var f = new Fixture(SP + CALL_A + SELECT, CALL_B + "c9", prefix + "c44003c9", "3e03c9")) {
+      try (var f = new Fixture(SP + CALL_A + SELECT, CALL_B + "c9", "cd4003c9", prefix + "c46003c9")) {
+        f.code("0360", "3e03c9");
         var preview = f.preview(false);
         selects(preview, Objects.equals(0x80, fbits) ? 2 : null);
-        assertFalse(visited(preview, 0x340));
+        assertFalse(visited(preview, 0x360));
         if (!Objects.equals(0x80, fbits)) assertTrue(preview.result().findings().stream().anyMatch(x -> x.reason().contains("depth")));
       }
     }
@@ -442,7 +443,7 @@ class BankAnalysisConditionalCallRetTest extends IntegrationTest {
   @Test void n6RoundTripRejectsN5AndRetainsSchemaWithoutTransientMicroflow() throws Exception {
     try (var f = new Fixture(SP + flags(0) + "c40003" + SELECT, "3e02c9")) {
       var result = f.preview(false).result();
-      assertEquals("20261001-call-stack-liveness-2a-1", result.engineVersion());
+      assertEquals("20261001-call-stack-liveness-2c-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

@@ -112,7 +112,8 @@ remain unchanged. See the [certificate contract](decisions/ordinary-call-proof-c
 The incumbent composition matches actual CALL/RET stack bytes and outgoing physical
 continuation under the returned mapper. It neither persists callable state summaries
 nor changes software-call identities. N5 extends this to two active ordinary
-frames. N7 admits sequential returning sites within those two active levels.
+frames. N7 admits sequential returning sites; [2C](decisions/three-level-ordinary-call.md)
+raises the fixed maximum to three active levels.
 Nested state resumes the containing callee before returning to its caller; incomplete nested proofs invalidate the
 containing invocation. The N4–N7 engine advances described below originally
 retained schema 3 and their preceding fingerprint dependency shapes; those

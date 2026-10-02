@@ -126,11 +126,11 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20261001-call-stack-liveness-2a-1` uses schema 4 with a fingerprint
+Engine `20261001-call-stack-liveness-2c-1` uses schema 4 with a fingerprint
 component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with
-sequential nested direct callees (maximum active ordinary depth two) when
+sequential nested direct callees (maximum active ordinary depth three) when
 exact SP, the actual pushed return bytes, defined executable ROM and one physical
 target are established. The same evaluator executes callee instructions and
 unconditional RET; the popped physical frame bytes, returned PC/SP and outgoing
@@ -138,7 +138,7 @@ mapper must prove an available continuation. Compatible returning paths retain
 common register/flag bytes and N3 RAM facts. Mapper state comes from actual callee
 effects. Different return mapper/continuation identities and any incomplete path
 retain the conservative unknown continuation. The 128-state callee cap consumes
-the original global state budget too. Frames and memory remain transient.
+the original global state budget too. Frames and memory remain transient. See the [three-level contract](decisions/three-level-ordinary-call.md).
 Unknown data from supported ordinary RAM or the bounded CGB FF70 read stays
 unknown without independently making callee coverage incomplete. Unsupported or
 unresolved read effects still refuse coverage; unknown data used by control,
@@ -182,7 +182,7 @@ facts and any active ordinary frame; it creates no call frame or fallthrough.
 Unknown pointers, ambiguous sources and generated views remain unresolved.
 No Function is required or created. See the [N8 contract](decisions/finite-pointer-successor.md).
 Finite pointer tables, arbitrary computed flow and indirect calls remain open.
-RETI, RST, third-level/recursive/computed calls, RAM code, general
+RETI, RST, fourth-level/recursive/computed calls, RAM code, general
 summaries, symbolic pointers and device/interrupt summaries remain unsupported.
 Discovery requires existing defined instructions and currently refuses any seed
 with a non-DEFAULT label, including imported symbols. These limitations are

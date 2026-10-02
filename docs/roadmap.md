@@ -31,7 +31,8 @@ indirect flow, discovery and whole-ROM qualification remain open.
 
 The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)
 composes multiple direct returning sites within one invocation using the existing
-physical frames and returned state. Active depth stays two; sequential calls
+physical frames and returned state. N7 retained depth two; [2C](decisions/three-level-ordinary-call.md) raises
+the current fixed maximum to three. Sequential calls
 consume the same global budget and incomplete components invalidate the containing
 return. N6 conditional bounds remain unchanged. Scoped unit, installed, persistence,
 package and independent review evidence is in [current status](sa/IMPLEMENTATION-STATUS.md).
@@ -43,7 +44,7 @@ entries retain their historical scope.
 The bounded N6 [conditional CALL/RET extension](decisions/conditional-call-ret-microflow.md)
 adds NZ/Z/NC/C architectural microflow to the retained N4/N5 evaluator. Exact F
 selects one outcome; unknown F preserves true and false paths, with actual stack
-frames only on taken transfers. One conditional site per invocation, depth two,
+frames only on taken transfers. One conditional site per invocation, depth three under 2C,
 physical frame matching and incomplete-alternate refusal bound the proof. Scoped
 unit, installed and persistence verification passes; see
 [current status](sa/IMPLEMENTATION-STATUS.md). General conditional control flow,

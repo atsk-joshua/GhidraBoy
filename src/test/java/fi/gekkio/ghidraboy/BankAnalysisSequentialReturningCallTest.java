@@ -227,13 +227,15 @@ class BankAnalysisSequentialReturningCallTest extends IntegrationTest {
     }
   }
 
-  @Test void secondSequentialCalleeCannotCreateThirdActiveFrame() throws Exception {
-    try (var f = new Fixture(CALL_A + SELECT, CALL_B + CALL_C + "c9", "3e01c9", CALL_B + "c9")) {
+  @Test void secondSequentialCalleeCannotCreateFourthActiveFrame() throws Exception {
+    try (var f = new Fixture(CALL_A + SELECT, CALL_B + CALL_C + "c9", "cd60033e01c9", CALL_B + "c9")) {
+      f.code("0360", "c9");
       var preview = f.preview(false);
+      // The admitted visit is traced; depth refusal exits before a second FetchStep.
       assertEquals(1, preview.steps().stream().filter(s -> s.cpu() == 0x320).count());
       assertFalse(visited(preview, 0x306));
       selects(preview, null);
-      assertTrue(preview.result().findings().stream().anyMatch(x -> x.source().equals("0340") && x.reason().contains("depth")));
+      assertTrue(preview.result().findings().stream().anyMatch(x -> x.source().equals("0320") && x.reason().contains("depth")));
     }
   }
 
@@ -273,7 +275,7 @@ class BankAnalysisSequentialReturningCallTest extends IntegrationTest {
   @Test void n7RoundTripRejectsImmediatelyPrecedingEngineWithoutPersistingFrames() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + CALL_C + "c9", "3e01c9", "3e03c9")) {
       var result = f.preview(false).result();
-      assertEquals("20261001-call-stack-liveness-2a-1", result.engineVersion());
+      assertEquals("20261001-call-stack-liveness-2c-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

@@ -425,7 +425,7 @@ class OrdinaryCallFlowTest extends IntegrationTest {
         var group = AnalysisOwnership.group(f.p, OrdinaryCallFlow.GROUP);
         var r = group.ordinaryCalls.get(0);
         group.ordinaryCalls.set(0, new OrdinaryCallFlow.Receipt(operation.equals("future") ? 2 : 1,
-            r.proof(), "20261001-wux1p-ordinary-call-proof-1", r.basis(), r.bytes(), r.installed(), r.displaced()));
+            r.proof(), "20261001-call-stack-liveness-2a-1", r.basis(), r.bytes(), r.installed(), r.displaced()));
         AnalysisOwnership.save(f.p, OrdinaryCallFlow.GROUP, group);
       });
       var packed = temporary.resolve("obsolete-" + operation + ".gzf").toFile();
