@@ -1,5 +1,60 @@
 # Implementation status
 
+## WUX-1A — CLOSED / QUALIFIED
+
+WUX-1A qualifies bounded ordinary unconditional returning direct-CALL stock flow
+from exact current typed WUX-1P proof. Conditional CALL and software-call behavior
+are unchanged. JP HL / WUX-1B remains separate and has not begun. Bounded fixture
+evidence does not establish whole-ROM completeness or headed, Steam Deck, Wyatt,
+debugger or release qualification.
+
+The implementation commits are `fa2fc684329291bf499155ffe8894cc00162d8ac`
+and lifecycle hardening `3a092c82f565e32d3a422739f89dd708b7fb654b`.
+Q1 tested the latter plus the test-only oracle repair, tree
+`763142ff4c9fc6539fcf64d3f4a1cdb9a8562f35`. The distinct Q1 test-oracle
+closeout commit is `9c3e584930df2f84e2d6697191de1c6c7306d914`, tree
+`aa443cd5e51af64ea63243179dbb957768b71657`; PQ1-D2, Q2A and Q2B qualify
+that exact candidate. The final WUX-1A-CLOSE commit containing this status is a
+separate documentation/evidence-only child of that Q1 closeout. Its post-commit
+HEAD/tree is recorded in the external closure batch's `commit-identity.json`,
+avoiding a self-referential commit hash. Production manifest remains
+`42034e687d457f5e6510a023db5a4c70d85e623ed4ded6f8834de6029148896b`.
+
+Q1-R1 passes the complete pinned Linux Ghidra 12.1.3 / JDK 21 aggregate:
+1,130 PASS across 108 JUnit XML reports, zero failures, errors or skips. Actual
+native CALL has sole target `rom2::4100`; raw architectural p-code equivalence,
+inherited mapper-store native lifecycle, lint, build and static checks pass.
+The inherited one-byte `c9` debug acquisition is a WUX-1P oracle erratum;
+semantic missing-state-entry rejection remained correct, with no production regression.
+
+PQ1-D2 is **HARNESS_ORDERING**: legitimate fingerprint invalidation and stale
+retirement preceded the external harness's late creation of its independent
+`0150` root. There was no contemporaneous physical-high-pcode / CPU-native
+mismatch. Normal external-entry stock analysis converges to physical native CALL;
+no production repair was indicated.
+
+Q2A **PASS** establishes separate-process A/B publication, save/reopen, durable
+receipt/flow and normalized currentness without transient cache state. C mutates
+a consumed RET dependency: analysis retires stale authority before incomplete
+recomputation, restores exact CPU DEFAULT and issues no new certificate/physical
+flow. D independently reopens and confirms durable retirement, stale-result
+rejection and preserved user/Function work. The unrelated incomplete invocation
+control retains still-current authority through fresh reopen. Raw p-code is unchanged.
+
+Q2B is **RECREATED_BUT_USER_SAFE**. Untouched generated/owned Functions may be
+removed by `AnalysisOwnership.remove("functions")` and recreated by
+FunctionDiscovery; stable numeric Function IDs are not a product contract.
+Qualifying user edits engage existing ownership safeguards: names, comments,
+tags, signature annotations, body and user work survive repeated analysis and
+fresh-process reopen. Receipt-free DEFAULT Functions and unrelated user Functions
+survive; no duplicate or false CPU callee appears. All seven native checks target
+`rom2::4100`, proof fingerprints remain current, and no production repair is indicated.
+
+Durable receipts/report hashes and closure lineage are in the
+[evidence index](evidence-index.json). The next roadmap step is a master decision:
+whether JP HL / WUX-1B is necessary before broader normal Wyatt workflow work.
+Neither path is authorized by this closeout.
+
 ## WUX-1A-Q1 — CLOSED / QUALIFIED
 
 The resumed Q1 qualification passes on pinned Linux Ghidra 12.1.3 / JDK
@@ -24,11 +79,12 @@ was made. Historical Q1 failure and D1 evidence remain preserved.
 
 This closes the original aggregate/native Q1 scope only. Separate-JVM/large
 persistence, installed/headed, release, Steam Deck, debugger, Wyatt and whole-ROM
-qualification remain outside this result. Q2 and WUX-1B have not begun. Commands,
+qualification remain outside this result. At the Q1 checkpoint, Q2 and WUX-1B
+had not begun; the closure above now records Q2A/Q2B. Commands,
 identities, native witnesses and the historical WUX-1P test-oracle qualification
 erratum are linked from the [evidence index](evidence-index.json).
 
-## WUX-1A ordinary CALL stock integration — bounded implementation verified
+## WUX-1A implementation checkpoint — historical bounded verification
 
 The [stock flow contract](../decisions/ordinary-call-stock-flow.md) derives one
 primary operand-matched physical CALL only from current WUX-1P certificates,
@@ -103,7 +159,7 @@ semantics are not reopened and production native behavior was not changed.
 
 WUX-1A native CALL lowering, DEFAULT displacement/restoration, generated-flow
 non-evidence handling and production convergence were separate WUX-1P obligations;
-the bounded implementation and Q1 qualification above address them.
+the CLOSED / QUALIFIED WUX-1A integration above now addresses them.
 No native-flow or Wyatt workflow improvement is claimed by WUX-1P itself. Exact
 qualification details are in the [evidence index](evidence-index.json).
 

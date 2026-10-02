@@ -1,8 +1,12 @@
 # Proven facts and stock Ghidra flow (WUX-0)
 
-Status: bounded investigation complete; production WUX-1 deferred for an explicit
+Historical WUX-0 status: bounded investigation complete; production WUX-1 deferred for an explicit
 flow ownership and invalidation decision. This is not product-capability PASS.
 The incumbent LOW_PRIORITY analyzer and production behavior remain unchanged.
+
+Current disposition: [WUX-1A](ordinary-call-stock-flow.md) now qualifies the
+bounded ordinary CALL lifecycle. The WUX-0 observations and next-step proposal
+below retain their historical meaning; JP HL remains separate.
 
 ## Baseline and boundary
 

@@ -1,17 +1,23 @@
 # Development roadmap
 
-The bounded WUX-1A ordinary CALL integration now derives reversible stock flow
-from WUX-1P certificates with exact DEFAULT displacement, stale retirement and
-bounded same-session discovery. Q1 is CLOSED / QUALIFIED: the pinned Linux native
-aggregate passes 1,130 tests with zero failures, errors or skips; both required
-native controls, raw p-code equivalence, lint and extension build pass. See the
-[contract](decisions/ordinary-call-stock-flow.md) and
-[current status](sa/IMPLEMENTATION-STATUS.md). WUX-1B / JP HL remains separate;
-no retained SA/M requirement is replaced.
+WUX-1A is **COMPLETE / CLOSED / QUALIFIED** for bounded ordinary unconditional
+returning direct-CALL stock flow from current typed WUX-1P proof. Exact DEFAULT
+displacement/restoration, stale retirement, normal stock convergence, separate-JVM
+persistence/currentness and user Function preservation are qualified. Untouched
+generated Functions may be recreated; numeric IDs are not stable product identity.
+Q1 passes 1,130 tests with zero failures, errors or skips; Q2A PASS and Q2B
+RECREATED_BUT_USER_SAFE are backed by durable evidence in
+[current status](sa/IMPLEMENTATION-STATUS.md) and the
+[contract](decisions/ordinary-call-stock-flow.md).
+
+The next step remains a **master decision**: whether JP HL / WUX-1B is necessary
+before broader normal Wyatt workflow work. WUX-1B does not start automatically.
+Conditional/software-call behavior is unchanged; no retained SA/M requirement is
+replaced and no whole-ROM, headed, Steam Deck, Wyatt or release acceptance is implied.
 
 The bounded N8 [exact JP HL successor](decisions/finite-pointer-successor.md) is
 closed under its existing finite proof contract. WUX-0 completed stock-flow
-investigation and records the [production lifecycle decision still required](decisions/proven-stock-flow-integration.md).
+investigation and records the [historical production lifecycle decision](decisions/proven-stock-flow-integration.md).
 WUX-1P is now CLOSED under the
 [ordinary-CD proof certificate contract](decisions/ordinary-call-proof-certificate.md):
 must-proof provenance, schema-4 recomputation, separate-process persistence and
@@ -19,8 +25,8 @@ the historical 1,098-test provider aggregate pass. Q1-D1 established a test-orac
 qualification erratum: the legacy zero-byte assumption was already wrong at the
 WUX-1P checkpoint on pinned Linux, while semantic rejection remained correct.
 Q1-R1 removes that non-semantic assertion without changing production behavior.
-WUX-1A's bounded native CALL transport is now qualified under Q1; Q2, WUX-1B and
-new Wyatt capability are not claimed. N9, general
+WUX-1A now closes the bounded ordinary CALL lifecycle under Q1/Q2A/Q2B; WUX-1B
+and broader Wyatt capability remain separate. N9, general
 indirect flow, discovery and whole-ROM qualification remain open.
 
 The bounded N7 [sequential returning-call extension](decisions/sequential-returning-call.md)

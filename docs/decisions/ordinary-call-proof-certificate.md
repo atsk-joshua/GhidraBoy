@@ -92,15 +92,17 @@ physical topology, raw effects, flow annotations and software configuration reta
 the incumbent fingerprint and modification guard. Changing a consumed dependency
 rejects stale results; fresh analysis must establish the invocation again.
 
-Future WUX-1A must retain the direction:
+Historical WUX-1P design requirement, now retained by qualified WUX-1A:
 
     raw architecture + mapper/state/stack/RET proof
         -> current certificate -> owned native-flow artifact
 
-An owned native-flow artifact must never become proof input. A physical CALL
-reference currently differs from raw decoded CPU-space flow and therefore causes
-an interpretation veto and fingerprint change. This task changes neither rule.
-A future narrowly specified exception may recognize an exact, current, unchanged
+An owned native-flow artifact must never become proof input. At the WUX-1P
+checkpoint, a physical CALL reference differed from raw decoded CPU-space flow
+and therefore caused
+an interpretation veto and fingerprint change. WUX-1P changed neither rule.
+The then-future narrowly specified exception would recognize an exact, current,
+unchanged
 GhidraBoy-owned derived-flow artifact as non-evidence, while preserving independent
 conflicting annotations and later user edits. It must bind exact ownership,
 artifact identity, dependency generation and unchanged state; historical ownership
@@ -124,8 +126,8 @@ rejection, preservation of unrelated user annotations and stale refusal after a
 consumed RET dependency changes.
 
 The initial broad provider run exposed one pre-existing `StockRouteFaultTest`
-oracle failure. Investigation on both the exact starting baseline and the WUX-1P
-candidate established that the deliberately substituted
+oracle failure. The investigation at that time on the exact starting baseline
+and WUX-1P candidate concluded that the deliberately substituted
 `__ghidraboy_state_entry_v1` convention rejects missing state-entry authority
 through its `uponentry` protocol before the native decompiler requests carrier
 bytes. The test was split so ordinary carrier faults retain their one-byte recovery
@@ -139,6 +141,15 @@ The qualified checkpoint is
 errors or skips.
 
 This qualification establishes only the typed ordinary-CD admission authority.
-WUX-1A native CALL lowering, DEFAULT displacement/restoration, owned generated-flow
-non-evidence handling, scheduler convergence and Wyatt workflow improvement remain
-unimplemented and require separate authorization.
+At that checkpoint, WUX-1A native CALL lowering, DEFAULT displacement/restoration,
+owned generated-flow non-evidence handling and scheduler convergence remained
+separate obligations. The [WUX-1A contract](ordinary-call-stock-flow.md) now records
+CLOSED / QUALIFIED bounded ordinary CALL integration. Broader Wyatt workflow
+acceptance remains separate.
+
+**Qualification oracle erratum (Q1-D1/R1).** Pinned Linux comparisons establish
+the same one-byte `c9` debug acquisition at the qualified WUX-1P checkpoint and
+all later WUX-1A commits, while semantic missing-state-entry rejection remains
+correct. The historical zero-byte ordering conclusion above was incorrect. Q1-R1
+removes only that non-semantic assertion; historical receipts remain preserved.
+This is an oracle erratum, not a WUX-1P production regression.

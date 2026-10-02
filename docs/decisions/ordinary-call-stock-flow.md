@@ -98,13 +98,48 @@ The native DecompInterface test requires the pinned platform executable and repo
 an explicit skip when it is unavailable. Detailed commands and source/dependency
 identities are indexed in [evidence](../sa/evidence-index.json).
 
-Q1 now qualifies the bounded transport on pinned Linux Ghidra 12.1.3 / JDK
-21.0.12.1: all 1,130 provider tests pass without failures, errors or skips; lint and
-extension build pass. Native DecompInterface receives exactly `rom2::4100`, and the
-inherited mapper-store lifecycle control executes and passes. The only repair
-removes the inherited legacy state-entry zero-bytechunk test assertion; semantic
-missing-registry rejection and unrelated strict carrier checks remain intact.
-See the [qualification status](../sa/IMPLEMENTATION-STATUS.md) and indexed evidence.
-Separate-JVM persistence matrix, installed/headed, release, Steam Deck, debugger,
-Wyatt and whole-ROM qualification remain unrun here. Q2 and WUX-1B / JP HL do not
-begin with this qualification.
+## Qualification closure
+
+WUX-1A is **CLOSED / QUALIFIED** for bounded ordinary unconditional returning
+direct-CALL stock integration. Publication requires an exact current typed WUX-1P
+certificate; the selected representation and semantic boundaries above remain unchanged.
+
+Q1-R1 qualifies pinned Linux Ghidra 12.1.3 / JDK 21.0.12.1: 1,130 tests PASS
+across 108 JUnit XML reports, with zero failures, errors or skips. Native
+DecompInterface follows the sole physical target `rom2::4100`. Raw SM83 p-code
+remains architectural. Inherited mapper-store native lifecycle, lint, extension
+build and build-input/static checks pass. The test-only legacy state-entry oracle
+repair removes a zero-bytechunk assertion disproved back through WUX-1P by D1;
+semantic missing-state-entry rejection remains correct. This is an oracle erratum,
+not a WUX-1P production regression.
+
+Q2A's independent JVM phases establish that derived physical CALL, its receipt,
+saved result and normalized currentness survive save/reopen without transient
+cache state. Mutation of a consumed proof dependency retires stale presentation
+on analysis invocation before incomplete recomputation can reuse it. Exact DEFAULT
+restoration survives process boundaries; no stale receipt/physical CALL reappears,
+and the old result is not falsely current. An unrelated incomplete invocation
+does not retire still-current authority, including after fresh reopen. Ordinary
+flow retirement does not destroy stock/user Function work or saved annotations.
+
+PQ1-D2 classifies the prior external harness CPU-native result as
+**HARNESS_ORDERING**: legitimate fingerprint invalidation/stale retirement occurred
+before the harness supplied its independent `0150` root. Stored flow, high p-code
+and CPU-native target agreed contemporaneously; no physical-high/CPU-native mismatch
+or production repair was indicated. The normal default stock workflow with an
+external entry converges to physical native CALL `rom2::4100`.
+
+Q2B is **RECREATED_BUT_USER_SAFE**: qualifying user-edited Functions retain names,
+comments, tags, signature annotations, body and user work through repeated analysis
+and fresh-process reopen. Receipt-free DEFAULT Functions and unrelated user
+Functions survive; no duplicate or false CPU callee appears. Untouched generated/
+owned Functions may be removed by `AnalysisOwnership.remove("functions")` and
+recreated by FunctionDiscovery. Numeric Function ID stability is not part of this
+contract. All seven native checks target `rom2::4100`, with current fingerprints
+and no production repair indicated.
+
+See [status](../sa/IMPLEMENTATION-STATUS.md) and durable receipt/report hashes in
+[evidence](../sa/evidence-index.json). These are bounded fixture results, not
+whole-ROM or broader mapper/control-flow completeness. Conditional CALL and
+software-call behavior are unchanged. JP HL / WUX-1B remains separate; installed/
+headed, Steam Deck, Wyatt, debugger and release acceptance is not implied.

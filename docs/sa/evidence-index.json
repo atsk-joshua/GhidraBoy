@@ -1320,7 +1320,8 @@
       "WUX-1B/JP HL not begun"
     ],
     "remote_mutation": "NONE; one local commit only",
-    "qualification_followup": "wux_1a_q1_qualification_20261001"
+    "qualification_followup": "wux_1a_qualification_closure_20261001",
+    "historical_checkpoint": true
   },
   "wux_1a_r1_lifecycle_hardening_20261001": {
     "status": "Focused repair PASS; broader qualification unrun",
@@ -1358,7 +1359,8 @@
       "Release qualification",
       "WUX-1B not begun; no remote mutation"
     ],
-    "qualification_followup": "wux_1a_q1_qualification_20261001"
+    "qualification_followup": "wux_1a_qualification_closure_20261001",
+    "historical_checkpoint": true
   },
   "wux_1a_q1_qualification_20261001": {
     "status": "CLOSED / QUALIFIED",
@@ -1368,7 +1370,10 @@
     "tested_tree": "763142ff4c9fc6539fcf64d3f4a1cdb9a8562f35",
     "tested_candidate": "Baseline plus four-line test-oracle assertion removal; local closeout adds status documentation only.",
     "evidence": "evidence/batches/WUX-1A-Q1-R1-20261001",
-    "receipt": "evidence/batches/WUX-1A-Q1-R1-20261001/receipt.json",
+    "receipt": {
+      "path": "evidence/batches/WUX-1A-Q1-R1-20261001/receipt.json",
+      "sha256": "a85b59b42d9828e3d6663d3d555d889e8b40f7db36f865a6c6fd9318afa8e6e9"
+    },
     "prior_q1": "evidence/batches/WUX-1A-Q1-20261001",
     "diagnostic": "evidence/batches/WUX-1A-Q1-D1-20261001",
     "oracle": "INHERITED_ORACLE, identical behavior back through qualified WUX-1P; semantic rejection correct; bytechunk count is non-semantic",
@@ -1412,6 +1417,116 @@
       "debugger",
       "release",
       "whole-ROM"
-    ]
+    ],
+    "report": {
+      "path": "evidence/batches/WUX-1A-Q1-R1-20261001/REPORT.md",
+      "sha256": "362c975f07f59216709a0eee5090730e3091bf4e9449a2992a72402d6fa7d60c"
+    },
+    "manifest": {
+      "path": "evidence/batches/WUX-1A-Q1-R1-20261001/manifest.json",
+      "sha256": "323efe126c412d610173a218af5223c9aa993a9e79a7d666c98dbd5d7eadc550"
+    },
+    "historical_q1_receipt": {
+      "path": "evidence/batches/WUX-1A-Q1-20261001/receipt.json",
+      "sha256": "e842b5fc43b4f7a93808e54521921ffd04d92314a62db577c9161067d6209cd6"
+    },
+    "historical_d1_receipt": {
+      "path": "evidence/batches/WUX-1A-Q1-D1-20261001/receipt.json",
+      "sha256": "37504a8d743c47cf6b637fb4290b10748e5b39c2524f5d596070987b7702ca2c"
+    },
+    "qualification_followup": "wux_1a_qualification_closure_20261001"
+  },
+  "wux_1a_pq1_d2_20261001": {
+    "status": "DIAGNOSTIC_COMPLETE / HARNESS_ORDERING",
+    "candidate_head": "9c3e584930df2f84e2d6697191de1c6c7306d914",
+    "candidate_tree": "aa443cd5e51af64ea63243179dbb957768b71657",
+    "external_root": "evidence/batches/WUX-1A-PQ1-D2-20261001",
+    "receipt": {
+      "path": "evidence/batches/WUX-1A-PQ1-D2-20261001/receipt.json",
+      "sha256": "ea9d569f36d26d7318ba83de8563d954ec528b7d9387dc4a144445b272198c76"
+    },
+    "report": {
+      "path": "evidence/batches/WUX-1A-PQ1-D2-20261001/REPORT.md",
+      "sha256": "81ed33fa7e72784f8caf8967b00c571882c59de03f62c6e139ef8d0889719cb7"
+    },
+    "artifact_hashes": {
+      "path": "evidence/batches/WUX-1A-PQ1-D2-20261001/artifact-hashes.json",
+      "sha256": "0caebfe8e33bcca736ce2f7261b32d3974e4fdc339f497218523c647c6d200d9"
+    },
+    "scope": "No contemporaneous physical-high/CPU-native mismatch; late independent root after legitimate stale retirement; normal external-entry workflow physical; no production repair."
+  },
+  "wux_1a_q2a_20261001": {
+    "status": "PASS",
+    "candidate_head": "9c3e584930df2f84e2d6697191de1c6c7306d914",
+    "candidate_tree": "aa443cd5e51af64ea63243179dbb957768b71657",
+    "external_root": "evidence/batches/WUX-1A-Q2A-PERSIST-20261001",
+    "receipt": {
+      "path": "evidence/batches/WUX-1A-Q2A-PERSIST-20261001/qualification-summary.json",
+      "sha256": "ba00e648df342d2821bc6e155d6a2c453494e31538c4e6b87d4420249fde510a"
+    },
+    "report": {
+      "path": "evidence/batches/WUX-1A-Q2A-PERSIST-20261001/REPORT.md",
+      "sha256": "8702bb2669ba7e7fe6b438aacf34a8ea2fc691af5908b4781a8eaa2d0857b966"
+    },
+    "artifact_hashes": {
+      "path": "evidence/batches/WUX-1A-Q2A-PERSIST-20261001/artifact-hashes.json",
+      "sha256": "ba3e3276dfdfb5e1fa7fca5400852cc398648996e4f4c041d12a923311f3e745"
+    },
+    "scope": "Separate-JVM A/B publication and current reopen; C/D consumed RET mutation, incomplete-safe retirement and durable exact DEFAULT restoration; unrelated incomplete preservation control; user/Function work preserved; raw p-code unchanged."
+  },
+  "wux_1a_q2b_20261001": {
+    "status": "RECREATED_BUT_USER_SAFE",
+    "candidate_head": "9c3e584930df2f84e2d6697191de1c6c7306d914",
+    "candidate_tree": "aa443cd5e51af64ea63243179dbb957768b71657",
+    "external_root": "evidence/batches/WUX-1A-Q2B-FUNCTION-LIFECYCLE-20261001",
+    "receipt": {
+      "path": "evidence/batches/WUX-1A-Q2B-FUNCTION-LIFECYCLE-20261001/receipt.json",
+      "sha256": "f8a3fe59dba0da07b75f7ef206ba135ad3b566f2ac03fe0534e632e1bd9109cc"
+    },
+    "report": {
+      "path": "evidence/batches/WUX-1A-Q2B-FUNCTION-LIFECYCLE-20261001/REPORT.md",
+      "sha256": "60487bf2526693b67f32e243542dc8234e4ef423cc99ff8205a61001fe600264"
+    },
+    "artifact_hashes": {
+      "path": "evidence/batches/WUX-1A-Q2B-FUNCTION-LIFECYCLE-20261001/artifact-hashes.json",
+      "sha256": "c9b7df379fab2a1006b3b66b4db2bf9386e556df8023e5f3d17877f7d263a1b5"
+    },
+    "scope": "Untouched owned Functions may be recreated; numeric IDs not stable contract. Qualifying edited and receipt-free DEFAULT/unrelated user Functions survive repeated analysis/reopen; seven native physical targets; no duplicates/false CPU callee; fingerprints current; no repair."
+  },
+  "wux_1a_qualification_closure_20261001": {
+    "status": "CLOSED / QUALIFIED",
+    "starting_head": "9c3e584930df2f84e2d6697191de1c6c7306d914",
+    "starting_tree": "aa443cd5e51af64ea63243179dbb957768b71657",
+    "production_manifest": "42034e687d457f5e6510a023db5a4c70d85e623ed4ded6f8834de6029148896b",
+    "capability": "Bounded ordinary unconditional returning direct-CALL stock flow from exact current typed WUX-1P proof",
+    "limits": [
+      "Conditional/software-call behavior unchanged",
+      "JP HL/WUX-1B separate, not begun",
+      "No whole-ROM or broader mapper/control-flow completeness",
+      "No headed/Steam Deck/Wyatt/debugger/release acceptance",
+      "Untouched generated Functions may be recreated; numeric IDs not stable contract"
+    ],
+    "next_decision": "Master decides whether JP HL/WUX-1B is necessary before broader normal Wyatt workflow work",
+    "implementation_commits": [
+      "fa2fc684329291bf499155ffe8894cc00162d8ac",
+      "3a092c82f565e32d3a422739f89dd708b7fb654b"
+    ],
+    "q1_oracle_closeout_commit": "9c3e584930df2f84e2d6697191de1c6c7306d914",
+    "final_closeout_commit": "Documentation/evidence-only commit containing this entry; exact post-commit HEAD/tree in external commit-identity.json (avoids self-reference).",
+    "external_root": "evidence/batches/WUX-1A-CLOSE-20261001",
+    "receipt": {
+      "path": "evidence/batches/WUX-1A-CLOSE-20261001/receipt.json",
+      "sha256": "b95a3889b6a7ef11ec086979d9bf13b3734b4d653989c30da5a8f8eafca53f86"
+    },
+    "dependencies": [
+      "wux_1a_q1_qualification_20261001",
+      "wux_1a_pq1_d2_20261001",
+      "wux_1a_q2a_20261001",
+      "wux_1a_q2b_20261001"
+    ],
+    "report": {
+      "path": "evidence/batches/WUX-1A-CLOSE-20261001/REPORT.md",
+      "sha256": "6f6197bd8bba09177ee7c35ebb5927f65feecd743b8891f8778d0ca0377a8f26"
+    }
   }
 }
