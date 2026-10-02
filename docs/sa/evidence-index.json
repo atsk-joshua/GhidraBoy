@@ -1538,5 +1538,15 @@
     },
     "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
     "scope": "Local invocation resource guard 128 to179 only; engine20261002-local-state-3/schema4; focused generic/currentness/reopen and unseeded public replay; timer frontier remains; no aggregate, WUX-1B, installed or release qualification"
+  },
+  "timer_write_liveness_1_20261002": {
+    "status": "PASS / BOUNDED CANDIDATE",
+    "external_root": "evidence/batches/TIMER-WRITE-LIVENESS-1-20261002",
+    "qualification": {
+      "path": "evidence/batches/TIMER-WRITE-LIVENESS-1-20261002/qualification.json",
+      "sha256": "61271cf25aa3018ced518c9849e893281cb8284f8477e74b6bc384bd272c3ed8"
+    },
+    "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
+    "scope": "Only exact FF06/TMA and FF07/TAC ordinary-memory preservation; engine20261002-timer-write-liveness-1/schema4; focused generic/currentness/packed lifecycle and unseeded public replay; 03EB RET matches02D9, helper returns02DC, retained02DF CALL_RETURN frontier; bounded37F3 certificate exists without whole-session completion; no aggregate/WUX-1B/remote/install/release work"
   }
 }

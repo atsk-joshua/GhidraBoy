@@ -306,7 +306,7 @@ class BankAnalysisNestedReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRetainsSchemaAndRejectsN4WithoutTransientState() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20261002-local-state-3", result.engineVersion());
+      assertEquals("20261002-timer-write-liveness-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

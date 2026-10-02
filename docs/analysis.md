@@ -123,11 +123,13 @@ reads remain unresolved; a supported read with absent exact data remains unknown
 Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
 byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
 each physical byte, so echo aliases share facts and disjoint writes preserve them.
-Exact FF24 (NR50), FF25 (NR51), FF26 (NR52), FF40 (LCDC), FF42 (SCY), FF43 (SCX), FF4A (WY) and
+Exact FF06 (TMA), FF07 (TAC), FF24 (NR50), FF25 (NR51), FF26 (NR52), FF40 (LCDC), FF42 (SCY), FF43 (SCX), FF4A (WY) and
 FF4B (WX) writes on established GB/CGB hardware preserve ordinary WRAM/HRAM
 facts within the synchronous analysis domain, for known or unknown byte values.
 This finite rule creates no device facts and establishes no interrupt, timing,
-PPU or APU completeness. FF40 LCD/control transitions and FF26 APU power changes
+timer, PPU or APU completeness. TMA modulo/reload and TAC enable, clock selection,
+edge/glitch, overflow/reload and possible timer interrupt-request effects remain
+unknown. FF04/DIV and FF05/TIMA remain unqualified. FF40 LCD/control transitions and FF26 APU power changes
 remain unmodeled. Unclassified device writes, including FF23/FF27/FF41/FF0F/FFFF and
 FF46/FF55 DMA triggers, still clear facts. Each wider STORE byte qualifies
 independently in architectural order with 16-bit wrapping. Mapper transitions

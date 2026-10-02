@@ -1,5 +1,23 @@
 # Implementation status
 
+## TIMER-WRITE-LIVENESS-1 — bounded implementation candidate
+
+The [ordinary RAM contract](../decisions/ordinary-ram-byte-facts.md) adds only
+exact FF06/TMA and FF07/TAC to the finite qualified ordinary-memory write set.
+Known and unknown bytes preserve existing ordinary WRAM/HRAM facts without
+creating timer facts or modeling asynchronous interrupts. FF04/DIV and FF05/TIMA
+remain unqualified. Engine `20261002-timer-write-liveness-1` retains schema 4;
+LOCAL-STATE-3 authority requires recomputation and obsolete owned flow retains
+retirement authority only. Loop semantics and the 179-state invocation budget
+remain unchanged.
+
+Focused qualification, packed lifecycle and unseeded public Wyatt progression
+are recorded externally in `TIMER-WRITE-LIVENESS-1-20261002`. The retained 02DF
+CALL_RETURN override remains an independent Program-representation frontier.
+The earlier 37F3 invocation can receive a bounded certificate; that does not
+establish whole-session completion beyond the independent frontier. Full-provider aggregate, installed and release qualification remain
+open; WUX-1B has not begun.
+
 ## LOCAL-STATE-3 — bounded resource candidate
 
 The [local invocation resource contract](../decisions/local-analysis-budget.md)

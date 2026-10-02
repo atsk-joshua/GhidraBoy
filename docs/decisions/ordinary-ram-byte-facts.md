@@ -64,7 +64,7 @@ remain unchanged. Focused evidence belongs to external batch
 open. WUX-1A remains CLOSED / QUALIFIED; WUX-1B has not begun.
 
 CALL-STACK-LIVENESS-2F adds exactly FF25/NR51, classified SAFE_LOCAL_MEMORY_EFFECT
-by WYATT-FF25-EFFECT-1. The current finite set is FF24, FF25, FF26, FF40, FF42,
+by WYATT-FF25-EFFECT-1. The 2F finite set is FF24, FF25, FF26, FF40, FF42,
 FF43, FF4A and FF4B. NR51 controls left/right APU channel routing. For every
 written byte and either APU-power state, accepted or ignored writes preserve
 existing ordinary WRAM/HRAM facts in the supported synchronous domain. No APU
@@ -81,6 +81,34 @@ three and the 128-state local bound are unchanged. Focused tests and the bounded
 source-derived Wyatt replay belong to external `CALL-STACK-LIVENESS-2F-20261002`.
 Final campaign/evidence-index closeout remains open; WUX-1A remains CLOSED /
 QUALIFIED and WUX-1B has not begun.
+
+TIMER-WRITE-LIVENESS-1 adds only exact FF06/TMA and FF07/TAC, independently
+classified SAFE_LOCAL_MEMORY_EFFECT by WYATT-TMA-EFFECT-1 and WYATT-TAC-EFFECT-1.
+The current finite set is FF06, FF07, FF24, FF25, FF26, FF40, FF42, FF43, FF4A
+and FF4B. For every known or unknown byte, an exact qualified device write
+preserves existing ordinary physical WRAM/HRAM facts in the supported synchronous
+analysis domain: no ordinary RAM write, DMA, mapper/bank change or ordinary-RAM
+access restriction occurs. The existing established-hardware, exact WRITE and
+device-resolution guards remain mandatory.
+
+TMA may change modulo and later reload/timer/interrupt-request timing. TAC may
+change enable, divider-clock selection, TIMA edge/glitch behavior, overflow/reload
+timing and possible timer IF request. All these device facts remain unknown.
+No timer facts or timing are encoded; no asynchronous interrupt model is added.
+FF04/DIV and FF05/TIMA remain unqualified. A timer-register range or general I/O
+rule is rejected because the two independent audits qualify only exact FF06/FF07.
+
+Engine `20261002-timer-write-liveness-1` advances once from
+`20261002-local-state-3`; schema remains 4 because persisted shape is unchanged.
+Prior results require recomputation and cannot apply or publish; obsolete owned
+flow retains only existing retirement/restoration authority. Current publication
+and packed reopen remain under the incumbent lifecycle. Loop semantics, depth,
+179-state local invocation budget and all other resource limits remain unchanged.
+Focused matrix and lifecycle evidence belongs to external batch
+`TIMER-WRITE-LIVENESS-1-20261002`. The unseeded Wyatt witness retains the saved
+02DF CALL_RETURN override; its independent Program-representation frontier does
+not authorize a FlowOverride migration or a 37F3 certificate. Full aggregate,
+installed/release qualification and WUX-1B remain separate obligations.
 
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,

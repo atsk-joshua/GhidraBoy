@@ -56,7 +56,8 @@ class AnalysisResultTest {
         current.replace(AnalysisResult.ENGINE_VERSION, "20261002-memory-storage-copy-1"),
         current.replace(AnalysisResult.ENGINE_VERSION, "20261002-call-stack-liveness-2e-1"),
         current.replace(AnalysisResult.ENGINE_VERSION, "20261002-call-stack-liveness-2f-1"),
-        current.replace(AnalysisResult.ENGINE_VERSION, "20261002-local-loop-1"))) {
+        current.replace(AnalysisResult.ENGINE_VERSION, "20261002-local-loop-1"),
+        current.replace(AnalysisResult.ENGINE_VERSION, "20261002-local-state-3"))) {
       assertNotEquals(current, old);
       assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(old));
       assertTrue(ProgramMapping.JSON.fromJson(old, AnalysisResult.class).ordinaryCallProofs().isEmpty());
