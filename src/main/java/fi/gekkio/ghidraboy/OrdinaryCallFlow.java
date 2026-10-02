@@ -1,6 +1,5 @@
 package fi.gekkio.ghidraboy;
 
-import ghidra.app.plugin.core.analysis.AutoAnalysisManager;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.listing.Instruction;
@@ -30,25 +29,29 @@ final class OrdinaryCallFlow {
   record Receipt(int version, AnalysisResult.OrdinaryCallProof proof, String engine,
       String basis, String bytes, Tuple installed, Tuple displaced) {}
 
-  private record Notification(AddressSet sources, String fingerprint, List<Receipt> receipts) {}
-  private static final Map<Program, Notification> notifications = new WeakHashMap<>();
-
   static List<Receipt> receipts(Program p) {
     return AnalysisOwnership.group(p, GROUP).ordinaryCalls;
   }
 
-  private static boolean valid(Receipt r) {
-    return r != null && r.version == VERSION && AnalysisResult.ENGINE_VERSION.equals(r.engine)
+  private static boolean structurallyOwned(Receipt r) {
+    return r != null && r.version == VERSION && r.engine != null
         && r.proof != null && r.basis != null && r.bytes != null && r.installed != null
-        && r.displaced != null && r.installed.type.equals(RefType.UNCONDITIONAL_CALL.toString())
-        && r.installed.source.equals(SourceType.ANALYSIS.toString()) && r.installed.primary
-        && r.displaced.type.equals(RefType.UNCONDITIONAL_CALL.toString())
-        && r.displaced.source.equals(SourceType.DEFAULT.toString())
+        && r.displaced != null && r.installed.from != null && r.installed.to != null
+        && r.displaced.from != null && r.displaced.to != null
+        && RefType.UNCONDITIONAL_CALL.toString().equals(r.installed.type)
+        && SourceType.ANALYSIS.toString().equals(r.installed.source) && r.installed.primary
+        && RefType.UNCONDITIONAL_CALL.toString().equals(r.displaced.type)
+        && SourceType.DEFAULT.toString().equals(r.displaced.source)
         && r.installed.from.equals(r.displaced.from) && r.installed.operand == r.displaced.operand;
   }
 
+  /** Old known receipts retain retirement authority, never proof authority. */
+  static boolean currentProof(Receipt r) {
+    return structurallyOwned(r) && AnalysisResult.ENGINE_VERSION.equals(r.engine);
+  }
+
   private static Reference installed(Program p, Receipt r) {
-    if (!valid(r)) return null;
+    if (!structurallyOwned(r)) return null;
     var from = r.installed.from.resolve(p);
     if (from == null) return null;
     for (var ref : p.getReferenceManager().getReferencesFrom(from))
@@ -73,9 +76,13 @@ final class OrdinaryCallFlow {
 
   /** Structural correspondence only: basis validation happens after normalized capture. */
   static Receipt exact(Instruction ins) {
+    return ins == null ? null : OrdinaryCallBasis.snapshot(ins.getProgram()).exact(ins);
+  }
+
+  static Receipt exact(Instruction ins, List<Receipt> snapshot) {
     try {
-      for (var r : receipts(ins.getProgram())) {
-        if (!valid(r) || !sourceMatches(ins, r)) continue;
+      for (var r : snapshot) {
+        if (!currentProof(r) || !sourceMatches(ins, r)) continue;
         var refs = Arrays.stream(ins.getReferencesFrom()).filter(InstructionInterpretation::relevant).toList();
         if (refs.size() == 1 && r.installed.matches(refs.get(0))) return r;
       }
@@ -84,10 +91,16 @@ final class OrdinaryCallFlow {
   }
 
   static boolean architecturalExemption(Instruction ins, Reference ref) {
-    var r = exact(ins);
-    if (r == null || !r.installed.matches(ref)) return false;
-    try { return r.basis.equals(ProgramFingerprint.capture(ins.getProgram(), TaskMonitor.DUMMY)); }
-    catch (Exception invalid) { return false; }
+    if (ins == null) return false;
+    try {
+      var p = ins.getProgram();
+      var snapshot = OrdinaryCallBasis.snapshot(p);
+      var r = snapshot.exact(ins);
+      if (r == null || !r.installed.matches(ref)) return false;
+      var basis = OrdinaryCallBasis.current(p, TaskMonitor.DUMMY);
+      return snapshot == basis.snapshot() && snapshot.revision() == p.getModificationNumber()
+          && r.basis.equals(basis.fingerprint());
+    } catch (Exception invalid) { return false; }
   }
 
   static AddressSet publish(Program p, AnalysisResult result, TaskMonitor monitor) throws Exception {
@@ -104,7 +117,7 @@ final class OrdinaryCallFlow {
       var existing = exact(ins);
       if (existing != null && existing.basis.equals(result.fingerprint()) && existing.proof.equals(proof)) continue;
       // Never adopt preexisting/edited artifacts or compete across operand namespaces.
-      if (group.ordinaryCalls.stream().anyMatch(r -> valid(r) && Objects.equals(r.installed.from.resolve(p), from))) continue;
+      if (group.ordinaryCalls.stream().anyMatch(r -> structurallyOwned(r) && Objects.equals(r.installed.from.resolve(p), from))) continue;
       if (ins == null || ins.getLength() != 3 || (ins.getBytes()[0] & 255) != 0xcd
           || InstructionInterpretation.architecturalUnresolved(ins) != null
           || !Objects.equals(ins.getFallThrough(), next)
@@ -145,7 +158,7 @@ final class OrdinaryCallFlow {
     if (group.ordinaryCalls.isEmpty()) return;
     monitor.checkCancelled();
     var fingerprint = ProgramFingerprint.capture(p, monitor);
-    var stale = group.ordinaryCalls.stream().filter(r -> valid(r) && !r.basis.equals(fingerprint)).toList();
+    var stale = group.ordinaryCalls.stream().filter(r -> structurallyOwned(r) && (!currentProof(r) || !r.basis.equals(fingerprint))).toList();
     if (stale.isEmpty()) return;
     int tx = p.startTransaction("Retire stale ordinary CALL presentation");
     boolean success = false;
@@ -161,7 +174,7 @@ final class OrdinaryCallFlow {
 
   static boolean undo(Program p, Receipt r, List<String> diagnostics) throws Exception {
     var ref = installed(p, r);
-    var from = valid(r) ? r.installed.from.resolve(p) : null;
+    var from = structurallyOwned(r) ? r.installed.from.resolve(p) : null;
     var ins = from == null ? null : p.getListing().getInstructionAt(from);
     if (ref == null) {
       diagnostics.add("Preserved edited or uncertain ordinary CALL at " + from);
@@ -189,24 +202,12 @@ final class OrdinaryCallFlow {
     return true;
   }
 
-  static void notifyChanged(Program p, AddressSet changed, TaskMonitor monitor) throws Exception {
-    if (changed.isEmpty()) return;
-    synchronized (notifications) {
-      notifications.put(p, new Notification(new AddressSet(changed), ProgramFingerprint.capture(p, monitor),
-          List.copyOf(receipts(p))));
-    }
-    AutoAnalysisManager.getAnalysisManager(p).codeDefined(changed);
-  }
-
   static boolean consumeNotification(Program p, AddressSetView set, TaskMonitor monitor) throws Exception {
-    Notification token;
-    synchronized (notifications) { token = notifications.remove(p); }
-    if (token == null || set.isEmpty() || !token.sources.contains(set)
-        || !token.receipts.equals(receipts(p)) || !token.fingerprint.equals(ProgramFingerprint.capture(p, monitor))) return false;
-    for (var source : token.sources.getAddresses(true))
-      if (exact(p.getListing().getInstructionAt(source)) == null) return false;
-    return true;
+    return OrdinaryCallNotifications.consume(p, set, monitor);
   }
 
-  static void analysisEnded(Program p) { synchronized (notifications) { notifications.remove(p); } }
+  static void analysisEnded(Program p) {
+    OrdinaryCallNotifications.analysisEnded(p);
+    OrdinaryCallBasis.clear(p);
+  }
 }

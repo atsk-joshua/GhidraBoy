@@ -157,6 +157,11 @@ public final class ProgramFingerprint {
   }
 
   public static String capture(Program p, TaskMonitor monitor) throws Exception {
+    return capture(p, monitor, OrdinaryCallBasis.load(p));
+  }
+
+  static String capture(Program p, TaskMonitor monitor, OrdinaryCallBasis.Snapshot snapshot)
+      throws Exception {
     // Keep this result-specific policy out of shared software/ordinary-entry dependency shapes.
     var parts = new TreeMap<>(components(p, monitor));
     // Normalize only exact owned presentation in the AnalysisResult dependency path.
@@ -164,7 +169,7 @@ public final class ProgramFingerprint {
     var normalized = new ArrayList<String>();
     for (var ins : p.getListing().getInstructions(true)) {
       monitor.checkCancelled();
-      var receipt = OrdinaryCallFlow.exact(ins);
+      var receipt = snapshot.exact(ins);
       if (receipt != null) {
         var old = receipt.displaced();
         normalized.add(address(old.from().resolve(p)) + ":" + address(old.to().resolve(p))

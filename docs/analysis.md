@@ -73,6 +73,13 @@ reference overrides (including endpoints, kind, operand, source and primary stat
 and target callfixups in canonical order. Apply/discovery reject stale results;
 preview detects changes during traversal. Ordinary supplemental navigation/data
 references are not analysis inputs, so application does not invalidate itself.
+Exact owned ordinary-CALL flow uses one receipt index per fingerprint capture and
+a transient basis cache bound to the Program modification number; independent
+flow edits invalidate immediately, including inside a transaction. Known obsolete
+proof engines retain only exact receipt-based removal/restoration authority.
+Publication prepares stock notification dependencies before commit so cancellation
+rolls back the mutation instead of reporting failure after successful application.
+See the [ordinary-CALL lifecycle contract](decisions/ordinary-call-stock-flow.md).
 
 The architectural path evaluates raw `getPcode(false)` and decoded default flows
 only when stored flow annotations are consistent. Flow/reference overrides, altered

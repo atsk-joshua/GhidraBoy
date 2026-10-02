@@ -55,3 +55,4 @@ decisions/sequential-returning-call.md
 decisions/finite-pointer-successor.md
 decisions/proven-stock-flow-integration.md
 decisions/ordinary-call-proof-certificate.md
+decisions/ordinary-call-stock-flow.md

@@ -21,17 +21,35 @@ import org.junit.jupiter.api.Test;
 class OrdinaryCallSchedulingTest extends IntegrationTest {
   private final class Fixture implements AutoCloseable {
     final Object owner = new Object();
-    final ProgramDB p = new ProgramDB("Ordinary CALL analyzer producer", getLanguage(), getLanguage().getDefaultCompilerSpec(), owner);
+    Runnable afterCommit;
+    final ProgramDB p = new ProgramDB("Ordinary CALL analyzer producer", getLanguage(), getLanguage().getDefaultCompilerSpec(), owner) {
+      private int transactionDepth;
+
+      @Override public int startTransaction(String description) {
+        int id = super.startTransaction(description);
+        transactionDepth++;
+        return id;
+      }
+
+      @Override public boolean endTransaction(int transactionID, boolean commit) {
+        boolean result = super.endTransaction(transactionID, commit);
+        transactionDepth--;
+        if (commit && transactionDepth == 0 && afterCommit != null) afterCommit.run();
+        return result;
+      }
+    };
     final ghidra.program.model.address.Address root;
     final ghidra.program.model.address.Address source;
     final ghidra.program.model.address.Address target;
     final AutoAnalysisManager manager;
 
-    Fixture() throws Exception {
+    Fixture() throws Exception { this(false); }
+
+    Fixture(boolean twoCalls) throws Exception {
       byte[] bytes = new byte[0x10000];
       bytes[0x147] = 0x19;
       bytes[0x148] = 1;
-      byte[] caller = HexFormat.of().parseHex("3100d03e02ea0020cd004076");
+      byte[] caller = HexFormat.of().parseHex(twoCalls ? "3100d03e02ea0020cd0040cd004076" : "3100d03e02ea0020cd004076");
       System.arraycopy(caller, 0, bytes, 0x150, caller.length);
       bytes[0x8000] = (byte) 0xc9;
       try (var provider = new ByteArrayProvider(bytes)) {
@@ -74,6 +92,58 @@ class OrdinaryCallSchedulingTest extends IntegrationTest {
     @Override public void setMessage(String message) {
       if (message.startsWith("GhidraBoy: deriving physical entry state")) relationalPasses++;
       super.setMessage(message);
+    }
+  }
+
+  @Test void cancellationDuringNotificationPreparationRollsBackWithoutFeedback() throws Exception {
+    try (var f = new Fixture()) {
+      var proof = f.proof();
+      var decoded = OrdinaryCallFlow.Tuple.of(f.p.getListing().getInstructionAt(f.source).getReferencesFrom()[0]);
+      var monitor = new TaskMonitorAdapter(true) {
+        @Override public void checkCancelled() throws ghidra.util.exception.CancelledException {
+          if (!OrdinaryCallFlow.receipts(f.p).isEmpty()) cancel();
+          super.checkCancelled();
+        }
+      };
+      assertThrows(ghidra.util.exception.CancelledException.class, () -> BankAnalysis.apply(f.p, proof, monitor));
+      assertTrue(OrdinaryCallFlow.receipts(f.p).isEmpty());
+      assertEquals(decoded, OrdinaryCallFlow.Tuple.of(f.p.getListing().getInstructionAt(f.source).getReferencesFrom()[0]));
+      assertNull(f.p.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", null));
+      assertFalse(OrdinaryCallFlow.consumeNotification(f.p, new AddressSet(f.source), TaskMonitor.DUMMY));
+    }
+  }
+
+  @Test void cancellationAtCommitBoundaryCannotMakeSuccessfulApplyThrow() throws Exception {
+    try (var f = new Fixture()) {
+      var proof = f.proof();
+      var monitor = new TaskMonitorAdapter(true);
+      f.afterCommit = monitor::cancel;
+      assertDoesNotThrow(() -> BankAnalysis.apply(f.p, proof, monitor));
+      assertTrue(monitor.isCancelled(), "Cancellation must arrive immediately after the real commit");
+      assertNotNull(OrdinaryCallFlow.exact(f.p.getListing().getInstructionAt(f.source)));
+      assertTrue(OrdinaryCallFlow.consumeNotification(f.p, new AddressSet(f.source), TaskMonitor.DUMMY));
+    }
+  }
+
+  @Test void coalescedIndependentAddressesDoNotSuppressRequiredAnalysis() throws Exception {
+    try (var f = new Fixture()) {
+      BankAnalysis.apply(f.p, f.proof(), TaskMonitor.DUMMY);
+      var coalesced = new AddressSet(f.source);
+      coalesced.add(f.root);
+      assertFalse(OrdinaryCallFlow.consumeNotification(f.p, coalesced, TaskMonitor.DUMMY));
+      assertFalse(OrdinaryCallFlow.consumeNotification(f.p, new AddressSet(f.source), TaskMonitor.DUMMY),
+          "A rejected coalesced notification retires the token; later work runs normally");
+    }
+  }
+
+  @Test void partitionedFeedbackCannotSuppressLaterIndependentWork() throws Exception {
+    try (var f = new Fixture(true)) {
+      var proof = f.proof();
+      assertEquals(2, proof.ordinaryCallProofs().size());
+      BankAnalysis.apply(f.p, proof, TaskMonitor.DUMMY);
+      assertTrue(OrdinaryCallFlow.consumeNotification(f.p, new AddressSet(f.source), TaskMonitor.DUMMY));
+      assertFalse(OrdinaryCallFlow.consumeNotification(f.p, new AddressSet(f.source.add(3)), TaskMonitor.DUMMY),
+          "Only the first exact subset is suppressed; remaining partition conservatively reruns");
     }
   }
 

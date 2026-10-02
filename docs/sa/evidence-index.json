@@ -1313,5 +1313,42 @@
       "WUX-1B/JP HL not begun"
     ],
     "remote_mutation": "NONE; one local commit only"
+  },
+  "wux_1a_r1_lifecycle_hardening_20261001": {
+    "status": "Focused repair PASS; broader qualification unrun",
+    "baseline": "fa2fc684329291bf499155ffe8894cc00162d8ac",
+    "starting_tree": "a25bbccbb0e95331781736badd7fe3abcce04765",
+    "branch": "preview-m2-ghidra-native",
+    "decision": "docs/decisions/ordinary-call-stock-flow.md",
+    "temporary_execution_root": "/private/tmp/ghidraboy-wux1a-r1-evidence",
+    "receipt": {
+      "path": "/private/tmp/ghidraboy-wux1a-r1-evidence/receipt.json",
+      "sha256": "0e68bb1a7740fc00000168d8a59e87e68fc18d07c4898b7fb47cbe16ec8926e5"
+    },
+    "source_manifest": {
+      "path": "/private/tmp/ghidraboy-wux1a-r1-evidence/source-manifest.json",
+      "sha256": "5c16cb8af064ca7d812794fea5178983a44a3548fd163e013a3e1be93220296b"
+    },
+    "focused_tests": {
+      "selected": 87,
+      "passed": 86,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    "native_unavailable": "AnalysisLifecycleTest.mapper control stores stay visible in decompiler and receive access annotations: pinned distribution lacks macOS arm64 decompile; ordinary-CALL native test skipped for same executable",
+    "checks": [
+      "ktlintCheck PASS",
+      "git diff --check PASS",
+      "Independent source review PASS"
+    ],
+    "limits": [
+      "Full provider aggregate",
+      "Native C/Docker qualification",
+      "Separate-JVM and larger saved-Program persistence matrix",
+      "Installed/headed/Steam Deck/Wyatt",
+      "Release qualification",
+      "WUX-1B not begun; no remote mutation"
+    ]
   }
 }

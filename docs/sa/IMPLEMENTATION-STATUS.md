@@ -25,6 +25,19 @@ This closes the authorized implementation slice only. Native-capable execution
 and aggregate qualification remain separate review obligations; WUX-1B is not begun.
 
 
+WUX-1A-R1 hardens this candidate before qualification: known obsolete-engine
+v1 receipts retain only exact retirement/restoration authority; normalized capture
+indexes receipts once and architectural checks reuse a revision-bound basis;
+notification preparation stays inside the rollback-capable apply transaction.
+Focused repair/affected checks pass with 87 selected tests, 86 PASS and one native
+availability skip; the inherited native lifecycle method remains excluded for the
+same missing executable. Deterministic cache reuse, open-transaction edits,
+rollback, obsolete-engine packed reopen and commit-boundary cancellation pass.
+Independent source review, lint and diff checks pass. Pinned scheduler coalescing
+and conservative partition behavior need no representation change. Broader
+qualification remains unrun; evidence is indexed under WUX-1A-R1.
+
+
 ## WUX-1P ordinary returning-call certificate — CLOSED
 
 The [certificate contract](../decisions/ordinary-call-proof-certificate.md) adds a

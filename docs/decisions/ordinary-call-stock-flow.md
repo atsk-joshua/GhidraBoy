@@ -29,7 +29,12 @@ receipt deletion rules remain unchanged. The receipt uses AnalysisOwnership.Poin
 records all three certificate static/physical identities, engine/basis fingerprint,
 source bytes, and exact installed/displaced reference tuples including source,
 type, operand, primary state and symbol identity. No language, compiler, mapping
-or AnalysisResult schema/engine identity changes.
+or AnalysisResult schema/engine identity changes. Known receipt version 1 retains
+structural removal/restoration authority when its proof engine becomes obsolete.
+Only an exact unchanged installed tuple can be removed; source semantics must
+still match before restoring DEFAULT. Obsolete engines confer no normalization,
+architectural exemption or publication authority. Unknown future receipt formats
+confer no destructive or proof authority; recomputation never upgrades them.
 
 Removal undoes an exact unchanged physical tuple and restores the exact original
 DEFAULT tuple when its original decoded source still matches. An edited physical
@@ -50,6 +55,15 @@ CALL while its original normalized proof basis is current. Fresh certificates
 still require the original raw byte/stack/mapper/matched-return exploration.
 Generated/native flow without correspondence cannot establish proof.
 
+Each result fingerprint capture loads one immutable ordinary-CALL receipt index,
+keyed by exact source identity. Architectural encounters reuse one normalized basis
+per Program modification number. Pinned 12.1.3 increments that number synchronously
+for Program events, including ownership option writes and rollback restoration;
+checks inside open transactions therefore invalidate before event delivery.
+Changed bytes, mapping, permissions, generated-storage eligibility and independent
+flow retain the existing dependency contract. Cache entries are transient, discarded
+on revision mismatch and analysis end, and confer no authority after save/reopen.
+
 Every preview retires stale derived flow before capturing the modification number
 and new fingerprint, including previews that subsequently reach STATE_LIMIT.
 An unchanged original basis remains installed during a smaller incomplete invocation.
@@ -60,11 +74,20 @@ arbitrary external edits without analysis.
 ## Stock scheduling and bounded verification
 
 Actual publication changes notify AutoAnalysisManager.codeDefined at the exact
-source addresses. Idempotent apply sends no notification. A session token containing
+source addresses. The owning transaction prepares the manager, exact normalized
+fingerprint and immutable receipt snapshot while cancellation or failure can still
+roll back. Only successful commit publishes the prepared token and queues
+codeDefined; that step performs no fingerprint capture or monitor check.
+Idempotent apply sends no notification. A session token containing
 sources, normalized fingerprint and receipt identities consumes only unchanged
 publication feedback; source, flow or ownership changes cannot suppress another
 relational pass. analysisEnded clears the token. The incumbent analyzer remains
 an INSTRUCTION_ANALYZER at LOW_PRIORITY. No stock analyzer is invoked manually.
+Pinned 12.1.3 AnalysisScheduler unions pending instruction addresses and passes the
+whole accumulated set to one analyzer invocation. A coalesced superset refuses
+suppression and retires the token. A hypothetical partition consumes at most its
+first exact subset; remaining subsets conservatively rerun analysis. This producer
+contract therefore has no missed-analysis case requiring a token redesign.
 
 Pinned Ghidra 12.1.3 InstructionDB, InstructionPcodeOverride, PcodeEmit,
 ReferenceDBManager, FunctionAnalyzer and AutoAnalysisManager source confirms the

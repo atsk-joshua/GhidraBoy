@@ -416,6 +416,64 @@ class OrdinaryCallFlowTest extends IntegrationTest {
     }
   }
 
+  @Test void obsoleteEngineKnownReceiptRetiresAfterReopenWithoutProofAuthority() throws Exception {
+    for (String operation : List.of("retire", "remove", "edited", "future")) try (var f = new Fixture()) {
+      var proof = f.proof();
+      var original = OrdinaryCallFlow.Tuple.of(f.calls().get(0));
+      f.publish(proof);
+      f.edit(() -> {
+        var group = AnalysisOwnership.group(f.p, OrdinaryCallFlow.GROUP);
+        var r = group.ordinaryCalls.get(0);
+        group.ordinaryCalls.set(0, new OrdinaryCallFlow.Receipt(operation.equals("future") ? 2 : 1,
+            r.proof(), "obsolete-proof-engine", r.basis(), r.bytes(), r.installed(), r.displaced()));
+        AnalysisOwnership.save(f.p, OrdinaryCallFlow.GROUP, group);
+      });
+      var packed = temporary.resolve("obsolete-" + operation + ".gzf").toFile();
+      f.p.saveToPackedFile(packed, TaskMonitor.DUMMY);
+      var database = ghidra.framework.store.db.PackedDatabase.getPackedDatabase(packed, true, TaskMonitor.DUMMY);
+      var consumer = new Object();
+      ProgramDB reopened = null;
+      try {
+        reopened = new ProgramDB(database.open(TaskMonitor.DUMMY), ghidra.framework.data.OpenMode.UPDATE,
+            TaskMonitor.DUMMY, consumer);
+        var p = reopened;
+        var source = ProgramMapping.staticAddress(p, "0158");
+        var target = ProgramMapping.staticAddress(p, "rom2::4100");
+        var ins = p.getListing().getInstructionAt(source);
+        var installed = Arrays.stream(ins.getReferencesFrom()).filter(r -> r.getReferenceType().isCall()).findFirst().orElseThrow();
+        assertFalse(OrdinaryCallFlow.currentProof(OrdinaryCallFlow.receipts(p).get(0)), operation);
+        assertNull(OrdinaryCallFlow.exact(ins), operation);
+        assertFalse(OrdinaryCallFlow.architecturalExemption(ins, installed), operation);
+        assertNotNull(InstructionInterpretation.architecturalUnresolved(ins), operation);
+        assertThrows(IllegalStateException.class, () -> ProgramFingerprint.requireCurrent(p, proof, TaskMonitor.DUMMY));
+        int tx = p.startTransaction("Retire obsolete proof presentation");
+        try {
+          if (operation.equals("edited")) {
+            p.getReferenceManager().delete(installed);
+            var user = p.getReferenceManager().addMemoryReference(source, target,
+                RefType.UNCONDITIONAL_CALL, SourceType.USER_DEFINED, installed.getOperandIndex());
+            p.getReferenceManager().setPrimary(user, true);
+          }
+          if (operation.equals("remove")) AnalysisOwnership.remove(p, OrdinaryCallFlow.GROUP, TaskMonitor.DUMMY);
+          else OrdinaryCallFlow.retireStale(p, TaskMonitor.DUMMY);
+        } finally { p.endTransaction(tx, true); }
+        var refs = Arrays.stream(ins.getReferencesFrom()).filter(r -> r.getReferenceType().isCall()).toList();
+        assertEquals(1, refs.size(), operation);
+        if (operation.equals("edited") || operation.equals("future")) {
+          assertEquals(target, refs.get(0).getToAddress(), operation);
+          assertEquals(operation.equals("edited") ? SourceType.USER_DEFINED : SourceType.ANALYSIS,
+              refs.get(0).getSource(), operation);
+        } else {
+          assertTrue(OrdinaryCallFlow.receipts(p).isEmpty(), operation);
+          assertEquals(original, OrdinaryCallFlow.Tuple.of(refs.get(0)), operation);
+        }
+      } finally {
+        if (reopened != null) reopened.release(consumer);
+        database.dispose();
+      }
+    }
+  }
+
   @Test void historicalOwnershipEnvelopeCannotAcquireOrdinaryCallDestructiveAuthority() throws Exception {
     for (int version : List.of(1, 2, 3, 4, 5)) try (var f = new Fixture()) {
       f.publish(f.proof());

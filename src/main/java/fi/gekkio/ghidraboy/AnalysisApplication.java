@@ -18,7 +18,7 @@ final class AnalysisApplication {
     var findings = result.findings();
     int tx = p.startTransaction("GhidraBoy bank analysis");
     boolean success = false;
-    var nativeChanges = new ghidra.program.model.address.AddressSet();
+    OrdinaryCallNotifications.Prepared notification = null;
     try {
       ProgramFingerprint.requireCurrent(p, result, monitor);
       var options = p.getOptions(ProgramMapping.OPTIONS);
@@ -107,13 +107,14 @@ final class AnalysisApplication {
                 .addMemoryReference(key.from(), key.to(), type, SourceType.ANALYSIS, -1));
       }
       AnalysisOwnership.save(p, "bank-analysis", owned);
-      nativeChanges = OrdinaryCallFlow.publish(p, result, monitor);
+      var nativeChanges = OrdinaryCallFlow.publish(p, result, monitor);
       options.setString("analysis.latest", ProgramMapping.JSON.toJson(result));
+      notification = OrdinaryCallNotifications.prepare(p, nativeChanges, monitor);
       monitor.checkCancelled();
       success = true;
     } finally {
       p.endTransaction(tx, success);
     }
-    OrdinaryCallFlow.notifyChanged(p, nativeChanges, monitor);
+    OrdinaryCallNotifications.publish(p, notification);
   }
 }
