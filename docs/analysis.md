@@ -112,6 +112,10 @@ loaded by COPY. Unsupported widths, unknown pointers/banks and device reads rema
 Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
 byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
 each physical byte, so echo aliases share facts and disjoint writes preserve them.
+An exact FF43 (SCX) write on established GB/CGB hardware preserves ordinary
+WRAM/HRAM facts within the synchronous analysis domain, regardless of the SCX
+value. Unclassified device writes, including FF46/FF55 DMA triggers, still clear
+facts. Mapper transitions and physical stack identity checks remain independent.
 Initialized Program RAM never supplies runtime values. Branches carry transient
 snapshots. At an identical static address, MapperKnowledge and register map, N3
 joins physical byte facts by retaining only exact values established on every
@@ -122,7 +126,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20261001-call-stack-liveness-2b-1` uses schema 4 with a fingerprint
+Engine `20261001-call-stack-liveness-2a-1` uses schema 4 with a fingerprint
 component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with
@@ -139,7 +143,8 @@ Unknown data from supported ordinary RAM or the bounded CGB FF70 read stays
 unknown without independently making callee coverage incomplete. Unsupported or
 unresolved read effects still refuse coverage; unknown data used by control,
 return, stack or mapper checks must satisfy the existing exactness requirements.
-The pre-repair WUX-1P engine requires recomputation; the persisted shape is unchanged.
+The preceding `20261001-call-stack-liveness-2b-1` engine requires recomputation;
+the persisted shape remains schema 4.
 See the [returning-call contract](decisions/ordinary-returning-call.md).
 Successful unconditional CD composition additionally produces a structured durable
 ordinary-call certificate with exact source/target/continuation static and physical

@@ -2,7 +2,22 @@
 
 N3 subsequently refines compatible-state convergence; see the
 [ordinary memory join decision](ordinary-memory-join.md). The worklist descriptions
-below record the N2 checkpoint. Its byte authority and invalidation contract remain.
+below record the N2 checkpoint. Its byte authority remains. CALL-STACK-LIVENESS-2A
+adds one bounded invalidation exception: an exact FF43/SCX WRITE resolved as a
+device on established GB/CGB hardware preserves ordinary WRAM/HRAM facts in the
+incumbent synchronous domain. Known and unknown SCX values have the same RAM
+write set. No device value is stored or invented. FF46, FF55, unclassified devices
+and unknown-address stores retain conservative invalidation. Physical replacement,
+mapper transitions and CALL frame identity checks remain independent.
+
+Blanket FF43 clearing was rejected by the 1A disjoint-write diagnostic. A general
+device framework and DMA narrowing remain outside this decision. Schema remains
+4; engine `20261001-call-stack-liveness-2a-1` requires recomputation of preceding
+`20261001-call-stack-liveness-2b-1` results. No persisted representation changes.
+`BankAnalysisScxLivenessTest` promotes the physical-byte/mapper/control cases and
+checks old-engine rejection and packed save/reopen. Detailed implementation
+receipts are retained in the external `CALL-STACK-LIVENESS-2A-20261001` batch;
+this slice does not close the broader CALL-stack campaign or begin WUX-1B.
 
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,

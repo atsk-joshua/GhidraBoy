@@ -135,10 +135,20 @@ public final class SymbolicMemory {
         facts.remove(physical);
         var value=outcome.request().writtenValue();
         if(value!=null&&ordinaryBacking(p,physical))facts.put(physical,AbstractValues.constant(value,1));
-      } else if(!mapperControl&&(physical==null||resolution.status().equals("device"))) {
+      } else if(!mapperControl&&!disjointScxWrite(p,outcome)
+          &&(physical==null||resolution.status().equals("device"))) {
         // An unresolved destination/device effect is not established disjoint from RAM.
         facts.clear();
       }
+    }
+    private static boolean disjointScxWrite(Program p,ScalarAccess.Outcome outcome) {
+      // SCX changes scrolling only in the incumbent synchronous analysis domain.
+      // This exact exception says nothing about other devices, DMA or byte values.
+      var cartridge=ProgramMapping.cartridge(p);
+      return cartridge!=null&&cartridge.hardwareKnown()
+          &&outcome.request().kind()==ScalarAccess.Kind.WRITE
+          &&Integer.valueOf(0xff43).equals(outcome.request().cpu())
+          &&outcome.resolution().orElseThrow().status().equals("device");
     }
     AbstractValues.Value read(Program p,MapperKnowledge mapper,int cpu,String source,int operation,List<Access> accesses) throws Exception {
       var at=address(p,mapper,cpu,ScalarAccess.Kind.READ,footprint);var physical=physical(p,mapper,cpu,ScalarAccess.Kind.READ,footprint);
