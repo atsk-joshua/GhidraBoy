@@ -14,8 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** Finite 2E ordinary-memory contract; no device-value or hardware-state oracle is implied. */
+/** Finite 2F ordinary-memory contract; no device-value or hardware-state oracle is implied. */
 class BankAnalysisDeviceLivenessTest extends IntegrationTest {
+  @org.junit.jupiter.api.io.TempDir java.nio.file.Path temporary;
   private final class Fixture implements AutoCloseable {
     final Object owner = new Object();
     final ProgramDB p = new ProgramDB("Qualified local device fixture", getLanguage(),
@@ -51,8 +52,9 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
     @Override public void close() { p.release(owner); }
   }
 
-  record Device(int cpu, Long value) {
-    @Override public String toString() { return String.format("%04X <- %s", cpu, value); }
+  record Device(int cpu, Long value, String witness) {
+    Device(int cpu, Long value) { this(cpu, value, "generic"); }
+    @Override public String toString() { return String.format("%04X <- %s (%s)", cpu, value, witness); }
   }
   static List<Device> devices() {
     var cases = new ArrayList<Device>();
@@ -61,6 +63,8 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
       cases.add(new Device(cpu, 2L));
     }
     for (Long value : Arrays.asList(0L, 0xffL, 0x77L, null)) cases.add(new Device(0xff24, value));
+    for (Long value : Arrays.asList(0L, 0xffL, null)) cases.add(new Device(0xff25, value));
+    cases.add(new Device(0xff25, 0xffL, "established Wyatt byte"));
     // LCDC: bit 7 unchanged, disabling, enabling, and other control bits changing.
     for (long value : List.of(0x91L, 0L, 0x80L, 0x93L)) cases.add(new Device(0xff40, value));
     for (long value : List.of(0L, 0x80L)) cases.add(new Device(0xff26, value));
@@ -136,7 +140,42 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
     }
   }
 
-  static List<Integer> unqualified() { return List.of(0xff25, 0xff41, 0xff0f, 0xffff, 0xff46, 0xff55, 0xff44); }
+  @Test void nr51CurrentProofPublishesAndSurvivesPackedReopen() throws Exception {
+    try (var f = new Fixture("31ffffcd00030802c176", "3effe0250800c1c9")) {
+      var current = f.preview(false).result();
+      assertEquals(1, current.ordinaryCallProofs().size());
+      var oldJson = ProgramMapping.JSON.toJson(current).replace(AnalysisResult.ENGINE_VERSION,
+          "20261002-call-stack-liveness-2e-1");
+      var old = ProgramMapping.JSON.fromJson(oldJson, AnalysisResult.class);
+      assertTrue(old.ordinaryCallProofs().isEmpty());
+      assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(oldJson));
+      assertThrows(IllegalStateException.class, () -> AnalysisApplication.apply(f.p, old, TaskMonitor.DUMMY));
+      assertThrows(IllegalStateException.class, () -> OrdinaryCallFlow.publish(f.p, old, TaskMonitor.DUMMY));
+      BankAnalysis.apply(f.p, current, TaskMonitor.DUMMY);
+      var source = ProgramMapping.staticAddress(f.p, "0153");
+      assertNotNull(OrdinaryCallFlow.exact(f.p.getListing().getInstructionAt(source)));
+      var packed = temporary.resolve("nr51-current.gzf").toFile();
+      f.p.saveToPackedFile(packed, TaskMonitor.DUMMY);
+      var database = ghidra.framework.store.db.PackedDatabase.getPackedDatabase(packed, true, TaskMonitor.DUMMY);
+      Object owner = new Object();
+      ProgramDB reopened = null;
+      try {
+        reopened = new ProgramDB(database.open(TaskMonitor.DUMMY), ghidra.framework.data.OpenMode.IMMUTABLE,
+            TaskMonitor.DUMMY, owner);
+        var saved = AnalysisResult.read(reopened.getOptions(ProgramMapping.OPTIONS).getString("analysis.latest", null));
+        ProgramFingerprint.requireCurrent(reopened, saved, TaskMonitor.DUMMY);
+        assertEquals(current.ordinaryCallProofs(), saved.ordinaryCallProofs());
+        assertNotNull(OrdinaryCallFlow.exact(reopened.getListing().getInstructionAt(
+            ProgramMapping.staticAddress(reopened, "0153"))));
+        var fresh = BankAnalysis.preview(reopened, ProgramMapping.staticAddress(reopened, "0150"),
+            MapperState.reset(), AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY);
+        assertEquals(saved.ordinaryCallProofs(), fresh.ordinaryCallProofs());
+        ProgramFingerprint.requireCurrent(reopened, fresh, TaskMonitor.DUMMY);
+      } finally { if (reopened != null) reopened.release(owner); database.dispose(); }
+    }
+  }
+
+  static List<Integer> unqualified() { return List.of(0xff23, 0xff27, 0xff41, 0xff0f, 0xffff, 0xff46, 0xff55, 0xff44); }
   @ParameterizedTest @MethodSource("unqualified")
   void unqualifiedExactDeviceStillDestroysReturnFacts(int cpu) throws Exception {
     try (var f = new Fixture("31ffffcd000376", String.format("3e00ea%02x%02xc9", cpu & 255, cpu >>> 8))) {
@@ -152,7 +191,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
   @Test void constituentBytesDoNotInheritQualificationAndWrappingStillChangesMapper() throws Exception {
     try (var f = new Fixture("00", "c9")) {
       var mapper = MapperKnowledge.from(MapperState.reset());
-      for (int start : List.of(0xff24, 0xff25, 0xff26, 0xff3f, 0xff40, 0xff43, 0xff4b)) {
+      for (int start : List.of(0xff23, 0xff26, 0xff3f, 0xff40, 0xff43, 0xff4b)) {
         var memory = frame(f, mapper);
         var transitions = new ArrayList<BankAnalysis.WriteTransition>();
         assertEquals(mapper, write(f, memory, mapper, start, 2, 0x1200L, transitions));
@@ -161,7 +200,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
         assertEquals(List.of(0, 0x12), transitions.stream().map(BankAnalysis.WriteTransition::value).toList());
         assertTrue(memory.facts.isEmpty(), String.format("Unqualified constituent at %04x", start));
       }
-      for (int start : List.of(0xff42, 0xff4a)) {
+      for (int start : List.of(0xff24, 0xff25, 0xff42, 0xff4a)) {
         var memory = frame(f, mapper);
         var before = memory.snapshot();
         var transitions = new ArrayList<BankAnalysis.WriteTransition>();
@@ -193,7 +232,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
           var cartridge = ProgramMapping.cartridge(f.p).withHardwareChoice(hardware);
           f.p.getOptions(ProgramMapping.OPTIONS).setString("cartridge", ProgramMapping.JSON.toJson(cartridge));
         } finally { f.p.endTransaction(tx, true); }
-        for (int cpu : List.of(0xff24, 0xff26, 0xff40, 0xff42, 0xff43, 0xff4a, 0xff4b)) {
+        for (int cpu : List.of(0xff24, 0xff25, 0xff26, 0xff40, 0xff42, 0xff43, 0xff4a, 0xff4b)) {
           var mapper = MapperKnowledge.from(MapperState.reset());
           var memory = frame(f, mapper);
           var before = memory.snapshot();
@@ -206,7 +245,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
   }
 
   @Test void qualifiedWriteDoesNotAdmitDeviceRead() throws Exception {
-    for (int cpu : List.of(0xff24, 0xff40, 0xff26)) {
+    for (int cpu : List.of(0xff24, 0xff25, 0xff40, 0xff26)) {
       try (var f = new Fixture("31ffffcd000376", String.format("e0%02xf0%02xc9", cpu & 255, cpu & 255))) {
         var mapper = MapperKnowledge.from(MapperState.reset());
         var memory = frame(f, mapper);

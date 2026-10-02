@@ -1,11 +1,24 @@
 # Implementation status
 
+## CALL-STACK-LIVENESS-2F — bounded implementation
+
+The exact ordinary-memory noninterference set adds FF25/NR51 only: FF24, FF25,
+FF26, FF40, FF42, FF43, FF4A and FF4B. Known and unknown NR51 writes preserve
+existing ordinary WRAM/HRAM facts without creating APU state in the supported
+synchronous domain. See the [RAM contract](../decisions/ordinary-ram-byte-facts.md).
+Engine `20261002-call-stack-liveness-2f-1` retains schema 4; 2E results require
+recomputation and obsolete owned flow retains retirement authority only. COPY,
+depth and resource bounds remain unchanged. Focused validation and bounded Wyatt
+replay are recorded externally in `CALL-STACK-LIVENESS-2F-20261002`. Final campaign/
+evidence-index closeout remains open; WUX-1A remains CLOSED / QUALIFIED and
+WUX-1B has not begun. No full-provider, installed or release qualification is claimed.
+
 ## CALL-STACK-LIVENESS-2E — bounded implementation
 
 The exact ordinary-memory noninterference set adds FF24/NR50 only: FF24, FF26,
 FF40, FF42, FF43, FF4A and FF4B. Known and unknown NR50 writes preserve existing
 ordinary WRAM/HRAM facts in the supported synchronous domain without creating
-APU state. FF25 remains unqualified. See the [RAM contract](../decisions/ordinary-ram-byte-facts.md).
+APU state. FF25 remained unqualified at that checkpoint. See the [RAM contract](../decisions/ordinary-ram-byte-facts.md).
 Engine `20261002-call-stack-liveness-2e-1` retains schema 4; prior engine results
 require recomputation and obsolete owned flow retains retirement authority only.
 Memory-storage COPY, depth and resource bounds remain unchanged. Focused tests

@@ -48,11 +48,11 @@ Final integrated campaign/evidence-index closeout remains open; WUX-1A remains
 CLOSED / QUALIFIED and WUX-1B has not begun.
 
 CALL-STACK-LIVENESS-2E adds exactly FF24/NR50 to that finite WRITE exception,
-using the independent WYATT-FF24-EFFECT-1 audit. The current set is FF24, FF26,
+using the independent WYATT-FF24-EFFECT-1 audit. The 2E set is FF24, FF26,
 FF40, FF42, FF43, FF4A and FF4B. NR50 controls audio output volume and VIN
 routing; accepted or ignored writes for every byte, including unknown, preserve
 existing ordinary WRAM/HRAM facts in the supported synchronous domain. No APU
-state is modeled or implied. FF25 remains unqualified; no APU or I/O range is
+state is modeled or implied. At that checkpoint FF25 remained unqualified; no APU or I/O range is
 admitted. No separate NR50 structural barrier was demonstrated for this domain.
 
 Engine `20261002-call-stack-liveness-2e-1` requires recomputation of
@@ -62,6 +62,25 @@ Memory-storage COPY, FF26 semantics, depth three and the 128-state local bound
 remain unchanged. Focused evidence belongs to external batch
 `CALL-STACK-LIVENESS-2E-20261002`; final campaign/evidence-index closeout remains
 open. WUX-1A remains CLOSED / QUALIFIED; WUX-1B has not begun.
+
+CALL-STACK-LIVENESS-2F adds exactly FF25/NR51, classified SAFE_LOCAL_MEMORY_EFFECT
+by WYATT-FF25-EFFECT-1. The current finite set is FF24, FF25, FF26, FF40, FF42,
+FF43, FF4A and FF4B. NR51 controls left/right APU channel routing. For every
+written byte and either APU-power state, accepted or ignored writes preserve
+existing ordinary WRAM/HRAM facts in the supported synchronous domain. No APU
+fact is created or implied. No FF25 structural barrier is required here. An APU,
+audio or I/O range rule remains rejected; each multi-byte constituent must be
+independently qualified, and FF23/FF27 remain conservative.
+
+Engine `20261002-call-stack-liveness-2f-1` requires recomputation of 2E results;
+schema remains 4 with no persisted representation change. Old authority cannot
+apply or publish, while stale owned WUX-1A physical flow retains retirement
+and exact restoration authority. Current recomputed results publish and reopen
+under the incumbent lifecycle. FF24/FF26 semantics, memory-storage COPY, depth
+three and the 128-state local bound are unchanged. Focused tests and the bounded
+source-derived Wyatt replay belong to external `CALL-STACK-LIVENESS-2F-20261002`.
+Final campaign/evidence-index closeout remains open; WUX-1A remains CLOSED /
+QUALIFIED and WUX-1B has not begun.
 
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,
