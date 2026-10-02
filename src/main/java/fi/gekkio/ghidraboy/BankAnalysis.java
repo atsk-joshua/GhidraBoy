@@ -248,7 +248,7 @@ public final class BankAnalysis {
   // Preview-local, depth-bounded validation frames. Architectural bytes remain in SymbolicMemory.
   private record CallFrame(int cpu, int sp, List<MapperState.Physical> stack,
       MapperState.Physical callee) {}
-  private record Exploration(boolean complete, List<Work> returns) {}
+  private record Exploration(boolean structuralComplete, List<Work> returns) {}
 
   // Encountered sites are not active invocations. The immutable frame chain is the
   // authority for admission, including while a nested callee is being explored.
@@ -551,11 +551,13 @@ public final class BankAnalysis {
           }
           var output = op.getOutput();
           if (output != null) {
+            ReadOutcome read = op.getOpcode() == PcodeOp.LOAD && !internal
+                && op.getInput(0).isConstant()
+                && (int) op.getInput(0).getOffset() == p.getAddressFactory().getDefaultAddressSpace().getSpaceID()
+                ? memoryLoad(p, cartridge, state, memory, value(op.getInput(1), regs, unique), output.getSize())
+                : ReadOutcome.UNRESOLVED;
             Long result = internal ? null : op.getOpcode() == PcodeOp.LOAD
-                ? (op.getInput(0).isConstant()
-                    && (int) op.getInput(0).getOffset() == p.getAddressFactory().getDefaultAddressSpace().getSpaceID()
-                    ? memoryLoad(p, cartridge, state, memory, value(op.getInput(1), regs, unique), output.getSize()) : null)
-                : evaluate(op, regs, unique);
+                ? read.value() : evaluate(op, regs, unique);
             if (output.isAddress()) {
               int cpu = (int) (output.getOffset() & 65535);
               state =
@@ -573,7 +575,7 @@ public final class BankAnalysis {
                       writes, memory);
               changedMapper |= touchesMapper(cartridge, cpu, output.getSize());
             }
-            if (frame != null && op.getOpcode() == PcodeOp.LOAD && result == null) complete = false;
+            if (frame != null && op.getOpcode() == PcodeOp.LOAD && read.coverage() != ReadCoverage.SUPPORTED) complete = false;
             if (frame != null && !ordinaryOperation(op)) supported = false;
             put(output, result, regs, unique);
           }
@@ -954,10 +956,10 @@ public final class BankAnalysis {
         List.copyOf(nestedFrames), configuration, restriction, monitor, diagnostic, calleeCandidates, session);
     for (var entry : calleeCandidates.targets.entrySet()) {
       candidates.targets.computeIfAbsent(entry.getKey(), k -> new TreeSet<>()).addAll(entry.getValue());
-      if (!summary.complete()) candidates.reasons.put(entry.getKey(), "Incomplete ordinary callee exploration: candidates are not proof");
+      if (!summary.structuralComplete()) candidates.reasons.put(entry.getKey(), "Incomplete ordinary callee exploration: candidates are not proof");
     }
     candidates.reasons.putAll(calleeCandidates.reasons);
-    if (!summary.complete() || summary.returns().isEmpty()) {
+    if (!summary.structuralComplete() || summary.returns().isEmpty()) {
       candidates.reasons.put(AnalysisCandidates.Site.control(caller.address(), "flow"),
           "Ordinary call has no complete matched-return proof");
       return null;
@@ -1176,10 +1178,31 @@ public final class BankAnalysis {
     return state;
   }
 
-  private static Long memoryLoad(Program p, Cartridge c, MapperKnowledge state,
+  /** Read-effect coverage is independent of byte knowledge; neither is persisted. */
+  private enum ReadCoverage { SUPPORTED, UNRESOLVED }
+  private record ReadOutcome(Long value, ReadCoverage coverage) {
+    private static final ReadOutcome UNRESOLVED = new ReadOutcome(null, ReadCoverage.UNRESOLVED);
+  }
+
+  private static ReadOutcome memoryLoad(Program p, Cartridge c, MapperKnowledge state,
       SymbolicMemory.State memory, Long pointer, int width) throws Exception {
+    if (pointer == null || width < 1 || width > Long.BYTES) return ReadOutcome.UNRESOLVED;
     var ram = memory.ordinaryRead(p, c, state, pointer, width);
-    return ram != null ? ram : romLoad(p, c, state, pointer, width);
+    var value = ram != null ? ram : romLoad(p, c, state, pointer, width);
+    if (value != null) return new ReadOutcome(value, ReadCoverage.SUPPORTED);
+    for (int i = 0; i < width; i++) {
+      int cpu = (int) ((pointer + i) & 65535);
+      var request = new ScalarAccess.Request(cpu, ScalarAccess.Kind.READ, width, i, null, -1, -1, null);
+      var resolution = ScalarAccess.resolve(c, state, request).resolution().orElseThrow();
+      // Canonically backed ordinary RAM reads have no modeled write effects even
+      // when a path-written byte is absent. SVBK is the bounded device read from
+      // 1B: reading its selector does not change it or RAM; its value stays unknown.
+      // Other devices, unavailable ROM and unresolved physical identities refuse.
+      if (!SymbolicMemory.State.ordinaryBacking(p, resolution.physical())
+          && !(c.color() && cpu == 0xff70 && resolution.status().equals("device")))
+        return ReadOutcome.UNRESOLVED;
+    }
+    return new ReadOutcome(null, ReadCoverage.SUPPORTED);
   }
 
   /** LOAD alone consumes memory. Mapping observations do not authorize a byte value. */

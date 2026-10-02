@@ -90,8 +90,10 @@ class BankAnalysisSequentialReturningCallTest extends IntegrationTest {
 
   private static void selects(BankAnalysis.FetchPreview preview, Integer expected) {
     store(preview, 0x156, 0x2000, expected);
-    var proven = preview.result().findings().stream().filter(f -> f.access().equals("jump")
-        && f.confidence() == AnalysisResult.Confidence.PROVEN).toList();
+    // Callee-local jumps may be covered even when returned data stays unknown.
+    // Only the caller banked jump can demonstrate selector certainty.
+    var proven = preview.result().findings().stream().filter(f -> f.source().equals("0159")
+        && f.access().equals("jump") && f.confidence() == AnalysisResult.Confidence.PROVEN).toList();
     if (expected == null) assertTrue(proven.isEmpty());
     else assertTrue(proven.stream().anyMatch(f -> f.targets().equals(List.of("rom" + expected + "::4000"))));
   }
@@ -271,7 +273,7 @@ class BankAnalysisSequentialReturningCallTest extends IntegrationTest {
   @Test void n7RoundTripRejectsImmediatelyPrecedingEngineWithoutPersistingFrames() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + CALL_C + "c9", "3e01c9", "3e03c9")) {
       var result = f.preview(false).result();
-      assertEquals("20261001-wux1p-ordinary-call-proof-1", result.engineVersion());
+      assertEquals("20261001-call-stack-liveness-2b-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

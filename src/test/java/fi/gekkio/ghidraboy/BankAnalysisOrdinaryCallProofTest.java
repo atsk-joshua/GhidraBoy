@@ -311,6 +311,24 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
     }
   }
 
+  @Test void preRepairEngineCannotAuthorizeUnchangedProgram() throws Exception {
+    try (var f = new Fixture(CALL + STOP, "c9")) {
+      var current = f.result();
+      ProgramFingerprint.requireCurrent(f.p, current, TaskMonitor.DUMMY);
+      var json = ProgramMapping.JSON.toJson(current).replace(AnalysisResult.ENGINE_VERSION,
+          "20261001-wux1p-ordinary-call-proof-1");
+      var prior = ProgramMapping.JSON.fromJson(json, AnalysisResult.class);
+      assertEquals(current.fingerprint(), prior.fingerprint());
+      assertTrue(prior.ordinaryCallProofs().isEmpty());
+      assertThrows(IllegalArgumentException.class, () -> AnalysisResult.read(json));
+      assertThrows(IllegalStateException.class,
+          () -> ProgramFingerprint.requireCurrent(f.p, prior, TaskMonitor.DUMMY));
+      assertThrows(IllegalStateException.class,
+          () -> AnalysisApplication.apply(f.p, prior, TaskMonitor.DUMMY));
+      assertEquals(current.ordinaryCallProofs(), f.result().ordinaryCallProofs());
+    }
+  }
+
   @Test void savedOutputCannotReestablishProofAfterConsumedBytesChange() throws Exception {
     try (var f = new Fixture(CALL + STOP, "3e02c9")) {
       var prior = f.result();

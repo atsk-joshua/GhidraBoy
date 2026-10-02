@@ -122,7 +122,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20261001-wux1p-ordinary-call-proof-1` uses schema 4 with a fingerprint
+Engine `20261001-call-stack-liveness-2b-1` uses schema 4 with a fingerprint
 component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with
@@ -135,6 +135,11 @@ common register/flag bytes and N3 RAM facts. Mapper state comes from actual call
 effects. Different return mapper/continuation identities and any incomplete path
 retain the conservative unknown continuation. The 128-state callee cap consumes
 the original global state budget too. Frames and memory remain transient.
+Unknown data from supported ordinary RAM or the bounded CGB FF70 read stays
+unknown without independently making callee coverage incomplete. Unsupported or
+unresolved read effects still refuse coverage; unknown data used by control,
+return, stack or mapper checks must satisfy the existing exactness requirements.
+The pre-repair WUX-1P engine requires recomputation; the persisted shape is unchanged.
 See the [returning-call contract](decisions/ordinary-returning-call.md).
 Successful unconditional CD composition additionally produces a structured durable
 ordinary-call certificate with exact source/target/continuation static and physical

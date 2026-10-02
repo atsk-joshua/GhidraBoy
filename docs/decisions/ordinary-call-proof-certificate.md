@@ -114,6 +114,36 @@ JP HL, conditional/indirect/software calls, RST and arbitrary computed-flow proo
 classes remain future work. This certificate foundation alone claims no Wyatt
 workflow improvement, native transport capability or whole-ROM completeness.
 
+## CALL-STACK-LIVENESS-2B read coverage
+
+Ordinary exploration now distinguishes transient `ReadOutcome.value` (nullable byte
+knowledge) from `ReadOutcome.coverage` (`SUPPORTED` or `UNRESOLVED`). Its
+`Exploration.structuralComplete` admits composition only when control and effect
+coverage is complete. A supported read may produce unknown data without vetoing
+coverage: exact immutable ROM values, canonically backed ordinary WRAM/HRAM, and
+the bounded CGB FF70 selector read are supported. FF70 stays unknown even when
+mapper SVBK is known; reading it does not infer a sampled selector value. Other
+devices, unknown addresses, unresolved physical identities and unavailable ROM
+reads remain refusals. Each byte of a multi-byte read must be supported.
+
+Unknown registers and memory remain unknown through PUSH/POP and returned-state
+composition. Using them as a write target, return operand, SP or required mapper
+selector still invokes the existing conservative checks. Exact return slots,
+physical identity, restored SP, established executable continuation, exhaustive
+compatible returns, cancellation and resource/cycle/depth bounds remain required.
+The collector still withholds session authority after actual incomplete callee
+exploration. No durable callee summary or new persisted field is introduced.
+
+Engine `20261001-call-stack-liveness-2b-1` retains schema 4. Pre-repair engine
+`20261001-wux1p-ordinary-call-proof-1` results cannot authorize proof or application,
+even on unchanged bytes/fingerprint; recomputation is required. Existing owned
+CALL receipts retain exact retirement/restoration authority but cannot exempt
+old physical flow as current proof. Language, mapping and ownership formats are
+unchanged. WUX-1A remains CLOSED / QUALIFIED for its recorded candidate; this
+repair requires its own focused verification and makes no campaign completion
+claim. Device-write liveness (1A), depth (1C), broader Wyatt proof and WUX-1B remain
+outside this change.
+
 ## Qualification boundary
 
 WUX-1P is CLOSED for its bounded provenance contract.
