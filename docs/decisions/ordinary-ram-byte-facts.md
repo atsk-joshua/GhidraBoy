@@ -110,6 +110,29 @@ Focused matrix and lifecycle evidence belongs to external batch
 not authorize a FlowOverride migration or a 37F3 certificate. Full aggregate,
 installed/release qualification and WUX-1B remain separate obligations.
 
+CGB-SPEED-SWITCH-2 adds exact FF4D/KEY1 to the value-independent set, retaining
+established-hardware, exact WRITE and device-resolution guards. The preceding
+CGB-SPEED-SWITCH-1 audit establishes that KEY1 control activity preserves ordinary
+WRAM/HRAM in this synchronous domain. Arm/speed relations are modeled separately;
+no reserved device bits or timing values are invented. See the
+[bounded speed-switch decision](cgb-speed-switch.md).
+
+That audit also qualifies narrowly value-dependent local effects: exact IF=00,
+IE=00 and known JOYP byte writes with selection bits 4/5 both one preserve ordinary facts on
+established hardware. These are separate guarded effects, not additional
+value-independent registers. Unknown writes, other IF/IE values and selected or
+unknown JOYP groups retain conservative invalidation. Control-value tracking does
+not alone grant ordinary-memory preservation. No IF runtime value, asynchronous
+interrupt execution or button state is retained. Proven speed-switch STOP
+preserves ordinary memory and stack without changing physical identity; all other
+STOP modes remain incomplete. DMA and unknown-address controls are unchanged.
+
+Engine `20261002-cgb-speed-switch-2` retains schema 4 and requires recomputation
+of RAW-FLOW-VIEW-1 results. Old owned stock flow retains retirement authority only.
+Local/global limits, mapper semantics and WUX-1P/WUX-1A remain unchanged. Detailed
+focused qualification belongs to external `CGB-SPEED-SWITCH-2-20261002` evidence;
+full-provider, installation, release and WUX-1B qualification remain open.
+
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,
 not general memory analysis or milestone completion.

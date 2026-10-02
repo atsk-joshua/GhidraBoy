@@ -1,5 +1,50 @@
 # Implementation status
 
+## CGB-SPEED-SWITCH-2 — bounded implementation candidate
+
+BankAnalysis implements the [bounded KEY1/STOP control relation](../decisions/cgb-speed-switch.md).
+Transient active-mode, current-speed, arm, IE and JOYP-selection facts support
+partial KEY1 reads and source-derived raw BIT/SET effects. CGB hardware/header
+capability alone does not establish active mode. Only tested compatible mode/speed/arm
+alternatives split and stay separate through conditional exploration and meet conservatively
+at returning calls. Software cannot change KEY1's read-only speed bit.
+
+Only canonical two-byte STOP with active CGB, known speed, armed KEY1, IE=00 and
+both JOYP input groups deselected toggles speed, clears arm and continues at CPU
+address +2. Ordinary RAM, real return frames and mapper state survive; no timer,
+IF, IME, actual input or asynchronous execution state is invented. Other STOP and
+HALT behavior remains incomplete. Exact KEY1 joins the finite ordinary-memory
+noninterference set; IF=00, IE=00 and known JOYP deselection writes have separately
+value-qualified preservation guards. DMA, unknown writes and other control values
+retain conservatism.
+
+Engine `20261002-cgb-speed-switch-2` retains schema 4. RAW-FLOW-VIEW-1 results
+require recomputation and cannot authorize publication; obsolete exact owned stock
+flow retains retirement authority. SLEIGH, mapper semantics, the 179-state local
+budget and global/depth limits remain unchanged. WUX-1P and WUX-1A remain CLOSED /
+QUALIFIED; WUX-1B has not begun. Detailed qualification belongs to external batch
+`CGB-SPEED-SWITCH-2-20261002`. Full-provider aggregate, installation and release
+qualification remain separate obligations.
+
+Focused qualification passes 518 JUnit cases across 41 reports, including 43
+self-authored control cases, with no failures/errors/skips; lint, extension,
+build-input and documentation/package checks pass. Separate-process old-engine
+rejection, current recomputation, speed-switch save/reopen and isolated STOP
+second-byte invalidation pass. Independent source review has no blocking findings.
+The unseeded public 02B1 replay preserves the four/eight loops, rom4 matched
+return, timer liveness, HRAM helper and raw 02DF JP beneath CALL_RETURN. It derives
+CGB NORMAL on the KEY1 bit-clear path, arms KEY1, establishes IE=00/JOYP=30 and
+resumes STOP at 15C7 as DOUBLE/unarmed with all 99 ordinary facts preserved.
+The 15B3 callee returns compatibly; 1571 resumes at 1574 with SP=D000.
+
+The next independent frontier is 1574 -> 0618 -> 06BC: unresolved storage,
+32-key widening at 06D0..06D4 and the unchanged 179-state refusal at 06D6.
+The unrestricted 571-state witness suppresses all final proof authority after
+that incomplete callee. An explicitly restricted unseeded prefix ending before
+1574 retains current exact 37F3 and 1571 certificates. Later 1577 preserves
+CALL_RETURN presentation and raw RST word 1578; SP is unknown after the 1574
+refusal. No storage/widening repair, state-limit change or WUX-1B work is included.
+
 ## RAW-FLOW-VIEW-1 — bounded implementation candidate
 
 BankAnalysis uses the [architectural instruction view](../decisions/raw-flow-view.md)

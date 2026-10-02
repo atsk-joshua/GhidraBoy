@@ -19,7 +19,7 @@ public record AnalysisResult(
     List<OrdinaryCallProof> ordinaryCallProofs,
     List<String> diagnostics) {
   public static final int SCHEMA_VERSION = 4;
-  public static final String ENGINE_VERSION = "20261002-raw-flow-view-1";
+  public static final String ENGINE_VERSION = "20261002-cgb-speed-switch-2";
 
   /** Successful must-proof of an ordinary unconditional CD invocation and its matched return. */
   public record OrdinaryCallProof(

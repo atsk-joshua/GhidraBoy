@@ -1558,5 +1558,15 @@
     },
     "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
     "scope": "BankAnalysis raw p-code/prototype-context flow separated from all saved FlowOverride presentation; schema4/current engine; shared publication gates unchanged; self-authored stock analyzer/preservation/separate-process currentness; unseeded4/8 loops179 local,02DF rawJP156D; next1571 CALL15B3 KEY1/STOP frontier;1577 rawRST word1578 with unknown SP;37F3 current exact certificate in explicit unseeded prefix only; no private save/copy/publication/WUX1B/remote/install/release/full aggregate"
+  },
+  "cgb_speed_switch_2_20261002": {
+    "status": "PASS / BOUNDED CAPABILITY",
+    "external_root": "evidence/batches/CGB-SPEED-SWITCH-2-20261002",
+    "qualification": {
+      "path": "evidence/batches/CGB-SPEED-SWITCH-2-20261002/qualification.json",
+      "sha256": "5df55da457834a52121bf657cf4408f1684ed847252a8374ee1cb99d3db42675"
+    },
+    "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
+    "scope": "Transient partial KEY1 mode/speed/arm relation, generic tested-bit path alternatives, exact IE and JOYP selection; canonical proven two-byte CGB STOP toggles speed/clears arm; 518focused tests, packed currentness/reopen and unseeded571state public replay;1571->15B3->1574/SPD000; next0618/06BC storage/widening/local179refusal06D6;37F3/1571 authority finite prefix only; schema4, no SLEIGH/limit/mapper/WUX1B/private-save/remote/install/release/full aggregate change"
   }
 }

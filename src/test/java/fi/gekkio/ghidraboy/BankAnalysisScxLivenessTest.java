@@ -201,7 +201,7 @@ class BankAnalysisScxLivenessTest extends IntegrationTest {
           mapper.translate(ProgramMapping.cartridge(f.p), 0xe100, true).physical());
       mapper = write(f, memory, mapper, 0xe100, 1, 0L);
       assertEquals(0x100L, memory.ordinaryRead(f.p, ProgramMapping.cartridge(f.p), mapper, 0xc100L, 2));
-      mapper = write(f, memory, mapper, 0xffff, 2, 0L);
+      mapper = write(f, memory, mapper, 0xffff, 2, 1L);
       assertTrue(memory.facts.isEmpty());
       assertEquals(Boolean.FALSE, mapper.enabled());
       assertEquals(1, mapper.low());

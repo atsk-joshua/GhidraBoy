@@ -149,7 +149,12 @@ public final class SymbolicMemory {
           &&outcome.request().kind()==ScalarAccess.Kind.WRITE
           &&outcome.request().cpu()!=null
           &&switch(outcome.request().cpu()) {
-            case 0xff06,0xff07,0xff24,0xff25,0xff26,0xff40,0xff42,0xff43,0xff4a,0xff4b -> true;
+            case 0xff06,0xff07,0xff24,0xff25,0xff26,0xff40,0xff42,0xff43,0xff4a,0xff4b,0xff4d -> true;
+            // Separately qualified disabling/deselection writes. Unknown/enabling
+            // values retain the device barrier; no IF/button values are retained.
+            case 0xff0f,0xffff -> Integer.valueOf(0).equals(outcome.request().writtenValue());
+            case 0xff00 -> outcome.request().writtenValue()!=null
+                &&(outcome.request().writtenValue()&0x30)==0x30;
             default -> false;
           }
           &&outcome.resolution().orElseThrow().status().equals("device");

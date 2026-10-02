@@ -182,10 +182,10 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
   static List<Integer> unqualified() { return List.of(0xff04, 0xff05, 0xff08, 0xff23, 0xff27, 0xff41, 0xff0f, 0xffff, 0xff46, 0xff55, 0xff44); }
   @ParameterizedTest @MethodSource("unqualified")
   void unqualifiedExactDeviceStillDestroysReturnFacts(int cpu) throws Exception {
-    try (var f = new Fixture("31ffffcd000376", String.format("3e00ea%02x%02xc9", cpu & 255, cpu >>> 8))) {
+    try (var f = new Fixture("31ffffcd000376", String.format("3e01ea%02x%02xc9", cpu & 255, cpu >>> 8))) {
       var mapper = MapperKnowledge.from(MapperState.reset());
       var memory = frame(f, mapper);
-      assertEquals(mapper, write(f, memory, mapper, cpu, 1, 0L));
+      assertEquals(mapper, write(f, memory, mapper, cpu, 1, 1L));
       assertTrue(memory.facts.isEmpty());
       assertNull(memory.ordinaryRead(f.p, ProgramMapping.cartridge(f.p), mapper, 0xfffdL, 2));
       assertTrue(f.preview(false).result().ordinaryCallProofs().isEmpty());
@@ -216,10 +216,10 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
       }
       var memory = frame(f, mapper);
       var transitions = new ArrayList<BankAnalysis.WriteTransition>();
-      var wrapped = write(f, memory, mapper, 0xffff, 2, 0x1200L, transitions);
+      var wrapped = write(f, memory, mapper, 0xffff, 2, 0x1201L, transitions);
       assertEquals(List.of(0xffff, 0), transitions.stream().map(BankAnalysis.WriteTransition::cpu).toList());
       assertEquals(List.of(0, 1), transitions.stream().map(BankAnalysis.WriteTransition::byteIndex).toList());
-      assertEquals(List.of(0, 0x12), transitions.stream().map(BankAnalysis.WriteTransition::value).toList());
+      assertEquals(List.of(1, 0x12), transitions.stream().map(BankAnalysis.WriteTransition::value).toList());
       assertEquals(transitions.get(0).after(), transitions.get(1).before());
       assertTrue(memory.facts.isEmpty());
       assertEquals(Boolean.FALSE, wrapped.enabled(), "Second architectural byte wraps to mapper enable at 0000");

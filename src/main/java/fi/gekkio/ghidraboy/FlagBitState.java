@@ -50,7 +50,7 @@ final class FlagBitState {
     else registers.remove(flagOffset);
   }
 
-  private AbstractValues.PartialBits bits(Varnode node) {
+  AbstractValues.PartialBits bits(Varnode node) {
     int width = node.getSize();
     if (width < 1 || width > 8) return unknown();
     if (node.isConstant()) return exact(node.getOffset(), width);

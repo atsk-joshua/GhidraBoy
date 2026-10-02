@@ -97,6 +97,16 @@ route. Presentation enums and relevant reference metadata remain fingerprinted,
 so edits require recomputation even when hardware bytes are identical. Shared
 interpretation and stock-flow publication gates remain representation-aware and
 strict. See the [raw flow decision](decisions/raw-flow-view.md).
+BankAnalysis additionally supports the [bounded CGB speed-switch relation](decisions/cgb-speed-switch.md).
+Transient active-mode, speed, arm, IE and JOYP selection facts preserve unknowns;
+a CGB-capable cartridge or console does not establish active CGB mode. Consumed
+KEY1 bit predicates separate compatible mode/speed/arm alternatives, and raw BIT/conditional
+p-code refines each successor. CGB reserved read bits remain unknown; software
+writes affect arm while speed stays read-only. Only proven CGB armed STOP with
+known speed, IE=00, deselected JOYP groups and canonical `10 00` continues at
+CPU address +2, toggles speed and clears arm. Other STOP and HALT modes remain
+unsupported. IF, IME, button state, timer values and exact timing remain unknown.
+
 The evaluator delegates integer operations to pinned Ghidra behaviors with width
 and extraction guards. Separate contract and compiled-SLEIGH regressions qualify
 this bounded behavior, not whole-ROM semantics. See the source checkout's
@@ -134,19 +144,23 @@ Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
 byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
 each physical byte, so echo aliases share facts and disjoint writes preserve them.
 Exact FF06 (TMA), FF07 (TAC), FF24 (NR50), FF25 (NR51), FF26 (NR52), FF40 (LCDC), FF42 (SCY), FF43 (SCX), FF4A (WY) and
-FF4B (WX) writes on established GB/CGB hardware preserve ordinary WRAM/HRAM
+FF4B (WX), plus FF4D (KEY1), writes on established GB/CGB hardware preserve ordinary WRAM/HRAM
 facts within the synchronous analysis domain, for known or unknown byte values.
-This finite rule creates no device facts and establishes no interrupt, timing,
+The existing ten-register rule creates no device facts; KEY1 separately updates
+only the transient control relation. This establishes no general interrupt, timing,
 timer, PPU or APU completeness. TMA modulo/reload and TAC enable, clock selection,
 edge/glitch, overflow/reload and possible timer interrupt-request effects remain
 unknown. FF04/DIV and FF05/TIMA remain unqualified. FF40 LCD/control transitions and FF26 APU power changes
-remain unmodeled. Unclassified device writes, including FF23/FF27/FF41/FF0F/FFFF and
-FF46/FF55 DMA triggers, still clear facts. Each wider STORE byte qualifies
+remain unmodeled. Separately value-qualified exact IF=00, IE=00 and exact JOYP byte writes whose selection
+bits are both one preserve ordinary facts on established hardware under
+the speed-switch audit. Other values and unknown writes to these registers remain
+conservative. Unclassified device writes, including FF23/FF27/FF41 and FF46/FF55
+DMA triggers, still clear facts. Each wider STORE byte qualifies
 independently in architectural order with 16-bit wrapping. Mapper transitions
 and physical stack identity checks remain independent.
 Initialized Program RAM never supplies runtime values. Branches carry transient
-snapshots. At an identical static address, MapperKnowledge and register map, N3
-joins physical byte facts by retaining only exact values established on every
+snapshots. At an identical static address, mapper knowledge, register map, flag bits and
+control relation, the incumbent worklist joins physical byte facts by retaining only exact values established on every
 incoming path. Disagreement or absence becomes unknown. A weakened processed
 state is requeued; compatible memory revisions do not consume address diversity,
 but every evaluation consumes the global state budget. Incompatible mapper or
@@ -154,7 +168,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20261002-call-stack-liveness-2e-1` uses schema 4 with a fingerprint
+Engine `20261002-cgb-speed-switch-2` uses schema 4 with a fingerprint
 component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with
@@ -163,15 +177,15 @@ exact SP, the actual pushed return bytes, defined executable ROM and one physica
 target are established. The same evaluator executes callee instructions and
 unconditional RET; the popped physical frame bytes, returned PC/SP and outgoing
 mapper must prove an available continuation. Compatible returning paths retain
-common register/flag bytes and N3 RAM facts. Mapper state comes from actual callee
+common register/flag bytes, control facts and N3 RAM facts. Mapper state comes from actual callee
 effects. Different return mapper/continuation identities and any incomplete path
 retain the conservative unknown continuation. The 179-state callee resource cap consumes
 the original global state budget too. Frames and memory remain transient. See the [three-level contract](decisions/three-level-ordinary-call.md).
-Unknown data from supported ordinary RAM or the bounded CGB FF70 read stays
-unknown without independently making callee coverage incomplete. Unsupported or
+Unknown data from supported ordinary RAM, the bounded CGB FF70 read or partial
+KEY1 reads stays unknown without independently making callee coverage incomplete. Unsupported or
 unresolved read effects still refuse coverage; unknown data used by control,
 return, stack or mapper checks must satisfy the existing exactness requirements.
-The preceding `20261001-call-stack-liveness-2b-1` engine requires recomputation;
+The preceding `20261002-raw-flow-view-1` engine requires recomputation;
 the persisted shape remains schema 4.
 See the [returning-call contract](decisions/ordinary-returning-call.md).
 Successful unconditional CD composition additionally produces a structured durable
