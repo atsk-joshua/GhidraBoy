@@ -149,7 +149,7 @@ public final class SymbolicMemory {
           &&outcome.request().kind()==ScalarAccess.Kind.WRITE
           &&outcome.request().cpu()!=null
           &&switch(outcome.request().cpu()) {
-            case 0xff26,0xff40,0xff42,0xff43,0xff4a,0xff4b -> true;
+            case 0xff24,0xff26,0xff40,0xff42,0xff43,0xff4a,0xff4b -> true;
             default -> false;
           }
           &&outcome.resolution().orElseThrow().status().equals("device");

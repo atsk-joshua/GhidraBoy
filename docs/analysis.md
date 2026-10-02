@@ -116,12 +116,12 @@ reads remain unresolved; a supported read with absent exact data remains unknown
 Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
 byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
 each physical byte, so echo aliases share facts and disjoint writes preserve them.
-Exact FF26 (NR52), FF40 (LCDC), FF42 (SCY), FF43 (SCX), FF4A (WY) and
+Exact FF24 (NR50), FF26 (NR52), FF40 (LCDC), FF42 (SCY), FF43 (SCX), FF4A (WY) and
 FF4B (WX) writes on established GB/CGB hardware preserve ordinary WRAM/HRAM
 facts within the synchronous analysis domain, for known or unknown byte values.
 This finite rule creates no device facts and establishes no interrupt, timing,
 PPU or APU completeness. FF40 LCD/control transitions and FF26 APU power changes
-remain unmodeled. Unclassified device writes, including FF41/FF0F/FFFF and
+remain unmodeled. Unclassified device writes, including FF25/FF41/FF0F/FFFF and
 FF46/FF55 DMA triggers, still clear facts. Each wider STORE byte qualifies
 independently in architectural order with 16-bit wrapping. Mapper transitions
 and physical stack identity checks remain independent.
@@ -135,7 +135,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20261002-memory-storage-copy-1` uses schema 4 with a fingerprint
+Engine `20261002-call-stack-liveness-2e-1` uses schema 4 with a fingerprint
 component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with

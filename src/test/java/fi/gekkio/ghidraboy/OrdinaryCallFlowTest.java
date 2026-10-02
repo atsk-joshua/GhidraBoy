@@ -419,7 +419,8 @@ class OrdinaryCallFlowTest extends IntegrationTest {
   @Test void obsoleteEngineKnownReceiptRetiresAfterReopenWithoutProofAuthority() throws Exception {
     for (String priorEngine : List.of("20261001-call-stack-liveness-2a-1",
         "20261001-call-stack-liveness-2c-1",
-        "20261001-call-stack-liveness-2d-1"))
+        "20261001-call-stack-liveness-2d-1",
+        "20261002-memory-storage-copy-1"))
       for (String operation : List.of("retire", "remove", "edited", "future")) try (var f = new Fixture()) {
       var proof = f.proof();
       var original = OrdinaryCallFlow.Tuple.of(f.calls().get(0));

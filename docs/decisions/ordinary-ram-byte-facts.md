@@ -47,6 +47,22 @@ Implementation evidence belongs to external `CALL-STACK-LIVENESS-2D-20261001`.
 Final integrated campaign/evidence-index closeout remains open; WUX-1A remains
 CLOSED / QUALIFIED and WUX-1B has not begun.
 
+CALL-STACK-LIVENESS-2E adds exactly FF24/NR50 to that finite WRITE exception,
+using the independent WYATT-FF24-EFFECT-1 audit. The current set is FF24, FF26,
+FF40, FF42, FF43, FF4A and FF4B. NR50 controls audio output volume and VIN
+routing; accepted or ignored writes for every byte, including unknown, preserve
+existing ordinary WRAM/HRAM facts in the supported synchronous domain. No APU
+state is modeled or implied. FF25 remains unqualified; no APU or I/O range is
+admitted. No separate NR50 structural barrier was demonstrated for this domain.
+
+Engine `20261002-call-stack-liveness-2e-1` requires recomputation of
+`20261002-memory-storage-copy-1` results; schema remains 4. Old proofs cannot
+apply or publish; stale owned WUX-1A flow retains retirement authority only.
+Memory-storage COPY, FF26 semantics, depth three and the 128-state local bound
+remain unchanged. Focused evidence belongs to external batch
+`CALL-STACK-LIVENESS-2E-20261002`; final campaign/evidence-index closeout remains
+open. WUX-1A remains CLOSED / QUALIFIED; WUX-1B has not begun.
+
 SA-RAM-VALUE-FACTS follows N1 on `preview-m2-ghidra-native`, starting at
 `901c14d065ce31007dea3f600fb447620c22c76e`. This is a bounded SA-03 foundation,
 not general memory analysis or milestone completion.

@@ -10,7 +10,7 @@ import ghidra.program.model.symbol.SourceType;
 import java.util.*;
 
 public class GhidraBoyOrdinaryCallProofCheck extends GhidraScript {
-  private static final String ENGINE = "20261002-memory-storage-copy-1";
+  private static final String ENGINE = "20261002-call-stack-liveness-2e-1";
   private static final String OLD_ENGINE = "20260930-n8-finite-pointer-successor-1";
 
   private void check(boolean condition, String message) {

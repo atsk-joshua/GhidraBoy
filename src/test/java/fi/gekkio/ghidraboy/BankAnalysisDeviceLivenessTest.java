@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** Finite 2D ordinary-memory contract; no device-value or hardware-state oracle is implied. */
+/** Finite 2E ordinary-memory contract; no device-value or hardware-state oracle is implied. */
 class BankAnalysisDeviceLivenessTest extends IntegrationTest {
   private final class Fixture implements AutoCloseable {
     final Object owner = new Object();
@@ -60,6 +60,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
       cases.add(new Device(cpu, null));
       cases.add(new Device(cpu, 2L));
     }
+    for (Long value : Arrays.asList(0L, 0xffL, 0x77L, null)) cases.add(new Device(0xff24, value));
     // LCDC: bit 7 unchanged, disabling, enabling, and other control bits changing.
     for (long value : List.of(0x91L, 0L, 0x80L, 0x93L)) cases.add(new Device(0xff40, value));
     for (long value : List.of(0L, 0x80L)) cases.add(new Device(0xff26, value));
@@ -115,6 +116,12 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
             preview.result().findings().toString());
         assertEquals(List.of(0xfffe, 0xfffd), writes(preview, 0x153).stream().map(BankAnalysis.WriteTransition::cpu).toList());
         assertEquals(List.of(1, 0x56), writes(preview, 0x153).stream().map(BankAnalysis.WriteTransition::value).toList());
+        var deviceWrites = writes(preview, device.value == null ? 0x300 : 0x302);
+        assertEquals(1, deviceWrites.size());
+        assertEquals(device.cpu, deviceWrites.get(0).cpu());
+        assertEquals(device.value == null ? null : device.value.intValue(), deviceWrites.get(0).value());
+        assertEquals(new MapperState.Physical("HRAM", 0, 0x7e),
+            mapper.translate(ProgramMapping.cartridge(f.p), 0xfffe, true).physical());
         int witness = 0x300 + effect.length() / 2;
         assertEquals(List.of(0xfd, 0xff), writes(preview, witness).stream().map(BankAnalysis.WriteTransition::value).toList());
         assertEquals(List.of(0xff, 0xff), writes(preview, 0x156).stream().map(BankAnalysis.WriteTransition::value).toList());
@@ -129,7 +136,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
     }
   }
 
-  static List<Integer> unqualified() { return List.of(0xff41, 0xff0f, 0xffff, 0xff46, 0xff55, 0xff44); }
+  static List<Integer> unqualified() { return List.of(0xff25, 0xff41, 0xff0f, 0xffff, 0xff46, 0xff55, 0xff44); }
   @ParameterizedTest @MethodSource("unqualified")
   void unqualifiedExactDeviceStillDestroysReturnFacts(int cpu) throws Exception {
     try (var f = new Fixture("31ffffcd000376", String.format("3e00ea%02x%02xc9", cpu & 255, cpu >>> 8))) {
@@ -145,7 +152,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
   @Test void constituentBytesDoNotInheritQualificationAndWrappingStillChangesMapper() throws Exception {
     try (var f = new Fixture("00", "c9")) {
       var mapper = MapperKnowledge.from(MapperState.reset());
-      for (int start : List.of(0xff25, 0xff26, 0xff3f, 0xff40, 0xff43, 0xff4b)) {
+      for (int start : List.of(0xff24, 0xff25, 0xff26, 0xff3f, 0xff40, 0xff43, 0xff4b)) {
         var memory = frame(f, mapper);
         var transitions = new ArrayList<BankAnalysis.WriteTransition>();
         assertEquals(mapper, write(f, memory, mapper, start, 2, 0x1200L, transitions));
@@ -186,7 +193,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
           var cartridge = ProgramMapping.cartridge(f.p).withHardwareChoice(hardware);
           f.p.getOptions(ProgramMapping.OPTIONS).setString("cartridge", ProgramMapping.JSON.toJson(cartridge));
         } finally { f.p.endTransaction(tx, true); }
-        for (int cpu : List.of(0xff26, 0xff40, 0xff42, 0xff43, 0xff4a, 0xff4b)) {
+        for (int cpu : List.of(0xff24, 0xff26, 0xff40, 0xff42, 0xff43, 0xff4a, 0xff4b)) {
           var mapper = MapperKnowledge.from(MapperState.reset());
           var memory = frame(f, mapper);
           var before = memory.snapshot();
@@ -199,7 +206,7 @@ class BankAnalysisDeviceLivenessTest extends IntegrationTest {
   }
 
   @Test void qualifiedWriteDoesNotAdmitDeviceRead() throws Exception {
-    for (int cpu : List.of(0xff40, 0xff26)) {
+    for (int cpu : List.of(0xff24, 0xff40, 0xff26)) {
       try (var f = new Fixture("31ffffcd000376", String.format("e0%02xf0%02xc9", cpu & 255, cpu & 255))) {
         var mapper = MapperKnowledge.from(MapperState.reset());
         var memory = frame(f, mapper);
