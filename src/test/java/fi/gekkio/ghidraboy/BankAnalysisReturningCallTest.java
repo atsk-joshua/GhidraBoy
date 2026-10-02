@@ -241,7 +241,7 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRejectsN4WithoutSerializingFramesOrMemory() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20261001-call-stack-liveness-2d-1", result.engineVersion());
+      assertEquals("20261002-memory-storage-copy-1", result.engineVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
       assertEquals(4, result.schemaVersion());
@@ -328,9 +328,14 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
     }
   }
 
-  @Test void unresolvedAddressValuedCopyCannotAuthorizeReturnedSummary() throws Exception {
-    // FA is an address-valued COPY, deliberately outside incumbent LOAD value propagation.
-    refused(CALL, "fa00c03e02c9");
+  @Test void supportedUnknownStorageCopyAllowsIndependentReturnedValue() throws Exception {
+    // Unknown fixed WRAM contents do not invalidate a later independent exact A value.
+    check("fa00c03e02c9", "", 2);
+  }
+
+  @Test void unsupportedDeviceStorageCopyCannotAuthorizeReturnedSummary() throws Exception {
+    // A later constant cannot repair the unsupported device read's coverage gap.
+    refused(CALL, "fa00ff3e02c9");
   }
 
   @Test void multipleStaticTargetViewsCannotSelectOneCallee() throws Exception {

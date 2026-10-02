@@ -1,5 +1,23 @@
 # Implementation status
 
+## CALL-MEMORY-COPY-1 — bounded implementation
+
+BankAnalysis now interprets a one-byte default CPU memory-storage COPY input
+through the existing mapper/physical read and SymbolicMemory/ReadOutcome path.
+Constants, registers and unique temporaries retain scalar COPY semantics.
+Supported reads with unknown or absent contents remain structurally supported;
+unsupported/unresolved physical effects still refuse callee composition. Other
+spaces and multi-byte storage COPY are unqualified. Language and raw p-code are
+unchanged. See the [RAM contract](../decisions/ordinary-ram-byte-facts.md).
+
+Engine `20261002-memory-storage-copy-1` retains schema 4; 2D results require
+recomputation and obsolete owned CALL flow retains retirement authority only.
+Focused validation and bounded Wyatt replay are recorded in external batch
+`CALL-MEMORY-COPY-1-20261002`. The supported C100 read may remain unknown while
+preserving coverage. Broader CALL-stack campaign closeout remains open, WUX-1A
+remains CLOSED / QUALIFIED and WUX-1B has not begun. No whole-ROM, full-provider,
+installed/native/GUI or release qualification is claimed.
+
 ## CALL-STACK-LIVENESS-2D — bounded implementation
 
 The ordinary-memory exception now covers exactly FF26, FF40, FF42, FF43, FF4A

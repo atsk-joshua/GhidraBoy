@@ -107,8 +107,12 @@ storage and cannot independently establish immutability. Generated
 execution/presentation storage cannot supply byte authority. Values assemble
 little-endian into the existing register/unique domain and can drive mapper writes.
 Mapping findings remain independent of value proof, including for unknown loads.
-Address-valued operands remain mapping observations and are never implicitly
-loaded by COPY. Unsupported widths, unknown pointers/banks and device reads remain unknown.
+One-byte COPY inputs in the default CPU memory space denote storage contents,
+as in `(register, 0x1, 1) COPY (ram, 0xc100, 1)`. They use the same
+mapper/physical read and independent value/coverage policy as LOAD. Constant,
+register and unique inputs remain scalar even when their value resembles a CPU
+address. Other spaces and wider storage COPY forms are not qualified. Unsupported
+reads remain unresolved; a supported read with absent exact data remains unknown.
 Ordinary WRAM/HRAM LOADs additionally consume only exact path-written physical
 byte facts from the incumbent SymbolicMemory state. STORE updates or invalidates
 each physical byte, so echo aliases share facts and disjoint writes preserve them.
@@ -131,7 +135,7 @@ register states stay separate. Unsupported calls and the existing diversity fall
 resolved WRAM banks stay distinct without new bank inference. See the
 [bounded RAM contract](decisions/ordinary-ram-byte-facts.md).
 See the [bounded memory join contract](decisions/ordinary-memory-join.md).
-Engine `20261001-call-stack-liveness-2d-1` uses schema 4 with a fingerprint
+Engine `20261002-memory-storage-copy-1` uses schema 4 with a fingerprint
 component for certificate storage eligibility; preceding schema/engine results require a new preview. N3 memory joining remains intact.
 
 An unmodified unconditional direct CALL can compose a bounded callee with

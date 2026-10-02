@@ -78,7 +78,19 @@ known disjoint physical byte preserves other facts. Unlocated stores and writes
 with unresolved physical destinations drop facts conservatively; unsupported
 device writes also drop them. No device effects are inferred.
 
-LOAD resolves each byte with READ access. Every byte must have eligible physical
+LOAD resolves each byte with READ access. CALL-MEMORY-COPY-1 also routes one-byte
+COPY storage inputs in the default CPU memory space through the same
+`memoryLoad`/ReadOutcome path. The input names contents, not an address literal:
+constant/register/unique COPY inputs keep their scalar semantics. Other spaces
+and wider storage COPY forms remain unqualified; no language or raw p-code change
+is required. The current FA a16 instruction emits this one-byte form for WRAM,
+HRAM and banked WRAM. Supported unknown/absent data preserves structural read
+coverage; unsupported devices or unresolved physical backing still refuse it.
+Engine `20261002-memory-storage-copy-1` requires recomputation of 2D results;
+schema stays 4. Obsolete owned WUX-1A flow retains retirement authority only.
+Broader CALL-stack qualification and WUX-1B remain separate obligations.
+
+Every byte must have eligible physical
 RAM backing and an exact path-written fact, or the scalar is unknown. Values
 assemble little-endian with 16-bit pointer wrapping into the incumbent
 register/unique domain. ROM LOAD authority remains N1's current physical-ROM

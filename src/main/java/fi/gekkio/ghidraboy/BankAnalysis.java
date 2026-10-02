@@ -467,6 +467,7 @@ public final class BankAnalysis {
         int operation = 0;
         for (var op : raw) {
           int operationIndex = operation++;
+          boolean storageCopy = memoryStorageCopy(p, op);
           if (microflow != null && operationIndex <= microflow.gate()) continue;
           if (op.getOpcode() == PcodeOp.RETURN) returnedCpu = value(op.getInput(0), regs, unique);
           if (op.getOpcode() == PcodeOp.CALLOTHER && !CartridgeBus.isDirectWrite(p.getLanguage(), op)) supported = false;
@@ -477,7 +478,7 @@ public final class BankAnalysis {
             for (int operand = 0; operand < op.getNumInputs(); operand++) {
               var input = op.getInput(operand);
               if (input.isAddress()) {
-                if (frame != null) complete = false;
+                if (frame != null && !storageCopy) complete = false;
                 readAccess(
                     p,
                     cartridge,
@@ -555,8 +556,10 @@ public final class BankAnalysis {
                 && op.getInput(0).isConstant()
                 && (int) op.getInput(0).getOffset() == p.getAddressFactory().getDefaultAddressSpace().getSpaceID()
                 ? memoryLoad(p, cartridge, state, memory, value(op.getInput(1), regs, unique), output.getSize())
-                : ReadOutcome.UNRESOLVED;
-            Long result = internal ? null : op.getOpcode() == PcodeOp.LOAD
+                : storageCopy && !internal
+                    ? memoryLoad(p, cartridge, state, memory, op.getInput(0).getOffset(), 1)
+                    : ReadOutcome.UNRESOLVED;
+            Long result = internal ? null : op.getOpcode() == PcodeOp.LOAD || storageCopy
                 ? read.value() : evaluate(op, regs, unique);
             if (output.isAddress()) {
               int cpu = (int) (output.getOffset() & 65535);
@@ -575,7 +578,8 @@ public final class BankAnalysis {
                       writes, memory);
               changedMapper |= touchesMapper(cartridge, cpu, output.getSize());
             }
-            if (frame != null && op.getOpcode() == PcodeOp.LOAD && read.coverage() != ReadCoverage.SUPPORTED) complete = false;
+            if (frame != null && (op.getOpcode() == PcodeOp.LOAD || storageCopy)
+                && read.coverage() != ReadCoverage.SUPPORTED) complete = false;
             if (frame != null && !ordinaryOperation(op)) supported = false;
             put(output, result, regs, unique);
           }
@@ -1184,6 +1188,15 @@ public final class BankAnalysis {
     private static final ReadOutcome UNRESOLVED = new ReadOutcome(null, ReadCoverage.UNRESOLVED);
   }
 
+  /** Fixed one-byte CPU storage, not an address literal or a scalar containing a pointer. */
+  private static boolean memoryStorageCopy(Program p, PcodeOp op) {
+    if (op.getOpcode() != PcodeOp.COPY || op.getNumInputs() != 1
+        || op.getOutput() == null || op.getOutput().getSize() != 1) return false;
+    var input = op.getInput(0);
+    return input.isAddress() && input.getSize() == 1
+        && input.getAddress().getAddressSpace().equals(p.getAddressFactory().getDefaultAddressSpace());
+  }
+
   private static ReadOutcome memoryLoad(Program p, Cartridge c, MapperKnowledge state,
       SymbolicMemory.State memory, Long pointer, int width) throws Exception {
     if (pointer == null || width < 1 || width > Long.BYTES) return ReadOutcome.UNRESOLVED;
@@ -1205,7 +1218,7 @@ public final class BankAnalysis {
     return new ReadOutcome(null, ReadCoverage.SUPPORTED);
   }
 
-  /** LOAD alone consumes memory. Mapping observations do not authorize a byte value. */
+  /** Resolved memory reads consume ROM bytes; mapping observations alone do not authorize a value. */
   static Long romLoad(Program p, Cartridge c, MapperKnowledge state, Long pointer, int width)
       throws Exception {
     if (pointer == null || width < 1 || width > Long.BYTES) return null;

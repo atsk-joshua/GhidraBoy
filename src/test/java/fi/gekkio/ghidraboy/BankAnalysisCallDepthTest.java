@@ -242,7 +242,8 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
   }
   @Test void packedPriorEngineRequiresRecomputation() throws Exception {
     for (String priorEngine : List.of("20261001-call-stack-liveness-2a-1",
-        "20261001-call-stack-liveness-2c-1")) try (var f = new Fixture(3, "")) {
+        "20261001-call-stack-liveness-2c-1",
+        "20261001-call-stack-liveness-2d-1")) try (var f = new Fixture(3, "")) {
       var result = f.preview(false, 4096).result();
       var oldJson = ProgramMapping.JSON.toJson(result).replace(AnalysisResult.ENGINE_VERSION, priorEngine);
       int tx = f.p.startTransaction("Store obsolete result");
@@ -262,6 +263,7 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
         assertTrue(old.ordinaryCallProofs().isEmpty());
         assertThrows(IllegalStateException.class, () -> ProgramFingerprint.requireCurrent(p, old, TaskMonitor.DUMMY));
         assertThrows(IllegalStateException.class, () -> AnalysisApplication.apply(p, old, TaskMonitor.DUMMY));
+        assertThrows(IllegalStateException.class, () -> OrdinaryCallFlow.publish(p, old, TaskMonitor.DUMMY));
         var fresh = BankAnalysis.preview(p, ProgramMapping.staticAddress(p, "0150"), MapperState.reset(),
             AnalysisResult.Configuration.DEFAULT, TaskMonitor.DUMMY);
         assertEquals(result.ordinaryCallProofs(), fresh.ordinaryCallProofs());

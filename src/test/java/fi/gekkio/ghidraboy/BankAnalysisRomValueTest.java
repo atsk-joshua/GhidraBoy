@@ -193,7 +193,7 @@ class BankAnalysisRomValueTest extends IntegrationTest {
     }
   }
 
-  @Test void addressValuedCopyIsOnlyAnObservationAndNeverAnImplicitLoad() throws Exception {
+  @Test void storageCopyStaysOutsideContextFreeEvaluatorAndLiteralCopyRemainsScalar() throws Exception {
     try (var f = new Fixture()) {
       var a = f.p.getRegister("A");
       var output = new Varnode(a.getAddress(), 1);
