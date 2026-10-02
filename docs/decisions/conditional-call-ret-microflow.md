@@ -5,6 +5,9 @@ ordinary BankAnalysis contracts through the SM83 language's actual guarded
 architectural effects. It supports CALL NZ/Z/NC/C (C4/CC/D4/DC, three bytes) and
 RET NZ/Z/NC/C (C0/C8/D0/D8, one byte). It does not close SA-01, SA-03 or SA-07.
 
+The local limit recorded below is historical: [LOCAL-STATE-3](local-analysis-budget.md)
+now sets the per-invocation analysis resource guard to 179.
+
 ## Recognition and conditions
 
 Recognition consumes `Instruction.getPcode(false)` and the instruction encoding.

@@ -180,7 +180,7 @@ class LoopStateGraphDecisionTest extends IntegrationTest {
   private static final String CALLER = "3100d0cd000318fe";
 
   @Test void productionRetainsFiniteAcyclicLocalBound() throws Exception {
-    try (var fixture = new Fixture(Map.of(0x150, CALLER, 0x300, "3e00".repeat(129) + "c9"))) {
+    try (var fixture = new Fixture(Map.of(0x150, CALLER, 0x300, "3e00".repeat(179) + "c9"))) {
       for (boolean reverse : List.of(false, true)) {
         var result = fixture.preview(4096, reverse, TaskMonitor.DUMMY);
         assertEquals(AnalysisResult.Completion.COMPLETE, result.completion());

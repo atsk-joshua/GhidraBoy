@@ -96,7 +96,7 @@ Pure raw conditional jumps use known predicate bits to select only feasible
 successors; unknown predicates retain both. Known Z can survive with unknown C
 through transient partial flag facts. Ordinary-call termination requires a complete
 acyclic explored abstract-state graph, so register-counted finite loops can return
-under the existing 128-state invocation budget. Reachable repeating state cycles
+under the 179-state invocation resource budget. Reachable repeating state cycles
 remain refused. See the [finite-loop contract](decisions/finite-conditional-loops.md).
 
 To converge changing exact register states around loops, an instruction with more
@@ -153,7 +153,7 @@ unconditional RET; the popped physical frame bytes, returned PC/SP and outgoing
 mapper must prove an available continuation. Compatible returning paths retain
 common register/flag bytes and N3 RAM facts. Mapper state comes from actual callee
 effects. Different return mapper/continuation identities and any incomplete path
-retain the conservative unknown continuation. The 128-state callee cap consumes
+retain the conservative unknown continuation. The 179-state callee resource cap consumes
 the original global state budget too. Frames and memory remain transient. See the [three-level contract](decisions/three-level-ordinary-call.md).
 Unknown data from supported ordinary RAM or the bounded CGB FF70 read stays
 unknown without independently making callee coverage incomplete. Unsupported or

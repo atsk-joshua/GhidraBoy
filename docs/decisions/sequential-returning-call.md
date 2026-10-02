@@ -6,6 +6,9 @@ ordinary BankAnalysis contracts to multiple sequential direct returning calls
 within one invocation. The positive chain is caller → A → B → A continuation → C
 → A continuation → caller. Maximum active ordinary depth remains two.
 
+The local limit recorded below is historical: [LOCAL-STATE-3](local-analysis-budget.md)
+now sets the per-invocation analysis resource guard to 179.
+
 ## Admission and physical frames
 
 The encountered nested-site set previously refused a second distinct call even

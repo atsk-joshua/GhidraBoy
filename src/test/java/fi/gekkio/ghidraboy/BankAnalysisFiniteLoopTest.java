@@ -225,6 +225,9 @@ class BankAnalysisFiniteLoopTest extends IntegrationTest {
     try (var fixture = new Fixture("0e000c18fd")) {
       var preview = fixture.preview(false);
       assertTrue(preview.result().ordinaryCallProofs().isEmpty());
+      assertTrue(preview.result().findings().stream().anyMatch(f -> f.source().equals("0302")
+          && f.reason().equals("State diversity widened to unknown after 32 distinct states at one instruction")),
+          preview.result().findings().toString());
       assertEquals(0, visits(preview, 0x305));
     }
   }
@@ -255,7 +258,7 @@ class BankAnalysisFiniteLoopTest extends IntegrationTest {
       assertEquals(AnalysisResult.Completion.CANCELLED, cancelled.result().completion());
       assertTrue(cancelled.result().ordinaryCallProofs().isEmpty());
     }
-    try (var fixture = new Fixture("3e00".repeat(129) + "c9")) {
+    try (var fixture = new Fixture("3e00".repeat(179) + "c9")) {
       var preview = fixture.preview(false);
       assertTrue(preview.result().ordinaryCallProofs().isEmpty());
       assertTrue(preview.result().findings().stream().anyMatch(f -> f.reason().contains("callee state bound")));

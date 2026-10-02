@@ -214,7 +214,7 @@ class BankAnalysisCallCoverageTest extends IntegrationTest {
 
   @Test void missingRetCycleRecursionAndIncompleteExplorationStillRefuse() throws Exception {
     for (String callee : List.of("", "00", "18fe", "cd0003c9", "c0e9",
-        "3e00".repeat(129) + "c9")) refused(callee);
+        "3e00".repeat(179) + "c9")) refused(callee);
   }
 
   @Test void globalStateLimitClearsEarlierMatchedReturnProof() throws Exception {

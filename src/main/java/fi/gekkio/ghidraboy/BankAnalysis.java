@@ -189,7 +189,8 @@ public final class BankAnalysis {
             : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
   }
 
-  private static final int CALLEE_STATE_LIMIT = 128;
+  // Internal per-invocation analysis resource guard, independent of finite-loop semantics.
+  private static final int CALLEE_STATE_LIMIT = 179;
   private static final int ORDINARY_CALL_DEPTH = 3;
 
   private static final class Session {

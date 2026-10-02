@@ -286,10 +286,10 @@ class BankAnalysisNestedReturningCallTest extends IntegrationTest {
   }
 
   @Test void nestedLocalAndSharedGlobalBudgetRemainBounded() throws Exception {
-    try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "3e00".repeat(129) + "3e02c9")) {
+    try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "3e00".repeat(179) + "3e02c9")) {
       var local = f.preview(false, 4096);
       assertFalse(provesBank(local, 2));
-      assertTrue(local.result().exploredStates() < 150);
+      assertTrue(local.result().exploredStates() < 201);
       assertTrue(local.result().findings().stream().anyMatch(x -> x.reason().contains("callee state bound")));
       var global = f.preview(false, 8);
       assertEquals(AnalysisResult.Completion.STATE_LIMIT, global.result().completion());
@@ -306,7 +306,7 @@ class BankAnalysisNestedReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRetainsSchemaAndRejectsN4WithoutTransientState() throws Exception {
     try (var f = new Fixture(CALL_A + SELECT, CALL_B + "c9", "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20261002-local-loop-1", result.engineVersion());
+      assertEquals("20261002-local-state-3", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

@@ -5,6 +5,9 @@ invocations: caller → A → B, B RET → A continuation, A RET → caller cont
 Both calls must independently satisfy N4's unmodified unconditional SM83 CD/C9
 contract. This is a bounded SA-03 foundation, not general interprocedural analysis.
 
+The local limit recorded below is historical: [LOCAL-STATE-3](local-analysis-budget.md)
+now sets the per-invocation analysis resource guard to 179.
+
 ## Frames and execution
 
 The same BankAnalysis exploration and compiled raw p-code evaluator execute each

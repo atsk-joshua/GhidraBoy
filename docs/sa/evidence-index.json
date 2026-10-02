@@ -1528,5 +1528,15 @@
       "path": "evidence/batches/WUX-1A-CLOSE-20261001/REPORT.md",
       "sha256": "6f6197bd8bba09177ee7c35ebb5927f65feecd743b8891f8778d0ca0377a8f26"
     }
+  },
+  "local_state_3_20261002": {
+    "status": "PASS / INTERMEDIATE CANDIDATE",
+    "external_root": "evidence/batches/LOCAL-STATE-3-20261002",
+    "qualification": {
+      "path": "evidence/batches/LOCAL-STATE-3-20261002/qualification.json",
+      "sha256": "5c2b8bdc9d0896e5f5a72cf4f2ba866c0a68c77a0fa7ec3040ea270ee2738df8"
+    },
+    "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
+    "scope": "Local invocation resource guard 128 to179 only; engine20261002-local-state-3/schema4; focused generic/currentness/reopen and unseeded public replay; timer frontier remains; no aggregate, WUX-1B, installed or release qualification"
   }
 }

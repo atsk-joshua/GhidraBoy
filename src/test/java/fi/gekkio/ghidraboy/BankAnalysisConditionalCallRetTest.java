@@ -412,10 +412,10 @@ class BankAnalysisConditionalCallRetTest extends IntegrationTest {
   }
 
   @Test void conditionalInvocationRetainsTheExistingLocalCalleeCap() throws Exception {
-    try (var f = new Fixture(SP + flags(0) + "c40003" + SELECT, "3e00".repeat(129) + "3e02c9")) {
+    try (var f = new Fixture(SP + flags(0) + "c40003" + SELECT, "3e00".repeat(179) + "3e02c9")) {
       var preview = f.preview(false);
       selects(preview, null);
-      assertTrue(preview.result().exploredStates() < 150);
+      assertTrue(preview.result().exploredStates() < 201);
       assertTrue(preview.result().findings().stream().anyMatch(x -> x.reason().contains("callee state bound")));
     }
   }
@@ -445,7 +445,7 @@ class BankAnalysisConditionalCallRetTest extends IntegrationTest {
   @Test void n6RoundTripRejectsN5AndRetainsSchemaWithoutTransientMicroflow() throws Exception {
     try (var f = new Fixture(SP + flags(0) + "c40003" + SELECT, "3e02c9")) {
       var result = f.preview(false).result();
-      assertEquals("20261002-local-loop-1", result.engineVersion());
+      assertEquals("20261002-local-state-3", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

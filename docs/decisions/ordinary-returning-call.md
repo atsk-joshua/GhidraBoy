@@ -9,7 +9,8 @@ The original N4 boundaries below are historical. Later nested/sequential and
 conditional CALL/RET contracts extend invocation support; LOCAL-LOOP-1's
 [finite conditional-loop contract](finite-conditional-loops.md) supersedes the
 address-cycle and always-both-JR boundaries with partial flags, proven predicates
-and complete acyclic abstract-state exploration. The 128-state limit remains.
+and complete acyclic abstract-state exploration. The invocation resource limit is now 179 under
+[LOCAL-STATE-3](local-analysis-budget.md); the original N4 limit below is historical.
 
 ## Supported invocation
 

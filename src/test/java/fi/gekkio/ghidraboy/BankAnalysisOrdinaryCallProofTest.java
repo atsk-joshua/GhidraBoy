@@ -218,7 +218,7 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
   @Test void localBoundAfterSuccessfulInnerCallVetoesUnexaminedReachableAlternatives() throws Exception {
     // B returns successfully before A reaches its local cap. The unseen tail can
     // revisit that same CD source; an immediate non-CD frontier is no proof of safety.
-    try (var f = new Fixture(CALL + STOP, "cd0008" + "3e00".repeat(129) + "c30003")) {
+    try (var f = new Fixture(CALL + STOP, "cd0008" + "3e00".repeat(179) + "c30003")) {
       f.code("0800", "c9");
       for (boolean reverse : List.of(false, true)) {
         var preview = f.preview(reverse, 4096);
@@ -312,12 +312,12 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
     }
   }
 
-  @Test void preRepairEngineCannotAuthorizeUnchangedProgram() throws Exception {
-    try (var f = new Fixture(CALL + STOP, "c9")) {
+  @Test void priorEngineCannotAuthorizeUnchangedProgram() throws Exception {
+    for (String priorEngine : List.of("20261001-wux1p-ordinary-call-proof-1",
+        "20261002-local-loop-1")) try (var f = new Fixture(CALL + STOP, "c9")) {
       var current = f.result();
       ProgramFingerprint.requireCurrent(f.p, current, TaskMonitor.DUMMY);
-      var json = ProgramMapping.JSON.toJson(current).replace(AnalysisResult.ENGINE_VERSION,
-          "20261001-wux1p-ordinary-call-proof-1");
+      var json = ProgramMapping.JSON.toJson(current).replace(AnalysisResult.ENGINE_VERSION, priorEngine);
       var prior = ProgramMapping.JSON.fromJson(json, AnalysisResult.class);
       assertEquals(current.fingerprint(), prior.fingerprint());
       assertTrue(prior.ordinaryCallProofs().isEmpty());
@@ -326,6 +326,8 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
           () -> ProgramFingerprint.requireCurrent(f.p, prior, TaskMonitor.DUMMY));
       assertThrows(IllegalStateException.class,
           () -> AnalysisApplication.apply(f.p, prior, TaskMonitor.DUMMY));
+      assertThrows(IllegalStateException.class,
+          () -> OrdinaryCallFlow.publish(f.p, prior, TaskMonitor.DUMMY));
       assertEquals(current.ordinaryCallProofs(), f.result().ordinaryCallProofs());
     }
   }

@@ -62,7 +62,8 @@ Known obsolete owned physical CALL receipts retain exact retirement/restoration
 authority only, as specified by the
 [stock-flow contract](ordinary-call-stock-flow.md).
 
-The 128-state invocation limit, 32-key per-address widening, global configured
+The invocation resource limit is now 179 under
+[LOCAL-STATE-3](local-analysis-budget.md). The 32-key per-address widening, global configured
 budget, cancellation, depth-three/recursion guards, unsupported effects,
 mapper/physical identity, structural coverage and WUX-1P/WUX-1A unanimity and
 lifecycle remain required. State limits are independent of finite-loop semantics:

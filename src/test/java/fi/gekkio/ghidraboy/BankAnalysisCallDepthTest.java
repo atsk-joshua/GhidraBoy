@@ -161,7 +161,7 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
     }
   }
   @Test void thirdCalleeLocalBudgetStillRefuses() throws Exception {
-    try (var f = new Fixture(3, "3e00".repeat(129))) {
+    try (var f = new Fixture(3, "3e00".repeat(179))) {
       refused(f, null);
       assertTrue(f.preview(false, 4096).result().findings().stream().anyMatch(x -> x.reason().contains("callee state bound")));
     }
@@ -234,7 +234,7 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
       }
       for (String effect : List.of("18fe", "fa00a0", "cd0003"))
         try (var f = new Fixture(3, prefix + effect)) { refused(f, null); }
-      try (var f = new Fixture(3, prefix + "3e00".repeat(129))) {
+      try (var f = new Fixture(3, prefix + "3e00".repeat(179))) {
         refused(f, null);
         assertTrue(f.preview(false, 4096).result().findings().stream().anyMatch(x -> x.reason().contains("callee state bound")));
       }
@@ -245,7 +245,8 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
         "20261001-call-stack-liveness-2c-1",
         "20261001-call-stack-liveness-2d-1",
         "20261002-memory-storage-copy-1",
-        "20261002-call-stack-liveness-2e-1")) try (var f = new Fixture(3, "")) {
+        "20261002-call-stack-liveness-2e-1",
+        "20261002-local-loop-1")) try (var f = new Fixture(3, "")) {
       var result = f.preview(false, 4096).result();
       var oldJson = ProgramMapping.JSON.toJson(result).replace(AnalysisResult.ENGINE_VERSION, priorEngine);
       int tx = f.p.startTransaction("Store obsolete result");

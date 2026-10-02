@@ -241,7 +241,7 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRejectsN4WithoutSerializingFramesOrMemory() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20261002-local-loop-1", result.engineVersion());
+      assertEquals("20261002-local-state-3", result.engineVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
       assertEquals(4, result.schemaVersion());
@@ -266,10 +266,10 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
   }
 
   @Test void localCalleeBudgetRefusesWithoutMultiplyingGlobalBound() throws Exception {
-    try (var f = new Fixture(CALL + SELECT, "3e00".repeat(129) + "3e02c9")) {
+    try (var f = new Fixture(CALL + SELECT, "3e00".repeat(179) + "3e02c9")) {
       var preview = f.preview(false, 4096);
       assertFalse(provesRom2(preview));
-      assertTrue(preview.result().exploredStates() < 150);
+      assertTrue(preview.result().exploredStates() < 201);
       assertTrue(preview.result().findings().stream().anyMatch(x -> x.reason().contains("callee state bound")));
     }
   }

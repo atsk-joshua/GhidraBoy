@@ -1,5 +1,19 @@
 # Implementation status
 
+## LOCAL-STATE-3 — bounded resource candidate
+
+The [local invocation resource contract](../decisions/local-analysis-budget.md)
+raises the internal per-invocation evaluation guard from 128 to exactly 179,
+without headroom. Engine `20261002-local-state-3` retains schema 4; LOCAL-LOOP-1
+results require recomputation, while known obsolete owned flow retains retirement
+authority only. Loop/flag/predicate semantics, cycle admission, widening, global
+budgets, depth, recursion and cancellation remain unchanged.
+
+Focused qualification and the unseeded public witness are recorded externally in
+`LOCAL-STATE-3-20261002`. The downstream timer frontier remains outside scope.
+This is an intermediate candidate; full-provider, installed and release
+qualification remain open. WUX-1B has not begun.
+
 ## LOCAL-LOOP-1 — focused implementation candidate
 
 The [finite conditional-loop contract](../decisions/finite-conditional-loops.md)
