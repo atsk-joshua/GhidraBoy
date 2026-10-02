@@ -424,7 +424,7 @@ class OrdinaryCallFlowTest extends IntegrationTest {
         "20261002-call-stack-liveness-2e-1",
         "20261002-call-stack-liveness-2f-1",
         "20261002-local-loop-1",
-        "20261002-local-state-3"))
+        "20261002-local-state-3", "20261002-timer-write-liveness-1"))
       for (String operation : List.of("retire", "remove", "edited", "future")) try (var f = new Fixture()) {
       var proof = f.proof();
       var original = OrdinaryCallFlow.Tuple.of(f.calls().get(0));

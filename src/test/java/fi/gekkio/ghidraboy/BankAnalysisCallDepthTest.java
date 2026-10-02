@@ -247,7 +247,7 @@ class BankAnalysisCallDepthTest extends IntegrationTest {
         "20261002-memory-storage-copy-1",
         "20261002-call-stack-liveness-2e-1",
         "20261002-local-loop-1",
-        "20261002-local-state-3")) try (var f = new Fixture(3, "")) {
+        "20261002-local-state-3", "20261002-timer-write-liveness-1")) try (var f = new Fixture(3, "")) {
       var result = f.preview(false, 4096).result();
       var oldJson = ProgramMapping.JSON.toJson(result).replace(AnalysisResult.ENGINE_VERSION, priorEngine);
       int tx = f.p.startTransaction("Store obsolete result");

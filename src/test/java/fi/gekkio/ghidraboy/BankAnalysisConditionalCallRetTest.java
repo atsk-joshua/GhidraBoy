@@ -445,7 +445,7 @@ class BankAnalysisConditionalCallRetTest extends IntegrationTest {
   @Test void n6RoundTripRejectsN5AndRetainsSchemaWithoutTransientMicroflow() throws Exception {
     try (var f = new Fixture(SP + flags(0) + "c40003" + SELECT, "3e02c9")) {
       var result = f.preview(false).result();
-      assertEquals("20261002-timer-write-liveness-1", result.engineVersion());
+      assertEquals("20261002-raw-flow-view-1", result.engineVersion());
       assertEquals(4, result.schemaVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));

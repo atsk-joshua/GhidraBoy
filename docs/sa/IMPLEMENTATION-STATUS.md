@@ -1,5 +1,39 @@
 # Implementation status
 
+## RAW-FLOW-VIEW-1 — bounded implementation candidate
+
+BankAnalysis uses the [architectural instruction view](../decisions/raw-flow-view.md)
+for raw p-code and prototype/context flow type, targets and fallthrough beneath
+saved Ghidra FlowOverride presentation. All enum classes remain presentation
+state. Same-target ordinary stock retyping is permitted by the separate raw gate;
+foreign targets, explicit reference overrides, length/fallthrough changes and
+unsupported fixups or unsafe conventions remain unresolved. Shared stock-flow
+publication validators retain their strict representation contract.
+
+Engine `20261002-raw-flow-view-1` retains schema 4. TIMER-WRITE-LIVENESS-1 results
+require recomputation; exact obsolete owned physical CALL receipts retain only
+retirement authority. Presentation dependencies remain fingerprinted and
+unowned overrides are preserved. Loop semantics, mapper/stack checks, timer
+qualification, depth and the 179-state invocation budget remain unchanged.
+
+Focused generic tests and separate-process self-authored stock Shared Return
+Calls save/reopen qualify this boundary. The unseeded public Wyatt witness
+retains exact four/eight loops and the 179-evaluation rom4 invocation, timer
+frame and HRAM-copy return. Saved 02DF CALL_RETURN remains present while raw JP
+follows 156D with SP=D000 and no push. The next independent frontier is the
+1571 CALL to 15B3: volatile KEY1/FF4D reads and the STOP arm prevent a complete
+matched-return proof. Later 1577 retains its unknown-provenance CALL_RETURN and
+raw RST push/continuation, but incoming SP is already unknown after the refused
+call; no concrete stack addresses are claimed there.
+
+The unrestricted replay conservatively suppresses all published proof authority
+after downstream incomplete callee exploration. A separately declared finite
+prefix ending at that call boundary revalidates the exact 37F3 physical CALL
+certificate. Neither witness publishes into or saves the private Program.
+Evidence is indexed under `RAW-FLOW-VIEW-1-20261002`; the next frontier remains
+outside scope. Full-provider aggregate, installation and release qualification
+remain open; WUX-1B has not begun.
+
 ## TIMER-WRITE-LIVENESS-1 — bounded implementation candidate
 
 The [ordinary RAM contract](../decisions/ordinary-ram-byte-facts.md) adds only
@@ -12,8 +46,8 @@ retirement authority only. Loop semantics and the 179-state invocation budget
 remain unchanged.
 
 Focused qualification, packed lifecycle and unseeded public Wyatt progression
-are recorded externally in `TIMER-WRITE-LIVENESS-1-20261002`. The retained 02DF
-CALL_RETURN override remains an independent Program-representation frontier.
+are recorded externally in `TIMER-WRITE-LIVENESS-1-20261002`. Its then-retained 02DF
+CALL_RETURN frontier is now traversable under RAW-FLOW-VIEW-1 above.
 The earlier 37F3 invocation can receive a bounded certificate; that does not
 establish whole-session completion beyond the independent frontier. Full-provider aggregate, installed and release qualification remain
 open; WUX-1B has not begun.

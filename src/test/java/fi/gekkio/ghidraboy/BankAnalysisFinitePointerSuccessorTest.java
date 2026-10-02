@@ -204,14 +204,15 @@ class BankAnalysisFinitePointerSuccessorTest extends IntegrationTest {
     }
   }
 
-  @Test void flowOverrideCannotAcquireJumpOrSyntheticCallProof() throws Exception {
+  @Test void flowOverridePreservesRawJumpWithoutSyntheticCallProof() throws Exception {
     for (var override : List.of(FlowOverride.CALL, FlowOverride.CALL_RETURN, FlowOverride.RETURN)) {
       try (var f = new Fixture("210041e9", "c9")) {
         f.edit(() -> f.p.getListing().getInstructionAt(f.at("0153")).setFlowOverride(override));
         var result = f.preview(MapperState.reset());
-        assertTrue(result.steps().stream().noneMatch(step -> step.source().equals("rom1::4100")));
-        assertTrue(result.result().findings().stream().noneMatch(finding -> finding.source().equals("0153")
-            && finding.targets().contains("rom1::4100")));
+        assertTrue(result.steps().stream().anyMatch(step -> step.source().equals("rom1::4100")));
+        assertTrue(result.result().findings().stream().anyMatch(finding -> finding.source().equals("0153")
+            && finding.access().equals("jump") && finding.targets().contains("rom1::4100")));
+        assertTrue(result.result().ordinaryCallProofs().isEmpty());
       }
     }
   }

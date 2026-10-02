@@ -183,7 +183,7 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
     }
   }
 
-  @Test void missingContinuationAndArchitecturalOverrideVetoOrdinaryProof() throws Exception {
+  @Test void missingContinuationVetoesProofWhilePresentationOverridePreservesRawProof() throws Exception {
     for (boolean override : List.of(false, true)) try (var f = new Fixture(CALL + STOP, "c9")) {
       int tx = f.p.startTransaction("Unavailable architectural dependency");
       try {
@@ -192,7 +192,11 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
         else f.p.getListing().clearCodeUnits(ProgramMapping.staticAddress(f.p, "0156"),
             ProgramMapping.staticAddress(f.p, "0156"), false);
       } finally { f.p.endTransaction(tx, true); }
-      assertTrue(f.result().ordinaryCallProofs().isEmpty());
+      var result = f.result();
+      if (override) {
+        assertEquals(1, result.ordinaryCallProofs().size());
+        assertTrue(OrdinaryCallFlow.publish(f.p, result, TaskMonitor.DUMMY).isEmpty());
+      } else assertTrue(result.ordinaryCallProofs().isEmpty());
     }
   }
 
@@ -315,7 +319,7 @@ class BankAnalysisOrdinaryCallProofTest extends IntegrationTest {
   @Test void priorEngineCannotAuthorizeUnchangedProgram() throws Exception {
     for (String priorEngine : List.of("20261001-wux1p-ordinary-call-proof-1",
         "20261002-local-loop-1",
-        "20261002-local-state-3")) try (var f = new Fixture(CALL + STOP, "c9")) {
+        "20261002-local-state-3", "20261002-timer-write-liveness-1")) try (var f = new Fixture(CALL + STOP, "c9")) {
       var current = f.result();
       ProgramFingerprint.requireCurrent(f.p, current, TaskMonitor.DUMMY);
       var json = ProgramMapping.JSON.toJson(current).replace(AnalysisResult.ENGINE_VERSION, priorEngine);

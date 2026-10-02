@@ -59,3 +59,4 @@ decisions/ordinary-call-proof-certificate.md
 decisions/ordinary-call-stock-flow.md
 decisions/three-level-ordinary-call.md
 decisions/local-analysis-budget.md
+decisions/raw-flow-view.md

@@ -241,7 +241,7 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
   @Test void currentRoundTripRejectsN4WithoutSerializingFramesOrMemory() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "3e02c9")) {
       var result = f.preview(false, 4096).result();
-      assertEquals("20261002-timer-write-liveness-1", result.engineVersion());
+      assertEquals("20261002-raw-flow-view-1", result.engineVersion());
       String json = ProgramMapping.JSON.toJson(result);
       assertEquals(result, AnalysisResult.read(json));
       assertEquals(4, result.schemaVersion());
@@ -282,15 +282,15 @@ class BankAnalysisReturningCallTest extends IntegrationTest {
     check(diamond("012002c5f1", "013002c5f1") + "c9", "f5c179", null);
   }
 
-  @Test void rawCallFlowOverrideCannotAcquireArchitecturalProof() throws Exception {
+  @Test void rawCallFlowOverridePreservesArchitecturalProof() throws Exception {
     try (var f = new Fixture(CALL + SELECT, "3e02c9")) {
-      int tx = f.p.startTransaction("Unsupported override");
+      int tx = f.p.startTransaction("Saved presentation");
       try { f.p.getListing().getInstructionAt(ProgramMapping.staticAddress(f.p, "0153"))
           .setFlowOverride(ghidra.program.model.listing.FlowOverride.CALL_RETURN); }
       finally { f.p.endTransaction(tx, true); }
       var preview = f.preview(false, 4096);
-      assertFalse(provesRom2(preview));
-      assertTrue(preview.result().findings().stream().anyMatch(x -> x.reason().contains("flow override")));
+      assertTrue(provesRom2(preview));
+      assertTrue(preview.result().diagnostics().stream().anyMatch(x -> x.contains("override=CALL_RETURN")));
     }
   }
 

@@ -171,6 +171,8 @@ public final class BankAnalysis {
             || modification != p.getModificationNumber()))
       completion = AnalysisResult.Completion.INPUT_CHANGED;
     var findings = candidates.finish(completion);
+    if (completion != AnalysisResult.Completion.COMPLETE)
+      session.diagnostics.add("Exploration stopped: " + completion + "; candidates are not proof");
     return new AnalysisResult(
         AnalysisResult.SCHEMA_VERSION,
         AnalysisResult.ENGINE_VERSION,
@@ -184,9 +186,7 @@ public final class BankAnalysis {
         fingerprint,
         findings,
         session.callProofs.finish(completion),
-        completion == AnalysisResult.Completion.COMPLETE
-            ? List.of()
-            : List.of("Exploration stopped: " + completion + "; candidates are not proof"));
+        List.copyOf(session.diagnostics));
   }
 
   // Internal per-invocation analysis resource guard, independent of finite-loop semantics.
@@ -196,6 +196,7 @@ public final class BankAnalysis {
   private static final class Session {
     int count;
     int pending;
+    final Set<String> diagnostics = new LinkedHashSet<>();
     final OrdinaryCallProofCollector callProofs = new OrdinaryCallProofCollector();
     AnalysisResult.Completion completion = AnalysisResult.Completion.COMPLETE;
   }
@@ -354,7 +355,8 @@ public final class BankAnalysis {
               "Instruction fetch crosses an unestablished physical execution view");
           continue;
         }
-        String interpretation = InstructionInterpretation.unresolved(ins);
+        var architectural = ArchitecturalInstructionView.of(ins);
+        String interpretation = architectural.unresolved();
         if (interpretation != null) {
           if (frame != null) complete = false;
           reasons.put(AnalysisCandidates.Site.control(w.address, "flow"), interpretation);
@@ -426,10 +428,12 @@ public final class BankAnalysis {
           }
           continue;
         }
+        var discrepancy = architectural.discrepancy();
+        if (discrepancy != null) session.diagnostics.add(discrepancy);
         int diagnosticIndex = diagnostic == null ? 0 : diagnostic.steps.size();
         var fetchBytes = diagnostic == null ? null : fetchBytes(p, ins);
         var writes = diagnostic == null ? null : new ArrayList<WriteTransition>();
-        var raw = ins.getPcode(false);
+        var raw = architectural.pcode();
         var microflow = conditionalMicroflow(p, ins, raw);
         if (microflow != null) {
           conditionalSites.add(w.address);
@@ -603,7 +607,7 @@ public final class BankAnalysis {
           }
         }
         var successors = new ArrayList<Work>();
-        var flow = ins.getFlowType();
+        var flow = architectural.flowType();
         if (frame != null) {
           if (!supported || (internal && Arrays.stream(raw).anyMatch(op -> (op.getOutput() != null && !op.getOutput().isUnique())
               || op.getOpcode() == PcodeOp.STORE || CartridgeBus.isDirectWrite(p.getLanguage(), op)))) complete = false;
@@ -654,7 +658,7 @@ public final class BankAnalysis {
               ? "JP HL requires an exact 16-bit architectural pointer"
               : "JP HL target has no unique defined immutable executable ROM source; undefined bytes left intact");
         }
-        for (var dest : ins.getDefaultFlows()) {
+        for (var dest : architectural.targets()) {
           if (predicateBranch != null && branchCondition != null && branchCondition == 0) continue;
           var resolved =
               resolveWithContext(
@@ -683,11 +687,10 @@ public final class BankAnalysis {
               "Nested ordinary call has no complete matched-return proof");
           continue;
         }
-        Address next = ins.getFallThrough();
+        Address next = architectural.fallThrough();
         if (predicateBranch != null && branchCondition != null && branchCondition != 0) next = null;
         if (next == null
             && !(predicateBranch != null && branchCondition != null && branchCondition != 0)
-            && !ins.isFallThroughOverridden()
             && flow.hasFallthrough()
             && ins.getAddress().getOffset() + ins.getLength() > 65535)
           next = ins.getAddress().addWrap(ins.getLength());
@@ -705,7 +708,6 @@ public final class BankAnalysis {
           }
           if (next != null) {
             int nextCpu = (int) ((ins.getAddress().getOffset() + ins.getLength()) & 65535);
-            if (ins.isFallThroughOverridden()) nextCpu = (int) next.getOffset();
             var nextViews =
                 resolveWithContext(p, cartridge, state, nextCpu, changedMapper ? null : w.address, diagnostic != null);
             if (nextViews.isEmpty()) {
@@ -756,12 +758,13 @@ public final class BankAnalysis {
   /** A pure predicate prefix followed by one external conditional jump.
    * Internal p-code microbranches and effectful guarded suffixes retain refusal. */
   private static PcodeOp predicateBranch(ghidra.program.model.listing.Instruction ins, PcodeOp[] raw) {
-    if (!ins.getFlowType().isJump() || !ins.getFlowType().isConditional()
-        || ins.isFallThroughOverridden() || raw.length == 0 || ins.getDefaultFlows().length != 1) return null;
+    var architectural = ArchitecturalInstructionView.of(ins);
+    if (!architectural.flowType().isJump() || !architectural.flowType().isConditional()
+        || ins.isFallThroughOverridden() || raw.length == 0 || architectural.targets().length != 1) return null;
     var branch = raw[raw.length - 1];
     if (branch.getOpcode() != PcodeOp.CBRANCH || branch.getNumInputs() != 2
         || !branch.getInput(0).isAddress()
-        || branch.getInput(0).getOffset() != ins.getDefaultFlows()[0].getOffset()
+        || branch.getInput(0).getOffset() != architectural.targets()[0].getOffset()
         || branch.getInput(1).getSize() != 1) return null;
     var defined = new HashSet<Long>();
     for (int i = 0; i < raw.length - 1; i++) {
@@ -791,6 +794,7 @@ public final class BankAnalysis {
   /** Narrow SM83 gate recognition; no arbitrary CBRANCH path interpretation. */
   private static Microflow conditionalMicroflow(Program p,
       ghidra.program.model.listing.Instruction ins, PcodeOp[] raw) throws Exception {
+    var architectural = ArchitecturalInstructionView.of(ins);
     int opcode = ins.getBytes()[0] & 255;
     boolean call = opcode == 0xc4 || opcode == 0xcc || opcode == 0xd4 || opcode == 0xdc;
     boolean ret = opcode == 0xc0 || opcode == 0xc8 || opcode == 0xd0 || opcode == 0xd8;
@@ -836,8 +840,8 @@ public final class BankAnalysis {
       var op = raw[i];
       if (i == raw.length - 1) {
         if (op.getOpcode() != (call ? PcodeOp.CALL : PcodeOp.RETURN) || op.getNumInputs() != 1) return null;
-        if (call && (!op.getInput(0).isAddress() || ins.getDefaultFlows().length != 1
-            || !op.getInput(0).getAddress().equals(ins.getDefaultFlows()[0]))) return null;
+        if (call && (!op.getInput(0).isAddress() || architectural.targets().length != 1
+            || !op.getInput(0).getAddress().equals(architectural.targets()[0]))) return null;
         if (!call && (!op.getInput(0).isRegister() || !op.getInput(0).getAddress().equals(pc.getAddress())
             || op.getInput(0).getSize() != 2)) return null;
         continue;
@@ -877,17 +881,17 @@ public final class BankAnalysis {
   /** The compiled E9 contract is deliberately one operation, not a BRANCHIND interpreter. */
   static boolean exactHlJump(Program p, ghidra.program.model.listing.Instruction ins,
       PcodeOp[] raw) throws Exception {
+    var architectural = ArchitecturalInstructionView.of(ins);
     var hl = p.getRegister("HL");
     return ins.getLength() == 1 && (ins.getBytes()[0] & 255) == 0xe9
-        && ins.getFlowType().isJump() && ins.getFlowType().isComputed()
-        && !ins.getFlowType().isCall() && ins.getFallThrough() == null
-        && ins.getDefaultFlows().length == 0
-        && InstructionInterpretation.architecturalUnresolved(ins) == null
+        && architectural.flowType().isJump() && architectural.flowType().isComputed()
+        && !architectural.flowType().isCall() && architectural.fallThrough() == null
+        && architectural.targets().length == 0
+        && architectural.architecturalUnresolved() == null
         && raw.length == 1 && raw[0].getOpcode() == PcodeOp.BRANCHIND
         && raw[0].getOutput() == null && raw[0].getNumInputs() == 1
         && raw[0].getInput(0).isRegister() && raw[0].getInput(0).getSize() == 2
-        && hl.getMinimumByteSize() == 2 && raw[0].getInput(0).getAddress().equals(hl.getAddress())
-        && Arrays.toString(raw).equals(Arrays.toString(ins.getPcode(true)));
+        && hl.getMinimumByteSize() == 2 && raw[0].getInput(0).getAddress().equals(hl.getAddress());
   }
 
   private static boolean pointerStorage(Program p, Address address) {
@@ -981,11 +985,12 @@ public final class BankAnalysis {
       AnalysisResult.Configuration configuration, AddressSetView restriction,
       TaskMonitor monitor, FetchCollector diagnostic, AnalysisCandidates candidates, Session session)
       throws Exception {
+    var architectural = ArchitecturalInstructionView.of(ins);
     // CD or a validated conditional taken suffix has a real push and one direct CALL.
     if (!hasOrdinaryCallCapacity(frames)
         || ins.getLength() != 3 || ((ins.getBytes()[0] & 255) != 0xcd
             && (microflow == null || !microflow.call()))
-        || ins.getFallThrough() == null || ins.getDefaultFlows().length != 1
+        || architectural.fallThrough() == null || architectural.targets().length != 1
         || targets.size() != 1 || raw.length == 0
         || raw[raw.length - 1].getOpcode() != PcodeOp.CALL) return null;
     var target = targets.get(0);

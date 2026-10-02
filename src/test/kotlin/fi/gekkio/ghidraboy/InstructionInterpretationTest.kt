@@ -81,7 +81,7 @@ class InstructionInterpretationTest : IntegrationTest() {
     }
 
     @Test
-    fun `compiled call stack effects stay architectural and modified call and branch stop`() =
+    fun `compiled call stack effects stay architectural beneath presentation call and branch`() =
         program { p ->
             val call = p.listing.getInstructionAt(address(0x153))
             val jump = p.listing.getInstructionAt(address(0x180))
@@ -128,8 +128,11 @@ class InstructionInterpretationTest : IntegrationTest() {
             assertTrue(jump.getPcode(true).any { it.opcode == PcodeOp.CALL })
             // Reclassifying a JP as a CALL does not synthesize an SM83 return push.
             assertEquals(0, jump.getPcode(true).count { it.opcode == PcodeOp.STORE })
-            assertStopped(p, 0x153, "flow override")
-            assertStopped(p, 0x180, "flow override")
+            // Shared representation gates stay strict; BankAnalysis uses its separate raw gate.
+            assertTrue(InstructionInterpretation.architecturalUnresolved(call).contains("flow override"))
+            assertTrue(InstructionInterpretation.architecturalUnresolved(jump).contains("flow override"))
+            assertTrue(preview(p, 0x153).exploredStates() > 1)
+            assertTrue(preview(p, 0x180).findings().any { it.source() == "0180" && it.access() == "jump" })
         }
 
     @Test

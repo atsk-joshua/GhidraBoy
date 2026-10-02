@@ -81,12 +81,22 @@ Publication prepares stock notification dependencies before commit so cancellati
 rolls back the mutation instead of reporting failure after successful application.
 See the [ordinary-CALL lifecycle contract](decisions/ordinary-call-stock-flow.md).
 
-The architectural path evaluates raw `getPcode(false)` and decoded default flows
-only when stored flow annotations are consistent. Flow/reference overrides, altered
-fallthrough/lengths and callfixups are explicitly unresolved; they are not mixed with
-raw architectural effects. This includes annotated inline-payload continuations
-until SA-01 supplies a validated effect summary. Unmodified conditional jumps
-retain every feasible alternative; internal conditional p-code effects remain conservative.
+BankAnalysis hardware traversal uses raw `getPcode(false)` and the instruction
+prototype's flow type, targets and fallthrough with the current instruction
+context. Its internal architectural view separates those inputs from saved
+Ghidra presentation for NONE, BRANCH, CALL, CALL_RETURN and RETURN alike. An
+ordinary same-target reference retyping explained by the saved FlowOverride does
+not replace decoded hardware flow. Material differences appear in transient
+result diagnostics; analysis does not rewrite overrides, references, Functions or
+other user presentation merely to traverse raw semantics.
+
+Foreign targets, explicit reference overrides, altered lengths/fallthrough and
+unsupported callfixups or unsafe software conventions still stop interpretation.
+Validated software-call summaries retain their separate effect/continuation
+route. Presentation enums and relevant reference metadata remain fingerprinted,
+so edits require recomputation even when hardware bytes are identical. Shared
+interpretation and stock-flow publication gates remain representation-aware and
+strict. See the [raw flow decision](decisions/raw-flow-view.md).
 The evaluator delegates integer operations to pinned Ghidra behaviors with width
 and extraction guards. Separate contract and compiled-SLEIGH regressions qualify
 this bounded behavior, not whole-ROM semantics. See the source checkout's

@@ -1548,5 +1548,15 @@
     },
     "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
     "scope": "Only exact FF06/TMA and FF07/TAC ordinary-memory preservation; engine20261002-timer-write-liveness-1/schema4; focused generic/currentness/packed lifecycle and unseeded public replay; 03EB RET matches02D9, helper returns02DC, retained02DF CALL_RETURN frontier; bounded37F3 certificate exists without whole-session completion; no aggregate/WUX-1B/remote/install/release work"
+  },
+  "raw_flow_view_1_20261002": {
+    "status": "PASS / BOUNDED CAPABILITY",
+    "external_root": "evidence/batches/RAW-FLOW-VIEW-1-20261002",
+    "qualification": {
+      "path": "evidence/batches/RAW-FLOW-VIEW-1-20261002/qualification.json",
+      "sha256": "3b6629b98d79bc20d46c969e671bdae8b96187d85d21e2a336e9f4397c2733ec"
+    },
+    "commit_identity": "Post-commit HEAD/tree recorded externally in commit-identity.json",
+    "scope": "BankAnalysis raw p-code/prototype-context flow separated from all saved FlowOverride presentation; schema4/current engine; shared publication gates unchanged; self-authored stock analyzer/preservation/separate-process currentness; unseeded4/8 loops179 local,02DF rawJP156D; next1571 CALL15B3 KEY1/STOP frontier;1577 rawRST word1578 with unknown SP;37F3 current exact certificate in explicit unseeded prefix only; no private save/copy/publication/WUX1B/remote/install/release/full aggregate"
   }
 }
